@@ -9,10 +9,11 @@ FilePath = NewType('FilePath', str)
 batch_size = 2
 bioproject_jsonl = "bioproject_test.jsonl"
 
-# Todo: 並列処理の実装
-# Todo: IO処理の実装と最適化
+
+# Todo: DDBJのインデックステンプレートにあわわせてdictを整形する
+# Todo: 最後のイテレーションがbatch_sizeに満たない場合の処理の実装
+# Todo: 処理速度
 # Todo: テスト・例外処理・ロギングの実装
-# Tdo: 最後のイテレーションがbatch_sizeに満たない場合の処理の実装!!
 
 
 def xml2dict(file:FilePath) -> dict:
@@ -37,6 +38,8 @@ def xml2dict(file:FilePath) -> dict:
 
             # Todo:共通のobjectを追加
             # doc.update(add_common_object(accession))
+
+            # Todo: metadataと共通objectをDDBJ ESのスキーマにあわせる
 
             docs.append(doc)
             i += 1
