@@ -6,12 +6,12 @@ from typing import NewType, List
 
 FilePath = NewType('FilePath', str)
 #batch_size = 1000
-batch_size = 2
-bioproject_jsonl = "bioproject_test.jsonl"
+batch_size = 3
+bioproject_jsonl = "bioproject_test_2.jsonl"
 
 
 # Todo: DDBJのインデックステンプレートにあわわせてdictを整形する
-# Todo: 最後のイテレーションがbatch_sizeに満たない場合の処理の実装
+# Todo: 追記形式の保存のためjsonlの初期化必要
 # Todo: 処理速度
 # Todo: テスト・例外処理・ロギングの実装
 
@@ -34,24 +34,32 @@ def xml2dict(file:FilePath) -> dict:
             xml_str = etree.tostring(element)
             # metadata = xml2json(xml_str) 
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-            doc["metadata"] = metadata
+            #doc["metadata"] = metadata
+            # DDBJのSchemaに合わせて必要部分を抽出
+            doc["properties"] = {}
+            doc["properties"]["Project"] = metadata["Package"]["Project"]
 
-            # Todo:共通のobjectを追加
+            # Todo:docに共通のobjectを追加
             # doc.update(add_common_object(accession))
 
             # Todo: metadataと共通objectをDDBJ ESのスキーマにあわせる
+            # doc["properties"]に配置する
+            # xmlのpackageは含まないProject.Project..からjsnlに出力する
 
             docs.append(doc)
             i += 1
 
         clear_element(element)
         if i > batch_size:
-            print(f"{batch_size} docs")
             i = 0
             dict2jsonl(docs)
             docs = []
 
             break
+    print(i)
+    if i > 0:
+        # データの最後batch_sizeに満たない場合の処理
+        dict2jsonl(docs)
 
 
 def add_common_object(accession: str) -> dict:
