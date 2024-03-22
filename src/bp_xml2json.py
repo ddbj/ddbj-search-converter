@@ -21,8 +21,7 @@ def xml2dict(file:FilePath) -> dict:
     BioProject XMLをdictに変換し、
     1000エントリXMLを変換するごとにjsonlに追記して出力する
     """
-    context = etree.iterparse(file, tag="Package")
-    print(file)
+    context = etree.iterparse(file, tag="Package", recover=True)
 
     i = 0
     docs:list[dict] = []
@@ -56,7 +55,6 @@ def xml2dict(file:FilePath) -> dict:
             docs = []
 
             break
-    print(i)
     if i > 0:
         # データの最後batch_sizeに満たない場合の処理
         dict2jsonl(docs)
@@ -89,5 +87,4 @@ def clear_element(element):
 
 if __name__ == "__main__":
     file_path = sys.argv[1]
-    print(file_path)
     xml2dict(file_path)
