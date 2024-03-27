@@ -11,7 +11,7 @@ bioproject_jsonl = "bioproject_test_2.jsonl"
 
 
 # Todo: DDBJのインデックステンプレートにあわわせてdictを整形する
-# Todo: 追記形式の保存のためjsonlの初期化必要
+# Todo: 追記形式の保存のため実行時にjsonlの初期化必要
 # Todo: 処理速度
 # Todo: テスト・例外処理・ロギングの実装
 
@@ -29,22 +29,17 @@ def xml2dict(file:FilePath) -> dict:
         if element.tag=="Package":
             doc = {}
             accession = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["accession"]
-            doc["_id"] = accession
             xml_str = etree.tostring(element)
             # metadata = xml2json(xml_str) 
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             #doc["metadata"] = metadata
             # DDBJのSchemaに合わせて必要部分を抽出
+            doc["accession"] = accession
             doc["properties"] = {}
             doc["properties"]["Project"] = metadata["Package"]["Project"]
 
             # Todo:docに共通のobjectを追加
-            # doc.update(add_common_object(accession))
-
-            # Todo: metadataと共通objectをDDBJ ESのスキーマにあわせる
-            # doc["properties"]に配置する
-            # xmlのpackageは含まないProject.Project..からjsnlに出力する
-
+            doc.update(common_object(accession))
             docs.append(doc)
             i += 1
 
@@ -60,11 +55,25 @@ def xml2dict(file:FilePath) -> dict:
         dict2jsonl(docs)
 
 
-def add_common_object(accession: str) -> dict:
+def common_object(accession: str) -> dict:
     """
-    BioProjectのmetadataに共通のobjectを追加する
+    BioProjectのmetadataに共通のobjectを生成する
+    Todo: nullの場合の処理（index mappingでオブジェクトが指定されている場合からのobjectを与える必要がありそうだが正しいか検証）
+    Todo: 共通のobjectの生成方法を検討・実装
     """
-    pass
+    d = {
+        "dateCreated": None,
+        "dateModified": None,
+        "datePublished": None,
+        "dbXrefs": [],
+        "description": "",
+        "distribution": {"contentUrl":"", "encodingFormat":""},
+        "identifier": "",
+        "isPartOf": "",
+        "name": "",
+        "organism": {"identifier": "", "name": ""}
+    }
+    return d
 
 
 def dict2jsonl(docs: List[dict]):
@@ -73,7 +82,8 @@ def dict2jsonl(docs: List[dict]):
     """
     with open(bioproject_jsonl, "a") as f:
         for doc in docs:
-            header = {"index": {"index": "bioproject", "_id": doc["_id"]}}    
+            header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
+            doc.pop("accession")
             f.write(json.dumps(header) + "\n")
             json.dump(doc, f)
             f.write("\n")
@@ -82,7 +92,10 @@ def dict2jsonl(docs: List[dict]):
 def clear_element(element):
     element.clear()
     while element.getprevious() is not None:
-        del element.getparent()[0]
+        try:
+            del element.getparent()[0]
+        except:
+            print("clear_element Error")
 
 
 if __name__ == "__main__":
