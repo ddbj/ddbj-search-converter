@@ -14,6 +14,14 @@ pip install -r requirements.txt
 
 ### BioProject
 
+bioproject.xmlからarchive="DDBJ"のエントリのみをjsonlに変換する場合
+
 ```
-python bp_xml2json.py bioprojxt_xml_path
+source .venv/bin/activate
+python bp_xml2json.py <bioprojxt_xml_path> ddbj
 ```
+
+
+## 確認事項
+ 1. dbXrefのulrがlocaolhost:8080/resource/biosample/SAME*等でありこのリンクは有効なのだがどの段階でxmlのサブセットを生成しているのか・必要なのか
+ 2. SRA_AccessionsのStatus, VisibilityとESのstatus, visibilityの値の記法が異なるがどのソースのどの項目を参照しているのか
