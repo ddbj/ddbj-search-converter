@@ -30,11 +30,13 @@ def get_xref(accessions: FilePath, bioproject: str) -> dict:
         # readerをbatch_size行ごと処理する
         for row in itertools.islice(reader, None):
             if row[bp_column] == bioproject:
+                status = row[2]
+                visibility = row[8]
                 for col in relative_column:
                     acc = row[col["col"]]
                     if acc != "-":
                         xref_dct[col["type"]].add(acc)
-    return dict(xref_dct)
+    return dict(xref_dct, status=status, visibility=visibility)
                     
 
 if __name__ == "__main__":
