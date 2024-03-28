@@ -18,9 +18,13 @@ parser.add_argument("input")
 parser.add_argument("center", nargs="*", default=None)
 args = parser.parse_args()
 
-# Todo: 追記形式の保存のため実行時にjsonlの初期化必要
-# Todo: 処理速度
+# Todo: dbxrefの整形
+# Todo: dbXrefsStatisticsの生成
+# Todo: 共通のobjectにdbxref, dbXrefsStatisticsを追加
+# Todo: experiment->runの関係をdbxrefに追加
+# Todo: 処理速度検討
 # Todo: テスト・例外処理・ロギングの実装
+
 
 
 def xml2dict(file:FilePath, center=None) -> dict:
@@ -56,6 +60,7 @@ def xml2dict(file:FilePath, center=None) -> dict:
 
             # Todo:docに共通のobjectを追加
             doc.update(common_object(accession))
+            doc.update(dbxref(accession))
             docs.append(doc)
             i += 1
 
@@ -80,7 +85,7 @@ def common_object(accession: str) -> dict:
         "dateCreated": None,
         "dateModified": None,
         "datePublished": None,
-        "dbXrefs": [],
+        # "dbXrefs": [],
         "description": "",
         "distribution": {"contentUrl":"", "encodingFormat":""},
         "identifier": "",
@@ -95,14 +100,18 @@ def dbxref(accession: str) -> dict:
     """
     BioProjectに紐づくSRAを取得し、dbXrefsとdbXrefsStatisticsを生成して返す
     """
-    dbXrefsStatistics = []
     dbXrefs = []
+    dbXrefsStatistics = []
     xref = get_xref(sra_accessions_path, accession)
-
-
-    return xref
-
-
+    for key, values in xref.items():
+        # keyはobjectのtype、valuesはobjectのidentifierの集合
+        type = "biosample" if key == "biosample" else f"sra-{key}"
+        for v in values:
+            dbXrefs.append({"identifier": v, "type": type , "url": f"https://identifiers.org/sra-{key}/{v}"})
+        # typeごとにcountを出力
+        dbXrefsStatistics.append({"type": type, "count": len(values)})
+    dct = {"dbXrefs": dbXrefs, "dbXrefsStatistics": dbXrefsStatistics}
+    return dct
 
 
 def dict2jsonl(docs: List[dict]):
@@ -116,8 +125,6 @@ def dict2jsonl(docs: List[dict]):
             f.write(json.dumps(header) + "\n")
             json.dump(doc, f)
             f.write("\n")
-
-
 
 
 def clear_element(element):
