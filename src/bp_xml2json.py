@@ -7,7 +7,7 @@ from typing import NewType, List
 FilePath = NewType('FilePath', str)
 #batch_size = 1000
 batch_size = 3
-bioproject_jsonl = "bioproject_test_2.jsonl"
+bioproject_jsonl = "bioproject.jsonl"
 
 
 # Todo: DDBJのインデックステンプレートにあわわせてdictを整形する
