@@ -2,21 +2,28 @@ from lxml import etree
 import xmltodict
 import json
 import sys
+import argparse
 from typing import NewType, List
+
+from bp_xref import get_xref
 
 FilePath = NewType('FilePath', str)
 #batch_size = 1000
-batch_size = 3
-bioproject_jsonl = "bioproject.jsonl"
+batch_size = 100
+jsonl_output = "bioproject.jsonl"
+sra_accessions_path = "./sample/SRA_Accessions_1000.tab"
 
+parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
+parser.add_argument("input")
+parser.add_argument("center", nargs="*", default=None)
+args = parser.parse_args()
 
-# Todo: DDBJのインデックステンプレートにあわわせてdictを整形する
 # Todo: 追記形式の保存のため実行時にjsonlの初期化必要
 # Todo: 処理速度
 # Todo: テスト・例外処理・ロギングの実装
 
 
-def xml2dict(file:FilePath) -> dict:
+def xml2dict(file:FilePath, center=None) -> dict:
     """
     BioProject XMLをdictに変換し、
     1000エントリXMLを変換するごとにjsonlに追記して出力する
@@ -27,8 +34,17 @@ def xml2dict(file:FilePath) -> dict:
     docs:list[dict] = []
     for events, element in context:
         if element.tag=="Package":
+            """
+            Packagetag単位でxmlを変換する
+            centerが指定されている場合は指定されたcenterのデータのみ変換する（ddbjのみ対応）
+            """
             doc = {}
             accession = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["accession"]
+            archive = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["archive"]
+            # centerにDDBJが指定されarchiveがDDBJでない場合はスキップ
+            if center and archive.lower() != center.lower():
+                clear_element(element)
+                continue
             xml_str = etree.tostring(element)
             # metadata = xml2json(xml_str) 
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
@@ -49,7 +65,6 @@ def xml2dict(file:FilePath) -> dict:
             dict2jsonl(docs)
             docs = []
 
-            break
     if i > 0:
         # データの最後batch_sizeに満たない場合の処理
         dict2jsonl(docs)
@@ -69,24 +84,40 @@ def common_object(accession: str) -> dict:
         "description": "",
         "distribution": {"contentUrl":"", "encodingFormat":""},
         "identifier": "",
-        "isPartOf": "",
+        "isPartOf": "bioproject",
         "name": "",
         "organism": {"identifier": "", "name": ""}
     }
     return d
 
 
+def dbxref(accession: str) -> dict:
+    """
+    BioProjectに紐づくSRAを取得し、dbXrefsとdbXrefsStatisticsを生成して返す
+    """
+    dbXrefsStatistics = []
+    dbXrefs = []
+    xref = get_xref(sra_accessions_path, accession)
+
+
+    return xref
+
+
+
+
 def dict2jsonl(docs: List[dict]):
     """
     dictをjsonlに変換して出力する
     """
-    with open(bioproject_jsonl, "a") as f:
+    with open(jsonl_output, "a") as f:
         for doc in docs:
             header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
             doc.pop("accession")
             f.write(json.dumps(header) + "\n")
             json.dump(doc, f)
             f.write("\n")
+
+
 
 
 def clear_element(element):
@@ -99,5 +130,7 @@ def clear_element(element):
 
 
 if __name__ == "__main__":
-    file_path = sys.argv[1]
-    xml2dict(file_path)
+    file_path = args.input
+    center = args.center[0]
+    print(center)
+    xml2dict(file_path, center)
