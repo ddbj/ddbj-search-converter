@@ -1,2 +1,8 @@
 .DS_Store
+__pycache__
 .venv/
+.gitignore
+.python-version
+bioproject.jsonl
+bioproject*.jsonl
+count_ids.py
