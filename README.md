@@ -14,19 +14,18 @@ pip install -r requirements.txt
 
 ### BioProject
 
-<<<<<<< HEAD
+dbXrefsを付加するためSRA_Accessions.tabをsqliteに保存する必要がある.sqliteは空で良い
+
+```
+python import_sra_accessions.py <SRA_Accessions.tab> <sqlite_db_name>
+```
+
+
 bioproject.xmlからarchive="DDBJ"のエントリのみをjsonlに変換する場合（センター名はオプション）
 
 ```
 source .venv/bin/activate
-python bp_xml2json.py <bioprojxt_xml_path> <accessions_db_path> ddbj
-=======
-bioproject.xmlからarchive="DDBJ"のエントリのみをjsonlに変換する場合
-
-```
-source .venv/bin/activate
-python bp_xml2json.py <bioprojxt_xml_path> ddbj
->>>>>>> 98fb9dfd940e482f098170330dcdbc504859d11d
+python bp_xml2json.py <bioproject_xml_path> <accessions_db_path> ddbj
 ```
 
 

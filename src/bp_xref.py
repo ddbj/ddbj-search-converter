@@ -2,6 +2,7 @@ import csv
 import sys
 import itertools
 import sqlite3
+
 from collections import defaultdict
 from typing import NewType, List
 
@@ -52,7 +53,7 @@ def get_relation(accessions_db: FilePath, bioproject: str) -> dict:
 
 
 if __name__ == "__main__":
-    db = '/mnt/dra/sra_accessions_3.db'
+    db = './sra_accessions_3.db'
     accession = sys.argv[1]
     print(get_relation(db, accession))
     #xref = get_xref(sra_accessions_path, accession)

@@ -17,13 +17,13 @@ parser.add_argument("input")
 parser.add_argument("sra_accessions")
 parser.add_argument("center", nargs="?", default=None)
 
+
 args = parser.parse_args()
 
 # Todo: status, visibilityを追加
 # Todo: experiment->runの関係をdbxrefに追加
 # Todo: 処理速度検討
 # Todo: テスト・例外処理・ロギングの実装
-
 
 def xml2jsonl(file:FilePath, center=None) -> dict:
     """
@@ -88,6 +88,7 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             except:
                 status = "public"
 
+
                 
             doc["organism"] = organism
             doc["description"] = description
@@ -146,6 +147,7 @@ def dbxref(accession: str) -> dict:
         # typeごとにcountを出力
         dbXrefsStatistics.append({"type": type, "count": len(values)})
     dct = {"dbXrefs": dbXrefs, "dbXrefsStatistics": dbXrefsStatistics}
+
 
     return dct
 
