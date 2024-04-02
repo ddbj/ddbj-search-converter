@@ -11,7 +11,7 @@ from bp_xref import get_relation
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
-jsonl_output = "bioproject_test.jsonl"
+jsonl_output = "bioproject.jsonl"
 sra_accessions_path = None
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
