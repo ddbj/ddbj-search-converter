@@ -2,6 +2,7 @@ from lxml import etree
 import xmltodict
 import json
 import sys
+import re
 from datetime import datetime
 import argparse
 from typing import NewType, List
@@ -10,7 +11,7 @@ from bp_xref import get_relation
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
-jsonl_output = "bioproject.jsonl"
+jsonl_output = "bioproject_test.jsonl"
 sra_accessions_path = None
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
@@ -50,7 +51,7 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             xml_str = etree.tostring(element)
             # metadata = xml2json(xml_str) 
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-            #doc["metadata"] = metadata
+
             # DDBJのSchemaに合わせて必要部分を抽出
             doc["accession"] = accession
             doc["properties"] = {}
@@ -89,33 +90,57 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                 status = "public"
 
             # Organization.Nameの型をobjectに統一する
+            # Organizationの値がリストの時のNameの値の処理を分岐して記述する
+            # Todo: 内包表記にする（若干スピードが上がるため）
             try:
-                orgnization_name = project["Submission"]["Description"]["Organization"].get("Name")
-                if  type(orgnization_name) == str:
-                    doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
+                organization = project["Submission"]["Description"]["Organization"]
+                if type(organization) == list:
+                    for i, item in enumerate(organization):
+                        oranization_name = item.get("Name")
+                        if  type(orgnization_name) == str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
+                elif type(organization) == dict:
+                    orgnization_name = organization.get("Name")
+                    if  type(orgnization_name) == str:
+                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
             except:
-                # 入力されたスキーマが正しくないケースがあるためその場合passする
+                # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                 pass
 
-            # properties.Project.Project.ProjectDescr.Grant.Agency found a concrete value の例外処理
+            # properties.Project.Project.ProjectDescr.Grant.Agency found a concrete value の処理
             try:
-                agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
-                if  type(agency) == str:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content":agency }
+                grant = project["Project"]["ProjectDescr"]["Grant"]
+                if type(grant) == list:
+                    for i, item in enumerate(grant):
+                        agency = item.get("Agency")
+                        if type(agency) == str:
+                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content":agency }
+                elif type(grant) == dict:
+                    agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
+                    if  type(agency) == str:
+                        doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content":agency }
             except:
                 pass
 
-            # Todo: properties.Project.Project.ProjectDescr.LocusTagPrefix found a concrete の例外としてcontentのみ入力したdictに変換する
+            # properties.Project.Project.ProjectDescr.LocusTagPrefix found a concrete の例外としてcontentのみ入力したdictに変換する
             try:
                 prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
-                if  type(prefix) == str:
+                if type(prefix) == list:
+                    for i, item in enumerate(prefex):
+                        if type(item) == str:
+                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"assembly_id": "", "biosample_id":"",  "content":item }
+                elif type(prefix) == str:
                     doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"assembly_id": "", "biosample_id":"",  "content":prefix }
             except:
                 pass
 
-
-
-
+            # properties.Project.Project.ProjectID.LocalIDが文字列のケースの処理
+            try:
+                localid = project["Project"]["ProjectID"]["LocalID"]
+                if type(localid) == str:
+                    doc["properties"]["Project"]["Project"]["ProjectID"]["LocalID"] = {"content": localid}
+            except:
+                pass
                 
             doc["organism"] = organism
             doc["description"] = description

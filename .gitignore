@@ -7,3 +7,4 @@ bioproject.jsonl
 bioproject*.jsonl
 count_ids.py
 *logs*
+test*.json
