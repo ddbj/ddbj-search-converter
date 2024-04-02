@@ -88,6 +88,33 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             except:
                 status = "public"
 
+            # Organization.Nameの型をobjectに統一する
+            try:
+                orgnization_name = project["Submission"]["Description"]["Organization"].get("Name")
+                if  type(orgnization_name) == str:
+                    doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
+            except:
+                # 入力されたスキーマが正しくないケースがあるためその場合passする
+                pass
+
+            # properties.Project.Project.ProjectDescr.Grant.Agency found a concrete value の例外処理
+            try:
+                agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
+                if  type(agency) == str:
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content":agency }
+            except:
+                pass
+
+            # Todo: properties.Project.Project.ProjectDescr.LocusTagPrefix found a concrete の例外としてcontentのみ入力したdictに変換する
+            try:
+                prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
+                if  type(prefix) == str:
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"assembly_id": "", "biosample_id":"",  "content":prefix }
+            except:
+                pass
+
+
+
 
                 
             doc["organism"] = organism

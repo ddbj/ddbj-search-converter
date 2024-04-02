@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 ### bioproject.jsonlの生成とElasticSearchへのインポート
 
-1. bioproject.xml, SRA_Accessions.tabをダウンロードする
+1. bioproject.xml, SRA_Accessions.tabをダウンロードする。
 __それぞれのファイルの準備方法については検討__
 
 2. SRA_Accessions.tabをsqliteのtableに変換（60min程度の処理時間）
@@ -22,7 +22,7 @@ sliteはdb, table共にあらかじめ用意しておく必要は無い
 
 ```
 cd ./src
-python import_sra_accessions.py <SRA_Accessions file paht> <sqlite_db_path>
+python import_sra_accessions.py <SRA_Accessions file paht> <accessions_db_path>
 ```
 
 3. bioproject.xmlをdictに変換すると同時にsra_accessionsより関係データを生成しjsonlに書き出す

@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 import csv
 import pandas as pd
 
@@ -32,7 +33,7 @@ def create_index():
 def drop_table(table):
     con = sqlite3.connect(db)
     cur = con.cursor()
-    con.execute('DROP TABLE IF EXISTS {table}')
+    con.execute(f'DROP TABLE IF EXISTS {table}')
     con.commit
     con.close()
 
