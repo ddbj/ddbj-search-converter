@@ -44,7 +44,15 @@ DDBJに限定したのBioProjectの場合は生成したbioproject.jsonlのフ�
 curl -H "Content-Type: application/json" -X POST http://localhost:9200/_bulk?pretty --data-binary @bioproject.jsonl
 ```
 
-センターを指定しない場合bioproject.jsonlが100Mを超えるため適度なサイズに分割してからbulk importする
+通常bioproject.jsonlのファイルサイズは100Mを超えるため、シェルスクリプトで適度なサイズに分割してからし分割したファイルごとにbulk importする
+
+```
+cd src/batch
+# 分割
+sh split.sh
+# bulk import
+sh bulk_import.sh
+```
 
 
 ## 要確認
