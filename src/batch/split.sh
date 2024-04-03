@@ -4,7 +4,7 @@ maxsize=50000000
 splitlen=50000
 recursivelen=1000
 
-split -l $splitlen -a 3 -d mdatahub_index_project.jsonl bulk_import/bp_jsonl_part_
+split -l $splitlen -a 3 -d ../bioproject.jsonl ./files/bioproject_jsonl_part_
 
 for i in *
 do
