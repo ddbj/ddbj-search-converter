@@ -149,7 +149,6 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             try:
                 publication = project["Project"]["ProjectDescr"]["Publication"]
                 if type(publication) == list and len(publication) > 256:
-                    print("huge poublication: ", len(publication), accession)
                     doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:256]
             except:
                 pass
