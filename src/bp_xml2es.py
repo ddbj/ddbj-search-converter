@@ -16,20 +16,19 @@ sra_accessions_path = None
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
 parser.add_argument("sra_accessions")
+
+# 利用しないため廃止を検討
 parser.add_argument("center", nargs="?", default=None)
 
 
 args = parser.parse_args()
 
-# Todo: status, visibilityを追加
-# Todo: experiment->runの関係をdbxrefに追加
-# Todo: 処理速度検討
 # Todo: テスト・例外処理・ロギングの実装
 
 def xml2jsonl(file:FilePath, center=None) -> dict:
     """
-    BioProject XMLをdictに変換し、
-    1000エントリXMLを変換するごとにjsonlに追記して出力する
+    BioProject XMLをdictに変換・関係データを追加し
+    batch_sizeごとにlocalhostのESにbulkインポートする
     """
     context = etree.iterparse(file, tag="Package", recover=True)
 
@@ -170,12 +169,12 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
         clear_element(element)
         if i > batch_size:
             i = 0
-            dict2jsonl(docs)
+            dict2es(docs)
             docs = []
 
     if i > 0:
         # 処理の終了時にbatch_sizeに満たない場合、未処理のデータを書き出す
-        dict2jsonl(docs)
+        dict2es(docs)
 
 
 def common_object(accession: str) -> dict:
@@ -224,6 +223,10 @@ def dict2jsonl(docs: List[dict]):
             f.write(json.dumps(header) + "\n")
             json.dump(doc, f)
             f.write("\n")
+
+
+def dict2es():
+    pass
 
 
 def clear_element(element):
