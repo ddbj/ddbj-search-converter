@@ -6,5 +6,7 @@ __pycache__
 bioproject.jsonl
 bioproject*.jsonl
 count_ids.py
+get_target_xml.py
 *logs*
 test*.json
+sample/PR*.xml

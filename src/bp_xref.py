@@ -7,7 +7,7 @@ from collections import defaultdict
 from typing import NewType, List
 
 FilePath = NewType('FilePath', str)
-xref_max_size = 25
+xref_max_size = 50
 # Todo: 取得したexperimentでexperiment->runの関係を追加するか検討
 
 def get_relation(accessions_db: FilePath, bioproject: str) -> dict:

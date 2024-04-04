@@ -90,24 +90,23 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                 status = "public"
 
             # Organization.Nameの型をobjectに統一する
-            # Organizationの値がリストの時のNameの値の処理を分岐して記述する
-            # Todo: 内包表記にする（若干スピードが上がるため）
+            # Todo:処理速度を上げるため内包表記にする
             try:
                 organization = project["Submission"]["Description"]["Organization"]
                 if type(organization) == list:
                     for i, item in enumerate(organization):
                         oranization_name = item.get("Name")
-                        if  type(orgnization_name) == str:
+                        if  type(oranization_name) == str:
                             doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
                 elif type(organization) == dict:
-                    orgnization_name = organization.get("Name")
-                    if  type(orgnization_name) == str:
+                    oranization_name = organization.get("Name")
+                    if  type(oranization_name) == str:
                         doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
             except:
                 # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                 pass
 
-            # properties.Project.Project.ProjectDescr.Grant.Agency found a concrete value の処理
+            # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
             try:
                 grant = project["Project"]["ProjectDescr"]["Grant"]
                 if type(grant) == list:
@@ -122,23 +121,36 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             except:
                 pass
 
-            # properties.Project.Project.ProjectDescr.LocusTagPrefix found a concrete の例外としてcontentのみ入力したdictに変換する
+            # properties.Project.Project.ProjectDescr.LocusTagPrefix : 値が文字列の場合の処理
             try:
                 prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
                 if type(prefix) == list:
-                    for i, item in enumerate(prefex):
+                    for i, item in enumerate(prefix):
                         if type(item) == str:
-                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"assembly_id": "", "biosample_id":"",  "content":item }
+                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content":item }
                 elif type(prefix) == str:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"assembly_id": "", "biosample_id":"",  "content":prefix }
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content":prefix }
             except:
                 pass
 
-            # properties.Project.Project.ProjectID.LocalIDが文字列のケースの処理
+            # properties.Project.Project.ProjectID.LocalID: 値が文字列のケースの処理
             try:
                 localid = project["Project"]["ProjectID"]["LocalID"]
-                if type(localid) == str:
+                if type(localid) == list:
+                    for i, item in enumerate(localid):
+                        if type(item) == str:
+                            doc["properties"]["Project"]["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
+                elif type(localid) == str:
                     doc["properties"]["Project"]["Project"]["ProjectID"]["LocalID"] = {"content": localid}
+            except:
+                pass
+
+            # 巨大なPublicationを制限する（極稀なケースで存在し、bulk apiに対応しない）
+            try:
+                publication = project["Project"]["ProjectDescr"]["Publication"]
+                if type(publication) == list and len(publication) > 256:
+                    print("huge poublication: ", len(publication), accession)
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:256]
             except:
                 pass
                 
@@ -149,7 +161,7 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             doc["dateModified"] = last_update
             doc["datePublished"] = published
             doc["status"] = status
-            doc["visibility"] = None
+            doc["visibility"] = "unrestricted-access"
 
             doc.update(common_object(accession,))
             doc.update(dbxref(accession))
