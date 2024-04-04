@@ -95,13 +95,13 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                 organization = project["Submission"]["Description"]["Organization"]
                 if type(organization) == list:
                     for i, item in enumerate(organization):
-                        oranization_name = item.get("Name")
-                        if  type(oranization_name) == str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":oranization_name }
+                        organization_name = item.get("Name")
+                        if  type(organization_name) == str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
                 elif type(organization) == dict:
-                    oranization_name = organization.get("Name")
-                    if  type(oranization_name) == str:
-                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":oranization_name }
+                    organization_name = organization.get("Name")
+                    if  type(organization_name) is str:
+                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
             except:
                 # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                 pass
@@ -109,12 +109,12 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
             # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
             try:
                 grant = project["Project"]["ProjectDescr"]["Grant"]
-                if type(grant) == list:
+                if type(grant) is list:
                     for i, item in enumerate(grant):
                         agency = item.get("Agency")
-                        if type(agency) == str:
+                        if type(agency) is str:
                             doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content":agency }
-                elif type(grant) == dict:
+                elif type(grant) is dict:
                     agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
                     if  type(agency) == str:
                         doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content":agency }
