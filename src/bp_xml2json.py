@@ -11,7 +11,7 @@ from bp_xref import get_relation
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
-jsonl_output = "bioproject.jsonl"
+jsonl_output = "bioproject_t.jsonl"
 sra_accessions_path = None
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
@@ -97,11 +97,11 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                     for i, item in enumerate(organization):
                         oranization_name = item.get("Name")
                         if  type(oranization_name) == str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":oranization_name }
                 elif type(organization) == dict:
                     oranization_name = organization.get("Name")
                     if  type(oranization_name) == str:
-                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"abbr": orgnization_name, "content":orgnization_name }
+                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":oranization_name }
             except:
                 # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                 pass
@@ -210,8 +210,6 @@ def dbxref(accession: str) -> dict:
         # typeごとにcountを出力
         dbXrefsStatistics.append({"type": type, "count": len(values)})
     dct = {"dbXrefs": dbXrefs, "dbXrefsStatistics": dbXrefsStatistics}
-
-
     return dct
 
 
