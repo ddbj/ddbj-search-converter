@@ -5,6 +5,7 @@ import sys
 import re
 from datetime import datetime
 import argparse
+import requests
 from typing import NewType, List
 
 from bp_xref import get_relation
@@ -16,8 +17,6 @@ sra_accessions_path = None
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
 parser.add_argument("sra_accessions")
-
-# 利用しないため廃止を検討
 parser.add_argument("center", nargs="?", default=None)
 
 
@@ -212,6 +211,34 @@ def dbxref(accession: str) -> dict:
     return dct
 
 
+def dict2es(docs: List[dict]):
+    """
+    requestsでElasticsearchにndjsonをPOSTする
+    POSTするndjsonにはindex行を挿入し改行コードで連結する
+    Args:
+        docs (List[dict]): 
+    """
+    post_lst = []
+    for doc in docs:
+        post_lst.append({"index": {"_index": "bioproject", "_id": doc["accession"]}})
+        doc.pop("accession")
+        post_lst.append(doc)
+    post_data = "\n".join(json.dumps(d) for d in post_lst) + "\n"
+    headers = {"Content-Type": "application/x-ndjson"}
+    res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
+
+    if res.status_code == 200 or res.status_code == 201:
+        pass
+    else:
+        # Todo: jsonlをファイルに残すオプションを利用したいので,
+        # エラーメッセージ関係はprintしない。error.txt等に残す
+        print(f"Error: {res.status_code} - {res.text}")
+        print(docs[0]["accession"], "-")
+
+    # POSTするjsonlをprint()しpyの結果をファイルにリダイレクションするとするとjsonlも残すことができる
+    # print(post_data)
+
+
 def dict2jsonl(docs: List[dict]):
     """
     dictをjsonlに変換して出力する
@@ -225,10 +252,6 @@ def dict2jsonl(docs: List[dict]):
             f.write("\n")
 
 
-def dict2es():
-    pass
-
-
 def clear_element(element):
     element.clear()
     while element.getprevious() is not None:
@@ -236,6 +259,7 @@ def clear_element(element):
             del element.getparent()[0]
         except:
             print("clear_element Error")
+
 
 def test_bioproject(file:FilePath, center=None) -> dict:
     """
