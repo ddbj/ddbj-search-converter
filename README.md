@@ -25,18 +25,20 @@ cd ./src
 python import_sra_accessions.py <SRA_Accessions file paht> <accessions_db_path>
 ```
 
-3. bioproject.xmlをdictに変換すると同時にsra_accessionsより関係データを生成しjsonlに書き出す
+3. bioproject.xmlをdictに変換すると同時にsra_accessionsより関係データを生成しElasticsearchにバルクインサートする（またはjsonlに書き出す）
 
 ```
-python bp_xml2json.py <bioproject_xml_path> <accessions_db_path> 
+python bp_xml2es.py <bioproject_xml_path> <accessions_db_path> 
 ```
 
-bioproject.xmlからarchive="DDBJ"のエントリのみをjsonlに変換する場合はセンター名をオプションとして追記する
+ddbj_core_bioproject.xmlからjsonlに変換する場合はセンター名をオプションとして追記する
 ```
-python bp_xml2json.py <bioproject_xml_path> <accessions_db_path> ddbj
+python bp_xml2json.py <bioproject_xml_path> <accessions_db_path> ddbj_core
 ```
 
 4. Elasticsearchへインポート
+
+bp_xml2esはpythonから直接データをElasticsearchにバルクインサートするが個別にjsonlを挿入したい場合下記のスクリプトを使う
 
 DDBJに限定したのBioProjectの場合は生成したbioproject.jsonlのファイルサイズがbulk APIの制限を超えないため、ファイルをそのままimportする（index名はjsonlのヘッダ行に含まれるので指定しない）。
 

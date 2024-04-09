@@ -3,6 +3,7 @@ import xmltodict
 import json
 import sys
 import re
+import os
 from datetime import datetime
 import argparse
 import requests
@@ -30,6 +31,12 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
     batch_sizeごとにlocalhostのESにbulkインポートする
     """
     context = etree.iterparse(file, tag="Package", recover=True)
+    # ddbj_core_bioprojectの場合
+    if center == "ddbj_core":
+        ddbj_core = True
+        center = None
+    else:
+        ddbj_core = False
 
     i = 0
     docs:list[dict] = []
@@ -72,37 +79,10 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                 description = None
                 title = None
 
-            now = datetime.now()
-            # submittedが取得できない場合datetime.now()を渡す
-            submitted = project["Submission"].get("submitted", now.strftime("%Y-%m-%dT00:00:00Z"))
-            last_update = project["Submission"].get("last_update", None)
-
             try:
                 published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
             except:
                 published = now.strftime("%Y-%m-%dT00:00:00Z")
-
-            try:
-                status = project["Submission"]["Description"]["Access"]
-            except:
-                status = "public"
-
-            # Organization.Nameの型をobjectに統一する
-            # Todo:処理速度を上げるため内包表記にする
-            try:
-                organization = project["Submission"]["Description"]["Organization"]
-                if type(organization) == list:
-                    for i, item in enumerate(organization):
-                        organization_name = item.get("Name")
-                        if  type(organization_name) == str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
-                elif type(organization) == dict:
-                    organization_name = organization.get("Name")
-                    if  type(organization_name) is str:
-                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
-            except:
-                # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
-                pass
 
             # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
             try:
@@ -150,7 +130,52 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                     doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:256]
             except:
                 pass
-                
+
+
+            if ddbj_core is False:
+            # ddbj_coreのフラグがない場合の処理を記述
+            # ddbj_coreeにはSubmissionの下の属性が無いため以下の処理を行わない
+                try:
+                    status = project["Submission"]["Description"]["Access"]
+                except:
+                    status = "public"
+
+                now = datetime.now()
+                # submittedが取得できない場合datetime.now()を渡す
+                submitted = project["Submission"].get("submitted", now.strftime("%Y-%m-%dT00:00:00Z"))
+                last_update = project["Submission"].get("last_update", None)
+
+
+                # Organization.Nameの型をobjectに統一する
+                # Todo:処理速度を上げるため内包表記にする
+                try:
+                    organization = project["Submission"]["Description"]["Organization"]
+                    if type(organization) == list:
+                        for i, item in enumerate(organization):
+                            organization_name = item.get("Name")
+                            if  type(organization_name) == str:
+                                doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
+                    elif type(organization) == dict:
+                        organization_name = organization.get("Name")
+                        if  type(organization_name) is str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
+                except:
+                    # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
+                    pass
+            else:
+                # ファイル情報の取得
+                stat = os.stat(file)
+                # 生成日時の取得
+                created_time = datetime.fromtimestamp(stat.st_ctime) 
+                # ddbj_core_bioproject.xmlから変換する場合
+                # submittedは処理日の値を利用する（要確認）
+                # now = datetime.now()
+                submitted = created_time.strftime("%Y-%m-%dT00:00:00Z")
+                last_update = created_time.strftime("%Y-%m-%dT00:00:00Z")
+                # Todo確認：ddbj_core_bioprojectのstatusはpublicする
+                status = "public"
+
+            
             doc["organism"] = organism
             doc["description"] = description
             doc["title"] = title
@@ -169,11 +194,13 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
         if i > batch_size:
             i = 0
             dict2es(docs)
+            #dict2jsonl(docs)
             docs = []
 
     if i > 0:
         # 処理の終了時にbatch_sizeに満たない場合、未処理のデータを書き出す
         dict2es(docs)
+        #dict2jsonl(docs)
 
 
 def common_object(accession: str) -> dict:
@@ -233,7 +260,6 @@ def dict2es(docs: List[dict]):
         # Todo: jsonlをファイルに残すオプションを利用したいので,
         # エラーメッセージ関係はprintしない。error.txt等に残す
         print(f"Error: {res.status_code} - {res.text}")
-        print(docs[0]["accession"], "-")
 
     # POSTするjsonlをprint()しpyの結果をファイルにリダイレクションするとするとjsonlも残すことができる
     # print(post_data)
