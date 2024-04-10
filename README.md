@@ -31,10 +31,8 @@ python import_sra_accessions.py <SRA_Accessions file paht> <accessions_db_path>
 python bp_xml2es.py <bioproject_xml_path> <accessions_db_path> 
 ```
 
-ddbj_core_bioproject.xmlからjsonlに変換する場合はセンター名をオプションとして追記する
-```
-python bp_xml2json.py <bioproject_xml_path> <accessions_db_path> ddbj_core
-```
+インポートするxmlがbioproject.xmlでもddbj_core_bioproject.xmlでも自動的にファイルのタイプに合わせた処理が行われます。
+
 
 4. Elasticsearchへインポート
 

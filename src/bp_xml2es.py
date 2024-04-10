@@ -19,11 +19,11 @@ parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
 parser.add_argument("sra_accessions")
 parser.add_argument("center", nargs="?", default=None)
+ddbj_bioproject_name = "ddbj_core"
 
 
 args = parser.parse_args()
 
-# Todo: テスト・例外処理・ロギングの実装
 
 def xml2jsonl(file:FilePath, center=None) -> dict:
     """
@@ -32,7 +32,9 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
     """
     context = etree.iterparse(file, tag="Package", recover=True)
     # ddbj_core_bioprojectの場合
-    if center == "ddbj_core":
+    # Todo: オプションではなくファイル名が"*ddbj_core*のケースという処理に変更する
+    file_name = os.path.basename(file)
+    if ddbj_bioproject_name in file_name:
         ddbj_core = True
         center = None
     else:
