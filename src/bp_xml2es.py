@@ -31,8 +31,7 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
     batch_sizeごとにlocalhostのESにbulkインポートする
     """
     context = etree.iterparse(file, tag="Package", recover=True)
-    # ddbj_core_bioprojectの場合
-    # Todo: オプションではなくファイル名が"*ddbj_core*のケースという処理に変更する
+    # ファイル名が"*ddbj_core*のケースに処理を分岐するフラグを生成する
     file_name = os.path.basename(file)
     if ddbj_bioproject_name in file_name:
         ddbj_core = True
@@ -165,17 +164,25 @@ def xml2jsonl(file:FilePath, center=None) -> dict:
                     # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                     pass
             else:
-                # ファイル情報の取得
-                stat = os.stat(file)
-                # 生成日時の取得
-                created_time = datetime.fromtimestamp(stat.st_ctime) 
+                # ファイル生成日の日付を利用する場合はstatのコメントを外すファイル情報の取得
+                # stat = os.stat(file)
+                #created_time = datetime.fromtimestamp(stat.st_ctime) 
                 # ddbj_core_bioproject.xmlから変換する場合
-                # submittedは処理日の値を利用する（要確認）
+                # submittedは処理日の値を利用する（要確認）もしくはnullを設定する
                 # now = datetime.now()
-                submitted = created_time.strftime("%Y-%m-%dT00:00:00Z")
-                last_update = created_time.strftime("%Y-%m-%dT00:00:00Z")
-                # Todo確認：ddbj_core_bioprojectのstatusはpublicする
+                # submitted = created_time.strftime("%Y-%m-%dT00:00:00Z")
+                submitted = None
+                # last_update = created_time.strftime("%Y-%m-%dT00:00:00Z")
+                last_update = None
                 status = "public"
+                try:
+                    organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
+                    name = organism_obj.get("OrganismName")
+                    identifier = organism_obj.get("taxID")
+                    organism = {"identifier": identifier, "name": name}
+                except:
+                    pass
+
 
             
             doc["organism"] = organism

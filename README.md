@@ -34,17 +34,24 @@ python bp_xml2es.py <bioproject_xml_path> <accessions_db_path>
 インポートするxmlがbioproject.xmlでもddbj_core_bioproject.xmlでも自動的にファイルのタイプに合わせた処理が行われます。
 
 
-4. Elasticsearchへインポート
+4.1 Elasticsearchへjsonlからbulkインサートを行う場合
 
-bp_xml2esはpythonから直接データをElasticsearchにバルクインサートするが個別にjsonlを挿入したい場合下記のスクリプトを使う
-
-DDBJに限定したのBioProjectの場合は生成したbioproject.jsonlのファイルサイズがbulk APIの制限を超えないため、ファイルをそのままimportする（index名はjsonlのヘッダ行に含まれるので指定しない）。
+bp_xml2esはpythonから直接データをElasticsearchにバルクインサートするため、bulk apiを叩く必要はないが、
+個別にjsonlを挿入したい場合下記のスクリプトを使う
 
 ```
 curl -H "Content-Type: application/json" -X POST http://localhost:9200/_bulk?pretty --data-binary @bioproject.jsonl
 ```
 
-通常bioproject.jsonlのファイルサイズは100Mを超えるため、シェルスクリプトで適度なサイズに分割してからし分割したファイルごとにbulk importする
+ddbj_core_bioproject.xmlから生成したbioproject.jsonlのファイルサイズはbulk APIの制限を超えないため、ファイルをそのままimportする（index名はjsonlのヘッダ行に含まれるので指定しない）。
+
+bp_xml2es.pyからjsonlをファイルとして書き出すには以下の２つの方法をとることができる。
+
+a. xml2jsonl関数で処理の最後にdict2jsonl()を追加する。この関数はElasticsearchにbulkインサートするオブジェクトと同様のオブジェクトをファイルとして書き出す
+b. もしくはprint文でbulkインサートするオブジェクトを出力し、xml2es.pyの出力をファイルにリダイレクトすることでjsonlをファイルとして残すことができる
+
+
+4.2 通常bioproject.jsonlのファイルサイズは100Mを超えるため、シェルスクリプトで適度なサイズに分割してからし分割したファイルごとにbulk importする
 
 ```
 cd src/batch
