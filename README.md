@@ -12,57 +12,26 @@ pip install -r requirements.txt
 
 ## 利用方法
 
-### bioproject.jsonlの生成とElasticSearchへのインポート
-
-1. bioproject.xml, SRA_Accessions.tabをダウンロードする。
-__それぞれのファイルの準備方法については検討__
-
-2. SRA_Accessions.tabをsqliteのtableに変換（60min程度の処理時間）
-sliteはdb, table共にあらかじめ用意しておく必要は無い
+### bioproject.jsonlの生成
 
 ```
-cd ./src
-python import_sra_accessions.py <SRA_Accessions file paht> <accessions_db_path>
+cd ./tasks/ddbj-search-converter/src
+source .venv/bin/activate
+python bp_xml2jsonl.py  /usr/local/resources/bioproject/bioproject.xml bioproject.jsonl
 ```
 
-3. bioproject.xmlをdictに変換すると同時にsra_accessionsより関係データを生成しElasticsearchにバルクインサートする（またはjsonlに書き出す）
+### JSONLを分割
 
 ```
-python bp_xml2es.py <bioproject_xml_path> <accessions_db_path> 
+python split_jsonl.py bioproject.jsonl ../../bioproject_jsonl
 ```
+bioproject_json/に作業日付いたディレクトリが作られ分割されたファイルが書き出される
 
-インポートするxmlがbioproject.xmlでもddbj_core_bioproject.xmlでも自動的にファイルのタイプに合わせた処理が行われます。
-
-
-4.1 Elasticsearchへjsonlからbulkインサートを行う場合
-
-bp_xml2esはpythonから直接データをElasticsearchにバルクインサートするため、bulk apiを叩く必要はないが、
-個別にjsonlを挿入したい場合下記のスクリプトを使う
+### ファイルの差分リストを生成しElasticsearchにbulk insertする
 
 ```
-curl -H "Content-Type: application/json" -X POST http://localhost:9200/_bulk?pretty --data-binary @bioproject.jsonl
+python bulk_insert_renewals.py {日付1} {日付2}
 ```
-
-ddbj_core_bioproject.xmlから生成したbioproject.jsonlのファイルサイズはbulk APIの制限を超えないため、ファイルをそのままimportする（index名はjsonlのヘッダ行に含まれるので指定しない）。
-
-bp_xml2es.pyからjsonlをファイルとして書き出すには以下の２つの方法をとることができる。
-
-a. xml2jsonl関数で処理の最後にdict2jsonl()を追加する。この関数はElasticsearchにbulkインサートするオブジェクトと同様のオブジェクトをファイルとして書き出す
-b. もしくはprint文でbulkインサートするオブジェクトを出力し、xml2es.pyの出力をファイルにリダイレクトすることでjsonlをファイルとして残すことができる
+作業日と前回の作業日を引数に与えるとその日付のディレクトリから差分ファイルを抽出してElasticsearchにbulk insertする
 
 
-4.2 通常bioproject.jsonlのファイルサイズは100Mを超えるため、シェルスクリプトで適度なサイズに分割してからし分割したファイルごとにbulk importする
-
-```
-cd src/batch
-# 分割
-sh split.sh
-# bulk import
-sh bulk_import.sh
-```
-
-
-## 要確認
-- dbXrefのulrがlocaolhost:8080/resource/biosample/SAME*等でありこのリンクは有効なのだがどの段階でxmlのサブセットを生成しているのか・必要なのか
-- DDBJ ES共通項目のVisibilityについて（何を参照しているか）
-- ES共通項目のurl, downloadurl, distributionについて（localhostの参照は意味があるのか、メンテナンスされているか）
