@@ -27,6 +27,13 @@ def split_file(filename:FilePath,output:FilePath, n):
         filename (_type_): _description_
         n (_type_): _description_
     """
+    # 出力先を設定
+    today = datetime.datetime.now()
+    today_str = today.strftime('%Y%m%d')
+    output_path = f"{output}/{today_str}"
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+        
     with open(filename, 'r') as f:
         lines = toolz.partition(n, f.readlines())
         for i, part in enumerate(lines):
