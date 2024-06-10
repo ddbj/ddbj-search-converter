@@ -1,5 +1,8 @@
 # ddbj-search-converter
 
+- BioProject.xmlをElasticsearchに読み込み可能なJSON Line形式に変換し分割したファイルを
+作業日毎のディレクトリに保存します。
+- 連続する作業日のディレクトリを比較し更新の見られたファイルのみElasticsearchに保存します。
 
 ## 環境の構築
 
