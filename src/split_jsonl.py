@@ -1,6 +1,7 @@
 import os
 import toolz
 import argparse
+import datetime
 from typing import NewType
 
 FilePath = NewType('FilePath', str)
@@ -33,12 +34,12 @@ def split_file(filename:FilePath,output:FilePath, n):
     output_path = f"{output}/{today_str}"
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-        
+
     with open(filename, 'r') as f:
         lines = toolz.partition(n, f.readlines())
         for i, part in enumerate(lines):
             # print(f"{output}/{filename}.part{i}")
-            with open(f"{output}/bioproject_part{i}.jsonl", 'w') as out:
+            with open(f"{output_path}/bioproject_part{i}.jsonl", 'w') as out:
                 out.writelines(part)
 
 
