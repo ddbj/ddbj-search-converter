@@ -3,11 +3,12 @@ import xmltodict
 import json
 import sys
 import re
+import csv
 import os
 from datetime import datetime
 import argparse
 import requests
-from typing import NewType, List
+from typing import NewType, List, Tuple
 
 # from bp_xref import get_relation # togoidから取得する予定のため廃止
 
@@ -17,7 +18,10 @@ batch_size = 200
 sra_accessions_path = None
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
+# ddbj_core_bioproject.xmlの場合はoutputを指定する必要がない
+# 正しこの仕様については要検討
 parser.add_argument("output")
+parser.add_argument("--acc", help="ddbj accessions.tabのファイルパスを入力")
 parser.add_argument("-f",  action='store_true', help="Insert all records cases with f option")
 # parser.add_argument("sra_accessions") ## 廃止予定
 # parser.add_argument("center", nargs="?", default=None) ## 廃止
@@ -31,12 +35,14 @@ def xml2jsonl(input_file:FilePath) -> dict:
     batch_sizeごとにlocalhostのESにbulkインポートする
     """
     # ファイル名が"*ddbj_core*のケースに処理を分岐するフラグを立てる
+    # inputに"ddbj_core"が含まれる場合フラグがたつ
     file_name = os.path.basename(input_file)
     is_full_register = args.f
 
+    # ddbj_coreからの入力のFlag.
     if ddbj_bioproject_name in file_name:
         ddbj_core = True
-        center = None
+        accessions_data = DdbjCoreData()
     else:
         ddbj_core = False
 
@@ -132,8 +138,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
 
             if ddbj_core is False:
-            # ddbj_coreのフラグがない場合の処理を記述
-            # ddbj_coreeにはSubmissionの下の属性が無いため以下の処理を行わない
+                # ddbj_coreのフラグがない場合の処理を記述
+                # ddbj_coreeにはSubmissionの下の属性が無いため以下の処理を行わない
                 try:
                     status = project["Submission"]["Description"]["Access"]
                 except:
@@ -162,8 +168,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                     pass
             else:
-                submitted = None
-                last_update = None
+                # accessions.tabよりdateを取得
+                submitted, published, last_update = accessions_data.ddbj_dates(accession)
                 status = "public"
                 try:
                     organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
@@ -172,8 +178,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     organism = {"identifier": identifier, "name": name}
                 except:
                     pass
-
-
             
             doc["organism"] = organism
             doc["description"] = description
@@ -194,6 +198,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
             i = 0
             if is_full_register:
                 dict2esjsonl(docs)
+            elif ddbj_core:
+                # ddbj_core_bioprojctのレコードは直接ESにbulk insertする
+                dict2es(docs)
             else:
                 dict2jsonl(docs)
             docs = []
@@ -202,6 +209,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
         # 処理の終了時にbatch_sizeに満たない場合、未処理のデータを書き出す
         if is_full_register:
             dict2esjsonl(docs)
+        elif ddbj_core:
+            dict2es(docs)
         else:
             dict2jsonl(docs)
 
@@ -226,7 +235,7 @@ def common_object(accession: str) -> dict:
 def dbxref(accession: str) -> dict:
     """
     BioProjectに紐づくSRAを取得し、dbXrefsとdbXrefsStatisticsを生成して返す
-    !!dbXrefsはtogo-idから取得するためこの関数は廃止する方向
+    !!dbXrefsはtogo-idから取得するためこの関数は廃止する
     """
     dbXrefs = []
     dbXrefsStatistics = []
@@ -314,6 +323,28 @@ def dict2esjsonl(docs: List[dict]):
         logs(f"Error: {res.status_code} - {res.text}")
 
 
+def dict2es(docs: List[dict]):
+    """
+    documentsをesにbulk insertする
+    Args:
+        docks (List[dict]): 
+    """
+    post_lst = []
+    for doc in docs:
+        # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
+        header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
+        post_lst.append(header)
+        doc.pop("accession")
+        post_lst.append(doc)
+    post_data = "\n".join(json.dumps(d) for d in post_lst) + "\n"
+    headers = {"Content-Type": "application/x-ndjson"}
+    res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
+    if res.status_code == 200 or res.status_code == 201:
+        pass
+    else:
+        logs(f"Error: {res.status_code} - {res.text}")
+
+
 def clear_element(element):
     element.clear()
     while element.getprevious() is not None:
@@ -341,6 +372,28 @@ def rm_old_file(file_path:FilePath):
     # ファイルの存在を確認する
     if os.path.exists(file_path):
         os.remove(file_path)
+
+
+class DdbjCoreData():
+    def __init__(self):
+        """
+        accessions.tabを辞書化する
+        """
+        # accessions辞書化
+        with open(args.acc, "r") as input_f:
+            reader = csv.reader(input_f, delimiter="\t")
+        d = {}
+        for row in reader:
+            d[row[0]] = (row[1], row[2], row[3])
+        self.acc_dict = d
+
+    def ddbj_dates(self, accession) -> Tuple[str]:
+        """
+        ddbjのaccessions.tabよりaccessionに対応する
+        date_created, date_published, date_modifiedフィールドの値を変える
+        """
+        # 辞書よりタプルを返す
+        return self.acc_dict[accession]
 
 
 if __name__ == "__main__":
