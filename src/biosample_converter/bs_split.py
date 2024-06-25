@@ -30,7 +30,7 @@ def split_files(file_path: FilePath):
         for i, part in enumerate(lines):
             # print(f"{output}/{filename}.part{i}")
             # 元のファイル名に処理ごとの連番をつける
-            with open(f"{output_path}/{original_file_name}_{i}.jsonl", "w") as out:
+            with open(f"{output_path}/{original_file_name[-2]}_{i}.jsonl", "w") as out:
                 out.writelines(part)
 
 

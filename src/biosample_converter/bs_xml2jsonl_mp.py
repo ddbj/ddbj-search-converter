@@ -85,8 +85,7 @@ def clear_element(element):
         del element.getparent()[0]
 
 def main():
-    # プロセスの数はファイルの分割数に合わせる
-    p = Pool(5)
+    p = Pool(20)
     try:
         # 要プロセスと分割ファイル（ディレクトリ）の紐付けができるようなリストを与える
         # cpu_count()次第で分割数は変える
