@@ -15,7 +15,9 @@ args = parser.parse_args()
 
 
 def convert(input_num:str):
-    input_path = args.input + "/split_bs_" + input_num + ".xml"
+    #input_path = args.input + "/split_bs_" + input_num + ".xml"
+    # 一時ファイルの置き方によってパスが変わる。出力場所について要検討
+    input_path = args.input + "/bs_" + input_num + "_modified.xml"
     print(input_path)
     xml2dict(input_path, input_num)
 
@@ -64,7 +66,9 @@ def dict2esjsonls(docs: List[dict], n):
     Args:
         docks (List[dict]): _description_
     """
-    output_path = args.output + "/split_bs_" + n + ".jsonl"
+    # output_path = args.output + "/split_bs_" + n + ".jsonl"
+    # 一時ファイルの置き方によってoutput_pathが変わる。置き方要検討
+    output_path = args.output + "/bs_" + n + ".jsonl"
     with open(output_path, "a") as f:
         for doc in docs:
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
@@ -81,10 +85,13 @@ def clear_element(element):
         del element.getparent()[0]
 
 def main():
-    base_path = args.input
+    # プロセスの数はファイルの分割数に合わせる
     p = Pool(5)
     try:
-        p.map(convert, ["1","2","3","4","5"])
+        # 要プロセスと分割ファイル（ディレクトリ）の紐付けができるようなリストを与える
+        # cpu_count()次第で分割数は変える
+        files = [str(x) for x in list(range(1, 60))]
+        p.map(convert, files)
     except Exception as e:
         print("main: ", e)
 

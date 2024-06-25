@@ -3,7 +3,7 @@ import requests
 import json
 import argparse
 from typing import NewType, List
-from bp_diffs import get_diff_list
+from bioproject_converter.bp_diffs import get_diff_list
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
