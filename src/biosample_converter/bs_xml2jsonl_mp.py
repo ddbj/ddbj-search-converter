@@ -16,20 +16,11 @@ parser.add_argument("output")
 args = parser.parse_args()
 
 
-def convert(input_num:str):
-    #input_path = args.input + "/split_bs_" + input_num + ".xml"
-    # 一時ファイルの置き方によってパスが変わる。出力場所について要検討
-    input_path = args.input + "/bs_" + input_num + "_modified.xml"
-    print(input_path)
-    xml2dict(input_path, input_num)
-
-
-def xml2dict(input:FilePath, input_num:str):
+def convert(input:FilePath):
     context = etree.iterparse(input, tag="BioSample")
     # 開発用のcnt_maxで変換を終える機能
     #cnt = 0
     #cnt_max = 100000
-    print("n: ", input_num)
     i = 0
     docs = []
     for events, element in context:
@@ -67,7 +58,7 @@ def xml2dict(input:FilePath, input_num:str):
         clear_element(element)
         if i > batch_size:
             i = 0
-            dict2jsonls(docs, input_num)
+            dict2jsonls(docs, input)
             docs = []
 
         #if cnt > cnt_max:
@@ -76,17 +67,18 @@ def xml2dict(input:FilePath, input_num:str):
         #    break
 
     if i > 0:
-        dict2jsonls(docs, input_num)
+        dict2jsonls(docs, input)
 
-def dict2jsonls(docs: List[dict], n):
+
+def dict2jsonls(docs: List[dict], input: FilePath):
     """
     dictをjsonlファイルに書き出す
     Args:
         docks (List[dict]): _description_
     """
-    # output_path = args.output + "/split_bs_" + n + ".jsonl"
-    # 一時ファイルの置き方によってoutput_pathが変わる。置き方要検討
-    output_path = args.output + "/bs_" + n + ".jsonl"
+    # output_pathはinputの拡張子をxmlからjsonlに変更した文字列
+    # 拡張子を変更
+    output_path = os.path.splitext(input)[0] + ".jsonl"
     with open(output_path, "a") as f:
         for doc in docs:
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
@@ -107,7 +99,7 @@ def main():
     p = Pool(32)
     try:
         target_dir = args.input
-        target_pattern = "*.jsonl"
+        target_pattern = "*.xml"
         file_list = glob.glob(os.path.join(target_dir, target_pattern))
         p.map(convert, file_list)
     except Exception as e:
