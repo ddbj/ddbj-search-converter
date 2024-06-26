@@ -1,6 +1,8 @@
 from lxml import etree
+import os
 import json
 import xmltodict
+import glob
 from typing import NewType, List
 from multiprocessing import Pool
 import argparse
@@ -102,14 +104,14 @@ def clear_element(element):
 
 def main():
     # cpu_count()次第で分割数は変える
-    p = Pool(40)
+    p = Pool(32)
     try:
-        # Todo: filesはディレクトリの全てのxmlファイルリストを渡す
-        files = [str(x) for x in list(range(1, 60))]
-        p.map(convert, files)
+        target_dir = args.input
+        target_pattern = "*.jsonl"
+        file_list = glob.glob(os.path.join(target_dir, target_pattern))
+        p.map(convert, file_list)
     except Exception as e:
         print("main: ", e)
-
 
 
 if __name__ == "__main__":
