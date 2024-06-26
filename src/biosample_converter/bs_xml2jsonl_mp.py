@@ -77,7 +77,6 @@ def dict2jsonls(docs: List[dict], input: FilePath):
         docks (List[dict]): _description_
     """
     # output_pathはinputの拡張子をxmlからjsonlに変更した文字列
-    # 拡張子を変更
     output_path = os.path.splitext(input)[0] + ".jsonl"
     with open(output_path, "a") as f:
         for doc in docs:
