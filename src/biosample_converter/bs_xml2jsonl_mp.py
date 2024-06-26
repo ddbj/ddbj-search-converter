@@ -101,10 +101,10 @@ def clear_element(element):
         del element.getparent()[0]
 
 def main():
-    p = Pool(20)
+    # cpu_count()次第で分割数は変える
+    p = Pool(40)
     try:
-        # 要プロセスと分割ファイル（ディレクトリ）の紐付けができるようなリストを与える
-        # cpu_count()次第で分割数は変える
+        # Todo: filesはディレクトリの全てのxmlファイルリストを渡す
         files = [str(x) for x in list(range(1, 60))]
         p.map(convert, files)
     except Exception as e:

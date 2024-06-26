@@ -75,7 +75,7 @@ def main(former:FilePath, later:FilePath):
         # target_pattern = "bs_1_0.jsonl"
         file_list = glob.glob(os.path.join(later, target_pattern))
         # multiprocessで呼び出す
-        p = Pool(10)
+        p = Pool(40)
         p.map(bulk_insert, file_list)
 
 
