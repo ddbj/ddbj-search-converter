@@ -33,7 +33,6 @@ def xml2dict(input:FilePath, input_num:str):
     for events, element in context:
         if element.tag == "BioSample":
             doc = {}
-
             xml_str = etree.tostring(element)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["BioSample"] = metadata["BioSample"]
@@ -41,7 +40,24 @@ def xml2dict(input:FilePath, input_num:str):
             doc["dateCreated"] = doc["BioSample"].get("submission_date", None)
             doc["dateModified"] = doc["BioSample"].get("last_update", None)
             doc["datePublished"] = doc["BioSample"].get("publication_date", None)
-            
+
+            # Owner.Nameが文字列が記述されているケースの処理
+            try:
+                owner_name = doc["BioSample"]["Owner"]["Name"]
+                # owner_nameの型がstrであれば {"abbreviation": val, "content": val}に置き換える
+                if isinstance(owner_name, str):
+                    doc["BioSample"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
+            except:
+                pass
+
+            # Models.Modelにobjectが記述されているケースの処理
+            try:
+                models_model = doc["BioSample"]["Models"]["Model"]
+                if isinstance(models_model, dict):
+                    doc["BioSample"]["Models"]["Model"] = models_model.get("content", None)
+            except:
+                pass
+
             docs.append(doc)
             i += 1
             #cnt += 1
@@ -49,7 +65,7 @@ def xml2dict(input:FilePath, input_num:str):
         clear_element(element)
         if i > batch_size:
             i = 0
-            dict2esjsonls(docs, input_num)
+            dict2jsonls(docs, input_num)
             docs = []
 
         #if cnt > cnt_max:
@@ -58,9 +74,9 @@ def xml2dict(input:FilePath, input_num:str):
         #    break
 
     if i > 0:
-        dict2esjsonls(docs, input_num)
+        dict2jsonls(docs, input_num)
 
-def dict2esjsonls(docs: List[dict], n):
+def dict2jsonls(docs: List[dict], n):
     """
     dictをjsonlファイルに書き出す
     Args:
