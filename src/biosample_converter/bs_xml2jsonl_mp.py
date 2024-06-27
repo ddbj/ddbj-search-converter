@@ -14,9 +14,18 @@ parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("input")
 parser.add_argument("output")
 args = parser.parse_args()
+ddbj_biosample_name = "ddbj_biosample"
 
 
 def convert(input:FilePath):
+    # ddbj_coreからの入力のFlag.
+    file_name = os.path.basename(input)
+    if ddbj_biosample_name in file_name:
+        ddbj_biosample = True
+        # accessions_data = DdbjCoreData()
+    else:
+        ddbj_biosample = False
+
     context = etree.iterparse(input, tag="BioSample")
     # 開発用のcnt_maxで変換を終える機能
     #cnt = 0
@@ -33,6 +42,19 @@ def convert(input:FilePath):
             doc["dateCreated"] = doc["BioSample"].get("submission_date", None)
             doc["dateModified"] = doc["BioSample"].get("last_update", None)
             doc["datePublished"] = doc["BioSample"].get("publication_date", None)
+
+            # _idの設定
+            if ddbj_biosample:
+                # ddbj_biosample_set.xmlの場合
+                if isinstance(doc["BioSample"]["Ids"]["Id"], list):
+                    # doc["Ids"]["Id"]のnamespace == BioSampleのcontentを取得する
+                    bs_id = list(filter(lambda x: x["namespace"] == "BioSample", doc["BioSample"]["Ids"]["Id"]))
+                    doc["accession"] = bs_id[0]["content"]
+                else:
+                    doc["accession"] = doc["BioSample"]["Ids"]["Id"]["content"]
+
+            else:
+                doc["accession"] = doc["BioSample"].get("accession")
 
             # Owner.Nameが文字列が記述されているケースの処理
             try:
@@ -95,7 +117,9 @@ def clear_element(element):
 
 def main():
     # cpu_count()次第で分割数は変える
-    p = Pool(32)
+    #p = Pool(32)
+    # 開発環境用設定
+    p = Pool(6)
     try:
         target_dir = args.input
         target_pattern = "*.xml"
