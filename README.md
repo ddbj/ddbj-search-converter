@@ -53,26 +53,33 @@ python bs_bulk_insert.py <xmlが分割保存された一つ前の操作のディ
 
 ## bioproject.xmlのjsonl変換とElasticsearchの更新手順
 
-### bioproject.jsonlの生成
+### 1. 環境の準備
 
 ```
-cd ./tasks/ddbj-search-converter/src
+cd ./ddbj-search-converter/src
 source .venv/bin/activate
+cd biosample_converter
+```
+
+### 2. bioproject.jsonlの生成
+
+```
 python bp_xml2jsonl.py  /usr/local/resources/bioproject/bioproject.xml bioproject.jsonl
 ```
 
-### JSONLを分割
+### 3. JSONLを分割
 
 ```
-python split_jsonl.py bioproject.jsonl ../../bioproject_jsonl
+python split_jsonl.py bioproject.jsonl <分割したファイルを書き出すディレクトリ>
 ```
-bioproject_json/に作業日付いたディレクトリが作られ分割されたファイルが書き出される
+- <分割したファイルを書き出すディレクトリ>に作業日をディレクトリ名としたディレクトリが作られ分割されたファイルが書き出される
 
-### ファイルの差分リストを生成しElasticsearchにbulk insertする
+### 4. ファイルの差分リストを生成しElasticsearchにbulk insertする
 
 ```
 python bulk_insert_renewals.py {日付1} {日付2}
 ```
-作業日と前回の作業日を引数に与えるとその日付のディレクトリから差分ファイルを抽出してElasticsearchにbulk insertする
+- 作業日と前回の作業日を引数に与えるとその日付のディレクトリから差分ファイルを抽出してElasticsearchにbulk insertする
+- 最新のディレクトリとその直前の作業日のディレクトリの指定は、引数で渡さなくても自動的に取得されるよう改修予定です
 
 
