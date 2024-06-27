@@ -6,6 +6,8 @@ import json
 import argparse
 from multiprocessing import Pool
 from typing import NewType
+from bs_diffs import get_diff_list
+
 
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
@@ -56,17 +58,13 @@ def main(former:FilePath, later:FilePath):
     first_time = args.f
 
     # 更新分のjsonlのファイル名リストを取得
-    # diffs = get_diff_list(former, later)
+    diffs = get_diff_list(former, later)
 
     # リストから更新分ファイルを取得しbulk insertする
-    '''
     for file_name in diffs:
         # ファイルパスを生成（args.later）
         path = f"{later}/{file_name}"
-        with open(path, "r") as f:
-            d = f.read()
-            bulk_insert(d)
-    '''
+        bulk_insert(path)
 
     if first_time:
         # 指定するディレクトリのファイルリストを取得
