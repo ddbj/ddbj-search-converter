@@ -199,7 +199,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
             if is_full_register:
                 dict2esjsonl(docs)
             elif ddbj_core:
-                # ddbj_core_bioprojctのレコードは直接ESにbulk insertする
+                # 
+                # ddbj_core_bioprojctのレコードは直接ESにbulk insertする << 違う。同じディレクトリに書き出す
                 dict2es(docs)
             else:
                 dict2jsonl(docs)
@@ -210,6 +211,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
         if is_full_register:
             dict2esjsonl(docs)
         elif ddbj_core:
+            # 
             dict2es(docs)
         else:
             dict2jsonl(docs)
@@ -294,6 +296,7 @@ def dict2jsonl(docs: List[dict]):
                 f.write("\n")
             except:
                 print(doc)
+
 
 def dict2esjsonl(docs: List[dict]):
     """

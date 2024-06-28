@@ -20,8 +20,8 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
     """
     former_info = get_file_info(former)
     later_info = get_file_info(later)
-    unmated_info = get_unmatced_list(former_info, later_info)
-    return [x["filename"] for x in unmated_info]
+    unmached_info = get_unmached_list(former_info, later_info)
+    return [x["filename"] for x in unmached_info]
 
 
 def get_file_info(directory:FilePath) -> list:
@@ -54,7 +54,7 @@ def get_file_info(directory:FilePath) -> list:
     return file_info_lst
 
 
-def get_unmatced_list(formar:list, later:list)->list:
+def get_unmached_list(formar:list, later:list)->list:
     """
     二つのリストでfilenameが同じ情報を比較し一致しないファイルの情報を返す
     Args:
@@ -65,6 +65,10 @@ def get_unmatced_list(formar:list, later:list)->list:
         list: _description_
     """
     # 新しいjsonlのファイル情報と古いjsonlのファイル情報を比較
+    # 新しいディレクトリにしか存在しないファイルもリストに含める
+    formar_names = [x["filename"] for x in formar if x["filename"].endswith("jsonl")]
+    later_names = [x["filename"] for x in later if x["filename"].endswith("jsonl")]
+    new_in_later = set(later_names) ^ set(formar_names)
     unmatched_list = []
     for dct_l in later:
         for dct_f in formar:
@@ -72,6 +76,8 @@ def get_unmatced_list(formar:list, later:list)->list:
                 diff_dict = {k: v for k, v in dct_l.items() if dct_l["md5_hash"] != dct_f["md5_hash"]}
                 if diff_dict:
                     unmatched_list.append(diff_dict)
+
+    unmatched_list.extend([{"filename": x} for x in list(new_in_later)])
     return unmatched_list
 
 

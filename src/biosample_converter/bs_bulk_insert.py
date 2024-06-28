@@ -57,24 +57,25 @@ def main(former:FilePath, later:FilePath):
     # 初回のinsetのフラグを確認
     first_time = args.f
 
-    # 更新分のjsonlのファイル名リストを取得
-    diffs = get_diff_list(former, later)
-
-    # リストから更新分ファイルを取得しbulk insertする
-    for file_name in diffs:
-        # ファイルパスを生成（args.later）
-        path = f"{later}/{file_name}"
-        bulk_insert(path)
-
     if first_time:
         # 指定するディレクトリのファイルリストを取得
         target_pattern = "*.jsonl"
         # for test
         # target_pattern = "bs_1_0.jsonl"
         file_list = glob.glob(os.path.join(later, target_pattern))
+        print(file_list)
         # multiprocessで呼び出す
-        p = Pool(32)
+        p = Pool(12)
         p.map(bulk_insert, file_list)
+    else:
+        # 更新分のjsonlのファイル名リストを取得
+        diffs = get_diff_list(former, later)
+        # リストから更新分ファイルを取得しbulk insertする
+        for file_name in diffs:
+            # ファイルパスを生成（args.later）
+            path = f"{later}/{file_name}"
+            bulk_insert(path)
+
 
 
 if __name__ == "__main__":
