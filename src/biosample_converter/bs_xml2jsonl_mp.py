@@ -117,9 +117,9 @@ def clear_element(element):
 
 def main():
     # cpu_count()次第で分割数は変える
-    #p = Pool(32)
+    p = Pool(32)
     # 開発環境用設定
-    p = Pool(6)
+    #p = Pool(6)
     try:
         target_dir = args.input
         target_pattern = "*.xml"
