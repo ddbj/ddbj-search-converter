@@ -19,7 +19,10 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
         list: MD5が一致しないファイルのファイル名リスト
     """
     former_info = get_file_info(former)
+    print("former: ", len(former_info))
     later_info = get_file_info(later)
+    print("later: ", len(later_info))
+    print("file_info: ", len(former_info), len(later_info))
     unmached_info = get_unmached_list(former_info, later_info)
     return [x["filename"] for x in unmached_info]
 
@@ -35,21 +38,24 @@ def get_file_info(directory:FilePath) -> list:
     """
     file_info_lst = []
     for root, _, files in os.walk(directory):
+        print("ok")
         for filename in files:
-            try:
-                filepath = os.path.join(root, filename)
-                with open(filepath, 'rb') as f:
-                    data = f.read()
-                md5_hash = hashlib.md5(data).hexdigest()
-                file_info = {
-                    'filename': filename,
-                    'filepath': filepath,
-                    'size': os.path.getsize(filepath),
-                    'md5_hash': md5_hash,
-                }
-                file_info_lst.append(file_info)
-            except:
-                print("error?: ", filename)
+            ext = filename.split('.')[1]
+            if ext == "jsonl":
+                try:
+                    filepath = os.path.join(root, filename)
+                    with open(filepath, 'rb') as f:
+                        data = f.read()
+                        md5_hash = hashlib.md5(data).hexdigest()
+                        file_info = {
+                            'filename': filename,
+                            'filepath': filepath,
+                            'size': os.path.getsize(filepath),
+                            'md5_hash': md5_hash,
+                        }
+                        file_info_lst.append(file_info)
+                except:
+                    print("error?: ", filename)
 
     return file_info_lst
 
@@ -66,9 +72,9 @@ def get_unmached_list(formar:list, later:list)->list:
     """
     # 新しいjsonlのファイル情報と古いjsonlのファイル情報を比較
     # 新しいディレクトリにしか存在しないファイルもリストに含める
-    formar_names = [x["filename"] for x in formar if x["filename"].endswith("jsonl")]
-    later_names = [x["filename"] for x in later if x["filename"].endswith("jsonl")]
-    new_in_later = set(later_names) ^ set(formar_names)
+    #formar_names = [x["filename"] for x in formar if x["filename"].endswith("jsonl")]
+    #later_names = [x["filename"] for x in later if x["filename"].endswith("jsonl")]
+    #new_in_later = set(later_names) ^ set(formar_names)
     unmatched_list = []
     for dct_l in later:
         for dct_f in formar:
@@ -76,8 +82,6 @@ def get_unmached_list(formar:list, later:list)->list:
                 diff_dict = {k: v for k, v in dct_l.items() if dct_l["md5_hash"] != dct_f["md5_hash"]}
                 if diff_dict:
                     unmatched_list.append(diff_dict)
-
-    unmatched_list.extend([{"filename": x} for x in list(new_in_later)])
     return unmatched_list
 
 
@@ -87,5 +91,6 @@ if __name__ == "__main__":
     parser.add_argument("later")
     args = parser.parse_args()
     l = get_diff_list(args.former, args.later)
+    print("l: ", len(l))
     sorted_list = sorted(l, key=lambda x: int(re.findall(r'\d+', x)[0]))
-    print(sorted_list, len(sorted_list))
+    print(len(sorted_list))
