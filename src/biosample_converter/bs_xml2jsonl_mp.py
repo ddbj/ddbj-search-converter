@@ -43,6 +43,21 @@ def convert(input:FilePath):
             doc["dateModified"] = doc["BioSample"].get("last_update", None)
             doc["datePublished"] = doc["BioSample"].get("publication_date", None)
 
+            # Descriptionの子要素をDDBJ共通objectの値に変換する
+            try:
+                description = doc["BioSample"]
+                doc["title"] = description.get("Title", None)
+                organism_identifier = 
+                organism_name = 
+                doc["organism"] = {"identifier": organism_identifier, "name": organism_name}
+            except:
+                doc["description"] = ""
+                doc["title"] = ""
+            doc["status"] = "public"
+            doc["visibility"] = "unrestricted-access"
+            # dbxreをdblinkモジュールより取得
+            doc["dbXrefs"] = dbxref
+
             # _idの設定
             if ddbj_biosample:
                 # ddbj_biosample_set.xmlの場合

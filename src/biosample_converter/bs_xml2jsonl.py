@@ -8,6 +8,8 @@ import os
 import json
 from typing import NewType, List
 
+# bs_xml2jsonl_mp.pyで並列処理を行うため本モジュールは使わない（2024/7）
+
 FilePath = NewType('FilePath', str)
 batch_size = 10000
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")

@@ -187,9 +187,10 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["datePublished"] = published
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
+            # dbxreをdblinkモジュールより取得
+            doc["dbXrefs"] = dbxref
 
             doc.update(common_object(accession,))
-            # doc.update(dbxref(accession)) # togoidより取得予定
             docs.append(doc)
             i += 1
 
@@ -232,25 +233,6 @@ def common_object(accession: str) -> dict:
         "url": None
     }
     return d
-
-
-def dbxref(accession: str) -> dict:
-    """
-    BioProjectに紐づくSRAを取得し、dbXrefsとdbXrefsStatisticsを生成して返す
-    !!dbXrefsはtogo-idから取得するためこの関数は廃止する
-    """
-    dbXrefs = []
-    dbXrefsStatistics = []
-    xref = get_relation(sra_accessions_path, accession)
-    for key, values in xref.items():
-        # keyはobjectのtype、valuesはobjectのidentifierの集合
-        type = "biosample" if key == "biosample" else f"sra-{key}"
-        for v in values:
-            dbXrefs.append({"identifier": v, "type": type , "url": f"https://identifiers.org/sra-{key}/{v}"})
-        # typeごとにcountを出力
-        dbXrefsStatistics.append({"type": type, "count": len(values)})
-    dct = {"dbXrefs": dbXrefs, "dbXrefsStatistics": dbXrefsStatistics}
-    return dct
 
 
 def dict2es(docs: List[dict]):
@@ -380,6 +362,8 @@ def rm_old_file(file_path:FilePath):
 class DdbjCoreData():
     def __init__(self):
         """
+        - deplicated
+        - 別モジュールのdblink.get_dblinkで関係データは取得する
         accessions.tabを辞書化する
         """
         # accessions辞書化
