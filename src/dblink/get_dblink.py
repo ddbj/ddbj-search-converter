@@ -53,12 +53,15 @@ def get_dbxref(ids:List[str]) -> dict:
 def get_related_ids(id:str) -> list:
     """
     全ての関係テーブルから指定したIDに関連するIDを取得する
+    モジュールとして get_related_ids(id)
     Args:
         id (str): 捜査対象のID
     return: 関係テーブルの引数のIDをどちらかに含む相補的なIDリスト
     """
-    # SQLiteデータベースのパス
-    sqlite_db_path = 'ddbj_dblink.db'
+    related_ids = []
+
+    # dblinkのSQLiteデータベースのパス
+    sqlite_db_path = 'ddbj_dblink.sqlite'
     conn = sqlite3.connect(sqlite_db_path)
     c = conn.cursor()
 
@@ -80,16 +83,40 @@ def get_related_ids(id:str) -> list:
         "ncbi_biosample_bioproject",
         "trace_biosample_taxon2bs"
     ]
-
-    related_ids = []
+    
     for table_name in table_names:
         c.execute(f'SELECT * FROM {table_name} WHERE field1 = ? OR field2 = ?', (id, id))
         for row in c.fetchall():
             related_ids.append(row[0])
             related_ids.append(row[1])
-
     conn.close()
-    # Todo: related_idsから重複を削除する・自分自身を削除する
+
+    # TODO: sra_accessions.sqliteの関係データを取得しrelated_idsに追加する
+    acc_table_names = [
+        "analysis_submission",      
+        "experiment_bioproject",
+        "experiment_biosample",
+        "experiment_sample",
+        "experiment_study", 
+        "run_biosample",
+        "run_experiment",
+        "run_sample",
+        "study_bioproject", 
+        "study_experiment",
+        "study_submission",
+        "sample_biosample",
+        "sample_experiment",
+        ]
+
+    acc_db_path = 'sra_accessions.sqlite'
+    conn = sqlite3.connect(acc_db_path)
+    ac = conn.cursor()
+    for acc_table_name in acc_table_names:
+        ac.execute(f'SELECT * FROM {acc_table_name} WHERE field1 = ? OR field2 = ?', (id, id))
+        for row in ac.fetchall():
+            related_ids.append(row[0])
+            related_ids.append(row[1])
+
     related_ids = [i for i in related_ids if i != id]
     return list(set(related_ids))
 
@@ -104,4 +131,5 @@ if __name__ == "__main__":
     for id in id_lst:
         related_ids = get_related_ids(id)
         print(get_dbxref(related_ids))
+
 

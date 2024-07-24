@@ -2,7 +2,7 @@ import sqlite3
 import csv
 import subprocess
 
-
+# TODO:スパコン内部のパスに変更する
 file_path = [
 "https://ddbj.nig.ac.jp/public/dblink/assembly_genome-bp/assembly_genome2bp.tsv",
 "https://ddbj.nig.ac.jp/public/dblink/assembly_genome-bs/assembly_genome2bs.tsv",
