@@ -50,13 +50,13 @@ def get_dbxref(ids:List[str]) -> dict:
     return list(filter(None,dbxref_list))
 
 
-def get_related_ids(id:str) -> list:
+def get_related_ids(id:str) -> List[dict]:
     """
     全ての関係テーブルから指定したIDに関連するIDを取得する
     モジュールとして get_related_ids(id)
     Args:
         id (str): 捜査対象のID
-    return: 関係テーブルの引数のIDをどちらかに含む相補的なIDリスト
+    return: 関係テーブルの引数のIDをどちらかに含む相補的なIDリストを変換したdbXref形式のobject
     """
     related_ids = []
 
@@ -91,7 +91,7 @@ def get_related_ids(id:str) -> list:
             related_ids.append(row[1])
     conn.close()
 
-    # TODO: sra_accessions.sqliteの関係データを取得しrelated_idsに追加する
+    # TODO: sra_accessionsデータの取得確認
     acc_table_names = [
         "analysis_submission",      
         "experiment_bioproject",
@@ -118,7 +118,7 @@ def get_related_ids(id:str) -> list:
             related_ids.append(row[1])
 
     related_ids = [i for i in related_ids if i != id]
-    return list(set(related_ids))
+    return get_dbxref(list(set(related_ids)))
 
 
 if __name__ == "__main__":

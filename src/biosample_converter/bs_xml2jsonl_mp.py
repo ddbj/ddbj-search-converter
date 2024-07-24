@@ -7,6 +7,8 @@ from typing import NewType, List
 from multiprocessing import Pool
 import argparse
 
+from dblink.get_dblink import get_dbxref
+
 
 FilePath = NewType('FilePath', str)
 batch_size = 10000
@@ -45,10 +47,12 @@ def convert(input:FilePath):
 
             # Descriptionの子要素をDDBJ共通objectの値に変換する
             try:
-                description = doc["BioSample"]
+                description = doc["BioSample"].get("Description")
                 doc["title"] = description.get("Title", None)
-                organism_identifier = 
-                organism_name = 
+                # 
+                doc["description"] = description.get("Comment").get("Paragraph") if type(description.get("Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")[0]
+                organism_identifier = description.get("Organism").get("taxonomy_id", "")
+                organism_name = description.get("Organism").get("taxonomy_name", "")
                 doc["organism"] = {"identifier": organism_identifier, "name": organism_name}
             except:
                 doc["description"] = ""
@@ -56,7 +60,7 @@ def convert(input:FilePath):
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = dbxref
+            doc["dbXrefs"] = get_dbxref(doc["accession"])
 
             # _idの設定
             if ddbj_biosample:
@@ -98,11 +102,6 @@ def convert(input:FilePath):
             dict2jsonls(docs, input)
             docs = []
 
-        #if cnt > cnt_max:
-        #    print(cnt)
-        #    i = 0
-        #    break
-
     if i > 0:
         dict2jsonls(docs, input)
 
@@ -132,9 +131,7 @@ def clear_element(element):
 
 def main():
     # cpu_count()次第で分割数は変える
-    p = Pool(12)
-    # 開発環境用設定
-    #p = Pool(6)
+    p = Pool(32)
     try:
         target_dir = args.input
         target_pattern = "*.xml"
