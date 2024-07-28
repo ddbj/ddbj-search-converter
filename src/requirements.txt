@@ -1,5 +1,6 @@
 certifi==2020.12.5
 charset-normalizer==3.3.2
+greenlet==3.0.3
 idna==3.6
 lxml==5.1.0
 numpy==1.26.4
@@ -8,6 +9,9 @@ python-dateutil==2.9.0.post0
 pytz==2024.1
 requests==2.31.0
 six==1.16.0
+SQLAlchemy==2.0.31
+toolz==0.12.1
+typing_extensions==4.12.2
 tzdata==2024.1
 urllib3==2.2.1
-xmltodict==0.13.0
+xmltodict==0.13.0              

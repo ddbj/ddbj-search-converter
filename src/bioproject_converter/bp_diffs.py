@@ -20,8 +20,11 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
     """
     former_info = get_file_info(former)
     later_info = get_file_info(later)
-    unmated_info = get_unmatced_list(former_info, later_info)
-    return [x["filename"] for x in unmated_info]
+    if former_info == later_info:
+        return former_info
+    else:
+        unmated_info = get_unmatced_list(former_info, later_info)
+        return [x["filename"] for x in unmated_info]
 
 
 def get_file_info(directory:FilePath) -> list:

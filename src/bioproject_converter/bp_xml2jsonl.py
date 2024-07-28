@@ -147,8 +147,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 last_update = project["Submission"].get("last_update", None)
 
                 try:
-                    description = project["Project"]["ProjectDescr"]["ProjectDescr"]["Description"]
-                    title = project["ProjectDescr"]["ProjectDescr"]["Title"]
+                    description = project["Project"]["ProjectDescr"].get("Description")
+                    title = project["Project"]["ProjectDescr"].get("Title")
                 except:
                     description = None
                     title = None
@@ -372,15 +372,15 @@ class DdbjCoreData():
         accessions.tabを辞書化する
         """
         # accessions辞書化
+        d = {}
         with open(args.acc, "r") as input_f:
             reader = csv.reader(input_f, delimiter="\t")
-        d = {}
-        for row in reader:
-            try:
-                d[row[0]] = (row[1], row[2], row[3])
-            except:
-                print(row)
-        self.acc_dict = d
+            for row in reader:
+                try:
+                    d[row[0]] = (row[1], row[2], row[3])
+                except:
+                    print(row)
+            self.acc_dict = d
 
     def ddbj_dates(self, accession) -> Tuple[str]:
         """

@@ -65,5 +65,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     n = 2000
     # 出力先にファイルが残っていた場合ファイルを削除する
-    rm_old_file(args.output)
+    # rm_old_file(args.output)
     split_file(args.filename, args.output, n)
