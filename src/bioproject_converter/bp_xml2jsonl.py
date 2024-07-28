@@ -77,12 +77,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             except:
                 organism = None
 
-            try:
-                description = project["Project"]["ProjectDescr"]["ProjectDescr"]["Description"]
-                title = project["ProjectDescr"]["ProjectDescr"]["Title"]
-            except:
-                description = None
-                title = None
+
 
             try:
                 published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
@@ -151,7 +146,12 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 submitted = project["Submission"].get("submitted", None)
                 last_update = project["Submission"].get("last_update", None)
 
-                
+                try:
+                    description = project["Project"]["ProjectDescr"]["ProjectDescr"]["Description"]
+                    title = project["ProjectDescr"]["ProjectDescr"]["Title"]
+                except:
+                    description = None
+                    title = None
 
                 # Organization.Nameの型をobjectに統一する
                 # Todo:処理速度を上げるため内包表記にする
@@ -170,6 +170,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                     pass
             else:
+                # DDBJ_coreの場合
                 # accessions.tabよりdateを取得
                 submitted, published, last_update = accessions_data.ddbj_dates(accession)
                 status = "public"
@@ -183,8 +184,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
                 # 共通項目のTitle, Descriptionを取得する
                 try:
-                    description = project["Project"]["ProjectDescr"]["Description"]
-                    title = project["ProjectDescr"]["Title"]
+                    description = project["Project"]["ProjectDescr"].get("Description", None)
+                    title = project["Project"]["ProjectDescr"].get("Title", None)
+                    print(description,title)
                 except:
                     description = None
                     title = None
@@ -378,7 +380,6 @@ class DdbjCoreData():
                 d[row[0]] = (row[1], row[2], row[3])
             except:
                 print(row)
-            d[row[0]] = (row[1], row[2], row[3])
         self.acc_dict = d
 
     def ddbj_dates(self, accession) -> Tuple[str]:
