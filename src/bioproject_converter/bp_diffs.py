@@ -20,7 +20,7 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
     """
     former_info = get_file_info(former)
     later_info = get_file_info(later)
-    if former_info == later_info:
+    if former == later:
         return former_info
     else:
         unmated_info = get_unmatced_list(former_info, later_info)

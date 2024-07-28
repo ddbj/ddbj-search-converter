@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import json
 import argparse
@@ -8,29 +9,35 @@ from bioproject_converter.bp_diffs import get_diff_list
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
 parser.add_argument("later")
+parser.add_argument("output")
 args = parser.parse_args()
 FilePath = NewType('FilePath', str)
 
-def bulk_insert(post_data):
+def bulk_insert(post_data, path):
     """
     requestsでElasticsearchにndjsonをPOSTする
     POSTするndjsonにはindex行を挿入し改行コードで連結する
     Args:
         docs (List[dict]): 
     """
+    file_id = re.split(r"[/.]", path)
     headers = {"Content-Type": "application/x-ndjson"}
     res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
     if res.status_code == 200 or res.status_code == 201:
-        pass
+            # res.bodyにAPI callのlogを残す
+            logs(file_id[-2], res.json())
     else:
-        logs(f"Error: {res.status_code} - {res.text}")
+        logs(file_id[-2], f"Error: {res.status_code} - {res.text}")
 
 
-def logs(message: str):
-    dir_name = os.path.dirname(args.output)
-    log_file = f"{dir_name}/error_log.txt"
-    with open(log_file, "a") as f:
-        f.write(message + "\n")
+def logs(file_name: FilePath, message: str):
+    dir_name = os.path.dirname(args.later)
+    log_dir = f"{dir_name}/logs"
+    log_file = f"{log_dir}/{file_name}_log.json"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    with open(log_file, "w") as f:
+        json.dump(message, f)
 
 
 def main(former:FilePath, later:FilePath):
@@ -47,7 +54,7 @@ def main(former:FilePath, later:FilePath):
         path = f"{later}/{file_name}"
         with open(path, "r") as f:
             d = f.read()
-            bulk_insert(d)
+            bulk_insert(d, path)
     print(len(diffs))
 
 
