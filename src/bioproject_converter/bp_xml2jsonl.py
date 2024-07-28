@@ -206,10 +206,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
             i = 0
             if is_full_register:
                 dict2esjsonl(docs)
-            elif ddbj_core:
-                # 
-                # ddbj_core_bioprojctのレコードは直接ESにbulk insertする << 違う。同じディレクトリに書き出す
-                dict2es(docs)
             else:
                 dict2jsonl(docs)
             docs = []
@@ -218,9 +214,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
         # 処理の終了時にbatch_sizeに満たない場合、未処理のデータを書き出す
         if is_full_register:
             dict2esjsonl(docs)
-        elif ddbj_core:
-            # 
-            dict2es(docs)
         else:
             dict2jsonl(docs)
 
@@ -378,6 +371,10 @@ class DdbjCoreData():
             reader = csv.reader(input_f, delimiter="\t")
         d = {}
         for row in reader:
+            try:
+                d[row[0]] = (row[1], row[2], row[3])
+            except:
+                print(row)
             d[row[0]] = (row[1], row[2], row[3])
         self.acc_dict = d
 
@@ -387,7 +384,7 @@ class DdbjCoreData():
         date_created, date_published, date_modifiedフィールドの値を変える
         """
         # 辞書よりタプルを返す
-        return self.acc_dict[accession]
+        return self.acc_dict.get(accession, (None,None,None))
 
 
 if __name__ == "__main__":
