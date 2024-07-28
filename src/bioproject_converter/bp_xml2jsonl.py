@@ -87,6 +87,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             try:
                 published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
             except:
+                now = datetime.now()
                 published = now.strftime("%Y-%m-%dT00:00:00Z")
 
             # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
@@ -150,13 +151,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 submitted = project["Submission"].get("submitted", None)
                 last_update = project["Submission"].get("last_update", None)
 
-                # 共通項目のTitle, Descriptionを取得する
-                try:
-                    description = project["Project"]["ProjectDescr"]["Description"]
-                    title = project["ProjectDescr"]["Title"]
-                except:
-                    description = None
-                    title = None
+                
 
                 # Organization.Nameの型をobjectに統一する
                 # Todo:処理速度を上げるため内包表記にする
@@ -185,6 +180,14 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     organism = {"identifier": identifier, "name": name}
                 except:
                     pass
+
+                # 共通項目のTitle, Descriptionを取得する
+                try:
+                    description = project["Project"]["ProjectDescr"]["Description"]
+                    title = project["ProjectDescr"]["Title"]
+                except:
+                    description = None
+                    title = None
             
             doc["organism"] = organism
             doc["description"] = description
