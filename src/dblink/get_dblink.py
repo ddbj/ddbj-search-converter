@@ -61,7 +61,7 @@ def get_related_ids(id:str) -> List[dict]:
     # related_idsにdblinkとsra_accessionsの二系統のid relationをまとめて追加する
     related_ids = []
 
-    # dblinkのSQLiteデータベースのパス
+    # TODO:環境に合わせて設定・環境変数にする　dblinkのSQLiteデータベースのパス
     sqlite_db_path = 'ddbj_dblink.sqlite'
     conn = sqlite3.connect(sqlite_db_path)
     c = conn.cursor()
@@ -114,7 +114,7 @@ def get_related_ids(id:str) -> List[dict]:
     conn = sqlite3.connect(acc_db_path)
     ac = conn.cursor()
     for acc_table_name in acc_table_names:
-        ac.execute(f'SELECT * FROM {acc_table_name} WHERE field1 = ? OR field2 = ?', (id, id))
+        ac.execute(f'SELECT * FROM {acc_table_name} WHERE id0 = ? OR id1 = ?', (id, id))
         for row in ac.fetchall():
             related_ids.append(row[0])
             related_ids.append(row[1])

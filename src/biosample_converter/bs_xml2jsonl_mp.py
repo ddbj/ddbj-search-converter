@@ -29,7 +29,6 @@ def convert(input:FilePath):
         ddbj_biosample = False
 
     context = etree.iterparse(input, tag="BioSample")
-    # 開発用のcnt_maxで変換を終える機能
     #cnt = 0
     #cnt_max = 100000
     i = 0

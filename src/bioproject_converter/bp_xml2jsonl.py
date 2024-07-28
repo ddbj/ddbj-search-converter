@@ -145,7 +145,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 except:
                     status = "public"
 
-                #now = datetime.now()
+                now = datetime.now()
                 # submittedが取得できない場合datetime.now()を渡す
                 submitted = project["Submission"].get("submitted", None)
                 last_update = project["Submission"].get("last_update", None)
