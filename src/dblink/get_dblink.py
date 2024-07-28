@@ -58,6 +58,7 @@ def get_related_ids(id:str) -> List[dict]:
         id (str): 捜査対象のID
     return: 関係テーブルの引数のIDをどちらかに含む相補的なIDリストを変換したdbXref形式のobject
     """
+    # related_idsにdblinkとsra_accessionsの二系統のid relationをまとめて追加する
     related_ids = []
 
     # dblinkのSQLiteデータベースのパス
@@ -108,6 +109,7 @@ def get_related_ids(id:str) -> List[dict]:
         "sample_experiment",
         ]
 
+    # TODO: 環境に合わせて変更する・環境変数に埋め込む
     acc_db_path = 'sra_accessions.sqlite'
     conn = sqlite3.connect(acc_db_path)
     ac = conn.cursor()
@@ -129,7 +131,7 @@ if __name__ == "__main__":
         "SAMN00000002"
     ]
     for id in id_lst:
+        # id listはget_dbxrefsによってwrapされたobjectとして返る
         related_ids = get_related_ids(id)
-        print(get_dbxref(related_ids))
 
 

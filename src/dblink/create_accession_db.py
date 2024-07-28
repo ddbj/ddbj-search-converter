@@ -3,32 +3,21 @@ import csv
 import requests
 from id_relation_db import *
 
-chunk_size = 500000
-# 環境に合わせ変更
-# LOCAL_ACCESSION_PATH = "{}/SRA_Accessions.tab"
+chunk_size = 10000
+# TODO:環境に合わせ書き換える・環境変数に記述するように
 LOCAL_ACCESSION_PATH = "/mnt/sra/SRA_Accessions.tab"
-ACCESSIONS_URL = ""  # 不要
+# ACCESSIONS_URL = ""  # 不要
 
 
 class ChunkedList(list):
-    def __init__(self):
-        self.ds = set()
-        
     def push(self, id1, id2, t):
-        if id1 and id2 and id2 != "-": 
-            self.ds.add((id1, id2))
-        if len(self.ds) > chunk_size:
-            rows = list(set([base[t](id0=d[0], id1=d[1]) for d in self.ds]))
-            
-            try:
-                session.bulk_save_objects(rows)
-                #session.add_all(rows)
-                session.commit()
-            except Exception as e:
-                print("insert error: ", e)
-            finally:
-                self.ds.clear()
-                session.close()
+        if id1 and id2:
+            self.append((id1, id2))
+        if len(self) > chunk_size:
+            d = [base[t](id0=d[0], id1=d[1]) for d in self]
+            session.bulk_save_objects(d, return_defaults=True)
+            session.commit()
+            self.clear()
 
     def store_rest(self, t):
         """
@@ -36,18 +25,9 @@ class ChunkedList(list):
         Todo:最後にchunkedlistに残った全てデータをdbに保存するためこのメソッドを呼ぶイベント
         :return:
         """
-        rows = [base[t](id0=d[0], id1=d[1]) for d in self.ds if d[1] != "-"]
-        # session.bulk_save_objects(d, return_defaults=True)　# 同じデータがreplaceされない
-        # session.add_all(d) # 同じデータがreplaceされない
-        #session.merge(d, load=True) # 同じデータがreplaceされない
-        try:
-            session.bulk_save_objects(rows)
-            #session.add_all(d)
-            session.commit()
-        except Exception as e:
-            print("insert error: ", e)
-        finally:
-            session.close()
+        d = [base[t](id0=d[0], id1=d[1]) for d in self]
+        session.bulk_save_objects(d, return_defaults=True)
+        session.commit()
 
 
 # 指定したサイズを超えたらDBにデータを保存しリフレッシュするリストを
@@ -79,23 +59,6 @@ def main():
     close_chunked_list()
 
 
-# @retry(tries=3, delay=5, backoff=2)
-def get_accession_data():
-    """
-    - SRA_Accessions.tabがミラーされている場所はこの操作は不要
-    - ftplibでftpからファイルを取得するより
-    httpsを叩く方が安定するようなのでrequestsを利用しSRA_Accessions.tabを取得する
-    
-    :return:
-    """
-    text_file = open(LOCAL_ACCESSION_PATH, "wb")
-    res = requests.get(ACCESSIONS_URL, stream=True)
-    # chunk_sizeは可能な限り大きい方が速いらしいが、
-    for chunk in res.iter_content(chunk_size=1000000):
-        text_file.write(chunk)
-    text_file.close()
-
-
 def store_relation_data():
     """
     SRA_Accessionをid->Study, id->Experiment, id->Sampleのように分解し（自分の該当するtypeは含まない）しList[set]に保存
@@ -112,21 +75,10 @@ def store_relation_data():
         # SRA_Accessionsの行ごと処理を行う
         # statusがliveであった場合
         # 各行のTypeを取得し、処理を分岐し実行する
-        try:
-            if r[2] == "live":
-                try:
-                    # store_{type}_set.store_rest(row)を呼ぶ
-                    acc_type = r[6]
-                    convert_row[acc_type](r)
-                except KeyError as E:
-                    print(E)
-                    pass
-                except IndexError as E:
-                    print(E)
-                    pass
-        except:
-            pass
-            
+        if r[2] == "live":
+            acc_type = r[6]
+            convert_row[acc_type](r)
+
 
 def close_chunked_list():
     experiment_bioproject_set.store_rest("experiment_bioproject")
@@ -193,6 +145,7 @@ def store_submission_set(r):
     pass
 
 
+# typeに応じて処理を分岐する。処理はChunkedListにセットを追加する
 convert_row = {
     "SUBMISSION": store_submission_set,
     "STUDY": store_study_set,
@@ -224,13 +177,6 @@ def test_orm():
          .join(RunExperiment)
          .join(ExperimentBioSample)
          .filter())
-    
-def logs():
-    """
-    try,exceptして不正なデータの入力を潰しているため、
-    作業日ごとに正しくないデータのログを残す
-    """
-    pass
 
 if __name__ == "__main__":
     main()

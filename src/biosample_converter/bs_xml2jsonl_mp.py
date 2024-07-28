@@ -72,6 +72,8 @@ def convert(input:FilePath):
                 else:
                     doc["accession"] = doc["BioSample"]["Ids"]["Id"]["content"]
 
+                # TODO: ddbj_biosampleのtaxonomy_idの入力を確認する
+
             else:
                 doc["accession"] = doc["BioSample"].get("accession")
 

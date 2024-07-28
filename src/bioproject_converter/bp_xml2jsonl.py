@@ -10,7 +10,7 @@ import argparse
 import requests
 from typing import NewType, List, Tuple
 
-# from bp_xref import get_relation # togoidから取得する予定のため廃止
+from dblink.get_dblink import get_related_ids
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
@@ -145,11 +145,18 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 except:
                     status = "public"
 
-                now = datetime.now()
+                #now = datetime.now()
                 # submittedが取得できない場合datetime.now()を渡す
-                submitted = project["Submission"].get("submitted", now.strftime("%Y-%m-%dT00:00:00Z"))
+                submitted = project["Submission"].get("submitted", None)
                 last_update = project["Submission"].get("last_update", None)
 
+                # 共通項目のTitle, Descriptionを取得する
+                try:
+                    description = project["Project"]["ProjectDescr"]["Description"]
+                    title = project["ProjectDescr"]["Title"]
+                except:
+                    description = None
+                    title = None
 
                 # Organization.Nameの型をobjectに統一する
                 # Todo:処理速度を上げるため内包表記にする
@@ -188,7 +195,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = dbxref
+            doc["dbXrefs"] = get_related_ids(accession)
 
             doc.update(common_object(accession,))
             docs.append(doc)
