@@ -70,7 +70,7 @@ if __name__ == '__main__':
   ddbj/dblinkにあるBioSampleとBioProjectの関連データをダウンロードし、SQLiteデータベースを作成する
   """
   # SQLiteデータベースのパス
-  sqlite_db_path = 'ddbj_dblink.db'
+  sqlite_db_path = 'ddbj_dblink.sqlite'
 
   # 関係データのファイル毎にデータベースを作成
   for i in range(len(file_path)):

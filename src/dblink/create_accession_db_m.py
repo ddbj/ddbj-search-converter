@@ -88,7 +88,7 @@ def store_relation_data(path:FilePath):
     各リストが一定の長さになったらsqliteのテーブルに保存し、リストを初期化する（処理が終了する際にも最後に残ったリストをsqliteに保存）
     :return:
     """
-    reader = csv.reader(open(LOCAL_ACCESSION_PATH), delimiter="\t", quoting=csv.QUOTE_NONE)
+    reader = csv.reader(open(path), delimiter="\t", quoting=csv.QUOTE_NONE)
     next(reader)
     # 行のType（STUDY, EXPERIMENT, SAMPLE, RUN, ANALYSIS, SUBMISSION ）ごとテーブルを生成し、
     # 各Type+BioProject, BioSampleを追加したターゲットの値がnullでなければIDとのセットを作成しテーブルに保存する
