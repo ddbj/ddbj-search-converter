@@ -9,7 +9,7 @@ from multiprocessing import Pool
 import argparse
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-from dblink.get_dblink import get_dbxref
+from dblink.get_dblink import get_related_ids
 
 
 FilePath = NewType('FilePath', str)
@@ -66,7 +66,7 @@ def convert(input:FilePath):
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = get_dbxref(doc["accession"])
+            doc["dbXrefs"] = get_related_ids(doc["accession"])
 
             # _idの設定
             if ddbj_biosample:
