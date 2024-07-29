@@ -9,7 +9,8 @@ from datetime import datetime
 import argparse
 import requests
 from typing import NewType, List, Tuple
-
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from dblink.get_dblink import get_related_ids
 
 FilePath = NewType('FilePath', str)

@@ -9,7 +9,6 @@ from bioproject_converter.bp_diffs import get_diff_list
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
 parser.add_argument("later")
-parser.add_argument("output")
 args = parser.parse_args()
 FilePath = NewType('FilePath', str)
 

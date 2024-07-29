@@ -1,12 +1,14 @@
 from lxml import etree
 import os
+import sys
 import json
 import xmltodict
 import glob
 from typing import NewType, List
 from multiprocessing import Pool
 import argparse
-
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from dblink.get_dblink import get_dbxref
 
 
@@ -45,17 +47,22 @@ def convert(input:FilePath):
             doc["datePublished"] = doc["BioSample"].get("publication_date", None)
 
             # Descriptionの子要素をDDBJ共通objectの値に変換する
+            description = doc["BioSample"].get("Description")
             try:
-                description = doc["BioSample"].get("Description")
-                doc["title"] = description.get("Title", None)
-                # 
+                doc["title"] = description.get("Title", "")
+            except:
+                doc["title"] = ""
+            try:
                 doc["description"] = description.get("Comment").get("Paragraph") if type(description.get("Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")[0]
+            except:
+                doc["description"] = ""
+            try:
                 organism_identifier = description.get("Organism").get("taxonomy_id", "")
                 organism_name = description.get("Organism").get("taxonomy_name", "")
                 doc["organism"] = {"identifier": organism_identifier, "name": organism_name}
             except:
-                doc["description"] = ""
-                doc["title"] = ""
+                pass
+
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
