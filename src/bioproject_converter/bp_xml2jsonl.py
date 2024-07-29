@@ -187,7 +187,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 try:
                     description = project["Project"]["ProjectDescr"].get("Description", None)
                     title = project["Project"]["ProjectDescr"].get("Title", None)
-                    print(description,title)
                 except:
                     description = None
                     title = None

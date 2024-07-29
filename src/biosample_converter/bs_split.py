@@ -13,8 +13,8 @@ parser = argparse.ArgumentParser(description="Split jsonl file from behind")
 parser.add_argument("input", help="jsonl source file directory")
 parser.add_argument("output", help="target directory")
 args = parser.parse_args()
-# 25000レコード = 50000行づつ分割
-batch_size = 50000
+# 25000レコード = 50000行づつ分割 > 2Gを超えるサイズのjsonlがあったため30000に変更する
+batch_size = 30000
 
 def split_files(file_path: FilePath):
     """
