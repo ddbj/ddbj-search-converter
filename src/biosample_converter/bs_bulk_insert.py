@@ -4,6 +4,7 @@ import glob
 import re
 import json
 import argparse
+import datetime
 from multiprocessing import Pool
 from typing import NewType
 from bs_diffs import get_diff_list
@@ -39,7 +40,9 @@ def bulk_insert(file_path):
 
 def logs(file_name: FilePath, message: str):
     dir_name = os.path.dirname(args.later)
-    log_dir = f"{dir_name}/logs"
+    today = datetime.date.today()
+    formatted_data = today.strftime('%Y%m%d')
+    log_dir = f"{dir_name}/{formatted_data}/logs"
     log_file = f"{log_dir}/{file_name}_log.json"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)

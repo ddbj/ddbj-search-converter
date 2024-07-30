@@ -3,8 +3,9 @@ import re
 import requests
 import json
 import argparse
+import datetime
 from typing import NewType, List
-from bioproject_converter.bp_diffs import get_diff_list
+from bp_diffs import get_diff_list
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
@@ -31,7 +32,9 @@ def bulk_insert(post_data, path):
 
 def logs(file_name: FilePath, message: str):
     dir_name = os.path.dirname(args.later)
-    log_dir = f"{dir_name}/logs"
+    today = datetime.date.today()
+    formatted_data = today.strftime('%Y%m%d')
+    log_dir = f"{dir_name}/{formatted_data}/logs"
     log_file = f"{log_dir}/{file_name}_log.json"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -46,6 +49,7 @@ def main(former:FilePath, later:FilePath):
         post_list (list): _description_
     """
     # 更新分のjsonlのファイル名リストを取得
+    # formerとlaterを同じ名前にした場合ファイル全件のリストが返ってくる（初回時）
     diffs = get_diff_list(former, later)
     # リストから更新分ファイルを取得しbulk insertする
     for file_name in diffs:
