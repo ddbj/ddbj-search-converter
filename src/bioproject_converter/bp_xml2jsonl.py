@@ -200,7 +200,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = get_related_ids(accession)
+            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
 
             doc.update(common_object(accession,))
             docs.append(doc)

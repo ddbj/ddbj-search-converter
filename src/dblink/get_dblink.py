@@ -2,6 +2,45 @@ import re
 import sqlite3
 from typing import List
 
+table_names = {
+    "bioproject":[
+        "assembly_genome2bp",
+        "bioproject2biosample",
+        "bioproject_umbrella2bioproject",
+        "biosample2bioproject",
+        "gea2bioproject",
+        "insdc2bioproject",
+        "insdc_master2bioproject",
+        "mtb_id_bioproject",
+        "ncbi_biosample_bioproject",
+    ],
+    "biosample":[
+        "assembly_genome2bs",
+        "bioproject2biosample",
+        "biosample2bioproject",
+        "gea2biosample",
+        "insdc2biosample",
+        "insdc_master2biosample",
+        "mtb_id_biosample",
+        "ncbi_biosample_bioproject",
+        "trace_biosample_taxon2bs"
+    ]
+}
+
+acc_table_names = {
+    "bioproject":[
+        "experiment_bioproject",
+        "study_bioproject", 
+    ],
+    "biosample":[
+        "experiment_biosample",
+        "experiment_sample",
+        "run_biosample",
+        "sample_biosample",
+    ]
+    }
+
+
 class RelationObject():
     def __init__(self) -> None:
         """
@@ -50,7 +89,7 @@ def get_dbxref(ids:List[str]) -> dict:
     return list(filter(None,dbxref_list))
 
 
-def get_related_ids(id:str) -> List[dict]:
+def get_related_ids(id:str, type:str) -> List[dict]:
     """
     全ての関係テーブルから指定したIDに関連するIDを取得する
     モジュールとして get_related_ids(id)
@@ -60,61 +99,30 @@ def get_related_ids(id:str) -> List[dict]:
     """
     # related_idsにdblinkとsra_accessionsの二系統のid relationをまとめて追加する
     related_ids = []
+    # dbXrefが1M要素あるようなドキュメントがあり、Elasticsearchのリクエストが413となるのを回避するため設定
+    limit = 10000
 
     # TODO:環境に合わせて設定・環境変数にする　dblinkのSQLiteデータベースのパス
     sqlite_db_path = 'ddbj_dblink.sqlite'
     conn = sqlite3.connect(sqlite_db_path)
     c = conn.cursor()
 
-    # 関係テーブルのリスト
-    table_names = [
-        "assembly_genome2bp",
-        "assembly_genome2bs",
-        "bioproject2biosample",
-        "bioproject_umbrella2bioproject",
-        "biosample2bioproject",
-        "gea2bioproject",
-        "gea2biosample",
-        "insdc2bioproject",
-        "insdc2biosample",
-        "insdc_master2bioproject",
-        "insdc_master2biosample",
-        "mtb_id_bioproject",
-        "mtb_id_biosample",
-        "ncbi_biosample_bioproject",
-        "trace_biosample_taxon2bs"
-    ]
-    
-    for table_name in table_names:
-        c.execute(f'SELECT * FROM {table_name} WHERE field1 = ? OR field2 = ?', (id, id))
+    for table_name in table_names[type]:
+        c.execute(f'SELECT * FROM {table_name} WHERE field1 = ? OR field2 = ? LIMIT {limit}', (id, id))
         for row in c.fetchall():
             related_ids.append(row[0])
             related_ids.append(row[1])
     conn.close()
 
     # TODO: sra_accessionsデータの取得確認
-    acc_table_names = [
-        "analysis_submission",      
-        "experiment_bioproject",
-        "experiment_biosample",
-        "experiment_sample",
-        "experiment_study", 
-        "run_biosample",
-        "run_experiment",
-        "run_sample",
-        "study_bioproject", 
-        "study_experiment",
-        "study_submission",
-        "sample_biosample",
-        "sample_experiment",
-        ]
+
 
     # TODO: 環境に合わせて変更する・環境変数に埋め込む
     acc_db_path = 'sra_accessions.sqlite'
     conn = sqlite3.connect(acc_db_path)
     ac = conn.cursor()
-    for acc_table_name in acc_table_names:
-        ac.execute(f'SELECT * FROM {acc_table_name} WHERE id0 = ? OR id1 = ?', (id, id))
+    for acc_table_name in acc_table_names[type]:
+        ac.execute(f'SELECT * FROM {acc_table_name} WHERE id0 = ? OR id1 = ? LIMIT {limit}', (id, id))
         for row in ac.fetchall():
             related_ids.append(row[0])
             related_ids.append(row[1])

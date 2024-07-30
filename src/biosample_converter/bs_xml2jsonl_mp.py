@@ -40,14 +40,10 @@ def convert(input:FilePath):
             doc = {}
             xml_str = etree.tostring(element)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-            doc["BioSample"] = metadata["BioSample"]
-            doc["accession"] = doc["BioSample"].get("accession")
-            doc["dateCreated"] = doc["BioSample"].get("submission_date", None)
-            doc["dateModified"] = doc["BioSample"].get("last_update", None)
-            doc["datePublished"] = doc["BioSample"].get("publication_date", None)
+            doc["properties"] = metadata["BioSample"]
 
             # Descriptionの子要素をDDBJ共通objectの値に変換する
-            description = doc["BioSample"].get("Description")
+            description = doc["properties"].get("Description")
             try:
                 doc["title"] = description.get("Title", "")
             except:
@@ -63,40 +59,47 @@ def convert(input:FilePath):
             except:
                 pass
 
+            doc["accession"] = doc["properties"].get("accession")
+            doc["dateCreated"] = doc["properties"].get("submission_date", None)
+            doc["dateModified"] = doc["properties"].get("last_update", None)
+            doc["datePublished"] = doc["properties"].get("publication_date", None)
+            doc["identifier"] = doc["accession"]
+            doc["type"] =  "biosample"
+            doc["isPartOf"] = "biosample"
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = get_related_ids(doc["accession"])
+            doc["dbXrefs"] = get_related_ids(doc["accession"], "biosample")
 
             # _idの設定
             if ddbj_biosample:
                 # ddbj_biosample_set.xmlの場合
-                if isinstance(doc["BioSample"]["Ids"]["Id"], list):
+                if isinstance(doc["properties"]["Ids"]["Id"], list):
                     # doc["Ids"]["Id"]のnamespace == BioSampleのcontentを取得する
-                    bs_id = list(filter(lambda x: x["namespace"] == "BioSample", doc["BioSample"]["Ids"]["Id"]))
+                    bs_id = list(filter(lambda x: x["namespace"] == "BioSample", doc["properties"]["Ids"]["Id"]))
                     doc["accession"] = bs_id[0]["content"]
                 else:
-                    doc["accession"] = doc["BioSample"]["Ids"]["Id"]["content"]
+                    doc["accession"] = doc["properties"]["Ids"]["Id"]["content"]
 
                 # TODO: ddbj_biosampleのtaxonomy_idの入力を確認する
 
             else:
-                doc["accession"] = doc["BioSample"].get("accession")
+                doc["accession"] = doc["properties"].get("accession")
 
             # Owner.Nameが文字列が記述されているケースの処理
             try:
-                owner_name = doc["BioSample"]["Owner"]["Name"]
+                owner_name = doc["properties"]["Owner"]["Name"]
                 # owner_nameの型がstrであれば {"abbreviation": val, "content": val}に置き換える
                 if isinstance(owner_name, str):
-                    doc["BioSample"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
+                    doc["properties"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
             except:
                 pass
 
             # Models.Modelにobjectが記述されているケースの処理
             try:
-                models_model = doc["BioSample"]["Models"]["Model"]
+                models_model = doc["properties"]["Models"]["Model"]
                 if isinstance(models_model, dict):
-                    doc["BioSample"]["Models"]["Model"] = models_model.get("content", None)
+                    doc["properties"]["Models"]["Model"] = models_model.get("content", None)
             except:
                 pass
 
