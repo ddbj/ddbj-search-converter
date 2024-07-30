@@ -98,8 +98,17 @@ def convert(input:FilePath):
             # Models.Modelにobjectが記述されているケースの処理
             try:
                 models_model = doc["properties"]["Models"]["Model"]
+                
+                # Models.Modelがオブジェクトの場合そのまま渡す
                 if isinstance(models_model, dict):
                     doc["properties"]["Models"]["Model"] = models_model.get("content", None)
+                # Models.Modelがリストの場合、要素をそれぞれオブジェクトに変換する
+                elif isinstance(models_model, list):
+                    doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
+                # Models.Modelの値が文字列の場合{"content": value}に変換する
+                elif isinstance(models_model, str):
+                    doc["properties"]["Models"]["Model"] = [{"content":models_model}]
+
             except:
                 pass
 
