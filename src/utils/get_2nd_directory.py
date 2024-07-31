@@ -1,9 +1,13 @@
 import os
+import argparse
 from datetime import datetime
 
 from typing import NewType
 
 FilePath = NewType('FilePath', str)
+parser = argparse.ArgumentParser(description="return 2nd newest dir name")
+parser.add_argument("input")
+args = parser.parse_args()
 
 
 def get_second_newest_dir(new_dir:FilePath):
@@ -49,3 +53,7 @@ if second_newest_dir:
   print(f"2番目に新しいディレクトリ: {second_newest_dir}")
 else:
   print("2番目に新しいディレクトリは存在しません")
+
+
+if __name__ == "__main__":
+  print(get_second_newest_dir(args.input))
