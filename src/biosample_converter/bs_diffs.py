@@ -3,7 +3,10 @@ import os
 import re
 import hashlib
 import argparse
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from utils.get_2nd_directory import get_second_newest_dir
 from typing import NewType
+
 
 FilePath = NewType('FilePath', str)
 
@@ -18,10 +21,12 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
     Returns:
         list: MD5が一致しないファイルのファイル名リスト
     """
-    former_info = get_file_info(former)
-    print("former: ", len(former_info))
+    try:
+        former_info = get_file_info(former)
+    except:
+        next_dir = get_second_newest_dir(later)
+        former_info = get_file_info(next_dir)
     later_info = get_file_info(later)
-    print("later: ", len(later_info))
     print("file_info: ", len(former_info), len(later_info))
     unmached_info = get_unmached_list(former_info, later_info)
     return [x["filename"] for x in unmached_info]
@@ -82,6 +87,10 @@ def get_unmached_list(formar:list, later:list)->list:
                 diff_dict = {k: v for k, v in dct_l.items() if dct_l["md5_hash"] != dct_f["md5_hash"]}
                 if diff_dict:
                     unmatched_list.append(diff_dict)
+    # laterにのみ追加されたファイルのリスト
+    new_file_info = [item for item in later if item['filename'] not in {item['filename'] for item in formar}]
+    if new_file_info:
+        unmatched_list.append(new_file_info)
     return unmatched_list
 
 
