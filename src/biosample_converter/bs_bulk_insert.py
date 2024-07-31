@@ -10,13 +10,13 @@ from typing import NewType
 from bs_diffs import get_diff_list
 
 
-
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
 parser.add_argument("later")
 parser.add_argument("-f",  action='store_true', help="Insert all records cases with f option")
 args = parser.parse_args()
 FilePath = NewType('FilePath', str)
+num_process = 12
 
 
 def bulk_insert(file_path):
@@ -63,22 +63,18 @@ def main(former:FilePath, later:FilePath):
     if first_time:
         # 指定するディレクトリのファイルリストを取得
         target_pattern = "*.jsonl"
-        # for test
-        # target_pattern = "bs_1_0.jsonl"
         file_list = glob.glob(os.path.join(later, target_pattern))
         # multiprocessで呼び出す
-        p = Pool(12)
+        p = Pool(num_process)
         p.map(bulk_insert, file_list)
     else:
         # 更新分のjsonlのファイル名リストを取得
         diffs = get_diff_list(former, later)
         # リストから更新分ファイルを取得しbulk insertする
         # TODO: この処理もmultiprocessingを利用する
-        for file_name in diffs:
-            # ファイルパスを生成（args.later）
-            path = f"{later}/{file_name}"
-            bulk_insert(path)
-
+        file_list = [f"{later}/{x}" for x in diffs]
+        p = Pool(num_process)
+        p.map(bulk_insert, file_list)
 
 
 if __name__ == "__main__":
