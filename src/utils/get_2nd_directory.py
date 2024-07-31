@@ -35,6 +35,7 @@ def get_second_newest_dir(new_dir:FilePath):
         return None
 
     # 日付でソート (新しい順)
+    subdirs = [x for x in subdirs if extract_date(x)]
     sorted_dirs = sorted(subdirs, key=extract_date, reverse=True)
 
     # 最新の日付ディレクトリをスキップして、2番目に新しいものを返す
