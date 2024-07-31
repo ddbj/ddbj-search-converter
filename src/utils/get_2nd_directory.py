@@ -29,7 +29,10 @@ def get_second_newest_dir(new_dir:FilePath):
     def extract_date(dir_path):
       # ディレクトリ名から日付部分を抽出 (日付形式が保証されている前提)
       date_str = os.path.basename(dir_path)
-      return datetime.strptime(date_str, "%Y%m%d")  # 抽出した文字列を日付オブジェクトに変換
+      try:
+        return datetime.strptime(date_str, "%Y%m%d") 
+      except:   
+        return None
 
     # 日付でソート (新しい順)
     sorted_dirs = sorted(subdirs, key=extract_date, reverse=True)
@@ -45,14 +48,6 @@ def get_second_newest_dir(new_dir:FilePath):
     print(f"Error: {e}")
     return None
 
-# テスト (親ディレクトリのパスを適宜変更してください)
-parent_dir = "/path/to/parent/dir"
-second_newest_dir = get_second_newest_dir(parent_dir)
-
-if second_newest_dir:
-  print(f"2番目に新しいディレクトリ: {second_newest_dir}")
-else:
-  print("2番目に新しいディレクトリは存在しません")
 
 
 if __name__ == "__main__":
