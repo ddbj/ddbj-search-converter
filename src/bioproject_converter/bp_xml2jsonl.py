@@ -233,7 +233,7 @@ def common_object(accession: str) -> dict:
         "distribution": {"contentUrl":"", "encodingFormat":""},
         "identifier": accession,
         "isPartOf": "bioproject",
-        "type": "bioProject",
+        "type": "bioproject",
         "name": None,
         "url": None
     }

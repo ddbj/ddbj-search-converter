@@ -21,7 +21,7 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
     former_info = get_file_info(former)
     later_info = get_file_info(later)
     if former == later:
-        return former_info
+        return [x["filename"] for x in former_info]
     else:
         unmated_info = get_unmatced_list(former_info, later_info)
         return [x["filename"] for x in unmated_info]

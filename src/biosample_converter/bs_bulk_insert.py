@@ -73,6 +73,7 @@ def main(former:FilePath, later:FilePath):
         # 更新分のjsonlのファイル名リストを取得
         diffs = get_diff_list(former, later)
         # リストから更新分ファイルを取得しbulk insertする
+        # TODO: この処理もmultiprocessingを利用する
         for file_name in diffs:
             # ファイルパスを生成（args.later）
             path = f"{later}/{file_name}"
