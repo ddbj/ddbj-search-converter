@@ -65,7 +65,7 @@ def convert(input:FilePath):
             doc["datePublished"] = doc["properties"].get("publication_date", None)
             doc["identifier"] = doc["accession"]
             doc["type"] =  "biosample"
-            doc["isPartOf"] = "biosample"
+            doc["isPartOf"] = "BioSample"
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             # dbxreをdblinkモジュールより取得
