@@ -1,14 +1,12 @@
-import csv
-import sys
-import itertools
 import sqlite3
-
+import sys
 from collections import defaultdict
-from typing import NewType, List
+from typing import NewType
 
 FilePath = NewType('FilePath', str)
 xref_max_size = 50
 # Todo: 取得したexperimentでexperiment->runの関係を追加するか検討
+
 
 def get_relation(accessions_db: FilePath, bioproject: str) -> dict:
     """_summary_
@@ -24,8 +22,8 @@ def get_relation(accessions_db: FilePath, bioproject: str) -> dict:
     table = 'sra_accessions'
     con = sqlite3.connect(accessions_db)
     cur = con.cursor()
-    ## 巨大なxrefsが生成されるケースがあるため、取得サイズの上限をmax_sizeで設定する
-    #q = f'select Submission,Experiment,Sample,Study,BioSample from {table} WHERE BioProject="{bioproject}" limit {xref_max_size}'
+    # 巨大なxrefsが生成されるケースがあるため、取得サイズの上限をmax_sizeで設定する
+    # q = f'select Submission,Experiment,Sample,Study,BioSample from {table} WHERE BioProject="{bioproject}" limit {xref_max_size}'
     q = f'select Accession,Type,BioSample from {table} WHERE BioProject="{bioproject}" LIMIT {xref_max_size}'
     cur.execute(q)
     xrefs = cur.fetchall()
@@ -33,7 +31,7 @@ def get_relation(accessions_db: FilePath, bioproject: str) -> dict:
     # Todo: 検討：biosample以外はaccessionから取得した方が良いかもしれない
     for r in xrefs:
         xref_dct[r[1].lower()].add(r[0])
-        if r[2] !="-":
+        if r[2] != "-":
             xref_dct["biosample"].add(r[2])
 
     '''
@@ -56,4 +54,4 @@ if __name__ == "__main__":
     db = './sra_accessions_3.db'
     accession = sys.argv[1]
     print(get_relation(db, accession))
-    #xref = get_xref(sra_accessions_path, accession)
+    # xref = get_xref(sra_accessions_path, accession)

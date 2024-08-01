@@ -1,14 +1,15 @@
-import os
-import requests
-import glob
-import re
-import json
 import argparse
 import datetime
+import glob
+import json
+import os
+import re
 from multiprocessing import Pool
 from typing import NewType
-from bs_diffs import get_diff_list
 
+import requests
+
+from ddbj_search_converter.biosample_converter.bs_diffs import get_diff_list
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
@@ -50,7 +51,7 @@ def logs(file_name: FilePath, message: str):
         json.dump(message, f)
 
 
-def main(former:FilePath, later:FilePath):
+def main(former: FilePath, later: FilePath):
     """
     - 更新されたjsonlリストを生成し、リストのファイルを取得してElasticsearchにjsonlをbulk insertする
     - bulk apiは並列で呼び出す    

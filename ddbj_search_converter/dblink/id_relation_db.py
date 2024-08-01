@@ -1,9 +1,6 @@
-# encoding:utf-8
-
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy import Column, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 # TODO:環境に合わせ書き換える・環境変数に記述するように
 engine = create_engine("sqlite:///sra_accessions.sqlite")
@@ -92,4 +89,4 @@ class RunBioSample(Base):
     id1 = Column(String(16), primary_key=True, index=True)
 
 
-#Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)

@@ -1,12 +1,11 @@
-from lxml import etree
-import xml.etree.cElementTree as cElementTree
-import datetime
-import xmltodict
-import requests
 import argparse
-import os
 import json
-from typing import NewType, List
+import os
+from typing import List, NewType
+from xml.etree import cElementTree
+
+import xmltodict
+from lxml import etree
 
 # bs_xml2jsonl_mp.pyで並列処理を行うため本モジュールは使わない（2024/7）
 
@@ -18,7 +17,7 @@ parser.add_argument("output")
 args = parser.parse_args()
 
 
-def xml2jsonl(input:FilePath):
+def xml2jsonl(input: FilePath):
     context = etree.iterparse(input, tag="BioSample")
     i = 0
     docs = []
@@ -32,7 +31,7 @@ def xml2jsonl(input:FilePath):
             xml_str = etree.tostring(element)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["metadata"] = metadata
-            
+
             docs.append(doc)
             i += 1
 
@@ -45,7 +44,8 @@ def xml2jsonl(input:FilePath):
     if i > 0:
         dict2esjsonl(docs)
 
-def cxml2jsonl(input:FilePath):
+
+def cxml2jsonl(input: FilePath):
     context = cElementTree.iterparse(input, events=('end',))
     i = 0
     docs = []
@@ -59,7 +59,7 @@ def cxml2jsonl(input:FilePath):
             xml_str = cElementTree.tostring(element)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["metadata"] = metadata
-            
+
             docs.append(doc)
             i += 1
 
@@ -71,7 +71,6 @@ def cxml2jsonl(input:FilePath):
 
     if i > 0:
         dict2esjsonl(docs)
-
 
 
 def clear_element(element):

@@ -1,17 +1,20 @@
-import os
-import re
-import requests
-import json
 import argparse
 import datetime
-from typing import NewType, List
-from bp_diffs import get_diff_list
+import json
+import os
+import re
+from typing import NewType
+
+import requests
+
+from ddbj_search_converter.bioproject_converter.bp_diffs import get_diff_list
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
 parser.add_argument("later")
 args = parser.parse_args()
 FilePath = NewType('FilePath', str)
+
 
 def bulk_insert(post_data, path):
     """
@@ -24,8 +27,8 @@ def bulk_insert(post_data, path):
     headers = {"Content-Type": "application/x-ndjson"}
     res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
     if res.status_code == 200 or res.status_code == 201:
-            # res.bodyにAPI callのlogを残す
-            logs(file_id[-2], res.json())
+        # res.bodyにAPI callのlogを残す
+        logs(file_id[-2], res.json())
     else:
         logs(file_id[-2], f"Error: {res.status_code} - {res.text}")
 
@@ -42,7 +45,7 @@ def logs(file_name: FilePath, message: str):
         json.dump(message, f)
 
 
-def main(former:FilePath, later:FilePath):
+def main(former: FilePath, later: FilePath):
     """
     更新されたjsonlリストを生成し、リストのファイルを取得してElasticsearchにjsonlをbulk insertする
     Args:
@@ -63,4 +66,3 @@ def main(former:FilePath, later:FilePath):
 
 if __name__ == "__main__":
     main(args.former, args.later)
-

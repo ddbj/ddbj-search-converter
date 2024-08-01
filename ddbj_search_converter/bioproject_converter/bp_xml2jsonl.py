@@ -1,17 +1,15 @@
-from lxml import etree
-import xmltodict
-import json
-import sys
-import re
+import argparse
 import csv
+import json
 import os
 from datetime import datetime
-import argparse
+from typing import List, NewType, Tuple
+
 import requests
-from typing import NewType, List, Tuple
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from dblink.get_dblink import get_related_ids
+import xmltodict
+from lxml import etree
+
+from ddbj_search_converter.dblink.get_dblink import get_related_ids
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
@@ -30,7 +28,7 @@ ddbj_bioproject_name = "ddbj_core"
 args = parser.parse_args()
 
 
-def xml2jsonl(input_file:FilePath) -> dict:
+def xml2jsonl(input_file: FilePath) -> dict:
     """
     BioProject XMLをdictに変換・関係データを追加し
     batch_sizeごとにlocalhostのESにbulkインポートする
@@ -49,9 +47,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
     context = etree.iterparse(input_file, tag="Package", recover=True)
     i = 0
-    docs:list[dict] = []
+    docs: list[dict] = []
     for events, element in context:
-        if element.tag=="Package":
+        if element.tag == "Package":
             """
             Packagetag単位でxmlを変換する
             centerが指定されている場合は指定されたcenterのデータのみ変換する（ddbjのみ対応）
@@ -60,7 +58,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             accession = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["accession"]
             archive = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["archive"]
             xml_str = etree.tostring(element)
-            # metadata = xml2json(xml_str) 
+            # metadata = xml2json(xml_str)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
 
             # DDBJのSchemaに合わせて必要部分を抽出
@@ -78,8 +76,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
             except:
                 organism = None
 
-
-
             try:
                 published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
             except:
@@ -93,11 +89,11 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     for i, item in enumerate(grant):
                         agency = item.get("Agency")
                         if type(agency) is str:
-                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content":agency }
+                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content": agency}
                 elif type(grant) is dict:
                     agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
-                    if  type(agency) == str:
-                        doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content":agency }
+                    if type(agency) == str:
+                        doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content": agency}
             except:
                 pass
 
@@ -107,9 +103,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 if type(prefix) == list:
                     for i, item in enumerate(prefix):
                         if type(item) == str:
-                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content":item }
+                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
                 elif type(prefix) == str:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content":prefix }
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
             except:
                 pass
 
@@ -132,7 +128,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:256]
             except:
                 pass
-
 
             if ddbj_core is False:
                 # ddbj_coreのフラグがない場合の処理を記述
@@ -161,12 +156,12 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     if type(organization) == list:
                         for i, item in enumerate(organization):
                             organization_name = item.get("Name")
-                            if  type(organization_name) == str:
-                                doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
+                            if type(organization_name) == str:
+                                doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content": organization_name}
                     elif type(organization) == dict:
                         organization_name = organization.get("Name")
-                        if  type(organization_name) is str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
+                        if type(organization_name) is str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content": organization_name}
                 except:
                     # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
                     pass
@@ -190,7 +185,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 except:
                     description = None
                     title = None
-            
+
             doc["organism"] = organism
             doc["description"] = description
             doc["title"] = title
@@ -230,7 +225,7 @@ def common_object(accession: str) -> dict:
     Todo: 共通のobjectの生成方法を検討・実装
     """
     d = {
-        "distribution": {"contentUrl":"", "encodingFormat":""},
+        "distribution": {"contentUrl": "", "encodingFormat": ""},
         "identifier": accession,
         "isPartOf": "BioProject",
         "type": "bioproject",
@@ -351,7 +346,7 @@ def logs(message: str):
         f.write(message + "\n")
 
 
-def rm_old_file(file_path:FilePath):
+def rm_old_file(file_path: FilePath):
     """
     bp_xml2jsonlは追記形式であるため出力ファイルと同じファイル名のファイルがある場合
     同一ファイルに新しい作業日のレコードが追加されることとなるため
@@ -388,7 +383,7 @@ class DdbjCoreData():
         date_created, date_published, date_modifiedフィールドの値を変える
         """
         # 辞書よりタプルを返す
-        return self.acc_dict.get(accession, (None,None,None))
+        return self.acc_dict.get(accession, (None, None, None))
 
 
 if __name__ == "__main__":

@@ -1,16 +1,15 @@
-import sys
+import argparse
+import hashlib
 import os
 import re
-import hashlib
-import argparse
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from utils.get_2nd_directory import get_second_newest_dir
 from typing import NewType
 
+from utils.get_2nd_directory import get_second_newest_dir
 
 FilePath = NewType('FilePath', str)
 
-def get_diff_list(former:FilePath, later:FilePath) -> list:
+
+def get_diff_list(former: FilePath, later: FilePath) -> list:
     """
     二つのディレクトリにある同一の名前のファイルを比較し
     MD5に差があるファイルのリストを返す
@@ -32,7 +31,7 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
     return [x["filename"] for x in unmached_info]
 
 
-def get_file_info(directory:FilePath) -> list:
+def get_file_info(directory: FilePath) -> list:
     """
     指定されたディレクトリのmd5 hasを含むファイル情報リストを返す
     Args:
@@ -65,7 +64,7 @@ def get_file_info(directory:FilePath) -> list:
     return file_info_lst
 
 
-def get_unmached_list(formar:list, later:list)->list:
+def get_unmached_list(formar: list, later: list) -> list:
     """
     二つのリストでfilenameが同じ情報を比較し一致しないファイルの情報を返す
     Args:
@@ -77,9 +76,9 @@ def get_unmached_list(formar:list, later:list)->list:
     """
     # 新しいjsonlのファイル情報と古いjsonlのファイル情報を比較
     # 新しいディレクトリにしか存在しないファイルもリストに含める
-    #formar_names = [x["filename"] for x in formar if x["filename"].endswith("jsonl")]
-    #later_names = [x["filename"] for x in later if x["filename"].endswith("jsonl")]
-    #new_in_later = set(later_names) ^ set(formar_names)
+    # formar_names = [x["filename"] for x in formar if x["filename"].endswith("jsonl")]
+    # later_names = [x["filename"] for x in later if x["filename"].endswith("jsonl")]
+    # new_in_later = set(later_names) ^ set(formar_names)
     unmatched_list = []
     for dct_l in later:
         for dct_f in formar:

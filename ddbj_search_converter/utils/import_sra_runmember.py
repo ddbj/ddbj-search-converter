@@ -1,6 +1,8 @@
-import sqlite3
 import csv
+import sqlite3
+
 import pandas as pd
+
 
 def add_to_db(row, con):
     # Function that make insert to your DB, make your own.
@@ -12,8 +14,8 @@ def process_chunk(chunk):
     # Handles one chunk of rows from pandas reader.
     db = '/mnt/dra/sra_accessions_3.db'
     con = sqlite3.connect(db)
-    #cur.execute('''DROP TABLE IF EXISTS SA''')
-    #for row in chunk:
+    # cur.execute('''DROP TABLE IF EXISTS SA''')
+    # for row in chunk:
     add_to_db(chunk, con)
     con.commit()
 
@@ -34,4 +36,3 @@ if __name__ == "__main__":
     for r in reader:
         process_chunk(r)
     create_index()
-

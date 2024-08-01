@@ -1,13 +1,14 @@
-import os
-import toolz
 import argparse
 import datetime
+import os
 from typing import NewType
+
+import toolz
 
 FilePath = NewType('FilePath', str)
 
 
-def split_file_from_behind(filename:FilePath,output:FilePath, n):
+def split_file_from_behind(filename: FilePath, output: FilePath, n):
     """
     jsonlファイルを後方から特定の行数のファイルに分割して出力する
     Args:
@@ -21,7 +22,8 @@ def split_file_from_behind(filename:FilePath,output:FilePath, n):
             with open(f"{output}/bioproject_part{i}.jsonl", 'w') as out:
                 out.writelines(part)
 
-def split_file(filename:FilePath,output:FilePath, n):
+
+def split_file(filename: FilePath, output: FilePath, n):
     """
     jsonlファイルを後方から特定の行数のファイルに分割して出力する
     Args:
@@ -43,7 +45,7 @@ def split_file(filename:FilePath,output:FilePath, n):
                 out.writelines(part)
 
 
-def rm_old_file(directory:FilePath):
+def rm_old_file(directory: FilePath):
     """
     処理開始前に既存のファイルの存在を確認し削除する
     Args:

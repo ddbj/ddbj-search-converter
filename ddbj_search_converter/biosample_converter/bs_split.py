@@ -1,11 +1,11 @@
-import os
-import toolz
 import argparse
-import datetime
 import glob
+import os
 import re
 from multiprocessing import Pool
 from typing import NewType
+
+import toolz
 
 FilePath = NewType('FilePath', str)
 
@@ -15,6 +15,7 @@ parser.add_argument("output", help="target directory")
 args = parser.parse_args()
 # 25000レコード = 50000行づつ分割 > 2Gを超えるサイズのjsonlがあったため30000に変更する
 batch_size = 30000
+
 
 def split_files(file_path: FilePath):
     """

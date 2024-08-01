@@ -1,16 +1,15 @@
-import sys
+import argparse
+import hashlib
 import os
 import re
-import hashlib
-import argparse
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from utils.get_2nd_directory import get_second_newest_dir
 from typing import NewType
 
+from ddbj_search_converter.utils.get_2nd_directory import get_second_newest_dir
 
 FilePath = NewType('FilePath', str)
 
-def get_diff_list(former:FilePath, later:FilePath) -> list:
+
+def get_diff_list(former: FilePath, later: FilePath) -> list:
     """
     二つのディレクトリにある同一の名前のファイルを比較し
     MD5に差があるファイルのリストを返す
@@ -36,7 +35,7 @@ def get_diff_list(former:FilePath, later:FilePath) -> list:
         return [x["filename"] for x in unmated_info]
 
 
-def get_file_info(directory:FilePath) -> list:
+def get_file_info(directory: FilePath) -> list:
     """
     指定されたディレクトリのmd5 hasを含むファイル情報リストを返す
     Args:
@@ -66,7 +65,7 @@ def get_file_info(directory:FilePath) -> list:
     return file_info_lst
 
 
-def get_unmatced_list(formar:list, later:list)->list:
+def get_unmatced_list(formar: list, later: list) -> list:
     """
     二つのリストでfilenameが同じ情報を比較し一致しないファイルの情報を返す
     Args:

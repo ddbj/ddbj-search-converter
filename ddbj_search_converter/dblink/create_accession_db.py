@@ -1,7 +1,6 @@
-# encoding:utf-8
 import csv
-import requests
-from id_relation_db import *
+
+from ddbj_search_converter.dblink.id_relation_db import *
 
 chunk_size = 10000
 # TODO:環境に合わせ書き換える・環境変数に記述するように
@@ -128,7 +127,7 @@ def store_experiment_set(r: list):
 
 def store_sample_set(r: list):
     sample_experiment_set.push(r[0], r[10], "sample_experiment")
-    sample_biosample_set.push(r[0],r[17], "sample_biosample")
+    sample_biosample_set.push(r[0], r[17], "sample_biosample")
 
 
 def store_run_set(r: list):
@@ -171,12 +170,14 @@ base = {
     "analysis_submission": AnalysisSubmission
 }
 
+
 def test_orm():
     q = (session.query(StudyBioProject, ExperimentBioProject, RunExperiment, ExperimentBioSample)
-        .join(ExperimentBioProject, ExperimentBioProject.id1 == StudyBioProject.id1)
+         .join(ExperimentBioProject, ExperimentBioProject.id1 == StudyBioProject.id1)
          .join(RunExperiment)
          .join(ExperimentBioSample)
          .filter())
+
 
 if __name__ == "__main__":
     main()

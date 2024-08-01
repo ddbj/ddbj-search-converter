@@ -3,7 +3,7 @@ import sqlite3
 from typing import List
 
 table_names = {
-    "bioproject":[
+    "bioproject": [
         "assembly_genome2bp",
         "bioproject2biosample",
         "bioproject_umbrella2bioproject",
@@ -14,7 +14,7 @@ table_names = {
         "mtb_id_bioproject",
         "ncbi_biosample_bioproject",
     ],
-    "biosample":[
+    "biosample": [
         "assembly_genome2bs",
         "bioproject2biosample",
         "biosample2bioproject",
@@ -28,17 +28,17 @@ table_names = {
 }
 
 acc_table_names = {
-    "bioproject":[
+    "bioproject": [
         "experiment_bioproject",
-        "study_bioproject", 
+        "study_bioproject",
     ],
-    "biosample":[
+    "biosample": [
         "experiment_biosample",
         "experiment_sample",
         "run_biosample",
         "sample_biosample",
     ]
-    }
+}
 
 
 class RelationObject():
@@ -59,7 +59,7 @@ class RelationObject():
             "insdc": r"([A-Z]{1}[0-9]{5}.[0-9]+|[A-Z]{2}[0-9]{6}|[A-Z]{2}[0-9]{6}.[0-9]+|[A-Z]{2}[0-9]{8}|[A-Z]{4}[0-9]{2}S?[0-9]{6,8})|[A-Z]{6}[0-9]{2}S?[0-9]{7,9}",
         }
 
-    def identify_type(self, id:str) -> dict:
+    def identify_type(self, id: str) -> dict:
         """
         - idの頭文字よりtypeを判別する
         - 判定したtypeを付加したdictを返す
@@ -74,7 +74,7 @@ class RelationObject():
                 return {"identifier": id, "type": db_type}
 
 
-def get_dbxref(ids:List[str]) -> dict:
+def get_dbxref(ids: List[str]) -> dict:
     """
     - get_dblinkから関連するIDのリスト（List[str]）を取得する
     - typeを付加しElasticsearchのdbXrefsのスキーマに合わせたオブジェクト（List[dict]）に整形しオブジェクトを返す
@@ -86,10 +86,10 @@ def get_dbxref(ids:List[str]) -> dict:
     """
     relation = RelationObject()
     dbxref_list = [relation.identify_type(x) for x in ids if x != None]
-    return list(filter(None,dbxref_list))
+    return list(filter(None, dbxref_list))
 
 
-def get_related_ids(id:str, type:str) -> List[dict]:
+def get_related_ids(id: str, type: str) -> List[dict]:
     """
     全ての関係テーブルから指定したIDに関連するIDを取得する
     モジュールとして get_related_ids(id)
@@ -116,7 +116,6 @@ def get_related_ids(id:str, type:str) -> List[dict]:
 
     # TODO: sra_accessionsデータの取得確認
 
-
     # TODO: 環境に合わせて変更する・環境変数に埋め込む
     acc_db_path = 'sra_accessions.sqlite'
     conn = sqlite3.connect(acc_db_path)
@@ -141,5 +140,3 @@ if __name__ == "__main__":
     for id in id_lst:
         # id listはget_dbxrefsによってwrapされたobjectとして返る
         related_ids = get_related_ids(id)
-
-

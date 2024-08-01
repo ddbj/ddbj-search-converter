@@ -1,16 +1,14 @@
-from lxml import etree
-import os
-import sys
-import json
-import xmltodict
-import glob
-from typing import NewType, List
-from multiprocessing import Pool
 import argparse
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from dblink.get_dblink import get_related_ids
+import glob
+import json
+import os
+from multiprocessing import Pool
+from typing import List, NewType
 
+import xmltodict
+from lxml import etree
+
+from ddbj_search_converter.dblink.get_dblink import get_related_ids
 
 FilePath = NewType('FilePath', str)
 batch_size = 10000
@@ -21,7 +19,7 @@ args = parser.parse_args()
 ddbj_biosample_name = "ddbj_biosample"
 
 
-def convert(input:FilePath):
+def convert(input: FilePath):
     # ddbj_coreからの入力のFlag.
     file_name = os.path.basename(input)
     if ddbj_biosample_name in file_name:
@@ -31,8 +29,8 @@ def convert(input:FilePath):
         ddbj_biosample = False
 
     context = etree.iterparse(input, tag="BioSample")
-    #cnt = 0
-    #cnt_max = 100000
+    # cnt = 0
+    # cnt_max = 100000
     i = 0
     docs = []
     for events, element in context:
@@ -49,7 +47,8 @@ def convert(input:FilePath):
             except:
                 doc["title"] = ""
             try:
-                doc["description"] = description.get("Comment").get("Paragraph") if type(description.get("Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")[0]
+                doc["description"] = description.get("Comment").get("Paragraph") if type(description.get(
+                    "Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")[0]
             except:
                 doc["description"] = ""
             try:
@@ -64,7 +63,7 @@ def convert(input:FilePath):
             doc["dateModified"] = doc["properties"].get("last_update", None)
             doc["datePublished"] = doc["properties"].get("publication_date", None)
             doc["identifier"] = doc["accession"]
-            doc["type"] =  "biosample"
+            doc["type"] = "biosample"
             doc["isPartOf"] = "BioSample"
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
@@ -98,7 +97,7 @@ def convert(input:FilePath):
             # Models.Modelにobjectが記述されているケースの処理
             try:
                 models_model = doc["properties"]["Models"]["Model"]
-                
+
                 # Models.Modelがオブジェクトの場合そのまま渡す
                 if isinstance(models_model, dict):
                     doc["properties"]["Models"]["Model"] = models_model.get("content", None)
@@ -107,14 +106,14 @@ def convert(input:FilePath):
                     doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
                 # Models.Modelの値が文字列の場合{"content": value}に変換する
                 elif isinstance(models_model, str):
-                    doc["properties"]["Models"]["Model"] = [{"content":models_model}]
+                    doc["properties"]["Models"]["Model"] = [{"content": models_model}]
 
             except:
                 pass
 
             docs.append(doc)
             i += 1
-            #cnt += 1
+            # cnt += 1
 
         clear_element(element)
         if i > batch_size:
@@ -148,6 +147,7 @@ def clear_element(element):
     element.clear()
     while element.getprevious() is not None:
         del element.getparent()[0]
+
 
 def main():
     # cpu_count()次第で分割数は変える

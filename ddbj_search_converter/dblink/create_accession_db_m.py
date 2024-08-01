@@ -1,12 +1,11 @@
-# encoding:utf-8
-import csv
-import requests
-import os
-import glob
 import argparse
+import csv
+import glob
+import os
 from multiprocessing import Pool
-from typing import NewType, List
-from id_relation_db import *
+from typing import NewType
+
+from ddbj_search_converter.dblink.id_relation_db import *
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 # 分割済みファイルのディレクトリ指定
@@ -22,15 +21,15 @@ chunk_size = 100000
 class ChunkedList(list):
     def __init__(self):
         self.ds = set()
-        
+
     def push(self, id1, id2, t):
-        if id1 and id2 and id2 != "-": 
+        if id1 and id2 and id2 != "-":
             self.ds.add((id1, id2))
         if len(self.ds) > chunk_size:
             rows = list(set([base[t](id0=d[0], id1=d[1]) for d in self.ds]))
             try:
                 session.bulk_save_objects(rows)
-                #session.add_all(rows)
+                # session.add_all(rows)
                 session.commit()
             except Exception as e:
                 print("insert error: ", e)
@@ -48,15 +47,16 @@ class ChunkedList(list):
         rows = [base[t](id0=d[0], id1=d[1]) for d in self.ds if d[1] != "-"]
         # session.bulk_save_objects(d, return_defaults=True)　# 同じデータがreplaceされない
         # session.add_all(d) # 同じデータがreplaceされない
-        #session.merge(d, load=True) # 同じデータがreplaceされない
+        # session.merge(d, load=True) # 同じデータがreplaceされない
         try:
             session.bulk_save_objects(rows)
-            #session.add_all(d)
+            # session.add_all(d)
             session.commit()
         except Exception as e:
             print("insert error: ", e)
         finally:
             session.close()
+
 
 # 保存したい関係の変換クラスをインスタンス化する
 # TODO: 要検討・インスタンスは各プロセスで呼ばないと効率的で無いのでは << 一旦グローバルなインスタンスで処理してみる
@@ -82,7 +82,7 @@ def create_db(path: FilePath):
     close_chunked_list()
 
 
-def store_relation_data(path:FilePath):
+def store_relation_data(path: FilePath):
     """
     SRA_Accessionをid->Study, id->Experiment, id->Sampleのように分解し（自分の該当するtypeは含まない）しList[set]に保存
     各リストが一定の長さになったらsqliteのテーブルに保存し、リストを初期化する（処理が終了する際にも最後に残ったリストをsqliteに保存）
@@ -165,7 +165,7 @@ def store_experiment_set(r: list):
 
 def store_sample_set(r: list):
     sample_experiment_set.push(r[0], r[10], "sample_experiment")
-    sample_biosample_set.push(r[0],r[17], "sample_biosample")
+    sample_biosample_set.push(r[0], r[17], "sample_biosample")
 
 
 def store_run_set(r: list):
@@ -207,6 +207,7 @@ base = {
     "run_biosample": RunBioSample,
     "analysis_submission": AnalysisSubmission
 }
+
 
 def main():
     drop_all_tables()
