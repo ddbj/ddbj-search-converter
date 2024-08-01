@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ddbj-search-converter"
+authors = [{ name = "Bioinformatics and DDBJ Center" }]
+readme = { file = "README.md", content-type = "text/markdown" }
+version = "0.1.0"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "lxml",
+    "pandas",
+    "requests",
+    "SQLAlchemy",
+    "toolz",
+    "xmltodict",
+]
+
+[project.urls]
+Homepage = "https://github.com/ddbj/ddbj-search-converter"
+Documentation = "https://github.com/ddbj/ddbj-search-converter/blob/main/README.md"
+Repository = "https://github.com/ddbj/ddbj-search-converter.git"
+
+[project.optional-dependencies]
+tests = ["isort", "pylint"]
+
+[tool.setuptools]
+package-dir = { "src" = "ddbj_search_converter" }
+packages = [
+    "ddbj_search_converter",
+    "ddbj_search_converter.utils",
+    "ddbj_search_converter.bioproject_converter",
+    "ddbj_search_converter.biosample_converter",
+    "ddbj_search_converter.dblink",
+]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114", # Missing module docstring
+    "C0115", # Missing class docstring
+    "C0116", # Missing function or method docstring
+    "C0301", # Line too long
+    "R0401", # Cyclic import
+    "R0903", # Too few public methods
+    "R0911", # Too many return statements
+    "R0912", # Too many branches
+    "R0913", # Too many arguments
+    "R0914", # Too many local variables
+    "R0915", # Too many statements
+    "R1705", # Unnecessary "else" after "return"
+]

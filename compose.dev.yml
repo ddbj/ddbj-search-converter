@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    image: ddbj-search-converter-dev
+    container_name: ddbj-search-converter-dev
+    volumes:
+      - ${PWD}:/app
+    restart: on-failure
+    working_dir: /app
+    command: ["sleep", "infinity"]
+    networks:
+      - ddbj-search-network-dev
+
+networks:
+  ddbj-search-network-dev:
+    name: ddbj-search-network-dev
+    external: true

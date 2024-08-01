@@ -1,0 +1,6 @@
+# Ignore everything
+**
+
+!ddbj_search_converter
+!pyproject.toml
+!README.md
