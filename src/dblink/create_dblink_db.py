@@ -44,6 +44,7 @@ def create_database(file,file_name,table_name,sqlite_db_path):
   c = conn.cursor()
 
   # テーブルを作成
+  c.execute(f'DROP TABLE IF EXISTS {table_name};')
   c.execute(f'''
     CREATE TABLE IF NOT EXISTS {table_name} (
       field1 TEXT,
@@ -58,8 +59,11 @@ def create_database(file,file_name,table_name,sqlite_db_path):
       c.execute(f'INSERT INTO {table_name} VALUES (?, ?)', (field1, field2))
 
   # インデックスを作成
+  c.execute(f'DROP INDEX IF EXISTS {table_name}_field1')
+  c.execute(f'DROP INDEX IF EXISTS {table_name}_field2')
   c.execute(f'CREATE INDEX {table_name}_field1 ON {table_name} (field1)')
   c.execute(f'CREATE INDEX {table_name}_field2 ON {table_name} (field2)')
+
 
   # コミットしてクローズ
   conn.commit()
