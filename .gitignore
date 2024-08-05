@@ -10,3 +10,5 @@ get_target_xml.py
 *logs*
 test*.json
 sample/PR*.xml
+jga*.xml
+jga*.json

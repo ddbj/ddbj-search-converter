@@ -2,45 +2,8 @@ import re
 import sqlite3
 from typing import List
 
+
 table_names = {
-    "bioproject":[
-        "assembly_genome2bp",
-        "bioproject2biosample",
-        "bioproject_umbrella2bioproject",
-        "biosample2bioproject",
-        "gea2bioproject",
-        "insdc2bioproject",
-        "insdc_master2bioproject",
-        "mtb_id_bioproject",
-        "ncbi_biosample_bioproject",
-    ],
-    "biosample":[
-        "assembly_genome2bs",
-        "bioproject2biosample",
-        "biosample2bioproject",
-        "gea2biosample",
-        "insdc2biosample",
-        "insdc_master2biosample",
-        "mtb_id_biosample",
-        "ncbi_biosample_bioproject",
-        "trace_biosample_taxon2bs"
-    ]
-}
-
-acc_table_names = {
-    "bioproject":[
-        "experiment_bioproject",
-        "study_bioproject", 
-    ],
-    "biosample":[
-        "experiment_biosample",
-        "experiment_sample",
-        "run_biosample",
-        "sample_biosample",
-    ]
-}
-
-jga_table_names = {
     "jga-study": [
         "jga_study2humID",
         "jga_study2jga_dataset",
@@ -51,7 +14,6 @@ jga_table_names = {
         "jga_study2jga_dataset",
     ]
 }
-
 
 
 class RelationObject():
@@ -69,9 +31,11 @@ class RelationObject():
             "gea": r"^E-GEA",
             "assemblies": r"^GCA",
             "mtb": r"^MTB",
+            "jga-study": r"^JGAS",
             "jga-dataset": r"^JGAD",
             "jga-policy": r"^JGAP",
             "jga-dac": r"^JGAC",
+            "pubmed": r"\d",
             "insdc": r"([A-Z]{1}[0-9]{5}.[0-9]+|[A-Z]{2}[0-9]{6}|[A-Z]{2}[0-9]{6}.[0-9]+|[A-Z]{2}[0-9]{8}|[A-Z]{4}[0-9]{2}S?[0-9]{6,8})|[A-Z]{6}[0-9]{2}S?[0-9]{7,9}",
         }
 
@@ -119,7 +83,7 @@ def get_related_ids(id:str, type:str) -> List[dict]:
     limit = 10000
 
     # TODO:環境に合わせて設定・環境変数にする　dblinkのSQLiteデータベースのパス
-    sqlite_db_path = 'ddbj_dblink.sqlite'
+    sqlite_db_path = '/home/w3ddbjld/tasks/ddbj-search-converter/src/dblink/ddbj_dblink.sqlite'
     conn = sqlite3.connect(sqlite_db_path)
     c = conn.cursor()
 
@@ -130,32 +94,18 @@ def get_related_ids(id:str, type:str) -> List[dict]:
             related_ids.append(row[1])
     conn.close()
 
-    # TODO: sra_accessionsデータの取得確認
-
-
-    # TODO: 環境に合わせて変更する・環境変数に埋め込む
-    acc_db_path = 'sra_accessions.sqlite'
-    conn = sqlite3.connect(acc_db_path)
-    ac = conn.cursor()
-    for acc_table_name in acc_table_names[type]:
-        ac.execute(f'SELECT * FROM {acc_table_name} WHERE id0 = ? OR id1 = ? LIMIT {limit}', (id, id))
-        for row in ac.fetchall():
-            related_ids.append(row[0])
-            related_ids.append(row[1])
-
     related_ids = [i for i in related_ids if i != id]
     return get_dbxref(list(set(related_ids)))
 
 
+
 if __name__ == "__main__":
-    # sample ids
-    id_lst = [
-        "PRJNA3",
-        "PRJNA5",
-        "SAMN00000002"
+    infos = [
+        {"type": "jga-study","identifier": "JGAS000715"},
+        {"type": "jga-dataset","identifier": "JGAD000848"},
+        {"type": "jga-study","identifier": "JGAS000722"},
+        {"type": "jga-dataset","identifier": "JGAD000855"},
     ]
-    for id in id_lst:
-        # id listはget_dbxrefsによってwrapされたobjectとして返る
-        related_ids = get_related_ids(id)
-
-
+    for info in infos:
+        print(info["type"])
+        print(get_related_ids(info["identifier"], info["type"]))
