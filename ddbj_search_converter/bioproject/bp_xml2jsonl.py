@@ -10,10 +10,12 @@ from typing import List, NewType, Tuple
 
 import requests
 import xmltodict
-from dblink.get_dblink import get_related_ids
 from lxml import etree
 
+from ddbj_search_converter.dblink.get_dblink import get_related_ids
+
 sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
@@ -71,7 +73,7 @@ def xml2jsonl(input_file: FilePath) -> dict:
             project = metadata["Package"]["Project"]
             doc["properties"]["Project"] = project
 
-            # 共通項目のobjectを生成し追加する
+            # organismをパースし共通項目に埋める
             try:
                 organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
                 name = organism_obj.get("OrganismName")
@@ -85,21 +87,6 @@ def xml2jsonl(input_file: FilePath) -> dict:
             except:
                 now = datetime.now()
                 published = now.strftime("%Y-%m-%dT00:00:00Z")
-
-            # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
-            try:
-                grant = project["Project"]["ProjectDescr"]["Grant"]
-                if type(grant) is list:
-                    for i, item in enumerate(grant):
-                        agency = item.get("Agency")
-                        if type(agency) is str:
-                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content": agency}
-                elif type(grant) is dict:
-                    agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
-                    if type(agency) == str:
-                        doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content": agency}
-            except:
-                pass
 
             # properties.Project.Project.ProjectDescr.LocusTagPrefix : 値が文字列の場合の処理
             try:
@@ -125,14 +112,96 @@ def xml2jsonl(input_file: FilePath) -> dict:
             except:
                 pass
 
-            # 巨大なPublicationを制限する（極稀なケースで存在し、bulk apiに対応しない）
+            # Organizationを共通項目に出力
+            try:
+                organization = project["Submission"]["Description"]["Organization"]
+                if type(organization) == list:
+                    oraganization = []
+                    for i, item in enumerate(organization):
+                        organization_name = item.get("Name")
+                        if type(organization_name) == str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content": organization_name}
+                            oraganization.append({"content": organization_name})
+                        elif type(organization_name) == dict:
+                            organization = organization_name
+                elif type(organization) == dict:
+                    organization_name = organization.get("Name")
+                    if type(organization_name) is str:
+                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content": organization_name}
+                        organization = [{"content": organization_name}]
+                        # 共通項目用オブジェクトを作り直す
+                    elif type(organization_name) == dict:
+                        organization = [organization_name]
+            except:
+                organization = []
+
+            # publicationを共通項目に出力
             try:
                 publication = project["Project"]["ProjectDescr"]["Publication"]
-                if type(publication) == list and len(publication) > 256:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:256]
+                # 極稀にbulk insertできないサイズのリストがあるため
+                if type(publication) == list and len(publication) > 100000:
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:100000]
             except:
-                pass
+                publication = []
 
+            # Grantを共通項目に出力
+            # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
+            try:
+                grant = project["Project"]["ProjectDescr"]["Grant"]
+                if type(grant) is list:
+                    for i, item in enumerate(grant):
+                        agency = item.get("Agency")
+                        if type(agency) is str:
+                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content": agency}
+                elif type(grant) is dict:
+                    agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
+                    if type(agency) == str:
+                        doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content": agency}
+            except:
+                grant = []
+
+            # ExternalLink（schemaはURLとdbXREFを共に許容する・共通項目にはURLを渡す）
+            # propertiesの記述に関してはスキーマを合わせないとimportエラーになり可能性があることに留意
+            external_link_db = {"GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
+                                "dbGaP": "https://www.ncbi.nlm.nih.gov/gap/advanced_search/?TERM=",
+                                "ENA-SUBMISSION": "https://www.ebi.ac.uk/ena/browser/view/",
+                                "SRA": "https://www.ncbi.nlm.nih.gov/sra/",
+                                "PUBMED": "https://pubmed.ncbi.nlm.nih.gov/",
+                                "DOI": "https://doi.org/",
+                                "SRA|http": ""}
+            try:
+                # A. ExternalLinkの値がオブジェクトのケース
+                external_link_obj = project["Project"]["ProjectDescr"]["ExternalLink"]
+                if isinstance(external_link_obj, dict):
+                    # 属性にURLを含む場合
+                    if external_link_obj.get("URL", None):
+                        el_label = external_link_obj.get("label", None)
+                        el_url = external_link_obj.get("URL", None)
+                        externalLink = [{"label": el_label if el_label else el_url, "URL": el_url}]
+                    # 属性にdbXREFを含む場合
+                    elif external_link_obj.get("dbXREF", None):
+                        el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
+                        el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
+                        externalLink = [{"label": el_label if el_label else el_url, "URL": el_url}]
+                # B. ExternalLinkの値がlistのケース
+                elif isinstance(external_link_obj, list):
+                    externalLink = []
+                    # TODO: if の階層に留意。一つひとつのオブジェクトごとにurlからdbXREFのケース分けが必要
+                    for item in external_link_obj:
+                        # 属性にURLを含む場合
+                        if external_link_obj.get("URL", None):
+                            el_label = external_link_obj.get("label", None)
+                            el_url = external_link_obj.get("URL", None)
+                            externalLink.append({"label": el_label if el_label else el_url, "URL": el_url})
+                        # 属性にdbXREFを含む場合
+                        elif external_link_obj.get("dbXREF", None):
+                            el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
+                            el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
+                            externalLink.append({"label": el_label if el_label else el_url, "URL": el_url})
+            except:
+                externalLink = []
+
+            # centerごとの差異があるケース: status, description, title,  ,organization, Nameのxmlからの取得
             if ddbj_core is False:
                 # ddbj_coreのフラグがない場合の処理を記述
                 # ddbj_coreeにはSubmissionの下の属性が無いため以下の処理を行わない
@@ -153,22 +222,6 @@ def xml2jsonl(input_file: FilePath) -> dict:
                     description = None
                     title = None
 
-                # Organization.Nameの型をobjectに統一する
-                # Todo:処理速度を上げるため内包表記にする
-                try:
-                    organization = project["Submission"]["Description"]["Organization"]
-                    if type(organization) == list:
-                        for i, item in enumerate(organization):
-                            organization_name = item.get("Name")
-                            if type(organization_name) == str:
-                                doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content": organization_name}
-                    elif type(organization) == dict:
-                        organization_name = organization.get("Name")
-                        if type(organization_name) is str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content": organization_name}
-                except:
-                    # 入力されたスキーマが正しくないケースがあるためその場合空のオブジェクトを渡す？
-                    pass
             else:
                 # DDBJ_coreの場合
                 # accessions.tabよりdateを取得
@@ -190,18 +243,27 @@ def xml2jsonl(input_file: FilePath) -> dict:
                     description = None
                     title = None
 
+            doc["identifier"] = accession
+            doc["distribution"] = {"contentUrl": f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}", "encodingFormat": "JSON"}
+            doc["isPartOf"] = "BioProject"
+            doc["type"] = "bioproject"
+            doc["name"] = None
+            doc["url"] = None
             doc["organism"] = organism
-            doc["description"] = description
             doc["title"] = title
+            doc["description"] = description
+            doc["organizaiotn"] = organization
+            doc["publication"] = publication
+            doc["grant"] = grant
+            doc["externalLink"] = externalLink
+            # doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            doc["download"] = None
+            doc["status"] = status
+            doc["visibility"] = "unrestricted-access"
             doc["dateCreated"] = submitted
             doc["dateModified"] = last_update
             doc["datePublished"] = published
-            doc["status"] = status
-            doc["visibility"] = "unrestricted-access"
-            # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
 
-            doc.update(common_object(accession,))
             docs.append(doc)
             i += 1
 
@@ -220,23 +282,6 @@ def xml2jsonl(input_file: FilePath) -> dict:
             dict2esjsonl(docs)
         else:
             dict2jsonl(docs)
-
-
-def common_object(accession: str) -> dict:
-    """
-    BioProjectのmetadataに共通のobjectを生成する
-    Todo: nullの場合の処理（index mappingでオブジェクトが指定されている場合からのobjectを与える必要がありそうだが正しいか検証）
-    Todo: 共通のobjectの生成方法を検討・実装
-    """
-    d = {
-        "distribution": {"contentUrl": "", "encodingFormat": ""},
-        "identifier": accession,
-        "isPartOf": "BioProject",
-        "type": "bioproject",
-        "name": None,
-        "url": None
-    }
-    return d
 
 
 def dict2es(docs: List[dict]):
