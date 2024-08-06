@@ -118,16 +118,18 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     for i, item in enumerate(organization):
                         organization_name = item.get("Name")
                         if  type(organization_name) == str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
                             oraganization.append({"content":organization_name })
                         elif type(organization_name) == dict:
                             organization = organization_name
                 elif type(organization) == dict:
                     organization_name = organization.get("Name")
                     if  type(organization_name) is str:
-                        organization=  {"content":organization_name }
+                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
+                        organization = [{"content":organization_name }]
                         # 共通項目用オブジェクトを作り直す
                     elif type(organization_name) == dict:
-                        organization = organization_name
+                        organization = [organization_name]
             except:
                 organization = []
 
