@@ -32,6 +32,7 @@ def split_file(filename:FilePath,output:FilePath, n):
     today = datetime.datetime.now()
     today_str = today.strftime('%Y%m%d')
     output_path = f"{output}/{today_str}"
+    print("output path: ", output_path)
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 

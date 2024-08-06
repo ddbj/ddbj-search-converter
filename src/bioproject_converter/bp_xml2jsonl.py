@@ -255,7 +255,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["publication"] = publication
             doc["grant"] = grant
             doc["externalLink"] = externalLink
-            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            ###doc["dbXrefs"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
