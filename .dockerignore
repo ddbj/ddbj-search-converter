@@ -4,3 +4,5 @@
 !ddbj_search_converter
 !pyproject.toml
 !README.md
+!tests
+!scripts

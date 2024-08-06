@@ -1,14 +1,13 @@
 import sqlite3
 import sys
 from collections import defaultdict
-from typing import NewType
+from pathlib import Path
 
-FilePath = NewType('FilePath', str)
 xref_max_size = 50
 # Todo: 取得したexperimentでexperiment->runの関係を追加するか検討
 
 
-def get_relation(accessions_db: FilePath, bioproject: str) -> dict:
+def get_relation(accessions_db: Path, bioproject: str) -> dict:
     """_summary_
     静的ファイルからの関係情報の取得が遅すぎるためsra_accessionsをsqliteから読み込む
     Args:
@@ -34,19 +33,18 @@ def get_relation(accessions_db: FilePath, bioproject: str) -> dict:
         if r[2] != "-":
             xref_dct["biosample"].add(r[2])
 
-    '''
-    for r in xrefs:
-        if r[0] != "-":
-            xref_dct["submission"].add(r[0])
-        if r[1] != "-":
-            xref_dct["experiment"].add(r[1])
-        if r[2] != "-":
-            xref_dct["sample"].add(r[2])
-        if r[3] != "-":
-            xref_dct["study"].add(r[3])
-        if r[4] != "-":
-            xref_dct["biosample"].add(r[4])
-    '''
+    # for r in xrefs:
+    #     if r[0] != "-":
+    #         xref_dct["submission"].add(r[0])
+    #     if r[1] != "-":
+    #         xref_dct["experiment"].add(r[1])
+    #     if r[2] != "-":
+    #         xref_dct["sample"].add(r[2])
+    #     if r[3] != "-":
+    #         xref_dct["study"].add(r[3])
+    #     if r[4] != "-":
+    #         xref_dct["biosample"].add(r[4])
+
     return dict(xref_dct)
 
 

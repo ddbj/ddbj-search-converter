@@ -1,88 +1,157 @@
-import sqlite3
+"""\
+create_dblink_db の実装
 
-# TODO:スパコン内部のパスに変更
-file_path = [
-    "/lustre9/open/shared_data/dblink/assembly_genome-bp/assembly_genome2bp.tsv",
-    "/lustre9/open/shared_data/dblink/assembly_genome-bs/assembly_genome2bs.tsv",
-    "/lustre9/open/shared_data/dblink/bioproject-biosample/bioproject2biosample.tsv",
-    "/lustre9/open/shared_data/dblink/bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/biosample-bioproject/biosample2bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/gea-bioproject/gea2bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv",
-    "/lustre9/open/shared_data/dblink/insdc-bioproject/insdc2bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/insdc-biosample/insdc2biosample.tsv",
-    "/lustre9/open/shared_data/dblink/insdc_master-bioproject/insdc_master2bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/insdc_master-biosample/insdc_master2biosample.tsv",
-    "/lustre9/open/shared_data/dblink/mtb2bp/mtb_id_bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv",
-    "/lustre9/open/shared_data/dblink/ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv",
-    "/lustre9/open/shared_data/dblink/taxonomy_biosample/trace_biosample_taxon2bs.tsv",
+- ddbj/dblink にある BioSample と BioProject の関連データをダウンロードし、SQLite データベースを作成する
+    - 実際には、遺伝研スパコン内のデータを利用する
+"""
+
+import argparse
+import sys
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Generator, List, Optional
+
+from sqlalchemy import Column, Index, Table, Text, create_engine
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
+from sqlalchemy.schema import MetaData
+
+from ddbj_search_converter.config import Config, default_config, get_config
+
+
+def parse_args(args: List[str]) -> Config:
+    parser = argparse.ArgumentParser(description="Create SQLite database from DDBJ/DBLink files")
+
+    parser.add_argument(
+        "dblink_files_base_path",
+        nargs="?",
+        default=None,
+        help=f"Base path of DDBJ/DBLink files (default: {default_config.dblink_files_base_path})",
+    )
+    parser.add_argument(
+        "dblink_db_path",
+        nargs="?",
+        default=None,
+        help="Path to the created SQLite database(default: ./converter_results/dblink.sqlite)",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    config = get_config()
+    if parsed_args.dblink_files_base_path is not None:
+        config.dblink_files_base_path = Path(parsed_args.dblink_files_base_path)
+    if parsed_args.dblink_db_path is not None:
+        config.dblink_db_path = Path(parsed_args.dblink_db_path)
+
+    return config
+
+
+# e.g., {DBLINK_FILES_BASE_PATH}/assembly_genome-bp/assembly_genome2bp.tsv
+# DBLINK_FILES_BASE_PATH = "/lustre9/open/shared_data/dblink"
+DBLINK_FILES = [
+    "assembly_genome-bp/assembly_genome2bp.tsv",
+    "assembly_genome-bs/assembly_genome2bs.tsv",
+    "bioproject-biosample/bioproject2biosample.tsv",
+    "bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv",
+    "biosample-bioproject/biosample2bioproject.tsv",
+    "gea-bioproject/gea2bioproject.tsv",
+    "gea-biosample/gea2biosample.tsv",
+    "insdc-bioproject/insdc2bioproject.tsv",
+    "insdc-biosample/insdc2biosample.tsv",
+    "insdc_master-bioproject/insdc_master2bioproject.tsv",
+    "insdc_master-biosample/insdc_master2biosample.tsv",
+    "mtb2bp/mtb_id_bioproject.tsv",
+    "mtb2bs/mtb_id_biosample.tsv",
+    "ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv",
+    "taxonomy_biosample/trace_biosample_taxon2bs.tsv",
 ]
 
 
-def create_database(file, file_name, table_name, sqlite_db_path):
-    """
-    FTPサイトからTSVファイルをダウンロードし、SQLiteデータベースを構築する
+def dblink_files(config: Config) -> List[Path]:
+    files = [config.dblink_files_base_path.joinpath(file) for file in DBLINK_FILES]
+    for file in files:
+        if not file.exists():
+            print(f"DDBJ/DBLink file not found: {file}")
+            sys.exit(1)
 
-    引数:
-      ftp_host: FTPサーバーのホスト名
-      ftp_user: FTPサーバーのユーザー名
-      ftp_password: FTPサーバーのパスワード
-      ftp_filename: ダウンロードするTSVファイル名
-      sqlite_db_path: 作成するSQLiteデータベースのパス
+    return files
 
-    戻り値:
-      なし
-    """
-    # オプションを指定してwgetを実行
-    # deplicated
-    # subprocess.call(['wget', '-O', f'./data/{ftp_filename}', ftp_path])
 
-    # SQLiteデータベースを作成
-    conn = sqlite3.connect(sqlite_db_path)
-    c = conn.cursor()
+def create_db_engine(config: Config) -> Engine:
+    return create_engine(
+        f"sqlite:///{config.dblink_db_path}",
+    )
+
+
+@contextmanager
+def get_session(config: Optional[Config] = None, engine: Optional[Engine] = None) -> Generator[Session, None, None]:
+    if engine is None:
+        if config is None:
+            raise ValueError("config or engine must be specified")
+        engine = create_db_engine(config)
+    session = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )()
+
+    try:
+        yield session
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+def create_database(engine: Engine, file: Path) -> None:
+    table_name = file.name.split(".")[0]
 
     # テーブルを作成
-    c.execute(f'DROP TABLE IF EXISTS {table_name};')
-    c.execute(f'''
-    CREATE TABLE IF NOT EXISTS {table_name} (
-      field1 TEXT,
-      field2 TEXT
-    );
-  ''')
+    metadata = MetaData()
+    table = Table(
+        table_name,
+        metadata,
+        Column("field1", Text),
+        Column("field2", Text),
+    )
+    metadata.create_all(engine)
 
     # TSVファイルを読み込み、データベースに挿入
-    with open(file, 'r') as f:
-        for line in f:
-            field1, field2 = line.strip().split('\t')
-            c.execute(f'INSERT INTO {table_name} VALUES (?, ?)', (field1, field2))
+    data = []
+    for row in file.read_text().splitlines():
+        if row == "":
+            continue
+        field1, field2 = row.strip().split("\t")
+        data.append({"field1": field1, "field2": field2})
 
-    # インデックスを作成
-    c.execute(f'DROP INDEX IF EXISTS {table_name}_field1')
-    c.execute(f'DROP INDEX IF EXISTS {table_name}_field2')
-    c.execute(f'CREATE INDEX {table_name}_field1 ON {table_name} (field1)')
-    c.execute(f'CREATE INDEX {table_name}_field2 ON {table_name} (field2)')
+    with get_session(engine=engine) as session:
+        session.execute(table.insert(), data)
+        session.commit()
 
-    # コミットしてクローズ
-    conn.commit()
-    conn.close()
+        Index(f"{table_name}_field1", table.c.field1).create(bind=engine)
+        Index(f"{table_name}_field2", table.c.field2).create(bind=engine)
 
 
-if __name__ == '__main__':
-    """
-    ddbj/dblinkにあるBioSampleとBioProjectの関連データをダウンロードし、SQLiteデータベースを作成する
-    """
-    # SQLiteデータベースのパス
-    sqlite_db_path = 'ddbj_dblink.sqlite'
+def main() -> None:
+    print("Create SQLite database from DDBJ/DBLink files")
+    config = parse_args(sys.argv[1:])
+    print(f"Config: {config.model_dump()}")
 
+    config.dblink_files_base_path.mkdir(parents=True, exist_ok=True)
+    if config.dblink_files_base_path.exists():
+        config.dblink_files_base_path.unlink()
+    engine = create_db_engine(config)
+
+    files = dblink_files(config)
     # 関係データのファイル毎にデータベースを作成
-    for i in range(len(file_path)):
-        # FTPサーバーの情報
-        file = file_path[i]
-        filename = file.split("/")[-1]
-        table_name = filename.split(".")[0]
-        # ftp_host = file_path[i].split("/")[2]
-        # データベースを作成
-        create_database(file, filename, table_name, sqlite_db_path)
+    for file in files:
+        print(f"Create database from {file}")
+        create_database(engine, file)
 
-    print('データベース作成完了')
+    print("Create SQLite database completed")
+
+
+if __name__ == "__main__":
+    main()

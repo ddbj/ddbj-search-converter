@@ -1,18 +1,52 @@
-from sqlalchemy import Column, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from contextlib import contextmanager
+from typing import Generator, List, Literal, Optional, Tuple
 
-# TODO:環境に合わせ書き換える・環境変数に記述するように
-engine = create_engine("sqlite:///sra_accessions.sqlite")
-session = scoped_session(sessionmaker(autocommit=False,
-                                      bind=engine))
-Base = declarative_base()
+from sqlalchemy import Column, String, create_engine
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm.session import Session
+
+from ddbj_search_converter.config import Config
+
+
+def create_db_engine(config: Config) -> Engine:
+    return create_engine(
+        f"sqlite:///{config.accessions_db_path}",
+    )
+
+
+@contextmanager
+def get_session(config: Optional[Config] = None, engine: Optional[Engine] = None) -> Generator[Session, None, None]:
+    if engine is None:
+        if config is None:
+            raise ValueError("config or engine must be specified")
+        engine = create_db_engine(config)
+    session = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine,
+    )()
+
+    try:
+        yield session
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+# === models ===
+
+
+class Base(DeclarativeBase):
+    pass
 
 
 class StudySubmission(Base):
     __tablename__ = "study_submission"
-    # MySQLの場合VARCHAR型の長さに当たる(10)の部分が無いとエラーになる
-    # SQLiteは必要が無い
+    # MySQL の場合 VARCHAR 型の長さに当たる (16) の部分が無いとエラーになる
+    # SQLite は必要が無い
     id0 = Column(String(16), primary_key=True, index=True)
     id1 = Column(String(16), primary_key=True, index=True)
 
@@ -89,4 +123,42 @@ class RunBioSample(Base):
     id1 = Column(String(16), primary_key=True, index=True)
 
 
-# Base.metadata.create_all(bind=engine)
+# === CRUD func, etc. ===
+
+
+TableNames = Literal[
+    "study_submission",
+    "study_bioproject",
+    "study_experiment",
+    "experiment_bioproject",
+    "experiment_study",
+    "experiment_sample",
+    "experiment_biosample",
+    "sample_experiment",
+    "sample_biosample",
+    "run_experiment",
+    "run_sample",
+    "run_biosample",
+    "analysis_submission",
+]
+
+
+def init_db(config: Config) -> None:
+    engine = create_db_engine(config)
+    if config.accessions_db_path.exists():
+        config.accessions_db_path.unlink()
+    config.accessions_db_path.parent.mkdir(parents=True, exist_ok=True)
+    Base.metadata.create_all(bind=engine)
+    engine.dispose()
+
+
+def bulk_insert(
+    engine: Engine,
+    rows: List[Tuple[str, str]],
+    table_name: str,
+) -> None:
+    table = Base.metadata.tables[table_name]
+    insert_data = [{"id0": id0, "id1": id1} for id0, id1 in rows]
+    with get_session(engine=engine) as session:
+        session.execute(table.insert(), insert_data)
+        session.commit()

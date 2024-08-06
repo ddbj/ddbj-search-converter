@@ -2,14 +2,18 @@ import argparse
 import csv
 import json
 import os
+import re
+import sys
 from datetime import datetime
+from pathlib import Path
 from typing import List, NewType, Tuple
 
 import requests
 import xmltodict
+from dblink.get_dblink import get_related_ids
 from lxml import etree
 
-from ddbj_search_converter.dblink.get_dblink import get_related_ids
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 FilePath = NewType('FilePath', str)
 batch_size = 200

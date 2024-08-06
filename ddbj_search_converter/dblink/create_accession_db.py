@@ -1,182 +1,188 @@
+"""\
+create_accession_db の実装
+
+- SRA_Accession を id->Study, id->Experiment, id->Sample のように分解し、SQLite データベースに保存する
+
+- 入力: 2,000,000 行ごとに分割された SRA_Accessions.tab ファイル群をまとめたディレクトリ
+    - ディレクトリのパスは、通常、20240801 などの日付である
+    - SRA_Accessions.tab は、ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab から download される
+    - SRA_Accessions.tab は、scripts/split_sra_accessions.pl で分割される
+- 出力: SQLite データベース
+"""
+
+import argparse
 import csv
+import glob
+import os
+import sys
+from multiprocessing import Manager, Pool
+from multiprocessing.managers import ListProxy
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
-from ddbj_search_converter.dblink.id_relation_db import *
+from sqlalchemy.engine.base import Engine
 
-chunk_size = 10000
-# TODO:環境に合わせ書き換える・環境変数に記述するように
-LOCAL_ACCESSION_PATH = "/mnt/sra/SRA_Accessions.tab"
-# ACCESSIONS_URL = ""  # 不要
+from ddbj_search_converter.config import Config, default_config, get_config
+from ddbj_search_converter.dblink.id_relation_db import (TableNames,
+                                                         bulk_insert,
+                                                         create_db_engine,
+                                                         init_db)
 
-
-class ChunkedList(list):
-    def push(self, id1, id2, t):
-        if id1 and id2:
-            self.append((id1, id2))
-        if len(self) > chunk_size:
-            d = [base[t](id0=d[0], id1=d[1]) for d in self]
-            session.bulk_save_objects(d, return_defaults=True)
-            session.commit()
-            self.clear()
-
-    def store_rest(self, t):
-        """
-        最後に残ったリストの要素をsqliteに追加する
-        Todo:最後にchunkedlistに残った全てデータをdbに保存するためこのメソッドを呼ぶイベント
-        :return:
-        """
-        d = [base[t](id0=d[0], id1=d[1]) for d in self]
-        session.bulk_save_objects(d, return_defaults=True)
-        session.commit()
+CHUNK_SIZE = 100000
+Relation = Tuple[str, str, TableNames]
+SharedData = Dict[TableNames, ListProxy[Any]]
 
 
-# 指定したサイズを超えたらDBにデータを保存しリフレッシュするリストを
-# 保存したいエッジの数分用意する
-study_submission_set = ChunkedList()
-study_bioproject_set = ChunkedList()
-study_experiment_set = ChunkedList()
-experiment_study_set = ChunkedList()
-experiment_bioproject_set = ChunkedList()
-experiment_biosample_set = ChunkedList()
-experiment_sample_set = ChunkedList()
-sample_experiment_set = ChunkedList()
-sample_biosample_set = ChunkedList()
-analysis_submission_set = ChunkedList()
-run_experiment_set = ChunkedList()
-run_sample_set = ChunkedList()
-run_biosample_set = ChunkedList()
+def parse_args(args: List[str]) -> Config:
+    parser = argparse.ArgumentParser(description="Create SQLite database from SRA_Accessions.tab files")
+
+    parser.add_argument(
+        "accessions_dir_path",
+        nargs="?",
+        default=None,
+        help="Directory containing split SRA_Accessions.tab files (default: ./converter_results/sra_accessions/20240801)",
+    )
+    parser.add_argument(
+        "accessions_db_path",
+        nargs="?",
+        default=None,
+        help="Path to the created SQLite database (default: ./converter_results/sra_accessions.sqlite)",
+    )
+    parser.add_argument(
+        "process_pool_size",
+        default=default_config.process_pool_size,
+        type=int,
+        help=f"Number of processes to use (default: {default_config.process_pool_size})",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    config = get_config()
+    if parsed_args.accessions_dir_path is not None:
+        config.accessions_dir = parsed_args.accessions_dir_path
+        if config.accessions_dir.exists() is False:
+            print(f"Directory not found: {config.accessions_dir}")
+            sys.exit(1)
+    if parsed_args.accessions_db_path is not None:
+        config.accessions_db_path = parsed_args.accessions_db_path
+
+    return config
 
 
-def main():
-    # accessions.tabを取得
-    # SRA_Accessions.tabがミラーされているためこの操作は不要
-    # get_accession_data()
-    # インサート前にテーブルを空にする
-    # Todo: tableの更新用、検索用のローテーションのフロー検討
-    drop_all_tables()
-    store_relation_data()
-    # ChunkedListに保存されず残ったデータを保存する
-    close_chunked_list()
-
-
-def store_relation_data():
+def store_relation_data(config: Config, path: Path, shared_data: SharedData) -> None:
     """
-    SRA_Accessionをid->Study, id->Experiment, id->Sampleのように分解し（自分の該当するtypeは含まない）しList[set]に保存
-    各リストが一定の長さになったらsqliteのテーブルに保存し、リストを初期化する（処理が終了する際にも最後に残ったリストをsqliteに保存）
-    :return:
+    SRA_Accession を id->Study, id->Experiment, id->Sample のように分解し（自分の該当する type は含まない）し、shared_data の各リストに保存する
+    各リストが一定の長さになったら sqlite のテーブルに insert し、リストを初期化する
+
+    各 process で呼ばれるため、engine と session は各 process で生成する
     """
-    reader = csv.reader(open(LOCAL_ACCESSION_PATH), delimiter="\t", quoting=csv.QUOTE_NONE)
+    reader = csv.reader(path.open(), delimiter="\t", quoting=csv.QUOTE_NONE)
     next(reader)
-    # 行のType（STUDY, EXPERIMENT, SAMPLE, RUN, ANALYSIS, SUBMISSION ）ごとテーブルを生成し、
-    # 各Type+BioProject, BioSampleを追加したターゲットの値がnullでなければIDとのセットを作成しテーブルに保存する
-    # relationは詳細表示に利用することを想定し、直接の検索では無いためstatusがlive以外はstoreしない
+    # 行の Type（STUDY, EXPERIMENT, SAMPLE, RUN, ANALYSIS, SUBMISSION）ごとテーブルを生成し、
+    # 各 Type+BioProject, BioSample を追加したターゲットの値が null でなければ ID とのセットを作成しテーブルに保存する
+    # relation は詳細表示に利用することを想定し、直接の検索では無いため status が live 以外は store しない
 
-    for r in reader:
-        # SRA_Accessionsの行ごと処理を行う
-        # statusがliveであった場合
-        # 各行のTypeを取得し、処理を分岐し実行する
-        if r[2] == "live":
-            acc_type = r[6]
-            convert_row[acc_type](r)
-
-
-def close_chunked_list():
-    experiment_bioproject_set.store_rest("experiment_bioproject")
-    experiment_study_set.store_rest("experiment_study")
-    experiment_sample_set.store_rest("experiment_sample")
-    experiment_biosample_set.store_rest("experiment_biosample")
-    sample_experiment_set.store_rest("sample_experiment")
-    sample_biosample_set.store_rest("sample_biosample")
-    run_experiment_set.store_rest("run_experiment")
-    run_sample_set.store_rest("run_sample")
-    run_biosample_set.store_rest("run_biosample")
-    analysis_submission_set.store_rest("analysis_submission")
-
-
-def drop_all_tables():
-    """
-    sqlalchemyから全テーブル削除する
-    :return:
-    """
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-
-
-def store_study_set(r: list):
-    """
-    AccessionがStudyの行の処理
-    study->Submission, Study->BioProject,Study->Experimentをchunkedlistに追加する
-    :param r:
-    :return:
-    """
-    study_submission_set.push(r[0], r[1], "study_submission")
-    study_bioproject_set.push(r[0], r[18], "study_bioproject")
-    study_experiment_set.push(r[0], r[10], "study_experiment")
-
-
-def store_experiment_set(r: list):
-    """
-    AccessionがExperimentの行の処理
-    :param r:
-    :return:
-    """
-    experiment_bioproject_set.push(r[0], r[18], "experiment_bioproject")
-    experiment_study_set.push(r[0], r[12], "experiment_study")
-    experiment_sample_set.push(r[0], r[11], "experiment_sample")
-    experiment_biosample_set.push(r[0], r[17], "experiment_biosample")
+    engine = create_db_engine(config)
+    for row in reader:
+        # SRA_Accessions の行ごと処理を行う
+        # status が liveであった場合
+        # 各行の Type を取得し、処理を分岐し実行する
+        try:
+            if row[2] == "live":
+                acc_type = row[6]
+                data_relation: List[Relation]
+                if acc_type == "SUBMISSION":
+                    data_relation = []
+                elif acc_type == "STUDY":
+                    data_relation = [
+                        (row[0], row[1], "study_submission"),
+                        (row[0], row[18], "study_bioproject"),
+                        (row[0], row[10], "study_experiment"),
+                    ]
+                elif acc_type == "EXPERIMENT":
+                    data_relation = [
+                        (row[0], row[10], "sample_experiment"),
+                        (row[0], row[17], "sample_biosample"),
+                    ]
+                elif acc_type == "SAMPLE":
+                    data_relation = [
+                        (row[0], row[10], "sample_experiment"),
+                        (row[0], row[17], "sample_biosample"),
+                    ]
+                elif acc_type == "RUN":
+                    data_relation = [
+                        (row[0], row[10], "run_experiment"),
+                        (row[0], row[11], "run_sample"),
+                        (row[0], row[17], "run_biosample"),
+                    ]
+                elif acc_type == "ANALYSIS":
+                    data_relation = [
+                        (row[0], row[1], "analysis_submission"),
+                    ]
+                else:
+                    print(f"Unknown accession type in {row}: {acc_type}")
+                    continue
+                for relation in data_relation:
+                    insert_data(engine, shared_data, relation)
+        except Exception as e:
+            print(f"Unexpected error in {row}: {e}")
 
 
-def store_sample_set(r: list):
-    sample_experiment_set.push(r[0], r[10], "sample_experiment")
-    sample_biosample_set.push(r[0], r[17], "sample_biosample")
+def insert_data(engine: Engine, shared_data: SharedData, relation: Relation) -> None:
+    table_name = relation[2]
+    shared_list = shared_data[table_name]
+    shared_list.append((relation[0], relation[1]))
+    if len(shared_list) > CHUNK_SIZE:
+        insert_rows = list(shared_list)
+        bulk_insert(engine, insert_rows, table_name)
+        shared_list.clear()
 
 
-def store_run_set(r: list):
-    run_experiment_set.push(r[0], r[10], "run_experiment")
-    run_sample_set.push(r[0], r[11], "run_sample")
-    run_biosample_set.push(r[0], r[17], "run_biosample")
+def main() -> None:
+    print("Create SQLite database from SRA_Accessions.tab files")
+    config = parse_args(sys.argv[1:])
+    print(f"Config: {config.model_dump()}")
 
+    init_db(config)
+    file_list = glob.glob(os.path.join(config.accessions_dir, "*.txt"))
 
-def store_analysis_set(r: list):
-    analysis_submission_set.push(r[0], r[1], "analysis_submission")
+    error_flag = False
+    with Manager() as manager:
+        shared_data: SharedData = {
+            "study_submission": manager.list(),
+            "study_bioproject": manager.list(),
+            "study_experiment": manager.list(),
+            "experiment_bioproject": manager.list(),
+            "experiment_study": manager.list(),
+            "experiment_sample": manager.list(),
+            "experiment_biosample": manager.list(),
+            "sample_experiment": manager.list(),
+            "sample_biosample": manager.list(),
+            "run_experiment": manager.list(),
+            "run_sample": manager.list(),
+            "run_biosample": manager.list(),
+            "analysis_submission": manager.list(),
+        }
 
+        with Pool(config.process_pool_size) as p:
+            try:
+                p.starmap(store_relation_data, [(config, Path(f), shared_data) for f in file_list])
+            except Exception as e:
+                print(f"Failed to store relation data: {e}")
+                error_flag = True
 
-def store_submission_set(r):
-    pass
+        # 最後に残ったデータを insert する
+        engine = create_db_engine(config)
+        for table_name, shared_list in shared_data.items():
+            if len(shared_list) > 0:
+                insert_rows = list(shared_list)
+                bulk_insert(engine, insert_rows, table_name)
 
+    if error_flag:
+        print("Failed to create SQLite database, please check the log")
+        sys.exit(1)
 
-# typeに応じて処理を分岐する。処理はChunkedListにセットを追加する
-convert_row = {
-    "SUBMISSION": store_submission_set,
-    "STUDY": store_study_set,
-    "EXPERIMENT": store_experiment_set,
-    "SAMPLE": store_sample_set,
-    "RUN": store_run_set,
-    "ANALYSIS": store_analysis_set
-}
-
-base = {
-    "study_submission": StudySubmission,
-    "study_bioproject": StudyBioProject,
-    "study_experiment": StudyExperiment,
-    "experiment_bioproject": ExperimentBioProject,
-    "experiment_study": ExperimentStudy,
-    "experiment_sample": ExperimentSample,
-    "experiment_biosample": ExperimentBioSample,
-    "sample_experiment": SampleExperiment,
-    "sample_biosample": SampleBioSample,
-    "run_experiment": RunExperiment,
-    "run_sample": RunSample,
-    "run_biosample": RunBioSample,
-    "analysis_submission": AnalysisSubmission
-}
-
-
-def test_orm():
-    q = (session.query(StudyBioProject, ExperimentBioProject, RunExperiment, ExperimentBioSample)
-         .join(ExperimentBioProject, ExperimentBioProject.id1 == StudyBioProject.id1)
-         .join(RunExperiment)
-         .join(ExperimentBioSample)
-         .filter())
+    print("Create SQLite database completed")
 
 
 if __name__ == "__main__":

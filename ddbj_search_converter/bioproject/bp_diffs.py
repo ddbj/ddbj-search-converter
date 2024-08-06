@@ -2,14 +2,12 @@ import argparse
 import hashlib
 import os
 import re
-from typing import NewType
+from pathlib import Path
 
 from ddbj_search_converter.utils.get_2nd_directory import get_second_newest_dir
 
-FilePath = NewType('FilePath', str)
 
-
-def get_diff_list(former: FilePath, later: FilePath) -> list:
+def get_diff_list(former: Path, later: Path) -> list:
     """
     二つのディレクトリにある同一の名前のファイルを比較し
     MD5に差があるファイルのリストを返す
@@ -23,7 +21,7 @@ def get_diff_list(former: FilePath, later: FilePath) -> list:
     # 前回の処理のディレクトリを取得できなかった場合二番目に新しい日付が名前についたディレクトリを取得してそこからファイルリストを生成する
     try:
         former_info = get_file_info(former)
-    except:
+    except Exception:  # pylint: disable=broad-except
         next_dir = get_second_newest_dir(later)
         former_info = get_file_info(next_dir)
 
@@ -35,7 +33,7 @@ def get_diff_list(former: FilePath, later: FilePath) -> list:
         return [x["filename"] for x in unmated_info]
 
 
-def get_file_info(directory: FilePath) -> list:
+def get_file_info(directory: Path) -> list:
     """
     指定されたディレクトリのmd5 hasを含むファイル情報リストを返す
     Args:
@@ -59,7 +57,7 @@ def get_file_info(directory: FilePath) -> list:
                     'md5_hash': md5_hash,
                 }
                 file_info_lst.append(file_info)
-            except:
+            except Exception:  # pylint: disable=broad-except
                 print("error?: ", filename)
 
     return file_info_lst

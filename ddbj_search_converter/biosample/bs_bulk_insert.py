@@ -9,7 +9,7 @@ from typing import NewType
 
 import requests
 
-from ddbj_search_converter.biosample_converter.bs_diffs import get_diff_list
+from ddbj_search_converter.biosample.bs_diffs import get_diff_list
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
