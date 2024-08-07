@@ -95,7 +95,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
 def main() -> None:
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
-    LOGGER.info("Start bulk inserting BioProject JSON-Lines data with differences to Elasticsearch")
+    LOGGER.info("Start bulk inserting JSON-Lines data with differences to Elasticsearch")
     LOGGER.info("Config: %s", config.model_dump())
     LOGGER.info("Args: %s", args.model_dump())
 
@@ -130,7 +130,7 @@ def main() -> None:
         LOGGER.error("The following files failed to bulk insert to Elasticsearch:\n%s", "\n".join(f"- {f}" for f in error_files))
         sys.exit(1)
 
-    LOGGER.info("Finished bulk inserting BioProject JSON-Lines data with differences to Elasticsearch")
+    LOGGER.info("Finished bulk inserting JSON-Lines data with differences to Elasticsearch")
 
 
 if __name__ == "__main__":
