@@ -1,5 +1,7 @@
 """\
-bp_xml2jsonl で生成した jsonl ファイルを指定した行数で分割する
+bp_split_jsonl の実装
+
+- bp_xml2jsonl で生成した jsonl ファイルを指定した行数で分割する
 """
 
 import argparse
