@@ -62,6 +62,7 @@ disable = [
     "R0914", # Too many local variables
     #     "R0915", # Too many statements
     "R1705", # Unnecessary "else" after "return"
+    "W0511", # Fixme
     "W0718", # Broad exception caught
     "I1101", # c-extension-no-member
 ]

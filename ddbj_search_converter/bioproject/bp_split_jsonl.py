@@ -93,7 +93,14 @@ def split_file(jsonl_file: Path, output_dir: Path, split_size: int) -> None:
                 output_file = output_dir.joinpath(f"{jsonl_file.stem}_{file_count:06d}.jsonl")
                 with output_file.open("w", encoding="utf-8") as f_out:
                     f_out.writelines(lines)
+                file_count += 1
                 lines.clear()
+
+        # 残りのデータを出力
+        if len(lines) > 0:
+            output_file = output_dir.joinpath(f"{jsonl_file.stem}_{file_count:06d}.jsonl")
+            with output_file.open("w", encoding="utf-8") as f_out:
+                f_out.writelines(lines)
 
 
 def main() -> None:

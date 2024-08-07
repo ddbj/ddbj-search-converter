@@ -13,7 +13,6 @@ create_accession_db の実装
 import argparse
 import csv
 import glob
-import os
 import sys
 from multiprocessing import Manager, Pool
 from multiprocessing.managers import ListProxy
@@ -79,14 +78,14 @@ def parse_args(args: List[str]) -> Config:
     return config
 
 
-def store_relation_data(config: Config, path: Path, shared_data: SharedData) -> None:
+def store_relation_data(config: Config, input_file: Path, shared_data: SharedData) -> None:
     """
     SRA_Accession を id->Study, id->Experiment, id->Sample のように分解し（自分の該当する type は含まない）し、shared_data の各リストに保存する
     各リストが一定の長さになったら sqlite のテーブルに insert し、リストを初期化する
 
     各 process で呼ばれるため、engine と session は各 process で生成する
     """
-    reader = csv.reader(path.open(), delimiter="\t", quoting=csv.QUOTE_NONE)
+    reader = csv.reader(input_file.open(), delimiter="\t", quoting=csv.QUOTE_NONE)
     next(reader)
     # 行の Type（STUDY, EXPERIMENT, SAMPLE, RUN, ANALYSIS, SUBMISSION）ごとテーブルを生成し、
     # 各 Type+BioProject, BioSample を追加したターゲットの値が null でなければ ID とのセットを作成しテーブルに保存する
@@ -155,7 +154,7 @@ def main() -> None:
     LOGGER.info("Config: %s", config.model_dump())
 
     init_db(config)
-    file_list = glob.glob(os.path.join(config.accessions_dir, "*.txt"))
+    input_files = [Path(f) for f in glob.glob(config.accessions_dir.joinpath("*.txt").as_posix())]
 
     error_flag = False
     with Manager() as manager:
@@ -177,7 +176,7 @@ def main() -> None:
 
         with Pool(config.process_pool_size) as p:
             try:
-                p.starmap(store_relation_data, [(config, Path(f), shared_data) for f in file_list])
+                p.starmap(store_relation_data, [(config, input_file, shared_data) for input_file in input_files])
             except Exception as e:
                 LOGGER.error("Failed to store relation data: %s", e)
                 error_flag = True
