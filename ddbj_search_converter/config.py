@@ -13,8 +13,9 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+DATE_FORMAT = "%Y%m%d"
 WORK_DIR = Path.cwd().joinpath("converter_results")
-TODAY = datetime.date.today().strftime("%Y%m%d")
+TODAY = datetime.date.today().strftime(DATE_FORMAT)
 
 
 class Config(BaseModel):

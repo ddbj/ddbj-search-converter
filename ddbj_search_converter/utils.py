@@ -6,9 +6,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 
-from ddbj_search_converter.config import LOGGER
-
-DATE_FORMAT = "%Y%m%d"
+from ddbj_search_converter.config import DATE_FORMAT, LOGGER
 
 
 def bulk_insert_to_es(

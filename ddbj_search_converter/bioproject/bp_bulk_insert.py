@@ -92,21 +92,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     ))
 
 
-# def logging_bulk_insert(file_id: str, message: str) -> None:
-#     dir_name = os.path.dirname(args.later)
-#     today = datetime.date.today()
-#     formatted_data = today.strftime('%Y%m%d')
-
-#     log_dir = Path(f"")
-
-#     f"{dir_name}/{formatted_data}/logs"
-#     log_file = f"{log_dir}/{file_name}_log.json"
-#     if not os.path.exists(log_dir):
-#         os.makedirs(log_dir)
-#     with open(log_file, "w", encoding="utf-8") as f:
-#         json.dump(message, f)
-
-
 def main() -> None:
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
