@@ -1,441 +1,628 @@
 import argparse
 import csv
 import json
-import os
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, NewType, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 import xmltodict
 from lxml import etree
+from pydantic import BaseModel
 
-from ddbj_search_converter.dblink.get_dblink import get_related_ids
+from ddbj_search_converter.config import (LOGGER, Config, default_config,
+                                          get_config, set_logging_level)
 
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
-
-FilePath = NewType('FilePath', str)
-batch_size = 200
-
-sra_accessions_path = None
-parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
-parser.add_argument("input")
-# ddbj_core_bioproject.xmlの場合はoutputを指定する必要がない
-# 正しこの仕様については要検討
-parser.add_argument("output")
-parser.add_argument("--acc", help="ddbj accessions.tabのファイルパスを入力")
-parser.add_argument("-f",  action='store_true', help="Insert all records cases with f option")
-# parser.add_argument("sra_accessions") ## 廃止予定
-# parser.add_argument("center", nargs="?", default=None) ## 廃止
-ddbj_bioproject_name = "ddbj_core"
-args = parser.parse_args()
+BATCH_SIZE = 200
+# (date_created, date_published, date_modified) が None の場合のデフォルト値
+TODAY = datetime.now().strftime("%Y-%m-%dT00:00:00Z")
+DDBJ_BIOPROJECT_NAME = "ddbj_core"
 
 
-def xml2jsonl(input_file: FilePath) -> dict:
-    """
+# === type def. ===
+
+
+class Organism(BaseModel):
+    identifier: str
+    name: str
+
+
+class Distribution(BaseModel):
+    contentUrl: str
+    EncodingWarning: str = "JSON"
+
+
+class Organization(BaseModel):
+    content: str
+
+
+class Grant(BaseModel):
+    abbr: str
+    content: str
+
+
+class ExternalLink(BaseModel):
+    label: Optional[str]
+    URL: Optional[str]
+
+
+class CommonDocument(BaseModel):
+    identifier: str
+    distribution: Distribution
+    isPartOf: str = "BioProject"
+    type: str = "bioproject"
+    name: Optional[str]
+    url: Optional[str]
+    organism: Optional[Organism]
+    title: Optional[str]
+    description: Optional[str]
+    organization: List[Organization]
+    publication: List[str]
+    grant: List[Grant]
+    externalLink: List[ExternalLink]
+    download: Optional[str]
+    status: str = "public"
+    visibility: str = "unrestricted-access"
+    datePublished: str
+    dateCreated: str
+    dateModified: str
+
+
+AccessionsData = Dict[str, Tuple[str, str, str]]
+
+
+# === functions ===
+
+
+class Args(BaseModel):
+    xml_file: Path
+    output_file: Optional[Path]
+    accessions_tab_file: Optional[Path]
+    bulk_es: bool
+
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(description="Convert BioProject XML to JSON-Lines")
+
+    parser.add_argument(
+        "xml_file",
+        help="BioProject XML file path",
+    )
+    parser.add_argument(
+        "output_file",
+        help="Output JSON-Lines file path, if not specified, it will not output to a file",
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--accessions-tab-file",
+        help="DDBJ accessions.tab file path",
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--bulk-es",
+        action="store_true",
+        help="Insert data to Elasticsearch",
+    )
+    parser.add_argument(
+        "--es-base-url",
+        help="Elasticsearch base URL (default: http://localhost:9200)",
+        default=default_config.es_base_url,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    config = get_config()
+    config.es_base_url = parsed_args.es_base_url
+    config.debug = parsed_args.debug
+
+    # Args の型変換と validation
+    xml_file = Path(parsed_args.xml_file)
+    if not xml_file.exists():
+        LOGGER.error("Input BioProject XML file not found: %s", xml_file)
+        sys.exit(1)
+
+    output_file = None
+    if parsed_args.output_file is None:
+        if parsed_args.bulk_es is False:
+            LOGGER.error("Output file path is required if not bulk inserting to Elasticsearch")
+            sys.exit(1)
+    else:
+        output_file = Path(parsed_args.output_file)
+        if output_file.exists():
+            LOGGER.info("Output file %s already exists, will overwrite", output_file)
+            output_file.unlink()
+
+    accessions_tab_file = None
+    if parsed_args.accessions_tab_file is not None:
+        accessions_tab_file = Path(parsed_args.accessions_tab_file)
+        if not accessions_tab_file.exists():
+            LOGGER.error("DDBJ_Accessions.tab file not found: %s", accessions_tab_file)
+            sys.exit(1)
+
+    return (config, Args(
+        xml_file=xml_file,
+        output_file=output_file,
+        accessions_tab_file=accessions_tab_file,
+        bulk_es=parsed_args.bulk_es,
+    ))
+
+
+def xml2jsonl(
+    xml_file: Path,
+    output_file: Optional[Path],
+    bulk_es: bool,
+    es_base_url: str,
+    is_core: bool,
+    accession_data: AccessionsData
+) -> None:
+    """\
     BioProject XMLをdictに変換・関係データを追加し
     batch_sizeごとにlocalhostのESにbulkインポートする
     """
-    # ファイル名が"*ddbj_core*のケースに処理を分岐するフラグを立てる
-    # inputに"ddbj_core"が含まれる場合フラグがたつ
-    file_name = os.path.basename(input_file)
-    is_full_register = args.f
-
-    # ddbj_coreからの入力のFlag.
-    if ddbj_bioproject_name in file_name:
-        ddbj_core = True
-        accessions_data = DdbjCoreData()
-    else:
-        ddbj_core = False
-
-    context = etree.iterparse(input_file, tag="Package", recover=True)
-    i = 0
-    docs: list[dict] = []
-    for events, element in context:
+    context = etree.iterparse(xml_file, tag="Package", recover=True)
+    docs: List[Dict[str, Any]] = []
+    batch_count = 0
+    for _events, element in context:
         if element.tag == "Package":
-            """
-            Packagetag単位でxmlを変換する
-            centerが指定されている場合は指定されたcenterのデータのみ変換する（ddbjのみ対応）
-            """
-            doc = {}
+            # Package tag 単位で xml を変換する
+            # center が指定されている場合は指定された center のデータのみ変換する（ddbj のみ対応）
             accession = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["accession"]
-            archive = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["archive"]
+
             xml_str = etree.tostring(element)
-            # metadata = xml2json(xml_str)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-
-            # DDBJのSchemaに合わせて必要部分を抽出
-            doc["accession"] = accession
-            doc["properties"] = {}
             project = metadata["Package"]["Project"]
-            doc["properties"]["Project"] = project
 
-            # organismをパースし共通項目に埋める
-            try:
-                organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
-                name = organism_obj.get("OrganismName")
-                identifier = organism_obj.get("taxID")
-                organism = {"identifier": identifier, "name": name}
-            except:
-                organism = None
+            doc = {
+                "properties": {
+                    "Project": project,
+                },
+            }
 
-            try:
-                published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
-            except:
-                now = datetime.now()
-                published = now.strftime("%Y-%m-%dT00:00:00Z")
+            # 関係データを取得と project の更新
+            common_doc = CommonDocument(
+                identifier=accession,
+                distribution=Distribution(contentUrl=f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}"),
+                isPartOf="BioProject",
+                type="bioproject",
+                name=None,
+                url=None,
+                organism=_parse_organism(project, is_core),
+                title=_parse_title(project),
+                description=_parse_description(project),
+                organization=_parse_and_update_organization(project),
+                publication=_parse_and_update_publication(project),
+                grant=_parse_and_update_grant(project),
+                externalLink=_parse_external_link(project),
+                download=None,
+                status=_parse_status(project, is_core),
+                visibility="unrestricted-access",
+                datePublished=_parse_date_published(project, is_core, accession, accession_data),
+                dateCreated=_parse_date_created(project, is_core, accession, accession_data),
+                dateModified=_parse_date_modified(project, is_core, accession, accession_data),
+            )
+            _update_prefix(project)
+            _update_local_id(project)
 
-            # properties.Project.Project.ProjectDescr.LocusTagPrefix : 値が文字列の場合の処理
-            try:
-                prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
-                if type(prefix) == list:
-                    for i, item in enumerate(prefix):
-                        if type(item) == str:
-                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
-                elif type(prefix) == str:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
-            except:
-                pass
-
-            # properties.Project.Project.ProjectID.LocalID: 値が文字列のケースの処理
-            try:
-                localid = project["Project"]["ProjectID"]["LocalID"]
-                if type(localid) == list:
-                    for i, item in enumerate(localid):
-                        if type(item) == str:
-                            doc["properties"]["Project"]["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
-                elif type(localid) == str:
-                    doc["properties"]["Project"]["Project"]["ProjectID"]["LocalID"] = {"content": localid}
-            except:
-                pass
-
-            # Organizationを共通項目に出力
-            try:
-                organization = project["Submission"]["Description"]["Organization"]
-                if type(organization) == list:
-                    oraganization = []
-                    for i, item in enumerate(organization):
-                        organization_name = item.get("Name")
-                        if type(organization_name) == str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content": organization_name}
-                            oraganization.append({"content": organization_name})
-                        elif type(organization_name) == dict:
-                            organization = organization_name
-                elif type(organization) == dict:
-                    organization_name = organization.get("Name")
-                    if type(organization_name) is str:
-                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content": organization_name}
-                        organization = [{"content": organization_name}]
-                        # 共通項目用オブジェクトを作り直す
-                    elif type(organization_name) == dict:
-                        organization = [organization_name]
-            except:
-                organization = []
-
-            # publicationを共通項目に出力
-            try:
-                publication = project["Project"]["ProjectDescr"]["Publication"]
-                # 極稀にbulk insertできないサイズのリストがあるため
-                if type(publication) == list and len(publication) > 100000:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:100000]
-            except:
-                publication = []
-
-            # Grantを共通項目に出力
-            # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
-            try:
-                grant = project["Project"]["ProjectDescr"]["Grant"]
-                if type(grant) is list:
-                    for i, item in enumerate(grant):
-                        agency = item.get("Agency")
-                        if type(agency) is str:
-                            doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content": agency}
-                elif type(grant) is dict:
-                    agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
-                    if type(agency) == str:
-                        doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content": agency}
-            except:
-                grant = []
-
-            # ExternalLink（schemaはURLとdbXREFを共に許容する・共通項目にはURLを渡す）
-            # propertiesの記述に関してはスキーマを合わせないとimportエラーになり可能性があることに留意
-            external_link_db = {"GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
-                                "dbGaP": "https://www.ncbi.nlm.nih.gov/gap/advanced_search/?TERM=",
-                                "ENA-SUBMISSION": "https://www.ebi.ac.uk/ena/browser/view/",
-                                "SRA": "https://www.ncbi.nlm.nih.gov/sra/",
-                                "PUBMED": "https://pubmed.ncbi.nlm.nih.gov/",
-                                "DOI": "https://doi.org/",
-                                "SRA|http": ""}
-            try:
-                # A. ExternalLinkの値がオブジェクトのケース
-                external_link_obj = project["Project"]["ProjectDescr"]["ExternalLink"]
-                if isinstance(external_link_obj, dict):
-                    # 属性にURLを含む場合
-                    if external_link_obj.get("URL", None):
-                        el_label = external_link_obj.get("label", None)
-                        el_url = external_link_obj.get("URL", None)
-                        externalLink = [{"label": el_label if el_label else el_url, "URL": el_url}]
-                    # 属性にdbXREFを含む場合
-                    elif external_link_obj.get("dbXREF", None):
-                        el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
-                        el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
-                        externalLink = [{"label": el_label if el_label else el_url, "URL": el_url}]
-                # B. ExternalLinkの値がlistのケース
-                elif isinstance(external_link_obj, list):
-                    externalLink = []
-                    # TODO: if の階層に留意。一つひとつのオブジェクトごとにurlからdbXREFのケース分けが必要
-                    for item in external_link_obj:
-                        # 属性にURLを含む場合
-                        if external_link_obj.get("URL", None):
-                            el_label = external_link_obj.get("label", None)
-                            el_url = external_link_obj.get("URL", None)
-                            externalLink.append({"label": el_label if el_label else el_url, "URL": el_url})
-                        # 属性にdbXREFを含む場合
-                        elif external_link_obj.get("dbXREF", None):
-                            el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
-                            el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
-                            externalLink.append({"label": el_label if el_label else el_url, "URL": el_url})
-            except:
-                externalLink = []
-
-            # centerごとの差異があるケース: status, description, title,  ,organization, Nameのxmlからの取得
-            if ddbj_core is False:
-                # ddbj_coreのフラグがない場合の処理を記述
-                # ddbj_coreeにはSubmissionの下の属性が無いため以下の処理を行わない
-                try:
-                    status = project["Submission"]["Description"]["Access"]
-                except:
-                    status = "public"
-
-                now = datetime.now()
-                # submittedが取得できない場合datetime.now()を渡す
-                submitted = project["Submission"].get("submitted", None)
-                last_update = project["Submission"].get("last_update", None)
-
-                try:
-                    description = project["Project"]["ProjectDescr"].get("Description")
-                    title = project["Project"]["ProjectDescr"].get("Title")
-                except:
-                    description = None
-                    title = None
-
-            else:
-                # DDBJ_coreの場合
-                # accessions.tabよりdateを取得
-                submitted, published, last_update = accessions_data.ddbj_dates(accession)
-                status = "public"
-                try:
-                    organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
-                    name = organism_obj.get("OrganismName")
-                    identifier = organism_obj.get("taxID")
-                    organism = {"identifier": identifier, "name": name}
-                except:
-                    pass
-
-                # 共通項目のTitle, Descriptionを取得する
-                try:
-                    description = project["Project"]["ProjectDescr"].get("Description", None)
-                    title = project["Project"]["ProjectDescr"].get("Title", None)
-                except:
-                    description = None
-                    title = None
-
-            doc["identifier"] = accession
-            doc["distribution"] = {"contentUrl": f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}", "encodingFormat": "JSON"}
-            doc["isPartOf"] = "BioProject"
-            doc["type"] = "bioproject"
-            doc["name"] = None
-            doc["url"] = None
-            doc["organism"] = organism
-            doc["title"] = title
-            doc["description"] = description
-            doc["organizaiotn"] = organization
-            doc["publication"] = publication
-            doc["grant"] = grant
-            doc["externalLink"] = externalLink
-            # doc["dbXrefs"] = get_related_ids(accession, "bioproject")
-            doc["download"] = None
-            doc["status"] = status
-            doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = submitted
-            doc["dateModified"] = last_update
-            doc["datePublished"] = published
-
+            doc.update(common_doc.model_dump())
             docs.append(doc)
-            i += 1
 
+            batch_count += 1
+            if batch_count > BATCH_SIZE:
+                jsonl = docs_to_jsonl(docs)
+                if output_file is not None:
+                    dump_to_file(output_file, jsonl)
+                if bulk_es:
+                    bulk_insert_to_es(es_base_url, jsonl)
+                batch_count = 0
+                docs = []
+
+        # メモリリークを防ぐために要素をクリアする
         clear_element(element)
-        if i > batch_size:
-            i = 0
-            if is_full_register:
-                dict2esjsonl(docs)
-            else:
-                dict2jsonl(docs)
-            docs = []
 
-    if i > 0:
-        # 処理の終了時にbatch_sizeに満たない場合、未処理のデータを書き出す
-        if is_full_register:
-            dict2esjsonl(docs)
+
+def _parse_organism(project: Dict[str, Any], is_core: bool) -> Optional[Organism]:
+    try:
+        if is_core:
+            organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
         else:
-            dict2jsonl(docs)
+            organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
+        return Organism(
+            identifier=organism_obj.get("OrganismName"),
+            name=organism_obj.get("taxID"),
+        )
+    except Exception as e:
+        LOGGER.debug("Failed to parse organism from %s: %s", project, e)
+        return None
 
 
-def dict2es(docs: List[dict]):
-    """
-    requestsでElasticsearchにndjsonをPOSTする
-    POSTするndjsonにはindex行を挿入し改行コードで連結する
-    Args:
-        docs (List[dict]): 
-    """
-    post_lst = []
-    for doc in docs:
-        post_lst.append({"index": {"_index": "bioproject", "_id": doc["accession"]}})
-        doc.pop("accession")
-        post_lst.append(doc)
-    post_data = "\n".join(json.dumps(d) for d in post_lst) + "\n"
-    headers = {"Content-Type": "application/x-ndjson"}
-    res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
-
-    if res.status_code == 200 or res.status_code == 201:
-        pass
+def _parse_date_published(
+    project: Dict[str, Any],
+    is_core: bool,
+    accession: str,
+    accessions_data: AccessionsData,
+) -> str:
+    date = None
+    if is_core:
+        # (date_created, date_published, date_modified)
+        data = accessions_data.get(accession, (None, None, None))
+        date = data[1]
     else:
-        # エラーメッセージ関係はprintしない。error_logs.txt等に残す
-        logs(f"Error: {res.status_code} - {res.text}")
-
-    # POSTするjsonlをprint()しpyの結果をファイルにリダイレクションするとするとjsonlも残すことができる
-    # print(post_data)
-
-
-def dict2jsonl(docs: List[dict]):
-    """
-    差分更新用にdictをjsonlに変換して出力する
-
-    """
-    jsonl_output = args.output
-    with open(jsonl_output, "a") as f:
-        for doc in docs:
-            try:
-                # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
-                header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
-                doc.pop("accession")
-                f.write(json.dumps(header) + "\n")
-                json.dump(doc, f)
-                f.write("\n")
-            except:
-                print(doc)
-
-
-def dict2esjsonl(docs: List[dict]):
-    """
-    dictをesにbulk insertするのと同時に同じdictをjsonlファイルにに書き出す
-    Args:
-        docks (List[dict]): _description_
-    """
-    jsonl_output = args.output
-    post_lst = []
-    for doc in docs:
-        # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
-        header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
-        post_lst.append(header)
-        doc.pop("accession")
-        post_lst.append(doc)
-        # ファイル出力q
-        with open(jsonl_output, "a") as f:
-            f.write(json.dumps(header) + "\n")
-            json.dump(doc, f)
-            f.write("\n")
-    post_data = "\n".join(json.dumps(d) for d in post_lst) + "\n"
-    headers = {"Content-Type": "application/x-ndjson"}
-    res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
-    if res.status_code == 200 or res.status_code == 201:
-        pass
-    else:
-        logs(f"Error: {res.status_code} - {res.text}")
-
-
-def dict2es(docs: List[dict]):
-    """
-    documentsをesにbulk insertする
-    Args:
-        docks (List[dict]): 
-    """
-    post_lst = []
-    for doc in docs:
-        # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
-        header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
-        post_lst.append(header)
-        doc.pop("accession")
-        post_lst.append(doc)
-    post_data = "\n".join(json.dumps(d) for d in post_lst) + "\n"
-    headers = {"Content-Type": "application/x-ndjson"}
-    res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers)
-    if res.status_code == 200 or res.status_code == 201:
-        pass
-    else:
-        logs(f"Error: {res.status_code} - {res.text}")
-
-
-def clear_element(element):
-    element.clear()
-    while element.getprevious() is not None:
         try:
-            del element.getparent()[0]
-        except:
-            print("clear_element Error")
+            date = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]  # type: ignore
+        except Exception as e:
+            LOGGER.debug("Failed to parse date_published from %s: %s", project, e)
+
+    return date or TODAY
 
 
-def logs(message: str):
-    dir_name = os.path.dirname(args.output)
-    log_file = f"{dir_name}/error_log.txt"
-    with open(log_file, "a") as f:
-        f.write(message + "\n")
+def _parse_date_created(
+    project: Dict[str, Any],
+    is_core: bool,
+    accession: str,
+    accessions_data: AccessionsData,
+) -> str:
+    date = None
+    if is_core:
+        # (date_created, date_published, date_modified)
+        data = accessions_data.get(accession, (None, None, None))
+        date = data[0]
+    else:
+        try:
+            date = project["Submission"]["submitted"]  # type: ignore
+        except Exception as e:
+            LOGGER.debug("Failed to parse date_created from %s: %s", project, e)
+
+    return date or TODAY
 
 
-def rm_old_file(file_path: FilePath):
+def _parse_date_modified(
+    project: Dict[str, Any],
+    is_core: bool,
+    accession: str,
+    accessions_data: AccessionsData,
+) -> str:
+    date = None
+    if is_core:
+        # (date_created, date_published, date_modified)
+        data = accessions_data.get(accession, (None, None, None))
+        date = data[2]
+    else:
+        try:
+            date = project["Submission"]["last_update"]  # type: ignore
+        except Exception as e:
+            LOGGER.debug("Failed to parse date_modified from %s: %s", project, e)
+
+    return date or TODAY
+
+
+def _update_prefix(
+    project: Dict[str, Any],
+) -> None:
+    """\
+    str や List[str] を {"content": str} などに変換する
     """
-    bp_xml2jsonlは追記形式であるため出力ファイルと同じファイル名のファイルがある場合
-    同一ファイルに新しい作業日のレコードが追加されることとなるため
-    処理開始前に既存のファイルの存在を確認し削除する
-    Args:
-        file_path (_type_): 出力ファイルのパス
+    # properties.Project.Project.ProjectDescr.LocusTagPrefix: 値が文字列の場合の処理
+    try:
+        prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
+        if isinstance(prefix, list):
+            for i, item in enumerate(prefix):
+                if isinstance(item, str):
+                    project["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
+        elif isinstance(prefix, str):
+            project["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
+    except Exception as e:
+        LOGGER.debug("Failed to update prefix from %s: %s", project, e)
+
+
+def _update_local_id(
+    project: Dict[str, Any],
+) -> None:
+    """\
+    str や List[str] を {"content": str} などに変換する
     """
-    # ファイルの存在を確認する
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    # properties.Project.Project.ProjectID.LocalID: 値が文字列のケースの処理
+    try:
+        local_id = project["Project"]["ProjectID"]["LocalID"]
+        if isinstance(local_id, list):
+            for i, item in enumerate(local_id):
+                if isinstance(item, str):
+                    project["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
+        elif isinstance(local_id, str):
+            project["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
+    except Exception as e:
+        LOGGER.debug("Failed to update local_id from %s: %s", project, e)
 
 
-class DdbjCoreData():
-    def __init__(self):
-        """
-        - deplicated
-        - 別モジュールのdblink.get_dblinkで関係データは取得する
-        accessions.tabを辞書化する
-        """
-        # accessions辞書化
-        d = {}
-        with open(args.acc, "r") as input_f:
-            reader = csv.reader(input_f, delimiter="\t")
-            for row in reader:
-                try:
-                    d[row[0]] = (row[1], row[2], row[3])
-                except:
-                    print(row)
-            self.acc_dict = d
+def _parse_and_update_organization(
+    project: Dict[str, Any],
+) -> List[Organization]:
+    """\
+    parse もするし、update もする
+    str や List[str] を {"content": str} などに変換する
+    """
+    parsed_organization = []
+    try:
+        organization = project["Submission"]["Description"]["Organization"]
+        if isinstance(organization, list):
+            for i, item in enumerate(organization):
+                organization_name = item.get("Name")
+                if isinstance(organization_name, str):
+                    project["Submission"]["Description"]["Organization"][i]["Name"] = {"content": organization_name}
+                    parsed_organization.append(Organization(content=organization_name))
+                elif isinstance(organization_name, dict):
+                    # case: organization_name = {"content": str}
+                    parsed_organization.append(Organization(content=organization_name["content"]))
+        elif isinstance(organization, dict):
+            organization_name = organization.get("Name")
+            if isinstance(organization_name, str):
+                project["Submission"]["Description"]["Organization"]["Name"] = {"content": organization_name}
+                parsed_organization.append(Organization(content=organization_name))
+            elif isinstance(organization_name, dict):
+                # case: organization_name = {"content": str}
+                parsed_organization.append(Organization(content=organization_name["content"]))
+    except Exception as e:
+        LOGGER.debug("Failed to parse organization from %s: %s", project, e)
 
-    def ddbj_dates(self, accession) -> Tuple[str]:
-        """
-        ddbjのaccessions.tabよりaccessionに対応する
-        date_created, date_published, date_modifiedフィールドの値を変える
-        """
-        # 辞書よりタプルを返す
-        return self.acc_dict.get(accession, (None, None, None))
+    return parsed_organization
+
+
+def _parse_and_update_publication(
+    project: Dict[str, Any],
+) -> List[str]:
+    publication = []
+    try:
+        publication = project["Project"]["ProjectDescr"]["Publication"]
+        # 極稀に bulk insert できないサイズのリストがあるため
+        if isinstance(publication, list) and len(publication) > 100000:
+            # TODO: project["Project"]["ProjectDescr"]["Publication"] に代入しなくていいのか？
+            project["Project"]["ProjectDescr"] = publication[:100000]
+    except Exception as e:
+        LOGGER.debug("Failed to parse publication from %s: %s", project, e)
+
+    return publication
+
+
+def _parse_and_update_grant(
+    project: Dict[str, Any],
+) -> List[Grant]:
+    parsed_grant = []
+    try:
+        grant = project["Project"]["ProjectDescr"]["Grant"]
+        if isinstance(grant, list):
+            for i, item in enumerate(grant):
+                agency = item.get("Agency")
+                if isinstance(agency, str):
+                    project["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content": agency}
+                    parsed_grant.append(Grant(abbr=agency, content=agency))
+        elif isinstance(grant, dict):
+            agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
+            if isinstance(agency, str):
+                project["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content": agency}
+                parsed_grant.append(Grant(abbr=agency, content=agency))
+    except Exception as e:
+        LOGGER.debug("Failed to parse grant from %s: %s", project, e)
+
+    return parsed_grant
+
+
+EXTERNAL_LINKS = {
+    "GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
+    "dbGaP": "https://www.ncbi.nlm.nih.gov/gap/advanced_search/?TERM=",
+    "ENA-SUBMISSION": "https://www.ebi.ac.uk/ena/browser/view/",
+    "SRA": "https://www.ncbi.nlm.nih.gov/sra/",
+    "PUBMED": "https://pubmed.ncbi.nlm.nih.gov/",
+    "DOI": "https://doi.org/",
+    "SRA|http": "",
+}
+
+
+def _parse_external_link(
+    project: Dict[str, Any],
+) -> List[ExternalLink]:
+    """\
+    ExternalLink（schema は URL と dbXREF を共に許容する・共通項目には URL を渡す）
+    properties の記述に関してはスキーマを合わせないと import エラーになり可能性があることに留意
+    """
+    parsed_external_link = []
+
+    try:
+        # A. ExternalLink の値がオブジェクトのケース
+        external_link_obj = project["Project"]["ProjectDescr"]["ExternalLink"]
+        if isinstance(external_link_obj, dict):
+            if "URL" in external_link_obj:
+                # 属性に URL を含む場合
+                parsed_external_link.append(ExternalLink(
+                    URL=external_link_obj.get("URL", None),
+                    label=external_link_obj.get("label", None),
+                ))
+
+            elif "dbXREF" in external_link_obj:
+                # 属性に dbXREF を含む場合
+                db_xref_obj = external_link_obj.get("dbXREF", {})
+                db_name = db_xref_obj.get("db", None)
+
+                db_base_url = EXTERNAL_LINKS.get(db_name, None)
+                if db_base_url is not None:
+                    # TODO: external_link_obj["ID"] で大丈夫なのか？
+                    url = db_base_url + external_link_obj["ID"]
+                label = db_xref_obj.get("ID", None)
+                if url is not None or label is not None:
+                    parsed_external_link.append(ExternalLink(
+                        URL=url,
+                        label=label,
+                    ))
+
+        # B. ExternalLink の値が list のケース
+        elif isinstance(external_link_obj, list):
+            # TODO: if の階層に留意。一つひとつのオブジェクトごとに url から dbXREF のケース分けが必要
+            for item in external_link_obj:
+                if "URL" in item:
+                    # 属性に URL を含む場合
+                    parsed_external_link.append(ExternalLink(
+                        URL=item.get("URL", None),
+                        label=item.get("label", None),
+                    ))
+
+                elif "dbXREF" in item:
+                    # 属性に dbXREF を含む場合
+                    db_xref_obj = item.get("dbXREF", {})
+                    db_name = db_xref_obj.get("db", None)
+
+                    db_base_url = EXTERNAL_LINKS.get(db_name, None)
+                    if db_base_url is not None:
+                        # TODO: item["ID"] で大丈夫なのか？
+                        url = db_base_url + item["ID"]
+                    label = db_xref_obj.get("ID", None)
+                    if url is not None or label is not None:
+                        parsed_external_link.append(ExternalLink(
+                            URL=url,
+                            label=label,
+                        ))
+
+    except Exception as e:
+        LOGGER.debug("Failed to parse external_link from %s: %s", project, e)
+
+    return parsed_external_link
+
+
+def _parse_status(
+    project: Dict[str, Any],
+    is_core: bool,
+) -> str:
+    """\
+    ddbj_core には Submission の下の属性が無いため以下の処理を行わない
+    """
+    status = "public"
+    if is_core is False:
+        try:
+            status = project["Submission"]["Description"]["Access"]
+        except Exception as e:
+            LOGGER.debug("Failed to parse status from %s: %s", project, e)
+
+    return status
+
+
+def _parse_title(
+    project: Dict[str, Any],
+) -> Optional[str]:
+    title = None
+    try:
+        title = project["Project"]["ProjectDescr"]["Title"]
+    except Exception as e:
+        LOGGER.debug("Failed to parse title from %s: %s", project, e)
+
+    return title
+
+
+def _parse_description(
+    project: Dict[str, Any],
+) -> Optional[str]:
+    description = None
+    try:
+        description = project["Project"]["ProjectDescr"]["Description"]
+    except Exception as e:
+        LOGGER.debug("Failed to parse description from %s: %s", project, e)
+
+    return description
+
+
+def docs_to_jsonl(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """\
+    JSON-Lines だが、実際には、ES へと bulk insert するための形式となっている
+    そのため、index と body が交互になっている
+    """
+    jsonl = []
+    for doc in docs:
+        jsonl.append({"index": {"_index": "bioproject", "_id": doc["identifier"]}})
+        jsonl.append(doc)
+
+    return jsonl
+
+
+def bulk_insert_to_es(es_base_url: str, jsonl: List[Dict[str, Any]]) -> None:
+    data = "\n".join(json.dumps(d) for d in jsonl)
+    res = requests.post(
+        f"{es_base_url}/_bulk",
+        data=data,
+        headers={"Content-Type": "application/x-ndjson"},
+        timeout=60,
+    )
+    if res.ok:
+        pass
+    else:
+        LOGGER.error("Failed to bulk insert to Elasticsearch: status_code=%s, response=%s", res.status_code, res.text)
+
+
+def dump_to_file(output_file: Path, jsonl: List[Dict[str, Any]]) -> None:
+    with output_file.open("a") as f:
+        for line in jsonl:
+            f.write(json.dumps(line) + "\n")
+
+
+def clear_element(element: Any) -> None:
+    try:
+        element.clear()
+        while element.getprevious() is not None:
+            try:
+                del element.getparent()[0]
+            except Exception as e:
+                LOGGER.debug("Failed to clear element: %s", e)
+    except Exception as e:
+        LOGGER.debug("Failed to clear element: %s", e)
+
+
+def parse_accessions_tab_file(accessions_tab_file: Path) -> AccessionsData:
+    """\
+    key: accession
+    value: (date_created, date_published, date_modified)
+    """
+    data = {}
+    with accessions_tab_file.open("r", encoding="utf-8") as f:
+        reader = csv.reader(f, delimiter="\t")
+        for row in reader:
+            if len(row) == 0:
+                continue
+            try:
+                data[row[0]] = (row[1], row[2], row[3])
+            except Exception as e:
+                LOGGER.debug("Failed to parse accessions.tab row %s: %s", row, e)
+
+    return data
+
+
+def main() -> None:
+    [config, args] = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.info("Create JSON-Lines file from BioProject XML")
+    LOGGER.info("Config: %s", config.model_dump())
+    LOGGER.info("Args: %s", args.model_dump())
+
+    is_core = False
+    accessions_data = {}
+    if DDBJ_BIOPROJECT_NAME in args.xml_file.name:
+        if args.accessions_tab_file is None:
+            LOGGER.error("Your input xml file seems to be ddbj_core, so you need to specify accessions_tab_file")
+            sys.exit(1)
+        is_core = True
+        accessions_data = parse_accessions_tab_file(args.accessions_tab_file)
+
+    xml2jsonl(
+        args.xml_file,
+        args.output_file,
+        args.bulk_es,
+        config.es_base_url,
+        is_core,
+        accessions_data,
+    )
 
 
 if __name__ == "__main__":
-    file_path = args.input
-    rm_old_file(args.output)
-    xml2jsonl(file_path)
+    main()

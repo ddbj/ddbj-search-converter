@@ -22,7 +22,8 @@ from typing import Any, Dict, List, Tuple
 
 from sqlalchemy.engine.base import Engine
 
-from ddbj_search_converter.config import Config, default_config, get_config
+from ddbj_search_converter.config import (LOGGER, Config, default_config,
+                                          get_config, set_logging_level)
 from ddbj_search_converter.dblink.id_relation_db import (TableNames,
                                                          bulk_insert,
                                                          create_db_engine,
@@ -54,6 +55,11 @@ def parse_args(args: List[str]) -> Config:
         type=int,
         help=f"Number of processes to use (default: {default_config.process_pool_size})",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode",
+    )
 
     parsed_args = parser.parse_args(args)
 
@@ -61,10 +67,11 @@ def parse_args(args: List[str]) -> Config:
     if parsed_args.accessions_dir_path is not None:
         config.accessions_dir = parsed_args.accessions_dir_path
         if config.accessions_dir.exists() is False:
-            print(f"Directory not found: {config.accessions_dir}")
+            LOGGER.error("Directory not found: %s", config.accessions_dir)
             sys.exit(1)
     if parsed_args.accessions_db_path is not None:
         config.accessions_db_path = parsed_args.accessions_db_path
+    config.debug = parsed_args.debug
 
     return config
 
@@ -120,12 +127,12 @@ def store_relation_data(config: Config, path: Path, shared_data: SharedData) -> 
                         (row[0], row[1], "analysis_submission"),
                     ]
                 else:
-                    print(f"Unknown accession type in {row}: {acc_type}")
+                    LOGGER.debug("Unknown accession type in %s: %s", row, acc_type)
                     continue
                 for relation in data_relation:
                     insert_data(engine, shared_data, relation)
         except Exception as e:
-            print(f"Unexpected error in {row}: {e}")
+            LOGGER.debug("Unexpected error in %s: %s", row, e)
 
 
 def insert_data(engine: Engine, shared_data: SharedData, relation: Relation) -> None:
@@ -139,9 +146,10 @@ def insert_data(engine: Engine, shared_data: SharedData, relation: Relation) -> 
 
 
 def main() -> None:
-    print("Create SQLite database from SRA_Accessions.tab files")
     config = parse_args(sys.argv[1:])
-    print(f"Config: {config.model_dump()}")
+    set_logging_level(config.debug)
+    LOGGER.info("Create SQLite database from SRA_Accessions.tab files")
+    LOGGER.info("Config: %s", config.model_dump())
 
     init_db(config)
     file_list = glob.glob(os.path.join(config.accessions_dir, "*.txt"))
@@ -168,7 +176,7 @@ def main() -> None:
             try:
                 p.starmap(store_relation_data, [(config, Path(f), shared_data) for f in file_list])
             except Exception as e:
-                print(f"Failed to store relation data: {e}")
+                LOGGER.error("Failed to store relation data: %s", e)
                 error_flag = True
 
         # 最後に残ったデータを insert する
@@ -179,10 +187,10 @@ def main() -> None:
                 bulk_insert(engine, insert_rows, table_name)
 
     if error_flag:
-        print("Failed to create SQLite database, please check the log")
+        LOGGER.error("Failed to create SQLite database, please check the log")
         sys.exit(1)
 
-    print("Create SQLite database completed")
+    LOGGER.info("Create SQLite database completed")
 
 
 if __name__ == "__main__":

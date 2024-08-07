@@ -57,12 +57,12 @@ disable = [
     "C0301", # Line too long
     #     "R0401", # Cyclic import
     "R0903", # Too few public methods
-    #     "R0911", # Too many return statements
-    #     "R0912", # Too many branches
-    #     "R0913", # Too many arguments
-    #     "R0914", # Too many local variables
+    "R0911", # Too many return statements
+    "R0912", # Too many branches
+    "R0913", # Too many arguments
+    "R0914", # Too many local variables
     #     "R0915", # Too many statements
-    #     "R1705", # Unnecessary "else" after "return"
+    "R1705", # Unnecessary "else" after "return"
     "W0718", # Broad exception caught
     "I1101", # c-extension-no-member
 ]

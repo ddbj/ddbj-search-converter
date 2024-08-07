@@ -17,7 +17,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import MetaData
 
-from ddbj_search_converter.config import Config, default_config, get_config
+from ddbj_search_converter.config import (LOGGER, Config, default_config,
+                                          get_config, set_logging_level)
 
 
 def parse_args(args: List[str]) -> Config:
@@ -35,6 +36,11 @@ def parse_args(args: List[str]) -> Config:
         default=None,
         help="Path to the created SQLite database(default: ./converter_results/dblink.sqlite)",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode",
+    )
 
     parsed_args = parser.parse_args(args)
 
@@ -43,6 +49,7 @@ def parse_args(args: List[str]) -> Config:
         config.dblink_files_base_path = Path(parsed_args.dblink_files_base_path)
     if parsed_args.dblink_db_path is not None:
         config.dblink_db_path = Path(parsed_args.dblink_db_path)
+    config.debug = parsed_args.debug
 
     return config
 
@@ -72,7 +79,7 @@ def dblink_files(config: Config) -> List[Path]:
     files = [config.dblink_files_base_path.joinpath(file) for file in DBLINK_FILES]
     for file in files:
         if not file.exists():
-            print(f"DDBJ/DBLink file not found: {file}")
+            LOGGER.error("DDBJ/DBLink file not found: %s", file)
             sys.exit(1)
 
     return files
@@ -135,9 +142,10 @@ def create_database(engine: Engine, file: Path) -> None:
 
 
 def main() -> None:
-    print("Create SQLite database from DDBJ/DBLink files")
     config = parse_args(sys.argv[1:])
-    print(f"Config: {config.model_dump()}")
+    set_logging_level(config.debug)
+    LOGGER.info("Create SQLite database from DDBJ/DBLink files")
+    LOGGER.info("Config: %s", config.model_dump())
 
     config.dblink_files_base_path.mkdir(parents=True, exist_ok=True)
     if config.dblink_files_base_path.exists():
@@ -147,10 +155,10 @@ def main() -> None:
     files = dblink_files(config)
     # 関係データのファイル毎にデータベースを作成
     for file in files:
-        print(f"Create database from {file}")
+        LOGGER.info("Create database from %s", file)
         create_database(engine, file)
 
-    print("Create SQLite database completed")
+    LOGGER.info("Create SQLite database completed")
 
 
 if __name__ == "__main__":
