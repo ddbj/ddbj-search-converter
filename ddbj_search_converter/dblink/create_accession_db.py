@@ -178,7 +178,7 @@ def main() -> None:
             try:
                 p.starmap(store_relation_data, [(config, input_file, shared_data) for input_file in input_files])
             except Exception as e:
-                LOGGER.error("Failed to store relation data: %s", e)
+                LOGGER.error("Error occurred while creating database: %s", e)
                 error_flag = True
 
         # 最後に残ったデータを insert する

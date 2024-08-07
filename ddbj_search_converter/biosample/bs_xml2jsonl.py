@@ -315,11 +315,11 @@ def main() -> None:
                 is_ddbj_biosample(input_file)
             ) for input_file, output_file in zip(input_files, output_files)])
         except Exception as e:
-            LOGGER.error("Failed to convert BioSample XML files: %s", e)
+            LOGGER.error("Error occurred while converting files: %s", e)
             error_flag = True
 
     if error_flag:
-        LOGGER.error("Failed to convert BioSample XML files")
+        LOGGER.error("Failed to convert BioSample XML files, please check the log")
         sys.exit(1)
 
     LOGGER.info("Finished converting BioSample XML files in %s to JSON-Lines", args.xml_dir)
