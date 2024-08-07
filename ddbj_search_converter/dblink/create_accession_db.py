@@ -63,7 +63,11 @@ def parse_args(args: List[str]) -> Config:
 
     parsed_args = parser.parse_args(args)
 
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
     config = get_config()
+    if parsed_args.debug:
+        config.debug = parsed_args.debug
+
     if parsed_args.accessions_dir_path is not None:
         config.accessions_dir = parsed_args.accessions_dir_path
         if config.accessions_dir.exists() is False:
@@ -71,7 +75,6 @@ def parse_args(args: List[str]) -> Config:
             sys.exit(1)
     if parsed_args.accessions_db_path is not None:
         config.accessions_db_path = parsed_args.accessions_db_path
-    config.debug = parsed_args.debug
 
     return config
 
@@ -148,7 +151,7 @@ def insert_data(engine: Engine, shared_data: SharedData, relation: Relation) -> 
 def main() -> None:
     config = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
-    LOGGER.info("Create SQLite database from SRA_Accessions.tab files")
+    LOGGER.info("Start creating SQLite database from SRA_Accessions.tab files")
     LOGGER.info("Config: %s", config.model_dump())
 
     init_db(config)
@@ -190,7 +193,7 @@ def main() -> None:
         LOGGER.error("Failed to create SQLite database, please check the log")
         sys.exit(1)
 
-    LOGGER.info("Create SQLite database completed")
+    LOGGER.info("Finished creating SQLite database from SRA_Accessions.tab files")
 
 
 if __name__ == "__main__":

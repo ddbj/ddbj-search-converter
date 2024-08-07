@@ -1,91 +1,152 @@
+"""\
+bp_bulk_insert の実装
+
+- 差分がある jsonl を Elasticsearch に bulk insert する
+- 引数の dir (previous_dir, current_dir) から差分を取得し、bulk insert する
+- それぞれの dir は日付で命名されているとする
+- 基本的に落ちないように実装しており previous_dir が存在しない (and 指定されていない) 場合は、前の日付の dir を自動検索する
+    - 更に、その前の日の dir が存在しない場合は、current_dir に存在するファイル全てを bulk insert する
+    - この挙動を抑制したい場合、--disable-find-prev-dir オプションを指定する
+"""
 import argparse
-import datetime
-import json
-import os
 import sys
 from pathlib import Path
-from typing import Any, List
+from typing import List, Optional, Tuple
 
-import requests
+from pydantic import BaseModel
 
-from ddbj_search_converter.bioproject.bp_diffs import get_diff_list
+from ddbj_search_converter.config import (LOGGER, Config, default_config,
+                                          get_config, set_logging_level)
+from ddbj_search_converter.utils import (bulk_insert_to_es, find_previous_dir,
+                                         get_diff_files)
 
 
-def parse_args(args: List[str]):
-    parser = argparse.ArgumentParser(description="Bulk insert JSON Lines data to Elasticsearch")
+class Args(BaseModel):
+    previous_dir: Optional[Path]
+    current_dir: Path
+
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(description="Bulk insert JSON Lines data with differences to Elasticsearch")
     parser.add_argument(
-        "former",
+        "--previous_dir",
+        help="Path to the previous directory, if not specified, the previous directory will be searched automatically (e.g., /path/to/jsonl/20240801)",
         nargs="?",
         default=None,
-        help="Path to the former directory (e.g., /path/to/jsonl/20240801)"
     )
     parser.add_argument(
-        "later",
-        nargs="?",
-        default=None,
-        help="Path to the later directory (e.g., /path/to/jsonl/20240802)"
+        "--current_dir",
+        help="Path to the current directory (e.g., /path/to/jsonl/20240802)"
+    )
+    parser.add_argument(
+        "--disable-find-prev-dir",
+        action="store_true",
+        help="Disable automatic search for the previous directory"
+    )
+    parser.add_argument(
+        "--es-base-url",
+        help="Elasticsearch base URL (default: http://localhost:9200)",
+        default=default_config.es_base_url,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode",
     )
 
     parsed_args = parser.parse_args(args)
 
-    # 差分更新は$(date -d yesterday +%Y%m%d)、$(date +%Y%m%d)のように当日と前日の日付のディレクトリを与えるが、前日分のディレクトリが（停電等で）作られなかった場合更新が止まるので、当日の次に新しいディレクトリを自動的に取得する機能を実装する。
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
+    config = get_config()
+    if parsed_args.es_base_url != default_config.es_base_url:
+        config.es_base_url = parsed_args.es_base_url
+    if parsed_args.debug:
+        config.debug = parsed_args.debug
 
-    return parsed_args
+    find_prev_dir = not parsed_args.disable_find_prev_dir
 
-
-def bulk_insert(post_data: Any, file_id: str) -> None:
-    """
-    requests で Elasticsearch に ndjson を POST する
-    POST する ndjson には index 行を挿入し改行コードで連結する
-
-    Args:
-        post_data (Any): 実質的には、List[Dict[str, Any]] のような JSON Lines 形式のデータ
-        file_id (str): ファイル名に含まれている file ID
-    """
-    headers = {"Content-Type": "application/x-ndjson"}
-    res = requests.post("http://localhost:9200/_bulk", data=post_data, headers=headers, timeout=10)
-    if res.status_code in [200, 201]:
-        # res.body に API call の log を残す
-        logging_bulk_insert(file_id, res.json())
+    # Args の型変換と validation
+    previous_dir = None
+    if parsed_args.previous_dir is not None:
+        previous_dir = Path(parsed_args.previous_dir)
+        if not previous_dir.exists():
+            if find_prev_dir:
+                LOGGER.info("The specified previous directory %s does not exist, so it will be searched automatically", previous_dir)
+                previous_dir = None
+            else:
+                LOGGER.error("The specified previous directory %s does not exist", previous_dir)
+                sys.exit(1)
     else:
-        logging_bulk_insert(file_id, f"Error: {res.status_code} - {res.text}")
+        if not find_prev_dir:
+            LOGGER.error("The previous directory is not specified")
+            sys.exit(1)
+
+    current_dir = Path(parsed_args.current_dir)
+    if not current_dir.exists():
+        LOGGER.error("The current directory %s does not exist", current_dir)
+        sys.exit(1)
+
+    return (config, Args(
+        previous_dir=previous_dir,
+        current_dir=current_dir,
+    ))
 
 
-def logging_bulk_insert(file_id: str, message: str) -> None:
-    dir_name = os.path.dirname(args.later)
-    today = datetime.date.today()
-    formatted_data = today.strftime('%Y%m%d')
+# def logging_bulk_insert(file_id: str, message: str) -> None:
+#     dir_name = os.path.dirname(args.later)
+#     today = datetime.date.today()
+#     formatted_data = today.strftime('%Y%m%d')
 
-    log_dir = Path(f"")
+#     log_dir = Path(f"")
 
-    f"{dir_name}/{formatted_data}/logs"
-    log_file = f"{log_dir}/{file_name}_log.json"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    with open(log_file, "w", encoding="utf-8") as f:
-        json.dump(message, f)
+#     f"{dir_name}/{formatted_data}/logs"
+#     log_file = f"{log_dir}/{file_name}_log.json"
+#     if not os.path.exists(log_dir):
+#         os.makedirs(log_dir)
+#     with open(log_file, "w", encoding="utf-8") as f:
+#         json.dump(message, f)
 
 
-def main(former: Path, later: Path):
-    """
-    更新された jsonl リストを生成し、
-    リストのファイルを取得して Elasticsearch に jsonl をbulk insert する
+def main() -> None:
+    config, args = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.info("Start bulk inserting BioProject JSON-Lines data with differences to Elasticsearch")
+    LOGGER.info("Config: %s", config.model_dump())
+    LOGGER.info("Args: %s", args.model_dump())
 
-    Args:
-        post_list (list): _description_
-    """
-    # 更新分のjsonlのファイル名リストを取得
-    # formerとlaterを同じ名前にした場合ファイル全件のリストが返ってくる（初回時）
-    diffs = get_diff_list(former, later)
-    # リストから更新分ファイルを取得しbulk insertする
-    for file_name in diffs:
-        # ファイルパスを生成（args.later）
-        path = f"{later}/{file_name}"
-        with open(path, "r", encoding="utf-8") as f:
-            d = f.read()
-            bulk_insert(d, path)
-    print(len(diffs))
+    previous_dir = None
+    if args.previous_dir is None:
+        # previous_dir が指定されていないため、自動検索する
+        try:
+            previous_dir = find_previous_dir(args.current_dir)
+            LOGGER.info("Found the previous directory: %s", previous_dir)
+        except Exception as e:
+            # 存在しない場合は、current_dir に存在するファイル全てを bulk insert する
+            LOGGER.info("Failed to find the previous directory, so all files in the current directory will be bulk inserted")
+            LOGGER.debug("Error: %s", e)
+
+    insert_files: List[Path] = []
+    if previous_dir is None:
+        insert_files = list(args.current_dir.glob("*.jsonl"))
+    else:
+        insert_files = get_diff_files(previous_dir, args.current_dir)
+
+    error_files = []
+    for file in insert_files:
+        with file.open("r", encoding="utf-8") as f:
+            data = f.read()
+            try:
+                bulk_insert_to_es(config.es_base_url, str_data=data, raise_on_error=True)
+            except Exception as e:
+                LOGGER.error("Failed to bulk insert to Elasticsearch: file=%s, error=%s", file, e)
+                error_files.append(file)
+
+    if len(error_files) > 0:
+        LOGGER.error("The following files failed to bulk insert to Elasticsearch:\n%s", "\n".join(f"- {f}" for f in error_files))
+        sys.exit(1)
+
+    LOGGER.info("Finished bulk inserting BioProject JSON-Lines data with differences to Elasticsearch")
 
 
 if __name__ == "__main__":
-    args = parse_args(sys.argv[1:])
+    main()

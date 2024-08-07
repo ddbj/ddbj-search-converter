@@ -44,12 +44,15 @@ def parse_args(args: List[str]) -> Config:
 
     parsed_args = parser.parse_args(args)
 
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
     config = get_config()
+    if parsed_args.debug:
+        config.debug = parsed_args.debug
+
     if parsed_args.dblink_files_base_path is not None:
         config.dblink_files_base_path = Path(parsed_args.dblink_files_base_path)
     if parsed_args.dblink_db_path is not None:
         config.dblink_db_path = Path(parsed_args.dblink_db_path)
-    config.debug = parsed_args.debug
 
     return config
 
@@ -144,7 +147,7 @@ def create_database(engine: Engine, file: Path) -> None:
 def main() -> None:
     config = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
-    LOGGER.info("Create SQLite database from DDBJ/DBLink files")
+    LOGGER.info("Start creating SQLite database from DDBJ/DBLink files")
     LOGGER.info("Config: %s", config.model_dump())
 
     config.dblink_files_base_path.mkdir(parents=True, exist_ok=True)
@@ -158,7 +161,7 @@ def main() -> None:
         LOGGER.info("Create database from %s", file)
         create_database(engine, file)
 
-    LOGGER.info("Create SQLite database completed")
+    LOGGER.info("Finish creating SQLite database")
 
 
 if __name__ == "__main__":

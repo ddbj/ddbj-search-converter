@@ -6,13 +6,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import requests
 import xmltodict
 from lxml import etree
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import (LOGGER, Config, default_config,
                                           get_config, set_logging_level)
+from ddbj_search_converter.utils import bulk_insert_to_es
 
 BATCH_SIZE = 200
 # (date_created, date_published, date_modified) が None の場合のデフォルト値
@@ -119,9 +119,12 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
 
     parsed_args = parser.parse_args(args)
 
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
     config = get_config()
-    config.es_base_url = parsed_args.es_base_url
-    config.debug = parsed_args.debug
+    if parsed_args.es_base_url != default_config.es_base_url:
+        config.es_base_url = parsed_args.es_base_url
+    if parsed_args.debug:
+        config.debug = parsed_args.debug
 
     # Args の型変換と validation
     xml_file = Path(parsed_args.xml_file)
@@ -220,7 +223,7 @@ def xml2jsonl(
                 if output_file is not None:
                     dump_to_file(output_file, jsonl)
                 if bulk_es:
-                    bulk_insert_to_es(es_base_url, jsonl)
+                    bulk_insert_to_es(es_base_url, jsonl=jsonl, raise_on_error=False)
                 batch_count = 0
                 docs = []
 
@@ -547,20 +550,6 @@ def docs_to_jsonl(docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return jsonl
 
 
-def bulk_insert_to_es(es_base_url: str, jsonl: List[Dict[str, Any]]) -> None:
-    data = "\n".join(json.dumps(d) for d in jsonl)
-    res = requests.post(
-        f"{es_base_url}/_bulk",
-        data=data,
-        headers={"Content-Type": "application/x-ndjson"},
-        timeout=60,
-    )
-    if res.ok:
-        pass
-    else:
-        LOGGER.error("Failed to bulk insert to Elasticsearch: status_code=%s, response=%s", res.status_code, res.text)
-
-
 def dump_to_file(output_file: Path, jsonl: List[Dict[str, Any]]) -> None:
     with output_file.open("a") as f:
         for line in jsonl:
@@ -599,9 +588,9 @@ def parse_accessions_tab_file(accessions_tab_file: Path) -> AccessionsData:
 
 
 def main() -> None:
-    [config, args] = parse_args(sys.argv[1:])
+    config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
-    LOGGER.info("Create JSON-Lines file from BioProject XML")
+    LOGGER.info("Start converting BioProject XML %s to JSON-Lines", args.xml_file)
     LOGGER.info("Config: %s", config.model_dump())
     LOGGER.info("Args: %s", args.model_dump())
 
@@ -622,6 +611,8 @@ def main() -> None:
         is_core,
         accessions_data,
     )
+
+    LOGGER.info("Finished converting BioProject XML %s to JSON-Lines", args.xml_file)
 
 
 if __name__ == "__main__":

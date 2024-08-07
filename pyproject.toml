@@ -31,7 +31,6 @@ tests = ["isort", "lxml-stubs", "mypy", "pylint", "types-xmltodict"]
 package-dir = { "src" = "ddbj_search_converter" }
 packages = [
     "ddbj_search_converter",
-    "ddbj_search_converter.utils",
     "ddbj_search_converter.bioproject",
     "ddbj_search_converter.biosample",
     "ddbj_search_converter.dblink",
@@ -40,7 +39,7 @@ packages = [
 [tool.mypy]
 files = ["./ddbj_search_converter/**/*.py"]
 strict = true
-# ignore_missing_imports = true
+ignore_missing_imports = true
 # follow_imports = "skip"
 # warn_redundant_casts = true
 # warn_unused_ignores = true
