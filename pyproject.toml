@@ -9,15 +9,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 version = "0.1.0"
 requires-python = ">=3.8"
 license = { text = "Apache-2.0" }
-dependencies = [
-    "lxml",
-    "pandas",
-    "pydantic",
-    "requests",
-    "SQLAlchemy",
-    "toolz",
-    "xmltodict",
-]
+dependencies = ["lxml", "pydantic", "requests", "SQLAlchemy", "xmltodict"]
 
 [project.urls]
 Homepage = "https://github.com/ddbj/ddbj-search-converter"
@@ -25,10 +17,29 @@ Documentation = "https://github.com/ddbj/ddbj-search-converter/blob/main/README.
 Repository = "https://github.com/ddbj/ddbj-search-converter.git"
 
 [project.optional-dependencies]
-tests = ["isort", "lxml-stubs", "mypy", "pylint", "types-xmltodict"]
+tests = [
+    "isort",
+    "lxml-stubs",
+    "mypy",
+    "pylint",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest",
+    "types-requests",
+    "types-xmltodict",
+]
+
+[project.scripts]
+create_accession_db = "ddbj_search_converter.dblink.create_accession_db:main"
+create_dblink_db = "ddbj_search_converter.dblink.create_dblink_db:main"
+bp_xml2jsonl = "ddbj_search_converter.bioproject.xml2jsonl:main"
+bp_split_jsonl = "ddbj_search_converter.bioproject.split_jsonl:main"
+bp_bulk_insert = "ddbj_search_converter.bioproject.bulk_insert:main"
+bs_xml2jsonl = "ddbj_search_converter.biosample.xml2jsonl:main"
+bs_split_jsonl = "ddbj_search_converter.biosample.split_jsonl:main"
+bs_bulk_insert = "ddbj_search_converter.biosample.bulk_insert:main"
 
 [tool.setuptools]
-package-dir = { "src" = "ddbj_search_converter" }
 packages = [
     "ddbj_search_converter",
     "ddbj_search_converter.bioproject",
@@ -36,17 +47,14 @@ packages = [
     "ddbj_search_converter.dblink",
 ]
 
+[tool.pytest.ini_options]
+addopts = "--cov=dfast_api --cov-report=html:tests/htmlcov"
+testpaths = ["tests/py_tests"]
+
 [tool.mypy]
 files = ["./ddbj_search_converter/**/*.py"]
+follow_imports = "silent"
 strict = true
-ignore_missing_imports = true
-# follow_imports = "skip"
-# warn_redundant_casts = true
-# warn_unused_ignores = true
-# disallow_any_generics = true
-# check_untyped_defs = true
-# no_implicit_reexport = true
-# disallow_untyped_defs = true
 
 [tool.pylint.messages_control]
 disable = [
@@ -54,13 +62,12 @@ disable = [
     "C0115", # Missing class docstring
     "C0116", # Missing function or method docstring
     "C0301", # Line too long
-    #     "R0401", # Cyclic import
+    "R0801", # Similar lines in 2 files
     "R0903", # Too few public methods
     "R0911", # Too many return statements
     "R0912", # Too many branches
     "R0913", # Too many arguments
     "R0914", # Too many local variables
-    #     "R0915", # Too many statements
     "R1705", # Unnecessary "else" after "return"
     "W0511", # Fixme
     "W0718", # Broad exception caught

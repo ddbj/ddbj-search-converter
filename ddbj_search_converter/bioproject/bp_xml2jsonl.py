@@ -267,7 +267,7 @@ def _parse_date_published(
         date = data[1]
     else:
         try:
-            date = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]  # type: ignore
+            date = str(project["Project"]["ProjectDescr"]["ProjectReleaseDate"])
         except Exception as e:
             LOGGER.debug("Failed to parse date_published from %s: %s", project, e)
 
@@ -287,7 +287,7 @@ def _parse_date_created(
         date = data[0]
     else:
         try:
-            date = project["Submission"]["submitted"]  # type: ignore
+            date = str(project["Submission"]["submitted"])
         except Exception as e:
             LOGGER.debug("Failed to parse date_created from %s: %s", project, e)
 
@@ -307,7 +307,7 @@ def _parse_date_modified(
         date = data[2]
     else:
         try:
-            date = project["Submission"]["last_update"]  # type: ignore
+            date = str(project["Submission"]["last_update"])
         except Exception as e:
             LOGGER.debug("Failed to parse date_modified from %s: %s", project, e)
 
@@ -461,6 +461,7 @@ def _parse_external_link(
                 db_name = db_xref_obj.get("db", None)
 
                 db_base_url = EXTERNAL_LINKS.get(db_name, None)
+                url = None
                 if db_base_url is not None:
                     # TODO: external_link_obj["ID"] で大丈夫なのか？
                     url = db_base_url + external_link_obj["ID"]

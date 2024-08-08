@@ -7,18 +7,16 @@ create_dblink_db の実装
 
 import argparse
 import sys
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, Optional
+from typing import List
 
 from sqlalchemy import Column, Index, Table, Text, create_engine
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import MetaData
 
 from ddbj_search_converter.config import (LOGGER, Config, default_config,
                                           get_config, set_logging_level)
+from ddbj_search_converter.dblink.id_relation_db import get_session
 
 
 def parse_args(args: List[str]) -> Config:
@@ -92,27 +90,6 @@ def create_db_engine(config: Config) -> Engine:
     return create_engine(
         f"sqlite:///{config.dblink_db_path}",
     )
-
-
-@contextmanager
-def get_session(config: Optional[Config] = None, engine: Optional[Engine] = None) -> Generator[Session, None, None]:
-    if engine is None:
-        if config is None:
-            raise ValueError("config or engine must be specified")
-        engine = create_db_engine(config)
-    session = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-    )()
-
-    try:
-        yield session
-    except Exception as e:
-        session.rollback()
-        raise e
-    finally:
-        session.close()
 
 
 def create_database(engine: Engine, file: Path) -> None:

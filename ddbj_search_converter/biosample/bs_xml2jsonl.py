@@ -287,10 +287,6 @@ def dump_to_file(output_file: Path, jsonl: List[Dict[str, Any]]) -> None:
             f.write(json.dumps(line) + "\n")
 
 
-def is_ddbj_biosample(file: Path) -> bool:
-    return CORE_FILE_NAME_PATTERN in file.name
-
-
 def main() -> None:
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
@@ -308,7 +304,7 @@ def main() -> None:
                 config,
                 input_file,
                 output_file,
-                is_ddbj_biosample(input_file),
+                CORE_FILE_NAME_PATTERN in input_file.name,
                 args.batch_size,
             ) for input_file, output_file in zip(input_files, output_files)])
         except Exception as e:

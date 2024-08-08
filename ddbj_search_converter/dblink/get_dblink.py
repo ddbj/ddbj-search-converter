@@ -6,10 +6,7 @@ from sqlalchemy import Table
 from sqlalchemy.engine import Engine
 from sqlalchemy.schema import MetaData
 
-from ddbj_search_converter.dblink.create_dblink_db import \
-    get_session as get_dblink_session
-from ddbj_search_converter.dblink.id_relation_db import \
-    get_session as get_accessions_session
+from ddbj_search_converter.dblink.id_relation_db import get_session
 
 # dbXref が 1M 要素あるようなドキュメントがあり、Elasticsearch のリクエストが 413 となるのを回避するため設定
 SELECT_LIMIT = 10000
@@ -99,7 +96,7 @@ def select_dbxref(
     relation_ids = set()
 
     # TODO: 要確認
-    with get_accessions_session(engine=accessions_engine) as accessions_session:
+    with get_session(engine=accessions_engine) as accessions_session:
         for table_name in ACCESSIONS_TABLES[project_or_sample]:
             table = Table(table_name, MetaData(), autoload_with=accessions_engine)
             rows = accessions_session.query(table).filter(
@@ -110,7 +107,7 @@ def select_dbxref(
                 relation_ids.add(row.id1)
 
     # TODO: 要確認
-    with get_dblink_session(engine=dblink_engine) as dblink_session:
+    with get_session(engine=dblink_engine) as dblink_session:
         for table_name in DBLINK_TABLES[project_or_sample]:
             table = Table(table_name, MetaData(), autoload_with=dblink_engine)
             rows = dblink_session.query(table).filter(
