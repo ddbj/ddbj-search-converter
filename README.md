@@ -1,85 +1,169 @@
 # ddbj-search-converter
 
-- biosample_set.xmlをjsonlに変換しElasticsearchに投入してデータベースを更新する
-- bioproject.xmlをjsonl変換しElasticsearchに投入してデータベースを更新する
+- [DDBJ-Search](https://ddbj.nig.ac.jp) のデータ投入用 script 群。
+`biosample_set.xml` や `bioproject.xml` といった XML file を JSON-Lines (ES bulk data file) に変換し、Elasticsearch に投入する。
 
-## 環境の構築
+## Installation and Start up
 
+`ddbj-search-converter` は、Python 3.8 以上での使用を想定している。
+
+pip を用いた install として:
+
+```bash
+python3 -m pip install .
 ```
-cd ddbj-search-converter/src
-python3 -m venv .venv
+
+これにより、以下の CLI が install される。
+
+- `create_accession_db`: `SRA_accessions.tab` からそれぞれの accession の関係をまとめた、SQLite database を生成する
+- `create_dblink_db`: `/lustre9/open/shared_data/dblink` 以下の各 TSV file から、SQLite database を生成する
+- `bp_xml2jsonl`: BioProject XML を ES bulk insert 用の JSON-Lines に変換する
+- `bp_split_jsonl`: 変換された JSON-Lines を bulk insert に向けて分割する
+- `bp_bulk_insert`: ES に bulk insert する
+- `bs_xml2jsonl`: BioSample XML を ES bulk insert 用の JSON-Lines に変換する
+- `bs_split_jsonl`: 変換された JSON-Lines を bulk insert に向けて分割する
+- `bs_bulk_insert`: ES に bulk insert する
+
+例として、
+
+```bash
+$ bp_xml2jsonl --help
+usage: bp_xml2jsonl [-h] [--accessions-tab-file [ACCESSIONS_TAB_FILE]]
+                    [--bulk-es] [--es-base-url ES_BASE_URL]
+                    [--batch-size BATCH_SIZE] [--debug]
+                    xml_file [output_file]
+
+Convert BioProject XML to JSON-Lines
+
+...
+```
+
+### Using Docker
+
+また、Docker を用いて環境を構築することも可能である。
+
+```bash
+$ docker network create ddbj-search-network
+$ docker compose up -d
+$ docker compose exec app bp_xml2jsonl --help
+...
+```
+
+## Usage
+
+まず、全手順を通して、必要な外部 resource として、
+
+```bash
+# TODO update
+```
+
+また、手順実行後の directory 構成は以下の通りである。
+
+```bash
+# TODO update
+```
+
+### 0.1. Prepare External Resources
+
+```bash
+cd /home/w3ddbjld/tasks/sra/resources
+wget ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
+
+## biosample_set.xml.gz展開
+
+gunzip -c /usr/local/resources/biosample/biosample_set.xml.gz > /home/w3ddbjld/tasks/biosample_jsonl/biosample_set.xml
+gunzip -c /usr/local/resources/biosample/ddbj_biosample_set.xml.gz > /home/w3ddbjld/tasks/biosample_jsonl/ddbj/ddbj_biosample_set.xml
+```
+
+### 1.1. Create Accession Database (`create_accession_db`)
+
+```bash
+cd /home/w3ddbjld/tasks/ddbj-search-converter/src
 source .venv/bin/activate
-pip install -r requirements.txt
+mkdir /home/w3ddbjld/tasks/sra/resources/$(date +%Y%m%d)
+cd utils
+time ./split_sra_accessions.pl /home/w3ddbjld/tasks/sra/resources/SRA_Accessions.tab /home/w3ddbjld/tasks/sra/resources/$(date +%Y%m%d)
+cd ../dblink
+time python create_accession_db_m.py /home/w3ddbjld/tasks/sra/resources/$(date +%Y%m%d)  /home/w3ddbjld/tasks/sra/resources/sra_accessions.sqlite
 ```
 
-## biosample_set.xmlのjsonl変換とElasticsearch更新手順
+### 1.2. Create DBLink Database (`create_dblink_db`)
 
-### 1. 環境の準備
-
-```
-cd ./ddbj-search-converter/src
-source .venv/bin/activate
-cd biosample_converter
+```bash
+time python create_dblink_db.py
 ```
 
-### 2. xmlを分割する
+### 2.1. Convert BioProject XML to JSON-Lines (`bp_xml2jsonl`)
 
-```
- ./split_xml.pl <biosapmle_set.xmlのパス> <分割したファイルを保存するディレクトリのパス>
-```
-
-- perlでxmlを3万件のレコード毎分割しファイルに保存します。
-
-### 3. xmlをjsonlに変換する
-
-```
-python bs_xml2jsonl_mp.py <分割したxmlが保存されたディレクトリのパス>  <変換したjsonlを書き出すディレクトリのパス>
-```
-- xmlをjsonl変換する処理をPythonのマルチプロセスで実行します
-- 現在並列数は32に設定されていますがこの値は環境に合わせて置き換えてください
-
-
-### 4. jsonlをElasticsearchにbulk insertする
-
-```
-python bs_bulk_insert.py <xmlが分割保存された一つ前の操作のディレクトリのパス> <xmlが分割保存された最新のディレクトリのパス>
-```
-- jsonlの保存されたディレクトリを指定しbulk apiを利用してElasticsearchにデータを保存します
-- Elasitcsearchのbulk APIへのリクエストはPythonのマルチプロセスで実行します
-- 現在並列数は32に設定されていますがこの値は環境に合わせて置き換えてください
-- Elasticsearchにドキュメントが含まれない状態からの最初の登録の場合最新のディレクトリと一つ前のディレクトリに同じディレクトリを指定し "-f"をつけて実行してください（この仕様は変更する可能性があります）
-
-
-
-## bioproject.xmlのjsonl変換とElasticsearchの更新手順
-
-### 1. 環境の準備
-
-```
-cd ./ddbj-search-converter/src
-source .venv/bin/activate
-cd biosample_converter
+```bash
+time python bp_xml2jsonl.py /usr/local/resources/bioproject/bioproject.xml /home/w3ddbjld/tasks/bioproject_jsonl/bioproject.jsonl
+cp /usr/local/resources/bioproject/ddbj_core_bioproject.xml /home/w3ddbjld/tasks/bioproject_jsonl/ddbj/ddbj_core_bioproject.xml
+time python bp_xml2jsonl.py /home/w3ddbjld/tasks/bioproject_jsonl/ddbj/
 ```
 
-### 2. bioproject.jsonlの生成
+### 2.2. Split JSON-Lines for Bulk Insert (`bp_split_jsonl`)
+
+```bash
+time python split_jsonl.py /home/w3ddbjld/tasks/bioproject_jsonl/bioproject.jsonl  /home/w3ddbjld/tasks/bioproject_jsonl
+```
+
+### 2.3. Bulk Insert BioProject Data (`bp_bulk_insert`)
+
+```bash
+time python bp_bulk_insert.py /home/w3ddbjld/tasks/bioproject_jsonl/$(date -d yesterday +%Y%m%d)  /home/w3ddbjld/tasks/bioproject_jsonl$(date +%Y%m%d)
+```
+
+### 3.1. Convert BioSample XML to JSON-Lines (`bs_xml2jsonl`)
+
+```bash
+mkdir /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
+time ./split_xml.pl /home/w3ddbjld/tasks/biosample_jsonl/biosample_set.xml /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
+time python bs_xml2jsonl_mp.py /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d) /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
+time python bs_xml2jsonl_mp.py /home/w3ddbjld/tasks/biosample_jsonl/ddbj   /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
+mv /home/w3ddbjld/tasks/biosample_jsonl/ddbj/ddbj_biosample_set.jsonl  /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
+```
+
+### 3.2. Split JSON-Lines for Bulk Insert (`bs_split_jsonl`)
+
+```bash
 
 ```
-python bp_xml2jsonl.py  /usr/local/resources/bioproject/bioproject.xml bioproject.jsonl
+
+### 3.3. Bulk Insert BioSample Data (`bs_bulk_insert`)
+
+```bash
+time python bs_bulk_insert.py /home/w3ddbjld/tasks/biosample_jsonl/ $(date -d yesterday +%Y%m%d)  /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
 ```
 
-### 3. JSONLを分割
+## Development
 
+開発用環境として、
+
+```bash
+$ docker network create ddbj-search-network-dev
+$ docker compose -f docker-compose.dev.yml up -d
+$ docker compose -f docker-compose.dev.yml exec app bash
+# inside the container
+$ bp_xml2jsonl --help
+...
 ```
-python split_jsonl.py bioproject.jsonl <分割したファイルを書き出すディレクトリ>
+
+### Linting, Formatting and Testing
+
+lint, format, test は以下のコマンドで実行できる。
+
+```bash
+# Lint and Format
+$ pylint ./ddbj_search_converter
+$ mypy ./ddbj_search_converter
+$ isort ./ddbj_search_converter
+
+# Test
+$ pytest
 ```
-- <分割したファイルを書き出すディレクトリ>に作業日をディレクトリ名としたディレクトリが作られ分割されたファイルが書き出される
 
-### 4. ファイルの差分リストを生成しElasticsearchにbulk insertする
+また、CI / CD は GitHub Actions により実行される。See [`.github/workflows`](./.github/workflows) for more details.
 
-```
-python bulk_insert_renewals.py {日付1} {日付2}
-```
-- 作業日と前回の作業日を引数に与えるとその日付のディレクトリから差分ファイルを抽出してElasticsearchにbulk insertする
-- 最新のディレクトリとその直前の作業日のディレクトリの指定は、引数で渡さなくても自動的に取得されるよう改修予定です
+## License
 
-
+This project is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) license. See the [LICENSE](./LICENSE) file for details.
