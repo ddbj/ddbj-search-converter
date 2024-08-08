@@ -32,12 +32,12 @@ tests = [
 [project.scripts]
 create_accession_db = "ddbj_search_converter.dblink.create_accession_db:main"
 create_dblink_db = "ddbj_search_converter.dblink.create_dblink_db:main"
-bp_xml2jsonl = "ddbj_search_converter.bioproject.xml2jsonl:main"
-bp_split_jsonl = "ddbj_search_converter.bioproject.split_jsonl:main"
-bp_bulk_insert = "ddbj_search_converter.bioproject.bulk_insert:main"
-bs_xml2jsonl = "ddbj_search_converter.biosample.xml2jsonl:main"
-bs_split_jsonl = "ddbj_search_converter.biosample.split_jsonl:main"
-bs_bulk_insert = "ddbj_search_converter.biosample.bulk_insert:main"
+bp_xml2jsonl = "ddbj_search_converter.bioproject.bp_xml2jsonl:main"
+bp_split_jsonl = "ddbj_search_converter.bioproject.bp_split_jsonl:main"
+bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
+bs_xml2jsonl = "ddbj_search_converter.biosample.bs_xml2jsonl:main"
+bs_split_jsonl = "ddbj_search_converter.biosample.bs_split_jsonl:main"
+bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
 
 [tool.setuptools]
 packages = [
@@ -48,7 +48,7 @@ packages = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=dfast_api --cov-report=html:tests/htmlcov"
+addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"
 testpaths = ["tests/py_tests"]
 
 [tool.mypy]

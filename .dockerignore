@@ -2,7 +2,8 @@
 **
 
 !ddbj_search_converter
+!LICENSE
 !pyproject.toml
 !README.md
-!tests
 !scripts
+!tests
