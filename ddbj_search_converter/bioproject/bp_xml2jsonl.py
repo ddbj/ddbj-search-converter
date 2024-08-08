@@ -14,10 +14,9 @@ from ddbj_search_converter.config import (LOGGER, Config, default_config,
                                           get_config, set_logging_level)
 from ddbj_search_converter.utils import bulk_insert_to_es
 
-BATCH_SIZE = 200
 # (date_created, date_published, date_modified) が None の場合のデフォルト値
 TODAY = datetime.now().strftime("%Y-%m-%dT00:00:00Z")
-DDBJ_BIOPROJECT_NAME = "ddbj_core"
+CORE_FILENAME_PATTERN = "ddbj_core"
 
 
 # === type def. ===
@@ -80,6 +79,7 @@ class Args(BaseModel):
     output_file: Optional[Path]
     accessions_tab_file: Optional[Path]
     bulk_es: bool
+    batch_size: int = 200
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -110,6 +110,12 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         "--es-base-url",
         help="Elasticsearch base URL (default: http://localhost:9200)",
         default=default_config.es_base_url,
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=200,
+        help="Number of documents to write or insert at once (default: 200)",
     )
     parser.add_argument(
         "--debug",
@@ -155,6 +161,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         output_file=output_file,
         accessions_tab_file=accessions_tab_file,
         bulk_es=parsed_args.bulk_es,
+        batch_size=parsed_args.batch_size,
     ))
 
 
@@ -164,7 +171,8 @@ def xml2jsonl(
     bulk_es: bool,
     es_base_url: str,
     is_core: bool,
-    accession_data: AccessionsData
+    accession_data: AccessionsData,
+    batch_size: int,
 ) -> None:
     """\
     BioProject XMLをdictに変換・関係データを追加し
@@ -218,7 +226,7 @@ def xml2jsonl(
             docs.append(doc)
 
             batch_count += 1
-            if batch_count > BATCH_SIZE:
+            if batch_count > batch_size:
                 jsonl = docs_to_jsonl(docs)
                 if output_file is not None:
                     dump_to_file(output_file, jsonl)
@@ -596,7 +604,7 @@ def main() -> None:
 
     is_core = False
     accessions_data = {}
-    if DDBJ_BIOPROJECT_NAME in args.xml_file.name:
+    if CORE_FILENAME_PATTERN in args.xml_file.name:
         if args.accessions_tab_file is None:
             LOGGER.error("Your input xml file seems to be ddbj_core, so you need to specify accessions_tab_file")
             sys.exit(1)
@@ -610,6 +618,7 @@ def main() -> None:
         config.es_base_url,
         is_core,
         accessions_data,
+        args.batch_size,
     )
 
     LOGGER.info("Finished converting BioProject XML %s to JSON-Lines", args.xml_file)

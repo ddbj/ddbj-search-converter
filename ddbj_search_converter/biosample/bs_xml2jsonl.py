@@ -11,6 +11,7 @@ import xmltodict
 from lxml import etree
 from pydantic import BaseModel
 
+from ddbj_search_converter.bioproject.bp_xml2jsonl import clear_element
 from ddbj_search_converter.config import (LOGGER, Config, get_config,
                                           set_logging_level)
 from ddbj_search_converter.dblink.create_dblink_db import \
@@ -19,8 +20,7 @@ from ddbj_search_converter.dblink.get_dblink import DBXRef, select_dbxref
 from ddbj_search_converter.dblink.id_relation_db import \
     create_db_engine as create_accession_db_engine
 
-BATCH_SIZE = 10000
-DDBJ_BIOSAMPLE_NAME = "ddbj_biosample"
+CORE_FILE_NAME_PATTERN = "ddbj_biosample"
 
 
 # === type def. ===
@@ -53,6 +53,7 @@ class CommonDocument(BaseModel):
 class Args(BaseModel):
     xml_dir: Path
     output_dir: Path
+    batch_size: int = 10000
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -77,6 +78,12 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         nargs="?",
         default=None,
         help="Path to the SQLite database file containing dblink relations (default: ./converter_results/dblink.sqlite)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        help="Number of documents to write in a single batch (default: 10000)",
+        default=10000,
     )
     parser.add_argument(
         "--debug",
@@ -113,10 +120,11 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     return (config, Args(
         xml_dir=parsed_args.xml_dir,
         output_dir=parsed_args.output_dir,
+        batch_size=parsed_args.batch_size,
     ))
 
 
-def xml2jsonl(config: Config, xml_file: Path, output_file: Path, is_core: bool) -> None:
+def xml2jsonl(config: Config, xml_file: Path, output_file: Path, is_core: bool, batch_size: int) -> None:
     accessions_engine = create_accession_db_engine(config)
     dblink_engine = create_dblink_db_engine(config)
 
@@ -163,7 +171,7 @@ def xml2jsonl(config: Config, xml_file: Path, output_file: Path, is_core: bool) 
             docs.append(doc)
 
             batch_count += 1
-            if batch_count >= BATCH_SIZE:
+            if batch_count >= batch_size:
                 jsonl = docs_to_jsonl(docs)
                 dump_to_file(output_file, jsonl)
                 batch_count = 0
@@ -279,20 +287,8 @@ def dump_to_file(output_file: Path, jsonl: List[Dict[str, Any]]) -> None:
             f.write(json.dumps(line) + "\n")
 
 
-def clear_element(element: Any) -> None:
-    try:
-        element.clear()
-        while element.getprevious() is not None:
-            try:
-                del element.getparent()[0]
-            except Exception as e:
-                LOGGER.debug("Failed to clear element: %s", e)
-    except Exception as e:
-        LOGGER.debug("Failed to clear element: %s", e)
-
-
 def is_ddbj_biosample(file: Path) -> bool:
-    return DDBJ_BIOSAMPLE_NAME in file.name
+    return CORE_FILE_NAME_PATTERN in file.name
 
 
 def main() -> None:
@@ -312,7 +308,8 @@ def main() -> None:
                 config,
                 input_file,
                 output_file,
-                is_ddbj_biosample(input_file)
+                is_ddbj_biosample(input_file),
+                args.batch_size,
             ) for input_file, output_file in zip(input_files, output_files)])
         except Exception as e:
             LOGGER.error("Error occurred while converting files: %s", e)

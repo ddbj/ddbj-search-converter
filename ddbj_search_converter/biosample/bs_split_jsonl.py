@@ -11,6 +11,7 @@ from typing import List, Tuple
 
 from pydantic import BaseModel
 
+from ddbj_search_converter.bioproject.bp_split_jsonl import split_file
 from ddbj_search_converter.config import (LOGGER, Config, get_config,
                                           set_logging_level)
 
@@ -79,29 +80,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     ))
 
 
-def split_files(jsonl_file: Path, output_dir: Path, split_size: int) -> None:
-    """\
-    jsonl ファイルを特定の行数のファイルに分割して出力する
-    """
-    with jsonl_file.open("r", encoding="utf-8") as f:
-        file_count = 0
-        lines = []
-        for line_num, line in enumerate(f, start=1):
-            lines.append(line)
-            if line_num % split_size == 0:
-                output_file = output_dir.joinpath(f"{jsonl_file.stem}_{file_count:06d}.jsonl")
-                with output_file.open("w", encoding="utf-8") as f_out:
-                    f_out.writelines(lines)
-                file_count += 1
-                lines.clear()
-
-        # 残りのデータを出力
-        if len(lines) > 0:
-            output_file = output_dir.joinpath(f"{jsonl_file.stem}_{file_count:06d}.jsonl")
-            with output_file.open("w", encoding="utf-8") as f_out:
-                f_out.writelines(lines)
-
-
 def main() -> None:
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
@@ -114,7 +92,7 @@ def main() -> None:
     error_flag = False
     with Pool(config.process_pool_size) as p:
         try:
-            p.starmap(split_files, [(f, args.output_dir, args.split_size) for f in input_files])
+            p.starmap(split_file, [(f, args.output_dir, args.split_size) for f in input_files])
         except Exception as e:
             LOGGER.error("Error occurred while splitting files: %s", e)
             error_flag = True
