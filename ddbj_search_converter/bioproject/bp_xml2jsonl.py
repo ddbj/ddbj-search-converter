@@ -47,6 +47,9 @@ class ExternalLink(BaseModel):
 
 
 class CommonDocument(BaseModel):
+    """\
+    # ref.: https://github.com/ddbj/rdf/wiki/JSON
+    """
     identifier: str
     distribution: Distribution
     isPartOf: str = "BioProject"

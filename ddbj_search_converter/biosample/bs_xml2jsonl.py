@@ -32,6 +32,9 @@ class Organism(BaseModel):
 
 
 class CommonDocument(BaseModel):
+    """\
+    # ref.: https://github.com/ddbj/rdf/wiki/JSON
+    """
     accession: Optional[str]
     identifier: Optional[str]
     isPartOf: str = "BioSample"
