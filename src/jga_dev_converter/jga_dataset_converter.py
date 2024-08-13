@@ -25,6 +25,35 @@ def xml2jsonl(input:FilePath):
             xml_str = etree.tostring(element)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["properties"] = metadata["DATASET"]
+            doc["identifier"]= doc["accession"]
+            doc["title"] = doc["properties"].get("TITLE")
+            doc["description"] = doc["properties"].get("DESCRIPTION")
+            doc["name"] = doc["properties"].get("alias")
+            doc["type"] = "jga-dataset"
+            doc["url"] = "https://ddbj.nig.ac.jp/resource/jga-dataset/" + doc["accession"]
+            doc["sameAs"] = None
+            doc["isPartOf"] = "jga"
+            doc["organism"] = {"identifier": 9606, "name": "Homo sapiens"}
+            # TODO: dbxreをdblinkモジュールより取得し追加する
+            doc["dbXrefs"] = [
+                {
+                    "identifier": "JGAP000001",
+                    "type": "jga-policy",
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-policy/JGAP000001"
+                },
+                {
+                    "identifier": "JGAC000001",
+                    "type": "jga-dac",
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
+                }
+            ]
+            doc["status"] = "public"
+            doc["visibility"] = "unrestricted-access"
+            doc["dateCreated"] = ""
+            doc["dateModified"] = ""
+            doc["datePublished"] = ""
+
+
             docs.append(doc)
             i +=1
 
@@ -44,7 +73,7 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_20240802.jsonl"
+    jsonl_output = "jga-dataset_20240808.jsonl"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -57,5 +86,5 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "jga-dataset_add_20240731.xml"
+    input = "jga-dataset-add-20240808.xml"
     xml2jsonl(input)

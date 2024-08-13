@@ -25,6 +25,35 @@ def xml2jsonl(input:FilePath):
             xml_str = etree.tostring(element)
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["properties"] = metadata["STUDY"]
+
+            doc["identifier"]= doc["accession"]
+            doc["title"] = doc["properties"].get("DESCRIPTOR").get("STUDY_TITLE")
+            doc["description"] = doc["properties"].get("DESCRIPTOR").get("STUDY_ABSTRACT")
+            doc["name"] = doc["properties"].get("alias")
+            doc["type"] = "jga-study"
+            doc["url"] = "https://ddbj.nig.ac.jp/resource/jga-study/" + doc["accession"]
+            doc["sameAs"] = None
+            doc["isPartOf"] = "jga"
+            doc["organism"] = {"identifier": 9606, "name": "Homo sapiens"}
+            # TODO: dbxreをdblinkモジュールより取得し追加する
+            doc["dbXrefs"] = [
+                {
+                    "identifier": "JGAP000001",
+                    "type": "jga-policy",
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-policy/JGAP000001"
+                },
+                {
+                    "identifier": "JGAC000001",
+                    "type": "jga-dac",
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
+                }
+            ]
+            doc["status"] = "public"
+            doc["visibility"] = "unrestricted-access"
+            doc["dateCreated"] = ""
+            doc["dateModified"] = ""
+            doc["datePublished"] = ""
+
             docs.append(doc)
             i +=1
 
@@ -44,10 +73,9 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-study_20240731.jsonl"
+    jsonl_output = "jga-study_20240808.jsonl"
     with open(jsonl_output, "a") as f:
         for doc in docs:
-
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
             header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
             doc.pop("accession")
@@ -57,5 +85,5 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "jga-study_add_20240731.xml"
+    input = "jga-study-add-20240808.xml"
     xml2jsonl(input)
