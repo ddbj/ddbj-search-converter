@@ -1,0 +1,36 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: ddbj-search-elasticsearch-dev
+    environment:
+      discovery.type: "single-node"
+      xpack.security.enabled: "false"
+      bootstrap.memory_lock: "true"
+      http.cors.enabled: "true"
+      http.cors.allow-origin: "*"
+      TAKE_FILE_OWNERSHIP: "true"
+      ELASTIC_PASSWORD: "ddbj-search-elasticsearch-dev-password"  # change this password
+    ports:
+      - "0.0.0.0:19200:9200"
+      - "0.0.0.0:19300:9300"
+    volumes:
+      - ${PWD}/elasticsearch-dev/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ${PWD}/elasticsearch-dev/data:/usr/share/elasticsearch/data
+      - ${PWD}/elasticsearch-dev/logs:/usr/share/elasticsearch/logs
+    user: ${UID:-1000}:${GID:-0}  # 1000:0 is elasticsearch container's default
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 32g
+    restart: on-failure
+    networks:
+      - ddbj-search-network-dev
+
+networks:
+  ddbj-search-network-dev:
+    name: ddbj-search-network-dev
+    external: true

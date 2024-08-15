@@ -164,10 +164,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-bioproject.jsonl
-bioproject*.jsonl
-count_ids.py
-get_target_xml.py
-*logs*
-test*.json
-sample/PR*.xml
+# === our settings ===
+
+elasticsearch-dev/logs
+elasticsearch-dev/data
