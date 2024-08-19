@@ -7,6 +7,8 @@ services:
     container_name: ddbj-search-converter-dev
     volumes:
       - ${PWD}:/app
+      # 遺伝研スパコン内の resouce
+      - /lustre9/open/shared_data/dblink:/lustre9/open/shared_data/dblink:ro
     restart: on-failure
     working_dir: /app
     command: ["sleep", "infinity"]

@@ -54,7 +54,21 @@ $ docker compose exec app bp_xml2jsonl --help
 まず、全手順を通して、必要な外部 resource として、
 
 ```bash
-# TODO update
+- /lustre9/open/shared_data/dblink/assembly_genome-bp/assembly_genome2bp.tsv
+- /lustre9/open/shared_data/dblink/assembly_genome-bs/assembly_genome2bs.tsv
+- /lustre9/open/shared_data/dblink/bioproject-biosample/bioproject2biosample.tsv
+- /lustre9/open/shared_data/dblink/bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv
+- /lustre9/open/shared_data/dblink/biosample-bioproject/biosample2bioproject.tsv
+- /lustre9/open/shared_data/dblink/gea-bioproject/gea2bioproject.tsv
+- /lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv
+- /lustre9/open/shared_data/dblink/insdc-bioproject/insdc2bioproject.tsv
+- /lustre9/open/shared_data/dblink/insdc-biosample/insdc2biosample.tsv
+- /lustre9/open/shared_data/dblink/insdc_master-bioproject/insdc_master2bioproject.tsv
+- /lustre9/open/shared_data/dblink/insdc_master-biosample/insdc_master2biosample.tsv
+- /lustre9/open/shared_data/dblink/mtb2bp/mtb_id_bioproject.tsv
+- /lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv
+- /lustre9/open/shared_data/dblink/ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv
+- /lustre9/open/shared_data/dblink/taxonomy_biosample/trace_biosample_taxon2bs.tsv
 ```
 
 また、手順実行後の directory 構成は以下の通りである。
