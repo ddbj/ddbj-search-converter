@@ -49,6 +49,14 @@ $ docker compose exec app bp_xml2jsonl --help
 ...
 ```
 
+開発環境:
+
+```bash
+$ docker network create ddbj-search-network-dev
+$ docker compose -f compose.dev.yml up -d
+$ docker compose -f compose.dev.yml exec app bash
+```
+
 ## Usage
 
 まず、全手順を通して、必要な外部 resource として、
