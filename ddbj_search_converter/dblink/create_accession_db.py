@@ -15,7 +15,6 @@ import csv
 import glob
 import sys
 from multiprocessing import Manager, Pool
-from multiprocessing.managers import ListProxy
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -30,7 +29,7 @@ from ddbj_search_converter.dblink.id_relation_db import (TableNames,
 
 CHUNK_SIZE = 100000
 Relation = Tuple[str, str, TableNames]
-SharedData = Dict[TableNames, ListProxy[Any]]
+SharedData = Dict[TableNames, Any]
 
 
 def parse_args(args: List[str]) -> Config:
