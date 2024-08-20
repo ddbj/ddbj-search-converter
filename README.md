@@ -77,6 +77,10 @@ $ docker compose -f compose.dev.yml exec app bash
 - /lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv
 - /lustre9/open/shared_data/dblink/ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv
 - /lustre9/open/shared_data/dblink/taxonomy_biosample/trace_biosample_taxon2bs.tsv
+- /usr/local/resources/bioproject/bioproject.xml
+- /usr/local/resources/bioproject/ddbj_core_bioproject.xml
+- /usr/local/resources/biosample/biosample_set.xml.gz
+- /usr/local/resources/biosample/ddbj_biosample_set.xml.gz
 ```
 
 また、手順実行後の directory 構成は以下の通りである。
@@ -87,12 +91,13 @@ $ docker compose -f compose.dev.yml exec app bash
 
 ### 0.1. Prepare External Resources
 
+以下、全ての処理において、container 内の `/app` を作業 directory とし、`./converter_results` に結果を保存するものとする。
+
 ```bash
-cd /home/w3ddbjld/tasks/sra/resources
-wget ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
+# SRA_Accessions.tab ダウンロード
+curl -# -o ./converter_results/SRA_Accessions.tab ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
 
-## biosample_set.xml.gz展開
-
+# biosample XML の解凍
 gunzip -c /usr/local/resources/biosample/biosample_set.xml.gz > /home/w3ddbjld/tasks/biosample_jsonl/biosample_set.xml
 gunzip -c /usr/local/resources/biosample/ddbj_biosample_set.xml.gz > /home/w3ddbjld/tasks/biosample_jsonl/ddbj/ddbj_biosample_set.xml
 ```

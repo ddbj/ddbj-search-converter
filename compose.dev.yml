@@ -10,6 +10,8 @@ services:
       - ${PWD}/converter_results:/app/converter_results
       # 遺伝研スパコン内の resouce
       - /lustre9/open/shared_data/dblink:/lustre9/open/shared_data/dblink:ro
+      - /usr/local/resources/bioproject:/usr/local/resources/bioproject:ro
+      - /usr/local/resources/biosample:/usr/local/resources/biosample:ro
     restart: on-failure
     working_dir: /app
     command: ["sleep", "infinity"]
