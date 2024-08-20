@@ -48,7 +48,8 @@ def parse_args(args: List[str]) -> Config:
         help="Path to the created SQLite database (default: ./converter_results/sra_accessions.sqlite)",
     )
     parser.add_argument(
-        "process_pool_size",
+        "-p",
+        "--process-pool-size",
         default=default_config.process_pool_size,
         type=int,
         help=f"Number of processes to use (default: {default_config.process_pool_size})",
