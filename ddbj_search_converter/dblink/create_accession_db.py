@@ -68,12 +68,12 @@ def parse_args(args: List[str]) -> Config:
         config.debug = parsed_args.debug
 
     if parsed_args.accessions_dir_path is not None:
-        config.accessions_dir = parsed_args.accessions_dir_path
+        config.accessions_dir = Path(parsed_args.accessions_dir_path)
         if config.accessions_dir.exists() is False:
             LOGGER.error("Directory not found: %s", config.accessions_dir)
             sys.exit(1)
     if parsed_args.accessions_db_path is not None:
-        config.accessions_db_path = parsed_args.accessions_db_path
+        config.accessions_db_path = Path(parsed_args.accessions_db_path)
 
     return config
 
