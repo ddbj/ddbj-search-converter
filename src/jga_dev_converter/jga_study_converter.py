@@ -14,7 +14,7 @@ FilePath = NewType('FilePath', str)
 batch_size = 1
 
 
-def xml2jsonl(input:FilePath):
+def xml2json(input:FilePath):
     context = etree.iterparse(input, tag="STUDY")
     docs:list[dict] = []
     i = 0
@@ -36,6 +36,7 @@ def xml2jsonl(input:FilePath):
             doc["isPartOf"] = "jga"
             doc["organism"] = {"identifier": 9606, "name": "Homo sapiens"}
             # TODO: dbxreをdblinkモジュールより取得し追加する
+            # jga-policyと、jga-dac,対となるdatasetを記述
             doc["dbXrefs"] = [
                 {
                     "identifier": "JGAP000001",
@@ -46,7 +47,13 @@ def xml2jsonl(input:FilePath):
                     "identifier": "JGAC000001",
                     "type": "jga-dac",
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
+                },
+                {
+                    "identifier": "JGAD000805",
+                    "type": "jga-dataset",
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000805"
                 }
+
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
@@ -61,7 +68,7 @@ def xml2jsonl(input:FilePath):
         if i > batch_size:
             dict2jsonl(docs)
             docs = []
-
+    return docs
 
 def clear_element(element):
     element.clear()
@@ -73,11 +80,11 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-study_20240808.jsonl"
+    jsonl_output = "jga-study_JGAS000675.jsonl"
     with open(jsonl_output, "a") as f:
         for doc in docs:
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
-            header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
+            header = {"index": {"_index": "jga-study", "_id": doc["accession"]}}
             doc.pop("accession")
             f.write(json.dumps(header) + "\n")
             json.dump(doc, f)
@@ -85,5 +92,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "jga-study-add-20240808.xml"
-    xml2jsonl(input)
+    input = "/mnt/data/ddbj/jga-adhoc/JGAS000675.xml"
+    docs = xml2json(input)
+    dict2jsonl(docs)

@@ -14,7 +14,7 @@ FilePath = NewType('FilePath', str)
 batch_size = 1
 
 
-def xml2jsonl(input:FilePath):
+def xml2json(input:FilePath):
     context = etree.iterparse(input, tag="DATASET")
     docs:list[dict] = []
     i = 0
@@ -45,6 +45,11 @@ def xml2jsonl(input:FilePath):
                     "identifier": "JGAC000001",
                     "type": "jga-dac",
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
+                },
+                                {
+                    "identifier": "JGAS000675",
+                    "type": "jga-study",
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAS000675"
                 }
             ]
             doc["status"] = "public"
@@ -61,6 +66,7 @@ def xml2jsonl(input:FilePath):
         if i > batch_size:
             dict2jsonl(docs)
             docs = []
+    return docs
 
 
 def clear_element(element):
@@ -73,7 +79,7 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_20240808.jsonl"
+    jsonl_output = "jga-dataset_JGAD000805.jsonl"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -86,5 +92,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "jga-dataset-add-20240808.xml"
-    xml2jsonl(input)
+    input = "/mnt/data/ddbj/jga-adhoc/JGAD000805.xml"
+    docs = xml2json(input)
+    dict2jsonl(docs)
