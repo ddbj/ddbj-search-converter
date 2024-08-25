@@ -1,3 +1,4 @@
+# coding: UTF-8
 from lxml import etree
 import xmltodict
 import json
@@ -24,9 +25,9 @@ parser.add_argument("input")
 parser.add_argument("output")
 parser.add_argument("--acc", help="ddbj accessions.tabのファイルパスを入力")
 parser.add_argument("-f",  action='store_true', help="Insert all records cases with f option")
-# parser.add_argument("sra_accessions") ## 廃止予定
-# parser.add_argument("center", nargs="?", default=None) ## 廃止
-ddbj_bioproject_name = "ddbj_core"
+# ddbj_bioproject_name = "ddbj_core"
+# DDBJ分を交換用のファイルを利用する場合
+ddbj_bioproject_name = "ddbj.xml"
 args = parser.parse_args()
 
 
@@ -110,53 +111,145 @@ def xml2jsonl(input_file:FilePath) -> dict:
             except:
                 pass
 
-            # Organizationを共通項目に出力
+            # Organizationを共通項目に出力するとともに、properties内部の値もスキーマに合わせる
+            # TODO: Optionでできるだけ対応する
             try:
                 organization = project["Submission"]["Description"]["Organization"]
+                organiztion_obj = []
                 if type(organization) == list:
-                    oraganization = []
                     for i, item in enumerate(organization):
-                        organization_name = item.get("Name")
+                        organization_name = item.get("Name", None)
+                        organization_type = item.get("type", "")
+                        organization_role = item.get("role", "")
+                        organization_url = item.get("url", "")
                         if  type(organization_name) == str:
                             doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
-                            oraganization.append({"content":organization_name })
+                            organiztion_obj.append({"name":organization_name, "abbreviation": organization_name,
+                                                   "role": organization_role, "organizationType": organization_type, "url": organization_url })
                         elif type(organization_name) == dict:
-                            organization = organization_name
+                            # Nameがdictの場合はabbr属性がタグに付くため、nameとattrをそれぞれ取得する
+                            # propertiesの値はそのままとし共通項目のみ整形する
+                            name = organization_name.get("content")
+                            abbreviation = organization_name.get("abbr", "")
+                            organization_obj.append({"name":name, "abbreviation": abbreviation,
+                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url })
                 elif type(organization) == dict:
                     organization_name = organization.get("Name")
                     if  type(organization_name) is str:
                         doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
-                        organization = [{"content":organization_name }]
+                        organization_obj = [{"name":organization_name, "abbreviation": organization_name,
+                                                   "role": organization_role, "organizationType": organization_type, "url": organization_url }]
                         # 共通項目用オブジェクトを作り直す
                     elif type(organization_name) == dict:
-                        organization = [organization_name]
+                        # propertiesの値はそのままとし共通項目のみ整形する
+                        name = organization_name.get("content")
+                        abbreviation = organization_name.get("abbr", "")
+                        organization_type = item.get("type", "")
+                        organization_role = item.get("role", "")
+                        organization_url = item.get("url", "")
+                        organization_obj = [{"name":organization_name, "abbreviation": organization_name,
+                                                   "role": organization_role, "organizationType": organization_type, "url": organization_url }]
             except:
-                organization = []
+                organization_obj = []
 
             # publicationを共通項目に出力
+            # TODO: optionで対応する
+            dbtype_patterns = {
+                "ePubmed": r"\d+",
+                "doi": r".*doi.org.*"
+            }
             try:
                 publication = project["Project"]["ProjectDescr"]["Publication"]
-                # 極稀にbulk insertできないサイズのリストがあるため
-                if type(publication) == list and len(publication) > 100000:
-                    doc["properties"]["Project"]["Project"]["ProjectDescr"] = publication[:100000]
+                publication_obj = []
+                # 極稀なbulk insertできないサイズのリストに対応
+                if type(publication) == list:
+                    publication = publication[:100000]
+                    doc["properties"]["Project"]["Project"]["ProjectDescr"]["Publication"] = publication
+                    # 共通項目の設定
+                    for item in publication:
+                        id = item.get("id", "")
+                        for dbtype, patterns in dbtype_patterns.items():
+                            if re.match(patterns, id):
+                                DbType = dbtype
+                            else:
+                                pass
+                        publication_obj.append({
+                            "date": item.get("date", ""),
+                            "id": id,
+                            "status": item.get("status", ""),
+                            "Reference": item.get("Reference", ""),
+                            "DbType": DbType
+                        })
+                elif type(publication) == dict:
+                    id = publication.get("id", "")
+                    for dbtype, patterns in dbtype_patterns.items():
+                        if re.match(patterns, id):
+                            DbType = dbtype
+                        else:
+                            pass
+                    publication_obj = [{
+                        "date": publication.get("date", ""),
+                        "id": id,
+                        "status": publication.get("status", ""),
+                        "Reference": publication.get("Reference", ""),
+                        "DbType": DbType
+                    }]
             except:
-                publication = []
+                publication_obj = []
 
+            # TODO: optionで対応する
             # Grantを共通項目に出力
             # properties.Project.Project.ProjectDescr.Grant.Agency: 値が文字列の場合の処理
             try:
                 grant = project["Project"]["ProjectDescr"]["Grant"]
+                grant_obj = []
                 if type(grant) is list:
                     for i, item in enumerate(grant):
                         agency = item.get("Agency")
                         if type(agency) is str:
                             doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"][i]["Agency"] = {"abbr": agency, "content":agency }
+                            # 
+                            grant_obj.append({
+                                "id": item.get("GrantId", ""),
+                                "title": item.get("Title", ""),
+                                "agency": {
+                                    "abbreviation": agency,
+                                    "name": agency,
+                                }
+                            })
+                        # Agencyにabbr属性がある場合
+                        elif type(agency is dict):
+                            grant_obj.append({
+                                "id": item.get("GrantId", ""),
+                                "title": item.get("Title", ""),
+                                "agency": {
+                                    "abbreviation": agency.get("abbr",""),
+                                    "name": agency.get("content", ""),
+                                }
+                            })
                 elif type(grant) is dict:
                     agency = project["Project"]["ProjectDescr"]["Grant"]["Agency"]
-                    if  type(agency) == str:
+                    if  type(agency) is str:
                         doc["properties"]["Project"]["Project"]["ProjectDescr"]["Grant"]["Agency"] = {"abbr": agency, "content":agency }
+                        grant_obj = [{
+                                    "id": grant.get("GrantId", ""),
+                                    "title": grant.get("Title", ""),
+                                    "agency": {
+                                        "abbreviation": agency,
+                                        "name": agency,
+                                    }
+                                }]
+                    elif type(agency) is dict:
+                        grant_obj = [{
+                                    "id": grant.get("GrantId", ""),
+                                    "title": grant.get("Title", ""),
+                                    "agency": {
+                                        "abbreviation": agency.get("abbr",""),
+                                        "name": agency.get("content", ""),
+                                    }
+                                }]
             except:
-                grant = []
+                grant_obj = []
 
             # ExternalLink（schemaはURLとdbXREFを共に許容する・共通項目にはURLを渡す）
             # propertiesの記述に関してはスキーマを合わせないとimportエラーになり可能性があることに留意
@@ -210,9 +303,10 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     status = "public"
 
                 now = datetime.now()
-                # submittedが取得できない場合datetime.now()を渡す
-                submitted = project["Submission"].get("submitted", None)
-                last_update = project["Submission"].get("last_update", None)
+                iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+                # submittedが取得できない場合datetime.now()を渡す, publishedはDBより取得する（Todo: DBを優先とする処理が必要）
+                submitted = project["Submission"].get("submitted", iso_format_now)
+                last_update = project["Submission"].get("last_update", iso_format_now)
 
                 try:
                     description = project["Project"]["ProjectDescr"].get("Description")
@@ -221,7 +315,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     description = None
                     title = None
 
- 
             else:
                 # DDBJ_coreの場合
                 # accessions.tabよりdateを取得
@@ -248,16 +341,17 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["distribution"] = {"contentUrl":f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}", "encodingFormat":"JSON"}
             doc["isPartOf"]= "BioProject"
             doc["type"] = "bioproject"
+            doc["objectType"] = "BioProject"
             doc["name"] =  None
-            doc["url"] = None
+            doc["url"] = "https://ddbj.nig.ac.jp/search/entry/bioproject/" + accession
             doc["organism"] = organism
             doc["title"] = title
             doc["description"] = description
-            doc["organizaiotn"] = organization
-            doc["publication"] = publication
-            doc["grant"] = grant
+            doc["organization"] = organization_obj
+            doc["publication"] = publication_obj
+            doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
-            ###doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
@@ -322,12 +416,13 @@ def dict2jsonl(docs: List[dict]):
             try:
                 # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
                 header = {"index": {"_index": "bioproject", "_id": doc["accession"]}}
-                doc.pop("accession")
+                #doc.pop("accession")
                 f.write(json.dumps(header) + "\n")
                 json.dump(doc, f)
                 f.write("\n")
             except:
-                print(doc)
+                print("Error at: ", doc["accession"])
+                raise
 
 
 def dict2esjsonl(docs: List[dict]):
@@ -424,7 +519,7 @@ class DdbjCoreData():
                 try:
                     d[row[0]] = (row[1], row[2], row[3])
                 except:
-                    print(row)
+                    print("520: ", row)
             self.acc_dict = d
 
     def ddbj_dates(self, accession) -> Tuple[str]:
