@@ -4,6 +4,7 @@ import sys
 import json
 import xmltodict
 import glob
+from datetime import datetime
 from typing import NewType, List
 from multiprocessing import Pool
 import argparse
@@ -42,34 +43,6 @@ def convert(input:FilePath):
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["properties"] = metadata["BioSample"]
 
-            # Descriptionの子要素をDDBJ共通objectの値に変換する
-            description = doc["properties"].get("Description")
-            try:
-                doc["title"] = description.get("Title", "")
-            except:
-                doc["title"] = ""
-            try:
-                doc["description"] = description.get("Comment").get("Paragraph") if type(description.get("Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")[0]
-            except:
-                doc["description"] = ""
-            try:
-                organism_identifier = description.get("Organism").get("taxonomy_id", "")
-                organism_name = description.get("Organism").get("taxonomy_name", "")
-                doc["organism"] = {"identifier": organism_identifier, "name": organism_name}
-            except:
-                pass
-
-            doc["accession"] = doc["properties"].get("accession")
-            doc["dateCreated"] = doc["properties"].get("submission_date", None)
-            doc["dateModified"] = doc["properties"].get("last_update", None)
-            doc["datePublished"] = doc["properties"].get("publication_date", None)
-            doc["identifier"] = doc["accession"]
-            doc["type"] =  "biosample"
-            doc["isPartOf"] = "BioSample"
-            doc["status"] = "public"
-            doc["visibility"] = "unrestricted-access"
-            # dbxreをdblinkモジュールより取得
-            doc["dbXrefs"] = get_related_ids(doc["accession"], "biosample")
 
             # _idの設定
             if ddbj_biosample:
@@ -80,8 +53,6 @@ def convert(input:FilePath):
                     doc["accession"] = bs_id[0]["content"]
                 else:
                     doc["accession"] = doc["properties"]["Ids"]["Id"]["content"]
-
-                # TODO: ddbj_biosampleのtaxonomy_idの入力を確認する
 
             else:
                 doc["accession"] = doc["properties"].get("accession")
@@ -95,22 +66,80 @@ def convert(input:FilePath):
             except:
                 pass
 
-            # Models.Modelにobjectが記述されているケースの処理
+            doc["identifier"] = doc["accession"]
+            doc["distribution"] = [
+                {
+                    "contentUrl": f"https://ddbj.nig.ac.jp/resource/biosample/{doc["accession"]}",
+                    "encodingFormat": "JSON",
+                    "type": "DataDownload"
+                }
+            ]
+            doc["isPartOf"] = "BioSample"
+            doc["type"] =  "biosample"
+            doc["name"] = None
+            doc["url"] = "https://ddbj.nig.ac.jp/search/entry/biosample/" + doc["accession"],
+            # Descriptionから共通項目のtitleとdescription, organismを生成する
+            description = doc["properties"].get("Description")
+            # organism
+            try:
+                organism_identifier = description.get("Organism").get("taxonomy_id", "")
+                organism_name = description.get("Organism").get("taxonomy_name", "")
+                organism_obj = {"identifier": organism_identifier, "name": organism_name}
+                doc["organism"] = organism_obj
+            except:
+                doc["organism"] = None
+
+            doc["title"] = description.get("Title", "")
+            try:
+                paragaraph = description.get("Comment").get("Paragraph") if type(description.get("Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")
+                if type(paragaraph) is str:
+                    doc["description"] = paragaraph
+                elif type(paragaraph) is list:
+                    doc["description"] = ",".join(paragaraph)
+            except:
+                doc["description"] = ""
+
+            # Models.Modelの正規化と共通項目のスキーマへの整形
             try:
                 models_model = doc["properties"]["Models"]["Model"]
-                
+                model_obj = []
                 # Models.Modelがオブジェクトの場合そのまま渡す
                 if isinstance(models_model, dict):
-                    doc["properties"]["Models"]["Model"] = models_model.get("content", None)
+                    model_obj =[{"name": models_model.get("content")}]
                 # Models.Modelがリストの場合、要素をそれぞれオブジェクトに変換する
                 elif isinstance(models_model, list):
                     doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
-                # Models.Modelの値が文字列の場合{"content": value}に変換する
+                    model_obj = [{"name": x.get("content")} for x in models_model]
+                # Models.Modelの値が文字列の場合{"content": value}に変換、共通項目の場合は{"name":value}とする
                 elif isinstance(models_model, str):
                     doc["properties"]["Models"]["Model"] = [{"content":models_model}]
-
+                    model_obj = [{"name": models_model}]
+                doc["model"] = model_obj
             except:
-                pass
+                doc["model"] = []
+
+            doc["dbXrefs"] = get_related_ids(doc["accession"], "biosample")
+            doc["downloadUrl"] = [
+                {
+                "name": "biosample_set.xml.gz",
+                "ftpUrl": "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/biosample/biosample_set.xml.gz",
+                "type": "meta",
+                "url": "https://ddbj.nig.ac.jp/public/ddbj_database/biosample/biosample_set.xml.gz"
+                }
+            ]
+            doc["status"] = "public"
+            doc["visibility"] = "unrestricted-access"
+            now = datetime.now()
+            iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+            doc["dateCreated"] = doc["properties"].get("submission_date", iso_format_now)
+            doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
+            doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now)
+
+
+
+
+
+
 
             docs.append(doc)
             i += 1
