@@ -96,9 +96,9 @@ def convert(input:FilePath):
             try:
                 organism_identifier = description.get("Organism").get("taxonomy_id", "")
                 if ddbj_biosample:
-                    organism_name = description.get("Organism").get("taxonomy_name", "")
-                else:
                     organism_name = description.get("Organism").get("OrganismName", "")
+                else:
+                    organism_name = description.get("Organism").get("taxonomy_name", "")
                 organism_obj = {"identifier": organism_identifier, "name": organism_name}
                 doc["organism"] = organism_obj
             except:
