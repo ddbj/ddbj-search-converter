@@ -110,8 +110,16 @@ def convert(input:FilePath):
                     doc["description"] = ",".join(paragaraph)
             except:
                 doc["description"] = ""
-
-            doc["attributes"]
+            # attribute
+            try:
+                attributes = doc["properties"]["Attributes"]["Attribute"]
+                doc["attribute"] = [{"attribute_name": x.get("attribute_name", "") , 
+                                    "display_name": x.get("display_name", ""), 
+                                    "harmonized_name": x.get("harmonized_name", ""), 
+                                    "content": x.get("content", "") } 
+                                    for x in attributes]
+            except:
+                doc["attribute"] = []
             # Models.Modelの正規化と共通項目用の整形
             try:
                 models_model = doc["properties"]["Models"]["Model"]
@@ -148,7 +156,6 @@ def convert(input:FilePath):
                 "url": "https://ddbj.nig.ac.jp/public/ddbj_database/biosample/biosample_set.xml.gz"
                 }
             ]
-
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             now = datetime.now()
@@ -156,7 +163,6 @@ def convert(input:FilePath):
             doc["dateCreated"] = doc["properties"].get("submission_date", iso_format_now)
             doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
             doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now)
-
 
             docs.append(doc)
             i += 1
