@@ -47,9 +47,9 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                                 {
-                    "identifier": "JGAS000675",
+                    "identifier": "JGAS000731",
                     "type": "jga-study",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAS000675"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAS000731"
                 }
             ]
             doc["status"] = "public"
@@ -79,7 +79,7 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_JGAD000805.jsonl"
+    jsonl_output = "jga-dataset_JGAD000864.jsonl"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -92,6 +92,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAD000805.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAD000864.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
