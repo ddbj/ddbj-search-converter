@@ -72,7 +72,7 @@ def convert(input:FilePath):
             doc["identifier"] = doc["accession"]
             doc["distribution"] = [
                 {
-                    "contentUrl": f"https://ddbj.nig.ac.jp/resource/biosample/{doc["accession"]}",
+                    "contentUrl": "https://ddbj.nig.ac.jp/resource/biosample/" + doc["accession"],
                     "encodingFormat": "JSON",
                     "type": "DataDownload"
                 }
@@ -85,7 +85,7 @@ def convert(input:FilePath):
                 doc["sameAs"] = [{"identifier": x["content"], 
                                   "type": "sara-sample", 
                                   "url": "https://ddbj.nig.ac.jp/resource/sra-sample/" + x["content"]}
-                                  for x in samples if x.get("db") == "SRA"]
+                                  for x in samples if x.get("db") == "SRA" or x.get("namespace") == "SRA"]
             except:
                 doc["sameAs"] = None
             doc["name"] = None
@@ -127,10 +127,11 @@ def convert(input:FilePath):
                 # Models.Modelがオブジェクトの場合そのまま渡す
                 if isinstance(models_model, dict):
                     model_obj =[{"name": models_model.get("content")}]
-                # Models.Modelがリストの場合、要素をそれぞれオブジェクトに変換する
+                # Models.Modelがリストの場合
                 elif isinstance(models_model, list):
+                    # 文字列のリストの場合
                     doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
-                    model_obj = [{"name": x.get("content")} for x in models_model]
+                    model_obj = [{"name": x} for x in models_model]
                 # Models.Modelの値が文字列の場合{"content": value}に変換、共通項目の場合は{"name":value}とする
                 elif isinstance(models_model, str):
                     doc["properties"]["Models"]["Model"] = [{"content":models_model}]
