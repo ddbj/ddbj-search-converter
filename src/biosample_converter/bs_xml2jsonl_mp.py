@@ -83,7 +83,7 @@ def convert(input:FilePath):
             try:
                 samples =  doc["properties"]["Ids"]["Id"]
                 doc["sameAs"] = [{"identifier": x["content"], 
-                                  "type": "sara-sample", 
+                                  "type": "sra-sample", 
                                   "url": "https://ddbj.nig.ac.jp/resource/sra-sample/" + x["content"]}
                                   for x in samples if x.get("db") == "SRA" or x.get("namespace") == "SRA"]
             except:
