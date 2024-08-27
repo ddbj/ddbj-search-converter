@@ -1,3 +1,4 @@
+# coding: UTF-8
 from lxml import etree
 import os
 import sys
@@ -43,7 +44,6 @@ def convert(input:FilePath):
             metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
             doc["properties"] = metadata["BioSample"]
 
-
             # _idの設定
             if ddbj_biosample:
                 # ddbj_biosample_set.xmlの場合
@@ -65,6 +65,9 @@ def convert(input:FilePath):
                     doc["properties"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
             except:
                 pass
+            
+            
+            # 共通項目
 
             doc["identifier"] = doc["accession"]
             doc["distribution"] = [
@@ -76,6 +79,15 @@ def convert(input:FilePath):
             ]
             doc["isPartOf"] = "BioSample"
             doc["type"] =  "biosample"
+            # sameAs: Ids.Id.[].db == SRAの値を取得
+            try:
+                samples =  doc["properties"]["Ids"]["Id"]
+                doc["sameAs"] = [{"identifier": x["content"], 
+                                  "type": "sara-sample", 
+                                  "url": "https://ddbj.nig.ac.jp/resource/sra-sample/" + x["content"]}
+                                  for x in samples if x.get("db") == "SRA"]
+            except:
+                doc["sameAs"] = None
             doc["name"] = None
             doc["url"] = "https://ddbj.nig.ac.jp/search/entry/biosample/" + doc["accession"],
             # Descriptionから共通項目のtitleとdescription, organismを生成する
@@ -99,7 +111,8 @@ def convert(input:FilePath):
             except:
                 doc["description"] = ""
 
-            # Models.Modelの正規化と共通項目のスキーマへの整形
+            doc["attributes"]
+            # Models.Modelの正規化と共通項目用の整形
             try:
                 models_model = doc["properties"]["Models"]["Model"]
                 model_obj = []
@@ -117,7 +130,15 @@ def convert(input:FilePath):
                 doc["model"] = model_obj
             except:
                 doc["model"] = []
-
+            # Package
+            try: 
+                package = doc["properties"]["Package"]
+                package_dct = {}
+                package_dct["display_name"] = package["display_name"]
+                package_dct["name"] = package["content"]
+                doc["Package"] = package_dct
+            except:
+                doc["Package"] = None
             doc["dbXrefs"] = get_related_ids(doc["accession"], "biosample")
             doc["downloadUrl"] = [
                 {
@@ -127,6 +148,7 @@ def convert(input:FilePath):
                 "url": "https://ddbj.nig.ac.jp/public/ddbj_database/biosample/biosample_set.xml.gz"
                 }
             ]
+
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             now = datetime.now()
@@ -134,11 +156,6 @@ def convert(input:FilePath):
             doc["dateCreated"] = doc["properties"].get("submission_date", iso_format_now)
             doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
             doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now)
-
-
-
-
-
 
 
             docs.append(doc)
