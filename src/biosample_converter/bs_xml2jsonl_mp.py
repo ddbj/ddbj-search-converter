@@ -95,7 +95,10 @@ def convert(input:FilePath):
             # organism
             try:
                 organism_identifier = description.get("Organism").get("taxonomy_id", "")
-                organism_name = description.get("Organism").get("taxonomy_name", "")
+                if description.get("Organism").get("taxonomy_name", ""):
+                    organism_name = description.get("Organism").get("taxonomy_name", "")
+                elif description.get("Organism").get("OrganismName", ""):
+                    organism_name = description.get("Organism").get("OrganismName", "")
                 organism_obj = {"identifier": organism_identifier, "name": organism_name}
                 doc["organism"] = organism_obj
             except:
