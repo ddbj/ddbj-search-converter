@@ -47,16 +47,16 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                                 {
-                    "identifier": "JGAS000726",
+                    "identifier": "JGAS000719",
                     "type": "jga-study",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAS000726"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAS000719"
                 }
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = ""
-            doc["dateModified"] = ""
-            doc["datePublished"] = ""
+            doc["dateCreated"] = "2024-06-14T11:10:48+09:00"
+            doc["dateModified"] = "2024-06-20T13:36:47+09:00"
+            doc["datePublished"] = "2024-08-30T16:30:52+09:00"
 
 
             docs.append(doc)
@@ -79,7 +79,7 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_JGAD000859.json"
+    jsonl_output = "jga-dataset_JGAD000852.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -92,6 +92,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAD000859.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAD000852.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
