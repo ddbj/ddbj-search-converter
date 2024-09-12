@@ -68,11 +68,11 @@ def create_date_table(db, table_name):
     conn.commit()
 
 
-def store_records(d):
+def store_records(table_name, db, records):
     """
     sqliteにdateデータを保存する
     """
-    conn = sqlite3.connect(table_name, db, records)
+    conn = sqlite3.connect(db)
     cur = conn.cursor()
     q = f"INSERT ITNO {table_name} VALUES (?, ?, ?, ?);"
     t = [(r[0], cast_dt(r[1]), cast_dt(r[2]),cast_dt(r[3])) for r in records]
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     )
 
     for records in date_records(conn_ps, chunk_size):
-        store_dates(table_name, db_file, records)
+        store_records(table_name, db_file, records)
 
     create_index(db_file, table_name)
     print("date_biosample: ", count_records(db_file, table_name))

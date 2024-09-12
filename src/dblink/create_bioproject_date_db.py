@@ -69,7 +69,7 @@ def store_records(table_name, db, records):
     """
     conn = sqlite3.connect(db)
     cur = conn.cursor()
-    q = f"INSERT ITNO {table_name} VALUES (?, ?, ?, ?);"
+    q = f"INSERT INTO {table_name} VALUES (?, ?, ?, ?);"
     t = [(r[0], cast_dt(r[1]), cast_dt(r[2]),cast_dt(r[3])) for r in records]
     cur.executemany(q, t)
     conn.commit()
