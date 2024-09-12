@@ -2,7 +2,6 @@ import sqlite3
 import csv
 import subprocess
 
-# TODO:スパコン内部のパスに変更
 file_path = [
 "/lustre9/open/shared_data/dblink/assembly_genome-bp/assembly_genome2bp.tsv",
 "/lustre9/open/shared_data/dblink/assembly_genome-bs/assembly_genome2bs.tsv",

@@ -3,11 +3,7 @@ import sqlite3
 import datetime
 
 
-chunk_size = 100000
-sqlite_db = "date.db"
-sqlite_table = "date_biosample"
-
-def chunks(conn, size):
+def date_records(conn, chunksize):
     """
     chunk_sizeごとbiosampleのdate情報を取得し
     sqliteにaccession, dateCreated, datePublishec, dateModifiedを保存する
@@ -16,43 +12,72 @@ def chunks(conn, size):
         table_name (_type_): _description_
         chunk_size (_type_, optional): _description_. Defaults to chunk_size.
     """
+
     offset = 0
-    q = f"SELECT s.accession_id AS accession, p.create_date AS date_created, \
-    p.release_date AS date_published, p.modified_date AS date_modified  \
-    FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id OFFSET {offset} LIMIT {size};"
     while True:
-        rows = conn.run(q)
-        if not rows:
-            break
-        yield rows
-        offset += chunk_size
+        q = f"SELECT s.accession_id AS accession, p.create_date AS date_created, \
+        p.release_date AS date_published, p.modified_date AS date_modified  \
+        FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id \
+        LIMIT {chunksize} OFFSET {offset} ;"
+        res = conn.run(q)
+        while True:
+            if not res:
+                break
+            yield res
+            offset += chunksize
 
-def db2db():
-    conn = pg8000.native.Connection(
-        host='at098',
-        port='54301',
-        user='const',
-        password='const',
-        database='biosample'
-    )
 
-    for chunk in chunks(conn, chunk_size):
-        for row in chunk:
-            store_records(row)
+def cast_dt(dt):
+    if dt is None:
+        return None
+    else:
+        return dt.strftime('%Y-%m-%d %H:%M:%S.%f%+09')
+    
+
+def drop_table(conn, cursor, table_name):
+    """
+    レコードを取り込む前にtableをdropする
+    """
+    cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';")
+    result = cursor.fetchone()
+    if result:
+        cursor.execute(f"DROP TABLE {table_name};")
+    conn.commit()
+
+
+def create_date_table(db, table_name):
+    """
+    accessionとdateを紐付けるテーブルを生成する
+    既存のtableがあった場合一旦dropする
+    """
+    # データベースファイル名
+    
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    drop_table(conn, cursor, table_name)
+    
+    create_table_sql = f"""
+    CREATE TABLE {table_name} (
+        accession TEXT,
+        date_created TEXT,
+        date_published TEXT,
+        date_modified TEXT
+    );
+    """
+    cursor.execute(create_table_sql)
+    conn.commit()
 
 
 def store_records(d):
     """
-    sqliteにrecordsを保存
-    Args:
-        d (_type_): _description_
+    sqliteにdateデータを保存する
     """
-    c = sqlite3.connect(sqlite_db)
-    cur = c.cursor()
-    # tableが無ければtableを生成し、accession, date_created, date_publilshed, date_modifiedの4つのフィールドに値を保存する
-    q = ""
-    cur.execute(q)
-    c.commit()
+    conn = sqlite3.connect(table_name, db, records)
+    cur = conn.cursor()
+    q = f"INSERT ITNO {table_name} VALUES (?, ?, ?, ?);"
+    t = [(r[0], cast_dt(r[1]), cast_dt(r[2]),cast_dt(r[3])) for r in records]
+    cur.executemany(q, t)
+    conn.commit()
 
 
 def bs_date_query_sample(conn, ):
@@ -63,7 +88,6 @@ def bs_date_query_sample(conn, ):
         password='',
         database='biosample'
     )
-
     q = 'SELECT s.accession_id AS accession, p.create_date AS date_created, \
     p.release_date AS date_published, p.modified_date AS date_modified  \
     FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id ;'
@@ -74,45 +98,44 @@ def bs_date_query_sample(conn, ):
     table = [[r[0], cast_dt(r[1]), cast_dt(r[2]),cast_dt(r[3])] for r in date_table]   
     return date_table
 
-def cast_dt(dt):
-    if dt is None:
-        return None
-    else:
-        return dt.strftime('%Y-%m-%d %H:%M:%S.%f%+09')
-    
 
-def create_table(name):
-    """
-    テーブルを作成する
-    """
-    conn = sqlite3.connect(db_name)
-    q = f"CREATE TABLE IF NOT EXISTS {name} (accession TEXT,date_created TEXT,date_published TEXT,date_modified TEXT);"
-    cur = conn.cursor()
-    cur.execute(q)
-    conn.commit()
-    conn.close()
-
-
-
-def clear_table(db_name,table_name):
-    """
-    レコードを取り込む前にtableをdropする
-    """
-    conn = sqlite3.connect(db_name)
-    q = f"DROP TABLE {table_name}"
-    cur = conn.cursor()
-    cur.execute(q)
-    conn.commit()
-    conn.close()
-
-
-def create_index():
+def create_index(db, table_name):
     """
     sqliteのindexを生成する。
-    生成する前に以前のindexが存在していたら削除する
     """
-    pass
+    index_name = f"idx_{table_name}_accession"
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    cursor.execute(f"CREATE INDEX {index_name} ON {table_name} (accession)")
+    conn.commit()
+
+
+def count_records(db, table_name):
+    conn = sqlite3.connect(db)
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+    res = cursor.fetchall()
+    return res
 
 
 if __name__ == "__main__":
-    clear_table(sqlite_db, sqlite_table)
+    # sqliteのdbを設定
+    table_name = "date_biosample"
+    db_file = '/home/w3ddbjld/tasks/sra/resources/date.db'
+    create_date_table(db_file, table_name)
+
+    # postgresqlからsqliteにレコードをコピーして保存する
+    chunk_size = 10000
+    conn_ps = pg8000.native.Connection(
+        host='at098',
+        port='54301',
+        user='const',
+        password='',
+        database='biosample'
+    )
+
+    for records in date_records(conn_ps, chunk_size):
+        store_dates(table_name, db_file, records)
+
+    create_index(db_file, table_name)
+    print("date_biosample: ", count_records(db_file, table_name))
