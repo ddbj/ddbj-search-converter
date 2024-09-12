@@ -60,7 +60,7 @@ def bs_date_query_sample(conn, ):
         host='at098',
         port='54301',
         user='const',
-        password='const',
+        password='',
         database='biosample'
     )
 

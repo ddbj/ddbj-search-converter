@@ -6,7 +6,7 @@ def create_date_table():
         host='at098',
         port='54301',
         user='const',
-        password='const',
+        password='',
         database='bioproject'
     )
 
