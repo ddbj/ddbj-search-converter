@@ -177,8 +177,11 @@ def convert(input:FilePath):
             iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
             # DDBJのXMLのdate情報はsubmission_dateを含まないためdbより取得する
             if ddbj_biosample:
-                submission_date = get_submission_date(doc["accession"])
-                doc["dateCreated"] = submission_date if submission_date else iso_format_now
+                try:
+                    submission_date = get_submission_date(doc["accession"])
+                    doc["dateCreated"] = submission_date if submission_date else iso_format_now
+                except:
+                    doc["dateCreated"] = iso_format_now
                 doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
                 doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now) 
             else:
@@ -224,7 +227,7 @@ def clear_element(element):
         del element.getparent()[0]
 
 
-# TODO: submission_dateの値取得と利用
+# submission_dateの値取得と利用
 def get_submission_date(accession: str) -> str:
     """
     ddbjのxmlにはsubmission_date情報が一部欠けているためdbから取得した値を用いる

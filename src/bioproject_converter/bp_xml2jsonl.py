@@ -45,7 +45,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
     # ddbj_coreからの入力のFlag.
     if ddbj_bioproject_name in file_name:
         ddbj_core = True
-        accessions_data = DdbjCoreData()
+        # accessions_data = DdbjCoreData()
     else:
         ddbj_core = False
 
@@ -361,10 +361,18 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
             if ddbj_core:
                 dates = get_dates(accession)
+                print("dates: ", dates)
+                now = datetime.now()
                 iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-                doc["dateCreated"] = dates.get("date_created",iso_format_now)
-                doc["dateModified"] = dates.get("date_modified", iso_format_now)
-                doc["datePublished"] = dates.get("date_published", iso_format_now)
+                try:
+                    doc["dateCreated"] = dates[0]
+                    doc["dateModified"] = dates[2]
+                    doc["datePublished"] = dates[1]
+                except:
+                    doc["dateCreated"] = iso_format_now
+                    doc["dateModified"] = iso_format_now
+                    doc["datePublished"] = iso_format_now
+
             else:
                 doc["dateCreated"] = submitted
                 doc["dateModified"] = last_update
@@ -521,7 +529,7 @@ def get_dates(accession: str) -> str:
     Args:
         accession (str): _description_
     """
-    table_name = "date_biosample"
+    table_name = "date_bioproject"
     db = '/home/w3ddbjld/tasks/sra/resources/date.db'
     conn = sqlite3.connect(db)
     cur = conn.cursor()
