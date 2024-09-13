@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import NewType, List
 from multiprocessing import Pool
 import argparse
+import sqlite3
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from dblink.get_dblink import get_related_ids
@@ -65,7 +66,6 @@ def convert(input:FilePath):
                     doc["properties"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
             except:
                 pass
-            
             
             # 共通項目
 
@@ -124,6 +124,7 @@ def convert(input:FilePath):
             except:
                 doc["attribute"] = []
             # Models.Modelの正規化と共通項目用の整形
+            # 
             try:
                 models_model = doc["properties"]["Models"]["Model"]
                 model_obj = []
@@ -143,14 +144,24 @@ def convert(input:FilePath):
             except:
                 doc["model"] = []
             # Package
-            try: 
-                package = doc["properties"]["Package"]
-                package_dct = {}
-                package_dct["display_name"] = package["display_name"]
-                package_dct["name"] = package["content"]
-                doc["Package"] = package_dct
-            except:
-                doc["Package"] = None
+            if ddbj_biosample:
+                # DDBJのxmlにはPackage属性が無いためmodel.nameの値をpackageに利用する
+                try:
+                    package_dct = {}
+                    package_dct["display_name"] = doc["model"].get("name")
+                    package_dct["name"] = doc["model"].get("name")
+                    doc["Package"] = package_dct
+                except:
+                    doc["Package"] = None
+            else:
+                try: 
+                    package = doc["properties"]["Package"]
+                    package_dct = {}
+                    package_dct["display_name"] = package["display_name"]
+                    package_dct["name"] = package["content"]
+                    doc["Package"] = package_dct
+                except:
+                    doc["Package"] = None
             doc["dbXrefs"] = get_related_ids(doc["accession"], "biosample")
             doc["downloadUrl"] = [
                 {
@@ -164,9 +175,16 @@ def convert(input:FilePath):
             doc["visibility"] = "unrestricted-access"
             now = datetime.now()
             iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-            doc["dateCreated"] = doc["properties"].get("submission_date", iso_format_now)
-            doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
-            doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now)
+            # DDBJのXMLのdate情報はsubmission_dateを含まないためdbより取得する
+            if ddbj_biosample:
+                submission_date = get_submission_date(doc["accession"])
+                doc["dateCreated"] = submission_date if submission_date else iso_format_now
+                doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
+                doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now) 
+            else:
+                doc["dateCreated"] = doc["properties"].get("submission_date", iso_format_now)
+                doc["dateModified"] = doc["properties"].get("last_update", iso_format_now)
+                doc["datePublished"] = doc["properties"].get("publication_date", iso_format_now)
 
             docs.append(doc)
             i += 1
@@ -204,6 +222,24 @@ def clear_element(element):
     element.clear()
     while element.getprevious() is not None:
         del element.getparent()[0]
+
+
+# TODO: submission_dateの値取得と利用
+def get_submission_date(accession: str) -> str:
+    """
+    ddbjのxmlにはsubmission_date情報が一部欠けているためdbから取得した値を用いる
+    Args:
+        accession (str): _description_
+    """
+    table_name = "date_biosample"
+    db = '/home/w3ddbjld/tasks/sra/resources/date.db'
+    conn = sqlite3.connect(db)
+    cur = conn.cursor()
+    q = f"SELECT date_created from {table_name} WHERE accession='{accession}';"
+    cur.execute(q)
+    res = cur.fetchone()
+    return res[0]
+
 
 def main():
     # cpu_count()次第で分割数は変える

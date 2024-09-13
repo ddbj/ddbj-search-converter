@@ -14,8 +14,10 @@ def date_records(conn, chunksize):
     """
 
     offset = 0
+
+    # TODO: distinctを取らないと膨大なサイズのデータになる
     while True:
-        q = f"SELECT s.accession_id AS accession, p.create_date AS date_created, \
+        q = f"SELECT DISTINCT s.accession_id AS accession, p.create_date AS date_created, \
         p.release_date AS date_published, p.modified_date AS date_modified  \
         FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id \
         LIMIT {chunksize} OFFSET {offset} ;"

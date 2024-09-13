@@ -6,6 +6,7 @@ import sys
 import re
 import csv
 import os
+import sqlite3
 from datetime import datetime
 import argparse
 import requests
@@ -318,7 +319,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             else:
                 # DDBJ_coreの場合
                 # accessions.tabよりdateを取得
-                submitted, published, last_update = accessions_data.ddbj_dates(accession)
+                # submitted, published, last_update = accessions_data.ddbj_dates(accession)
                 status = "public"
                 try:
                     organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
@@ -357,9 +358,17 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = submitted
-            doc["dateModified"] = last_update
-            doc["datePublished"] = published
+
+            if ddbj_core:
+                dates = get_dates(accession)
+                iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+                doc["dateCreated"] = dates.get("date_created",iso_format_now)
+                doc["dateModified"] = dates.get("date_modified", iso_format_now)
+                doc["datePublished"] = dates.get("date_published", iso_format_now)
+            else:
+                doc["dateCreated"] = submitted
+                doc["dateModified"] = last_update
+                doc["datePublished"] = published
 
             docs.append(doc)
             i += 1
@@ -506,10 +515,26 @@ def rm_old_file(file_path:FilePath):
         os.remove(file_path)
 
 
+def get_dates(accession: str) -> str:
+    """
+    ddbjのxmlにはsubmission_date情報が一部欠けているためdbから取得した値を用いる
+    Args:
+        accession (str): _description_
+    """
+    table_name = "date_biosample"
+    db = '/home/w3ddbjld/tasks/sra/resources/date.db'
+    conn = sqlite3.connect(db)
+    cur = conn.cursor()
+    q = f"SELECT date_created,date_published,date_modified from {table_name} WHERE accession='{accession}';"
+    cur.execute(q)
+    res = cur.fetchone()
+    return res
+
+
 class DdbjCoreData():
     def __init__(self):
         """
-        - deplicated
+        - deplicated(get_datesを利用する)
         - 別モジュールのdblink.get_dblinkで関係データは取得する
         accessions.tabを辞書化する
         """
