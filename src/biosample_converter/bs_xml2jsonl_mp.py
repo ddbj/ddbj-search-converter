@@ -148,8 +148,8 @@ def convert(input:FilePath):
                 # DDBJのxmlにはPackage属性が無いためmodel.nameの値をpackageに利用する
                 try:
                     package_dct = {}
-                    package_dct["display_name"] = doc["model"].get("name")
-                    package_dct["name"] = doc["model"].get("name")
+                    package_dct["display_name"] = doc["model"][0].get("name")
+                    package_dct["name"] = doc["model"][0].get("name")
                     doc["Package"] = package_dct
                 except:
                     doc["Package"] = None
