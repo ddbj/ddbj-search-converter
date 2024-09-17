@@ -113,45 +113,66 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 pass
 
             # Organizationを共通項目に出力するとともに、properties内部の値もスキーマに合わせる
-            # TODO: Optionでできるだけ対応する
-            try:
-                organization = project["Submission"]["Description"]["Organization"]
-                organiztion_obj = []
-                if type(organization) == list:
-                    for i, item in enumerate(organization):
-                        organization_name = item.get("Name", None)
-                        organization_type = item.get("type", "")
-                        organization_role = item.get("role", "")
-                        organization_url = item.get("url", "")
-                        if  type(organization_name) == str:
-                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
-                            organiztion_obj.append({"name":organization_name, "abbreviation": organization_name,
-                                                   "role": organization_role, "organizationType": organization_type, "url": organization_url })
+            if ddbj_core:
+                try:
+                    organization = project["Submission"]["Submission"]["Description"]["Organization"]
+                    organiztion_obj = []
+                    if type(organization) == list:
+                        for i, item in enumerate(organization):
+                            organization_name = item.get("Name", None)
+                            organization_type = item.get("type", "")
+                            organization_role = item.get("role", "")
+                            organization_url = item.get("url", "")
+                            if  type(organization_name) == str:
+                                organiztion_obj.append({"name":organization_name, "abbreviation": organization_name,
+                                                    "role": organization_role, "organizationType": organization_type, "url": organization_url })
+                    elif type(organization) == dict:
+                        organization_name = organization.get("Name")
+                        if  type(organization_name) is str:
+                            organization_obj = [{"name":organization_name, "abbreviation": organization_name,
+                                                    "role": organization_role, "organizationType": organization_type, "url": organization_url }]
+                except:
+                    organization_obj = []
+            else:
+                try:
+                    organization = project["Submission"]["Description"]["Organization"]
+                    organiztion_obj = []
+                    if type(organization) == list:
+                        for i, item in enumerate(organization):
+                            organization_name = item.get("Name", None)
+                            organization_type = item.get("type", "")
+                            organization_role = item.get("role", "")
+                            organization_url = item.get("url", "")
+                            if  type(organization_name) == str:
+                                # properties内部の値も文字列のままではESのスキーマに合わないため修正する
+                                doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
+                                organiztion_obj.append({"name":organization_name, "abbreviation": organization_name,
+                                                    "role": organization_role, "organizationType": organization_type, "url": organization_url })
+                            elif type(organization_name) == dict:
+                                # Nameがdictの場合はabbr属性がタグについているので、nameとabbrをそれぞれ取得する
+                                # propertiesの値はそのままとし共通項目のみ整形する
+                                name = organization_name.get("content")
+                                abbreviation = organization_name.get("abbr", "")
+                                organization_obj.append({"name":name, "abbreviation": abbreviation,
+                                                        "role": organization_role, "organizationType": organization_type, "url": organization_url })
+                    elif type(organization) == dict:
+                        organization_name = organization.get("Name")
+                        if  type(organization_name) is str:
+                            doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
+                            organization_obj = [{"name":organization_name, "abbreviation": organization_name,
+                                                    "role": organization_role, "organizationType": organization_type, "url": organization_url }]
+                            # 共通項目用オブジェクトを作り直す
                         elif type(organization_name) == dict:
-                            # Nameがdictの場合はabbr属性がタグに付くため、nameとattrをそれぞれ取得する
                             # propertiesの値はそのままとし共通項目のみ整形する
                             name = organization_name.get("content")
                             abbreviation = organization_name.get("abbr", "")
-                            organization_obj.append({"name":name, "abbreviation": abbreviation,
-                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url })
-                elif type(organization) == dict:
-                    organization_name = organization.get("Name")
-                    if  type(organization_name) is str:
-                        doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
-                        organization_obj = [{"name":organization_name, "abbreviation": organization_name,
-                                                   "role": organization_role, "organizationType": organization_type, "url": organization_url }]
-                        # 共通項目用オブジェクトを作り直す
-                    elif type(organization_name) == dict:
-                        # propertiesの値はそのままとし共通項目のみ整形する
-                        name = organization_name.get("content")
-                        abbreviation = organization_name.get("abbr", "")
-                        organization_type = item.get("type", "")
-                        organization_role = item.get("role", "")
-                        organization_url = item.get("url", "")
-                        organization_obj = [{"name":organization_name, "abbreviation": organization_name,
-                                                   "role": organization_role, "organizationType": organization_type, "url": organization_url }]
-            except:
-                organization_obj = []
+                            organization_type = item.get("type", "")
+                            organization_role = item.get("role", "")
+                            organization_url = item.get("url", "")
+                            organization_obj = [{"name":organization_name, "abbreviation": organization_name,
+                                                    "role": organization_role, "organizationType": organization_type, "url": organization_url }]
+                except:
+                    organization_obj = []
 
             # publicationを共通項目に出力
             # TODO: optionで対応する
@@ -164,6 +185,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 publication_obj = []
                 # 極稀なbulk insertできないサイズのリストに対応
                 if type(publication) == list:
+                    # corner case
                     publication = publication[:100000]
                     doc["properties"]["Project"]["Project"]["ProjectDescr"]["Publication"] = publication
                     # 共通項目の設定
