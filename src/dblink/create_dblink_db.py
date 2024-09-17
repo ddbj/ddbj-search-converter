@@ -2,6 +2,7 @@ import sqlite3
 import csv
 import subprocess
 
+# insdc_master-bioprojectとinsdc_master-biosampleは巨大なため一旦relation dbから外す（2024/9/13）
 file_path = [
 "/lustre9/open/shared_data/dblink/assembly_genome-bp/assembly_genome2bp.tsv",
 "/lustre9/open/shared_data/dblink/assembly_genome-bs/assembly_genome2bs.tsv",
@@ -12,8 +13,8 @@ file_path = [
 "/lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv",
 "/lustre9/open/shared_data/dblink/insdc-bioproject/insdc2bioproject.tsv",
 "/lustre9/open/shared_data/dblink/insdc-biosample/insdc2biosample.tsv",
-"/lustre9/open/shared_data/dblink/insdc_master-bioproject/insdc_master2bioproject.tsv",
-"/lustre9/open/shared_data/dblink/insdc_master-biosample/insdc_master2biosample.tsv",
+# "/lustre9/open/shared_data/dblink/insdc_master-bioproject/insdc_master2bioproject.tsv",
+# "/lustre9/open/shared_data/dblink/insdc_master-biosample/insdc_master2biosample.tsv",
 "/lustre9/open/shared_data/dblink/mtb2bp/mtb_id_bioproject.tsv",
 "/lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv",
 "/lustre9/open/shared_data/dblink/ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv",
