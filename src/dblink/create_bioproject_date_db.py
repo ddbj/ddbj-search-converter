@@ -26,7 +26,7 @@ def cast_dt(dt):
     if dt is None:
         return None
     else:
-        return dt.strftime('%Y-%m-%d %H:%M:%S.%f%+09')
+        return dt.strftime('%Y-%m-%dT%H:%M:%S.%f')
     
 
 def drop_table(conn, cursor, table_name):
