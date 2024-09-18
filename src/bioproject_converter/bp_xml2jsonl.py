@@ -136,7 +136,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             else:
                 try:
                     organization = project["Submission"]["Description"]["Organization"]
-                    organiztion_obj = []
+                    organization_obj = []
                     if type(organization) == list:
                         for i, item in enumerate(organization):
                             organization_name = item.get("Name", None)
@@ -146,7 +146,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                             if  type(organization_name) == str:
                                 # properties内部の値も文字列のままではESのスキーマに合わないため修正する
                                 doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
-                                organiztion_obj.append({"name":organization_name, "abbreviation": organization_name,
+                                organization_obj.append({"name":organization_name, "abbreviation": organization_name,
                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url })
                             elif type(organization_name) == dict:
                                 # Nameがdictの場合はabbr属性がタグについているので、nameとabbrをそれぞれ取得する
