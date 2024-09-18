@@ -169,7 +169,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                             organization_type = item.get("type", "")
                             organization_role = item.get("role", "")
                             organization_url = item.get("url", "")
-                            organization_obj = [{"name":organization_name, "abbreviation": organization_name,
+                            organization_obj = [{"name":name, "abbreviation": abbreviation,
                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url }]
                 except:
                     organization_obj = []
