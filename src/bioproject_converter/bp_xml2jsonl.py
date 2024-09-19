@@ -158,6 +158,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     elif type(organization) == dict:
                         organization_name = organization.get("Name")
                         if  type(organization_name) is str:
+                            organization_type = organization.get("type", "")
+                            organization_role = organization.get("role", "")
+                            organization_url = organization.get("url", "")
                             doc["properties"]["Project"]["Submission"]["Description"]["Organization"]["Name"] = {"content":organization_name }
                             organization_obj = [{"name":organization_name, "abbreviation": organization_name,
                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url }]
@@ -166,9 +169,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
                             # propertiesの値はそのままとし共通項目のみ整形する
                             name = organization_name.get("content")
                             abbreviation = organization_name.get("abbr", "")
-                            organization_type = item.get("type", "")
-                            organization_role = item.get("role", "")
-                            organization_url = item.get("url", "")
+                            organization_type = organization.get("type", "")
+                            organization_role = organization.get("role", "")
+                            organization_url = organization.get("url", "")
                             organization_obj = [{"name":name, "abbreviation": abbreviation,
                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url }]
                 except:
@@ -383,7 +386,6 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
             if ddbj_core:
                 dates = get_dates(accession)
-                print("dates: ", dates)
                 now = datetime.now()
                 iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
                 try:
