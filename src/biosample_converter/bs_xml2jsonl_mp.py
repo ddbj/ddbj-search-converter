@@ -64,6 +64,8 @@ def convert(input:FilePath):
                 # owner_nameの型がstrであれば {"abbreviation": val, "content": val}に置き換える
                 if isinstance(owner_name, str):
                     doc["properties"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
+                elif isinstance(owner_name, list):
+                    doc["properties"]["Owner"]["Name"] = {"content": ",".join(owner_name)}
             except:
                 pass
             
@@ -134,7 +136,10 @@ def convert(input:FilePath):
                 # Models.Modelがリストの場合
                 elif isinstance(models_model, list):
                     # 文字列のリストの場合
-                    doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
+                    # Todo: models_model.[].contentがversion属性を含むobjectのケースと文字列のケースがあり両者に対応する
+                    #doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
+                    doc["properties"]["Models"]["Model"] = [x if type(x.get("content")) is str 
+                                                            else {"content":x.get("content").get("content")} for x in models_model]
                     model_obj = [{"name": x} for x in models_model]
                 # Models.Modelの値が文字列の場合{"content": value}に変換、共通項目の場合は{"name":value}とする
                 elif isinstance(models_model, str):

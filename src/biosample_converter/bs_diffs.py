@@ -3,6 +3,7 @@ import os
 import re
 import hashlib
 import argparse
+# TODO: utilsパッケージの読み込みが環境によって行えないのでモジュールに関数を含めるようにする
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from utils.get_2nd_directory import get_second_newest_dir
 from typing import NewType

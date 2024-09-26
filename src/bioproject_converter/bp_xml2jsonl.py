@@ -13,7 +13,8 @@ import requests
 from typing import NewType, List, Tuple
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-from dblink.get_dblink import get_related_ids
+# TODO
+# from dblink.get_dblink import get_related_ids
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
@@ -379,13 +380,16 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["publication"] = publication_obj
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
-            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            # TODO
+            # doc["dbXrefs"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
 
             if ddbj_core:
-                dates = get_dates(accession)
+                # TODO
+                #dates = get_dates(accession)
+                dated = [2, 3, 4]
                 now = datetime.now()
                 iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
                 try:
