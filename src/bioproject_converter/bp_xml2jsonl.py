@@ -298,6 +298,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         externalLink = [{"label": el_label if el_label else el_url , "URL": el_url}]
                     # 属性にdbXREFを含む場合
                     elif external_link_obj.get("dbXREF", None):
+                        # external_link_dbをテンプレにしてURLを生成する
                         el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
                         el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
                         externalLink = [{"label": el_label if el_label else el_url , "URL": el_url}]
