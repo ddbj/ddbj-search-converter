@@ -9,8 +9,8 @@ table_names = {
         "bioproject_umbrella2bioproject",
         "biosample2bioproject",
         "gea2bioproject",
-        "insdc2bioproject",
-        "insdc_master2bioproject",
+        # "insdc2bioproject",
+        # "insdc_master2bioproject",
         "mtb_id_bioproject",
         "ncbi_biosample_bioproject",
     ],
@@ -19,8 +19,8 @@ table_names = {
         "bioproject2biosample",
         "biosample2bioproject",
         "gea2biosample",
-        "insdc2biosample",
-        "insdc_master2biosample",
+        # "insdc2biosample",
+        # "insdc_master2biosample",
         "mtb_id_biosample",
         "ncbi_biosample_bioproject",
         "trace_biosample_taxon2bs"
@@ -56,7 +56,8 @@ class RelationObject():
             "gea": r"^E-GEA",
             "assemblies": r"^GCA",
             "mtb": r"^MTB",
-            "insdc": r"([A-Z]{1}[0-9]{5}.[0-9]+|[A-Z]{2}[0-9]{6}|[A-Z]{2}[0-9]{6}.[0-9]+|[A-Z]{2}[0-9]{8}|[A-Z]{4}[0-9]{2}S?[0-9]{6,8})|[A-Z]{6}[0-9]{2}S?[0-9]{7,9}",
+            "taxonomy": r"^[0-9]+"
+            #"insdc": r"([A-Z]{1}[0-9]{5}.[0-9]+|[A-Z]{2}[0-9]{6}|[A-Z]{2}[0-9]{6}.[0-9]+|[A-Z]{2}[0-9]{8}|[A-Z]{4}[0-9]{2}S?[0-9]{6,8})|[A-Z]{6}[0-9]{2}S?[0-9]{7,9}",
         }
 
     def identify_type(self, id:str) -> dict:
@@ -71,7 +72,35 @@ class RelationObject():
         # relation_mapでtypeに変換する・mapに含まれず値が数字で始まるIDであればtype: taxonomyを返す
         for db_type, pattern in self.relation_patterns.items():
             if re.match(pattern, id):
-                return {"identifier": id, "type": db_type}
+                # searchに存在するobjectの場合
+                # https://ddbj.nig.ac.jp/search/{type}/{id}
+                # assembliesの場合 https://www.ncbi.nlm.nih.gov/datasets/genome/{id}/
+                # mtbの場合 https://mb2.ddbj.nig.ac.jp/study/{id}.html
+                # geaの場合 https://www.ddbj.nig.ac.jp/gea/index.html AOEが停止しているので直接のリンクが無い
+                url = ""
+                match db_type:
+                    case "biosample":
+                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                    case "bioproject":
+                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                    case "sra-experiment":
+                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                    case "sra-run":
+                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                    case "sra-sample":
+                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                    case "sra-study":
+                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                    case "gea":
+                        url = "https://www.ddbj.nig.ac.jp/gea/index.html"
+                    case "assemblies":
+                        url = f"https://www.ncbi.nlm.nih.gov/datasets/genome/{id}/"
+                    case "mtb":
+                        url = f"https://mb2.ddbj.nig.ac.jp/study/{id}.html"
+                    case "taxonomy":
+                        url = f"https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={id}"
+
+                return {"identifier": id, "type": db_type, "URL":url}
 
 
 def get_dbxref(ids:List[str]) -> dict:
@@ -92,7 +121,7 @@ def get_dbxref(ids:List[str]) -> dict:
 def get_related_ids(id:str, type:str) -> List[dict]:
     """
     全ての関係テーブルから指定したIDに関連するIDを取得する
-    モジュールとして get_related_ids(id)
+    モジュールとしてconverterよりidを指定され呼ばれる get_related_ids(id, type)
     Args:
         id (str): 捜査対象のID
     return: 関係テーブルの引数のIDをどちらかに含む相補的なIDリストを変換したdbXref形式のobject
@@ -114,7 +143,6 @@ def get_related_ids(id:str, type:str) -> List[dict]:
             related_ids.append(row[1])
     conn.close()
 
-    # TODO: sra_accessionsデータの取得確認
 
 
     # TODO: 環境に合わせて変更する・環境変数に埋め込む
@@ -128,6 +156,7 @@ def get_related_ids(id:str, type:str) -> List[dict]:
             related_ids.append(row[1])
 
     related_ids = [i for i in related_ids if i != id]
+    # 共通項目のschemaに合わせ整形する
     return get_dbxref(list(set(related_ids)))
 
 

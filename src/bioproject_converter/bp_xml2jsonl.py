@@ -14,7 +14,7 @@ from typing import NewType, List, Tuple
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 # TODO
-# from dblink.get_dblink import get_related_ids
+from dblink.get_dblink import get_related_ids
 
 FilePath = NewType('FilePath', str)
 batch_size = 200
@@ -381,7 +381,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
             # TODO
-            # doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
