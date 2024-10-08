@@ -363,6 +363,16 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     description = None
                     title = None
 
+            # umbrellaの判定
+            # 要検討：例外発生のコストが高いため通常の判定には使わない方が良いという判断でtry&if caseでProjectTypeToopAdminの存在を確認
+            try:
+                if project["Project"]["ProjectType"].get("ProjectTypeTopAdmin", None):
+                    object_type = "UmbrellaBioProject"
+                else:
+                    object_type = "BioProject"
+            except:
+                object_type = "BioProject"
+
             
             # 共通項目
 
@@ -370,7 +380,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["distribution"] = {"contentUrl":f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}", "encodingFormat":"JSON"}
             doc["isPartOf"]= "BioProject"
             doc["type"] = "bioproject"
-            doc["objectType"] = "BioProject"
+            # umbrellaの判定はobjectTypeに格納される
+            doc["objectType"] = object_type
             doc["name"] =  None
             doc["url"] = "https://ddbj.nig.ac.jp/search/entry/bioproject/" + accession
             doc["organism"] = organism
