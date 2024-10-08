@@ -49,17 +49,17 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                 {
-                    "identifier": "JGAD000741",
+                    "identifier": "JGAD000874",
                     "type": "jga-dataset",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000741"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000874"
                 }
 
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = ""
-            doc["dateModified"] = ""
-            doc["datePublished"] = ""
+            doc["dateCreated"] = "2024-09-25T10:19:46+09:00"
+            doc["dateModified"] = "2024-09-25T12:15:45+09:00"
+            doc["datePublished"] = "2024-10-04T16:45:54+09:00"
 
             docs.append(doc)
             i +=1
@@ -80,7 +80,7 @@ def clear_element(element):
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-study_JGAS000612.json"
+    jsonl_output = "jga-study_JGAS000739.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
@@ -92,6 +92,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAS000612.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAS000739.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
