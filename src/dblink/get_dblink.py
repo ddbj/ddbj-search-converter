@@ -80,17 +80,17 @@ class RelationObject():
                 url = ""
                 match db_type:
                     case "biosample":
-                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                        url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "bioproject":
-                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                        url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "sra-experiment":
-                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                        url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "sra-run":
-                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                        url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "sra-sample":
-                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                        url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "sra-study":
-                        url = f"https://ddbj.nig.ac.jp/search/{db_type}/{id}"
+                        url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "gea":
                         url = "https://www.ddbj.nig.ac.jp/gea/index.html"
                     case "assemblies":
