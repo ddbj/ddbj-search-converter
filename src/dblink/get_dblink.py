@@ -92,7 +92,7 @@ class RelationObject():
                     case "sra-study":
                         url = f"https://ddbj.nig.ac.jp/resource/{db_type}/{id}"
                     case "gea":
-                        url = "https://www.ddbj.nig.ac.jp/gea/index.html"
+                        url = f"https://ddbj.nig.ac.jp/public/ddbj_database/gea/experiment/E-GEAD-000/{id}/"
                     case "assemblies":
                         url = f"https://www.ncbi.nlm.nih.gov/datasets/genome/{id}/"
                     case "metabobank":
