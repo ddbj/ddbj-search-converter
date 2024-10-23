@@ -184,6 +184,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 "ePubmed": r"\d+",
                 "doi": r".*doi.org.*"
             }
+
             try:
                 publication = project["Project"]["ProjectDescr"]["Publication"]
                 publication_obj = []
@@ -198,12 +199,15 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         for dbtype, patterns in dbtype_patterns.items():
                             if re.match(patterns, id):
                                 DbType = dbtype
+                                publication_url = id if DbType == "doi" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
                             else:
-                                pass
+                                DbType = ""
+                                publication_url = ""
                         publication_obj.append({
                             "title": item.get("StructuredCitation",{}).get("Title", ""),
                             "date": item.get("date", ""),
                             "id": id,
+                            "url": publication_url,
                             "status": item.get("status", ""),
                             "Reference": item.get("Reference", ""),
                             "DbType": DbType
@@ -213,12 +217,15 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     for dbtype, patterns in dbtype_patterns.items():
                         if re.match(patterns, id):
                             DbType = dbtype
+                            publication_url = id if DbType == "doi" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
                         else:
-                            pass
+                            DbType = ""
+                            publication_url = ""                
                     publication_obj = [{
                         "title": publication.get("StructuredCitation",{}).get("Title", ""),
                         "date": publication.get("date", ""),
                         "id": id,
+                        "url": publication_url,
                         "status": publication.get("status", ""),
                         "Reference": publication.get("Reference", ""),
                         "DbType": DbType
@@ -298,13 +305,13 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     if external_link_obj.get("URL", None):
                         el_label = external_link_obj.get("label", None)
                         el_url = external_link_obj.get("URL", None)
-                        externalLink = [{"label": el_label if el_label else el_url , "URL": el_url}]
+                        externalLink = [{"label": el_label if el_label else el_url , "url": el_url}]
                     # 属性にdbXREFを含む場合
                     elif external_link_obj.get("dbXREF", None):
                         # external_link_dbをテンプレにしてURLを生成する
                         el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("dbXREF").get("ID")
                         el_label = external_link_obj.get("label") if  external_link_obj.get("label")  else external_link_obj.get("dbXREF").get("ID")
-                        externalLink = [{"label": el_label , "URL": el_url}]
+                        externalLink = [{"label": el_label , "url": el_url}]
                 # B. ExternalLinkの値がlistのケース（このケースが多いはず）
                 elif isinstance(external_link_obj, list):
                     # PRJNA3,PRJNA4,PRJNA5など
@@ -315,12 +322,12 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         if item.get("URL"):
                             el_label = item.get("label", None)
                             el_url = item.get("URL", None)
-                            externalLink.append({"label": el_label if el_label else el_url , "URL": el_url})
+                            externalLink.append({"label": el_label if el_label else el_url , "url": el_url})
                         # 属性にdbXREFを含む場合
                         elif item.get("dbXREF", None):
                             el_url = item.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
                             el_label = el_label if el_label else item.get("dbXREF").get("ID")
-                            externalLink.append({"label": el_label if el_label else el_url , "URL": el_url})
+                            externalLink.append({"label": el_label if el_label else el_url , "url": el_url})
             except:
                 externalLink = []
 
@@ -380,12 +387,11 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
             
             # 共通項目
-
             doc["identifier"]= accession
             doc["distribution"] = {"contentUrl":f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}", "encodingFormat":"JSON"}
             doc["isPartOf"]= "BioProject"
             doc["type"] = "bioproject"
-            # umbrellaの判定はobjectTypeに格納される
+            # umbrellaの判定はobjectTypeに格納する
             doc["objectType"] = object_type
             doc["name"] =  None
             doc["url"] = "https://ddbj.nig.ac.jp/search/entry/bioproject/" + accession
@@ -397,7 +403,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
             
-            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            doc["dbXref"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"

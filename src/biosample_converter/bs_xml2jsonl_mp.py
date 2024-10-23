@@ -167,7 +167,7 @@ def convert(input:FilePath):
                     doc["Package"] = package_dct
                 except:
                     doc["Package"] = None
-            doc["dbXrefs"] = get_related_ids(doc["accession"], "biosample")
+            doc["dbXref"] = get_related_ids(doc["accession"], "biosample")
             doc["downloadUrl"] = [
                 {
                 "name": "biosample_set.xml.gz",

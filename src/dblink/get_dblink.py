@@ -100,7 +100,7 @@ class RelationObject():
                     case "taxonomy":
                         url = f"https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={id}"
 
-                return {"identifier": id, "type": db_type, "URL":url}
+                return {"identifier": id, "type": db_type, "url":url}
 
 
 def get_dbxref(ids:List[str]) -> dict:
