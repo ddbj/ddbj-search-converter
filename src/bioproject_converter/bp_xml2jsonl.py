@@ -201,6 +201,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                             else:
                                 pass
                         publication_obj.append({
+                            "title": item.get("StructuredCitation",{}).get("Title", ""),
                             "date": item.get("date", ""),
                             "id": id,
                             "status": item.get("status", ""),
@@ -215,6 +216,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         else:
                             pass
                     publication_obj = [{
+                        "title": publication.get("StructuredCitation",{}).get("Title", ""),
                         "date": publication.get("date", ""),
                         "id": id,
                         "status": publication.get("status", ""),
@@ -306,22 +308,18 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 # B. ExternalLinkの値がlistのケース（このケースが多いはず）
                 elif isinstance(external_link_obj, list):
                     # PRJNA3,PRJNA4,PRJNA5など
-                    print("external_link: ", external_link_obj)
                     externalLink = []
                     # TODO: if の階層に留意。一つひとつのオブジェクトごとにurlからdbXREFのケース分けが必要
                     for item in external_link_obj:
                         # 属性にURLを含む場合
-                        print("item: ", item)
                         if item.get("URL"):
                             el_label = item.get("label", None)
                             el_url = item.get("URL", None)
-                            print("list true: ", accession,el_url, el_label)
                             externalLink.append({"label": el_label if el_label else el_url , "URL": el_url})
                         # 属性にdbXREFを含む場合
                         elif item.get("dbXREF", None):
                             el_url = item.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
                             el_label = el_label if el_label else item.get("dbXREF").get("ID")
-                            print("dbxref true", el_url, el_label)
                             externalLink.append({"label": el_label if el_label else el_url , "URL": el_url})
             except:
                 externalLink = []
@@ -399,12 +397,11 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
             
-            #doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
-
-            '''
+            
             if ddbj_core:
                 # TODO
                 dates = get_dates(accession)
@@ -424,7 +421,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 doc["dateCreated"] = submitted
                 doc["dateModified"] = last_update
                 doc["datePublished"] = published
-            '''
+            
             docs.append(doc)
             i += 1
 
