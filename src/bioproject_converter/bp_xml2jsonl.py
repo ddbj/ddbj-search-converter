@@ -291,6 +291,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 # A. ExternalLinkの値がオブジェクトのケース
                 external_link_obj = project["Project"]["ProjectDescr"]["ExternalLink"]
                 if isinstance(external_link_obj, dict):
+                    # PRJNA7,PRJNA8など
                     # 属性にURLを含む場合
                     if external_link_obj.get("URL", None):
                         el_label = external_link_obj.get("label", None)
@@ -299,23 +300,28 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     # 属性にdbXREFを含む場合
                     elif external_link_obj.get("dbXREF", None):
                         # external_link_dbをテンプレにしてURLを生成する
-                        el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
-                        el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
-                        externalLink = [{"label": el_label if el_label else el_url , "URL": el_url}]
-                # B. ExternalLinkの値がlistのケース
+                        el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("dbXREF").get("ID")
+                        el_label = external_link_obj.get("label") if  external_link_obj.get("label")  else external_link_obj.get("dbXREF").get("ID")
+                        externalLink = [{"label": el_label , "URL": el_url}]
+                # B. ExternalLinkの値がlistのケース（このケースが多いはず）
                 elif isinstance(external_link_obj, list):
+                    # PRJNA3,PRJNA4,PRJNA5など
+                    print("external_link: ", external_link_obj)
                     externalLink = []
                     # TODO: if の階層に留意。一つひとつのオブジェクトごとにurlからdbXREFのケース分けが必要
                     for item in external_link_obj:
                         # 属性にURLを含む場合
-                        if external_link_obj.get("URL", None):
-                            el_label = external_link_obj.get("label", None)
-                            el_url = external_link_obj.get("URL", None)
+                        print("item: ", item)
+                        if item.get("URL"):
+                            el_label = item.get("label", None)
+                            el_url = item.get("URL", None)
+                            print("list true: ", accession,el_url, el_label)
                             externalLink.append({"label": el_label if el_label else el_url , "URL": el_url})
                         # 属性にdbXREFを含む場合
-                        elif external_link_obj.get("dbXREF", None):
-                            el_url = external_link_db.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
-                            el_label = el_label if el_label else external_link_obj.get("dbXREF").get("ID")
+                        elif item.get("dbXREF", None):
+                            el_url = item.get(external_link_obj.get("dbXREF").get("db")) + external_link_obj.get("ID")
+                            el_label = el_label if el_label else item.get("dbXREF").get("ID")
+                            print("dbxref true", el_url, el_label)
                             externalLink.append({"label": el_label if el_label else el_url , "URL": el_url})
             except:
                 externalLink = []
@@ -392,16 +398,17 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["publication"] = publication_obj
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
-            # TODO
-            doc["dbXrefs"] = get_related_ids(accession, "bioproject")
+            
+            #doc["dbXrefs"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
 
+            '''
             if ddbj_core:
                 # TODO
-                #dates = get_dates(accession)
-                dated = [2, 3, 4]
+                dates = get_dates(accession)
+                # dated = [2, 3, 4]
                 now = datetime.now()
                 iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
                 try:
@@ -417,7 +424,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 doc["dateCreated"] = submitted
                 doc["dateModified"] = last_update
                 doc["datePublished"] = published
-
+            '''
             docs.append(doc)
             i += 1
 
