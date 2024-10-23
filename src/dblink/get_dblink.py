@@ -55,7 +55,7 @@ class RelationObject():
             "sra-study": r"(S|D|E)RP",
             "gea": r"^E-GEA",
             "assemblies": r"^GCA",
-            "mtb": r"^MTB",
+            "metabobank": r"^MTB",
             "taxonomy": r"^[0-9]+"
             #"insdc": r"([A-Z]{1}[0-9]{5}.[0-9]+|[A-Z]{2}[0-9]{6}|[A-Z]{2}[0-9]{6}.[0-9]+|[A-Z]{2}[0-9]{8}|[A-Z]{4}[0-9]{2}S?[0-9]{6,8})|[A-Z]{6}[0-9]{2}S?[0-9]{7,9}",
         }
@@ -95,7 +95,7 @@ class RelationObject():
                         url = "https://www.ddbj.nig.ac.jp/gea/index.html"
                     case "assemblies":
                         url = f"https://www.ncbi.nlm.nih.gov/datasets/genome/{id}/"
-                    case "mtb":
+                    case "metabobank":
                         url = f"https://mb2.ddbj.nig.ac.jp/study/{id}.html"
                     case "taxonomy":
                         url = f"https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={id}"
