@@ -199,6 +199,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         dbtype = item.get("DbType")
                         if dbtype in ["ePubmed", "eDOI"]:
                             publication_url = id if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
+                        # IDは記述されているがDbTypeが未入力のケースに対応
                         elif bool(re.match(r"^\d+$", id)):
                             dbtype = "ePubmed"
                             publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
