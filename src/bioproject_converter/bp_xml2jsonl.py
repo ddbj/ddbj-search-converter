@@ -179,7 +179,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     organization_obj = []
 
             # publicationを共通項目に出力
-            # TODO: optionで対応する
+            # TODO: この辞書は廃止する
             dbtype_patterns = {
                 "ePubmed": r"\d+",
                 "doi": r".*doi.org.*"
@@ -191,18 +191,19 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 # 極稀なbulk insertできないサイズのリストに対応
                 if type(publication) == list:
                     # corner case
-                    publication = publication[:100000]
+                    publication = publication[:10000]
                     doc["properties"]["Project"]["Project"]["ProjectDescr"]["Publication"] = publication
                     # 共通項目の設定
                     for item in publication:
                         id = item.get("id", "")
-                        for dbtype, patterns in dbtype_patterns.items():
-                            if re.match(patterns, id):
-                                DbType = dbtype
-                                publication_url = id if DbType == "doi" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
-                            else:
-                                DbType = ""
-                                publication_url = ""
+                        dbtype = item.get("DbType")
+                        if dbtype in ["ePubmed", "eDOI"]:
+                            publication_url = id if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
+                        elif bool(re.match(r"^\d+$", id)):
+                            dbtype = "ePubmed"
+                            publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
+                        else:
+                            publication_url = ""
                         publication_obj.append({
                             "title": item.get("StructuredCitation",{}).get("Title", ""),
                             "date": item.get("date", ""),
@@ -210,17 +211,18 @@ def xml2jsonl(input_file:FilePath) -> dict:
                             "url": publication_url,
                             "status": item.get("status", ""),
                             "Reference": item.get("Reference", ""),
-                            "DbType": DbType
+                            "DbType": dbtype
                         })
                 elif type(publication) == dict:
                     id = publication.get("id", "")
-                    for dbtype, patterns in dbtype_patterns.items():
-                        if re.match(patterns, id):
-                            DbType = dbtype
-                            publication_url = id if DbType == "doi" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
-                        else:
-                            DbType = ""
-                            publication_url = ""                
+                    dbtype = item.get("DbType")
+                    if dbtype in ["ePubmed", "eDOI"]:
+                        publication_url = id if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
+                    elif bool(re.match(r"^\d+$", id)):
+                        dbtype = "ePubmed"
+                        publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id}/"
+                    else:
+                        publication_url = ""                
                     publication_obj = [{
                         "title": publication.get("StructuredCitation",{}).get("Title", ""),
                         "date": publication.get("date", ""),
@@ -228,7 +230,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         "url": publication_url,
                         "status": publication.get("status", ""),
                         "Reference": publication.get("Reference", ""),
-                        "DbType": DbType
+                        "DbType": dbtype
                     }]
             except:
                 publication_obj = []
@@ -402,7 +404,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["publication"] = publication_obj
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
-            
+    
             doc["dbXref"] = get_related_ids(accession, "bioproject")
             doc["download"] = None
             doc["status"] = status
