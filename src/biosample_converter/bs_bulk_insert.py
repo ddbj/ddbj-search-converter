@@ -13,7 +13,7 @@ from bs_diffs import get_diff_list
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 parser.add_argument("former")
 parser.add_argument("later")
-parser.add_argument("-f",  action='store_true', help="Insert all records cases with f option")
+#parser.add_argument("-f",  action='store_true', help="Insert all records cases with f option")
 args = parser.parse_args()
 FilePath = NewType('FilePath', str)
 num_process = 12
@@ -57,10 +57,10 @@ def main(former:FilePath, later:FilePath):
     Args:
         post_list (list): _description_
     """
-    # 初回のinsetのフラグを確認
-    first_time = args.f
+    # 初回のinsetのフラグを確認 diplicated
+    # first_time = args.f
 
-    if first_time:
+    if former == later:
         # 指定するディレクトリのファイルリストを取得
         target_pattern = "*.jsonl"
         file_list = glob.glob(os.path.join(later, target_pattern))

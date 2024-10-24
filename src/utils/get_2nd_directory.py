@@ -1,13 +1,14 @@
 import os
-import argparse
+#:wq
+# import argparse
 from datetime import datetime
 
 from typing import NewType
 
 FilePath = NewType('FilePath', str)
-parser = argparse.ArgumentParser(description="return 2nd newest dir name")
-parser.add_argument("input")
-args = parser.parse_args()
+#parser = argparse.ArgumentParser(description="return 2nd newest dir name")
+#parser.add_argument("input")
+#args = parser.parse_args()
 
 
 def get_second_newest_dir(new_dir:FilePath):
@@ -52,4 +53,5 @@ def get_second_newest_dir(new_dir:FilePath):
 
 
 if __name__ == "__main__":
-  print(get_second_newest_dir(args.input))
+  #print(get_second_newest_dir(args.input))
+  pass
