@@ -137,9 +137,10 @@ def convert(input:FilePath):
                 elif isinstance(models_model, list):
                     # 文字列のリストの場合
                     # Todo: models_model.[].contentがversion属性を含むobjectのケースと文字列のケースがあり両者に対応する
-                    #doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
-                    doc["properties"]["Models"]["Model"] = [x if type(x.get("content")) is str 
-                                                            else {"content":x.get("content").get("content")} for x in models_model]
+                    doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
+                    # 下記はimport error
+                    #doc["properties"]["Models"]["Model"] = [x if type(x.get("content")) is str 
+                    #                                        else {"content":x.get("content").get("content")} for x in models_model]
                     model_obj = [{"name": x} for x in models_model]
                 # Models.Modelの値が文字列の場合{"content": value}に変換、共通項目の場合は{"name":value}とする
                 elif isinstance(models_model, str):
@@ -184,6 +185,8 @@ def convert(input:FilePath):
             if ddbj_biosample:
                 try:
                     submission_date = get_submission_date(doc["accession"])
+                    # DBの日時の型がisoformatでないケースが見られるためisoformatに変換する
+                    submission_date = convert_datetime_format(submission_date)
                     doc["dateCreated"] = submission_date if submission_date else iso_format_now
                 except:
                     doc["dateCreated"] = iso_format_now
@@ -248,6 +251,18 @@ def get_submission_date(accession: str) -> str:
     res = cur.fetchone()
     return res[0]
 
+def convert_datetime_format(datetime_str):
+    """
+    日付文字列を指定されたフォーマットに変換する関数
+    """
+    try:
+        dt = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S.%f%%+09")
+        # タイムゾーン情報をUTCに設定し、マイクロ秒を切り捨てる
+        dt = dt.replace(tzinfo=datetime.timezone.utc).replace(microsecond=0)
+        # 目的のフォーマットに変換
+        return dt.isoformat()
+    except:
+        return datetime_str
 
 def main():
     # cpu_count()次第で分割数は変える
