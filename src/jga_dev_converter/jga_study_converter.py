@@ -6,6 +6,7 @@ import requests
 import argparse
 import os
 import json
+from datetime import datetime
 from typing import NewType, List
 
 
@@ -49,17 +50,18 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                 {
-                    "identifier": "JGAD000874",
+                    "identifier": "JGAD000766",
                     "type": "jga-dataset",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000874"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000766"
                 }
 
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = "2024-09-25T10:19:46+09:00"
-            doc["dateModified"] = "2024-09-25T12:15:45+09:00"
-            doc["datePublished"] = "2024-10-04T16:45:54+09:00"
+            dt_list_str = ["2020-06-26 09:06:50.135958+09","2020-11-20 13:55:49.642612+09","2020-09-25 14:49:07.126+09"]
+            doc["dateCreated"] = isoformat_converter(dt_list_str)[0]
+            doc["dateModified"] = isoformat_converter(dt_list_str)[2]
+            doc["datePublished"] = isoformat_converter(dt_list_str)[1]
 
             docs.append(doc)
             i +=1
@@ -79,8 +81,20 @@ def clear_element(element):
             print("clear_element Error")
 
 
+def isoformat_converter(dt_list_str:List[str])-> list:
+    """
+    Args:
+        dt_list_str (List[str]): datecreated, datepublished, datemodified
+    Returns:
+        list: isoformatに変換したdate情報
+    """
+    dt = [datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f+09") for x in dt_list_str]
+    dt_iso = [datetime.strftime(x,"%Y-%m-%dT%H:%M:%S+09:00") for x in dt]
+    return dt_iso
+    
+
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-study_JGAS000739.json"
+    jsonl_output = "jga-study_JGAS000636.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
@@ -92,6 +106,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAS000739.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAS000636.xml"
     docs = xml2json(input)
     dict2jsonl(docs)

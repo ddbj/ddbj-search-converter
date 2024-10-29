@@ -1,6 +1,6 @@
 from lxml import etree
 import xml.etree.cElementTree as cElementTree
-import datetime
+from datetime import datetime
 import xmltodict
 import requests
 import argparse
@@ -47,16 +47,17 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                 {
-                    "identifier": "JGAS000739",
+                    "identifier": "JGAS000237",
                     "type": "jga-study",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000739"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000237"
                 }
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = "2024-09-25T10:19:45+09:00"
-            doc["dateModified"] = "2024-09-25T14:11:15+09:00"
-            doc["datePublished"] = "2024-10-04T16:45:54+09:00"
+            dt_list_str = ["2024-10-13 09:01:10.397638+09","2024-10-17 16:35:54.459667+09","2024-10-15 16:12:34.549+09"]
+            doc["dateCreated"] = isoformat_converter(dt_list_str)[0]
+            doc["dateModified"] = isoformat_converter(dt_list_str)[2]
+            doc["datePublished"] = isoformat_converter(dt_list_str)[1]
 
 
             docs.append(doc)
@@ -78,8 +79,20 @@ def clear_element(element):
             print("clear_element Error")
 
 
+def isoformat_converter(dt_list_str:List[str])-> list:
+    """
+    Args:
+        dt_list_str (List[str]): datecreated, datepublished, datemodified
+    Returns:
+        list: isoformatに変換したdate情報
+    """
+    dt = [datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f+09") for x in dt_list_str]
+    dt_iso = [datetime.strftime(x,"%Y-%m-%dT%H:%M:%S+09:00") for x in dt]
+    return dt_iso
+
+
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_JGAD000874.json"
+    jsonl_output = "jga-dataset_JGAD000891.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -92,6 +105,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAD000874.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAD000891.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
