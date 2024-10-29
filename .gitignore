@@ -12,3 +12,4 @@ test*.json
 sample/PR*.xml
 jga*.xml
 jga*.json
+jga*.jsonl
