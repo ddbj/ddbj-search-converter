@@ -72,25 +72,26 @@ def convert(input:FilePath):
             # 共通項目
 
             doc["identifier"] = doc["accession"]
-            doc["distribution"] = [
-                {
-                    "contentUrl": "https://ddbj.nig.ac.jp/resource/biosample/" + doc["accession"],
+            doc["distribution"] = [{
+                    "type": "DataDownload",
                     "encodingFormat": "JSON",
-                    "type": "DataDownload"
-                }
-            ]
+                    "contentUrl": "https://ddbj.nig.ac.jp/resource/biosample/" + doc["accession"]
+                }]
             doc["isPartOf"] = "BioSample"
             doc["type"] =  "biosample"
             # sameAs: Ids.Id.[].db == SRAの値を取得
             try:
+                """
+                Ids.Id.db == "SRA"であったケースでcontentをsameAsのidentifierとする
+                """
                 samples =  doc["properties"]["Ids"]["Id"]
                 doc["sameAs"] = [{"identifier": x["content"], 
                                   "type": "sra-sample", 
                                   "url": "https://ddbj.nig.ac.jp/resource/sra-sample/" + x["content"]}
                                   for x in samples if x.get("db") == "SRA" or x.get("namespace") == "SRA"]
             except:
-                doc["sameAs"] = None
-            doc["name"] = None
+                doc["sameAs"] = []
+            doc["name"] = ""
             doc["url"] = "https://ddbj.nig.ac.jp/search/entry/biosample/" + doc["accession"],
             # Descriptionから共通項目のtitleとdescription, organismを生成する
             description = doc["properties"].get("Description")
@@ -101,10 +102,10 @@ def convert(input:FilePath):
                     organism_name = description.get("Organism").get("OrganismName", "")
                 else:
                     organism_name = description.get("Organism").get("taxonomy_name", "")
-                organism_obj = {"identifier": organism_identifier, "name": organism_name}
+                organism_obj = {"identifier": str(organism_identifier), "name": organism_name}
                 doc["organism"] = organism_obj
             except:
-                doc["organism"] = None
+                doc["organism"] = {}
 
             doc["title"] = description.get("Title", "")
             try:

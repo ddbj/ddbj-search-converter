@@ -77,7 +77,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
                 name = organism_obj.get("OrganismName")
                 identifier = organism_obj.get("taxID")
-                organism = {"identifier": identifier, "name": name}
+                organism = {"identifier": str(identifier), "name": name}
             except:
                 organism = None
 
@@ -178,8 +178,9 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 except:
                     organization_obj = []
 
+
             # publicationを共通項目に出力
-            # TODO: この辞書は廃止する
+            # deplicated
             dbtype_patterns = {
                 "ePubmed": r"\d+",
                 "doi": r".*doi.org.*"
@@ -208,7 +209,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                         publication_obj.append({
                             "title": item.get("StructuredCitation",{}).get("Title", ""),
                             "date": item.get("date", ""),
-                            "id": id,
+                            "id": str(id),
                             "url": publication_url,
                             "status": item.get("status", ""),
                             "Reference": item.get("Reference", ""),
@@ -227,7 +228,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     publication_obj = [{
                         "title": publication.get("StructuredCitation",{}).get("Title", ""),
                         "date": publication.get("date", ""),
-                        "id": id,
+                        "id": str(id),
                         "url": publication_url,
                         "status": publication.get("status", ""),
                         "Reference": publication.get("Reference", ""),
@@ -366,7 +367,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
                     name = organism_obj.get("OrganismName")
                     identifier = organism_obj.get("taxID")
-                    organism = {"identifier": identifier, "name": name}
+                    organism = {"identifier": str(identifier), "name": name}
                 except:
                     pass
 
@@ -391,7 +392,11 @@ def xml2jsonl(input_file:FilePath) -> dict:
             
             # 共通項目
             doc["identifier"]= accession
-            doc["distribution"] = {"contentUrl":f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}", "encodingFormat":"JSON"}
+            doc["distribution"] = [{
+                    "type": "DataDownload",
+                    "encodingFormat":"JSON",
+                    "contentUrl":f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}"
+                }]
             doc["isPartOf"]= "BioProject"
             doc["type"] = "bioproject"
             # umbrellaの判定はobjectTypeに格納する
@@ -405,8 +410,8 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["publication"] = publication_obj
             doc["grant"] = grant_obj
             doc["externalLink"] = externalLink
-    
             doc["dbXref"] = get_related_ids(accession, "bioproject")
+            doc["sameAs"] = get_sameas(project)
             doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
@@ -590,6 +595,24 @@ def get_dates(accession: str) -> str:
     cur.execute(q)
     res = cur.fetchone()
     return res
+
+def get_sameas(prj:str)->dict:
+    """
+    ProjectIDにGEOが含まれるケースでsameAsの値にgeoを返す
+    """
+    try:
+        if prj["Project"]["ProjectID"]["CenterID"]["center"] == "GEO":
+            id = prj["Project"]["ProjectID"]["CenterID"]["content"]
+            sameas_dct = [{
+                "identifier" : id,
+                "type": "GEO",
+                "url":  f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}"
+            }] 
+            return sameas_dct
+        else:
+            return []
+    except:
+        return []
 
 
 class DdbjCoreData():
