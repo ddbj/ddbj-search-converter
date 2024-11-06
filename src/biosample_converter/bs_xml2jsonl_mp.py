@@ -143,7 +143,7 @@ def convert(input:FilePath):
                     # 下記はimport error
                     #doc["properties"]["Models"]["Model"] = [x if type(x.get("content")) is str 
                     #                                        else {"content":x.get("content").get("content")} for x in models_model]
-                    model_obj = [{"name": x} for x in models_model]
+                    model_obj = [{"name": x.get("content")} for x in models_model]
 
                     # objectのリスト[{version:"", content:""},,]の場合
 
