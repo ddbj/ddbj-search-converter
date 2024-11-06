@@ -57,7 +57,7 @@ def main(former:FilePath, later:FilePath):
     Args:
         post_list (list): _description_
     """
-    # 初回のinsetのフラグを確認 diplicated
+    # 初回のinsetのフラグを確認 depricated
     # first_time = args.f
 
     if former == later:

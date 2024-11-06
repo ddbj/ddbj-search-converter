@@ -127,7 +127,8 @@ def convert(input:FilePath):
             except:
                 doc["attribute"] = []
             # Models.Modelの正規化と共通項目用の整形
-            # 
+            # ESのmappingは[{"content":str, "version":str}]
+            # 共通項目のスキーマは[{"name": str}]
             try:
                 models_model = doc["properties"]["Models"]["Model"]
                 model_obj = []
@@ -137,12 +138,15 @@ def convert(input:FilePath):
                 # Models.Modelがリストの場合
                 elif isinstance(models_model, list):
                     # 文字列のリストの場合
-                    # Todo: models_model.[].contentがversion属性を含むobjectのケースと文字列のケースがあり両者に対応する
-                    doc["properties"]["Models"]["Model"] = [{"content": x} for x in models_model]
+                    # models_model.[].contentがversion属性を含むobjectのケースと文字列のケースがあり両者に対応する
+                    doc["properties"]["Models"]["Model"] = [{"content": x} if type(x) is str else {"content":x.get("content"), "version": x.get("version")}for x in models_model]
                     # 下記はimport error
                     #doc["properties"]["Models"]["Model"] = [x if type(x.get("content")) is str 
                     #                                        else {"content":x.get("content").get("content")} for x in models_model]
                     model_obj = [{"name": x} for x in models_model]
+
+                    # objectのリスト[{version:"", content:""},,]の場合
+
                 # Models.Modelの値が文字列の場合{"content": value}に変換、共通項目の場合は{"name":value}とする
                 elif isinstance(models_model, str):
                     doc["properties"]["Models"]["Model"] = [{"content":models_model}]
