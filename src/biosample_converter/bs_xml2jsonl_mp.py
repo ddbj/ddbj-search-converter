@@ -58,14 +58,15 @@ def convert(input:FilePath):
             else:
                 doc["accession"] = doc["properties"].get("accession")
 
-            # Owner.Nameが文字列が記述されているケースの処理
+            # Owner.Nameが文字列が記述されているケースの処理とlistにobjectと文字列が混在するケースに対応する
             try:
                 owner_name = doc["properties"]["Owner"]["Name"]
                 # owner_nameの型がstrであれば {"abbreviation": val, "content": val}に置き換える
                 if isinstance(owner_name, str):
                     doc["properties"]["Owner"]["Name"] = {"abbreviation": owner_name, "content": owner_name}
                 elif isinstance(owner_name, list):
-                    doc["properties"]["Owner"]["Name"] = {"content": ",".join(owner_name)}
+                    #doc["properties"]["Owner"]["Name"] = {"content": ",".join(owner_name)}
+                    doc["properties"]["Owner"]["Name"] = [x if type(x) is dict else {"content": x} for x in owner_name]
             except:
                 pass
             
@@ -140,9 +141,6 @@ def convert(input:FilePath):
                     # 文字列のリストの場合
                     # models_model.[].contentがversion属性を含むobjectのケースと文字列のケースがあり両者に対応する
                     doc["properties"]["Models"]["Model"] = [{"content": x} if type(x) is str else {"content":x.get("content"), "version": x.get("version")}for x in models_model]
-                    # 下記はimport error
-                    #doc["properties"]["Models"]["Model"] = [x if type(x.get("content")) is str 
-                    #                                        else {"content":x.get("content").get("content")} for x in models_model]
                     model_obj = [{"name": x.get("content")} for x in models_model]
 
                     # objectのリスト[{version:"", content:""},,]の場合
