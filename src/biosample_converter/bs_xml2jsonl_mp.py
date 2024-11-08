@@ -58,7 +58,7 @@ def convert(input:FilePath):
             else:
                 doc["accession"] = doc["properties"].get("accession")
 
-            # Owner.Nameが文字列が記述されているケースの処理とlistにobjectと文字列が混在するケースに対応する
+            # Owner.Name：文字列が記述されているケースやlistにobjectと文字列が混在するケースがあるので整形する
             try:
                 owner_name = doc["properties"]["Owner"]["Name"]
                 # owner_nameの型がstrであれば {"abbreviation": val, "content": val}に置き換える
@@ -71,43 +71,16 @@ def convert(input:FilePath):
                 pass
             
             # 共通項目
-
             doc["identifier"] = doc["accession"]
-            doc["distribution"] = [{
-                    "type": "DataDownload",
-                    "encodingFormat": "JSON",
-                    "contentUrl": "https://ddbj.nig.ac.jp/resource/biosample/" + doc["accession"]
-                }]
+            doc["distribution"] = get_distribution(doc["accession"])
             doc["isPartOf"] = "BioSample"
             doc["type"] =  "biosample"
-            # sameAs: Ids.Id.[].db == SRAの値を取得
-            try:
-                """
-                Ids.Id.db == "SRA"であったケースでcontentをsameAsのidentifierとする
-                """
-                samples =  doc["properties"]["Ids"]["Id"]
-                doc["sameAs"] = [{"identifier": x["content"], 
-                                  "type": "sra-sample", 
-                                  "url": "https://ddbj.nig.ac.jp/resource/sra-sample/" + x["content"]}
-                                  for x in samples if x.get("db") == "SRA" or x.get("namespace") == "SRA"]
-            except:
-                doc["sameAs"] = []
+            doc["sameAs"] = get_sameas(doc)
             doc["name"] = ""
             doc["url"] = "https://ddbj.nig.ac.jp/search/entry/biosample/" + doc["accession"],
             # Descriptionから共通項目のtitleとdescription, organismを生成する
             description = doc["properties"].get("Description")
-            # organism
-            try:
-                organism_identifier = description.get("Organism").get("taxonomy_id", "")
-                if ddbj_biosample:
-                    organism_name = description.get("Organism").get("OrganismName", "")
-                else:
-                    organism_name = description.get("Organism").get("taxonomy_name", "")
-                organism_obj = {"identifier": str(organism_identifier), "name": organism_name}
-                doc["organism"] = organism_obj
-            except:
-                doc["organism"] = {}
-
+            doc["organism"] = get_organism(description, ddbj_biosample)
             doc["title"] = description.get("Title", "")
             try:
                 paragaraph = description.get("Comment").get("Paragraph") if type(description.get("Comment").get("Paragraph")) is str else description.get("Comment").get("Paragraph")
@@ -117,17 +90,8 @@ def convert(input:FilePath):
                     doc["description"] = ",".join(paragaraph)
             except:
                 doc["description"] = ""
-            # attribute
-            try:
-                attributes = doc["properties"]["Attributes"]["Attribute"]
-                doc["attribute"] = [{"attribute_name": x.get("attribute_name", "") , 
-                                    "display_name": x.get("display_name", ""), 
-                                    "harmonized_name": x.get("harmonized_name", ""), 
-                                    "content": x.get("content", "") } 
-                                    for x in attributes]
-            except:
-                doc["attribute"] = []
-            # Models.Modelの正規化と共通項目用の整形
+            doc["attribute"] = get_attribute(doc)
+            # Models.Modelのproperties内の値の正規化と共通項目用の生成
             # ESのmappingは[{"content":str, "version":str}]
             # 共通項目のスキーマは[{"name": str}]
             try:
@@ -172,14 +136,7 @@ def convert(input:FilePath):
                 except:
                     doc["Package"] = None
             doc["dbXref"] = get_related_ids(doc["accession"], "biosample")
-            doc["downloadUrl"] = [
-                {
-                "name": "biosample_set.xml.gz",
-                "ftpUrl": "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/biosample/biosample_set.xml.gz",
-                "type": "meta",
-                "url": "https://ddbj.nig.ac.jp/public/ddbj_database/biosample/biosample_set.xml.gz"
-                }
-            ]
+            doc["downloadUrl"] = get_downloadUrl()
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             now = datetime.now()
@@ -237,6 +194,9 @@ def clear_element(element):
     while element.getprevious() is not None:
         del element.getparent()[0]
 
+##
+# 属性の取得と整形に関する関数
+##
 
 # submission_dateの値取得と利用
 def get_submission_date(accession: str) -> str:
@@ -254,6 +214,64 @@ def get_submission_date(accession: str) -> str:
     res = cur.fetchone()
     return res[0]
 
+
+def get_distribution(acc: str):
+    return [{"type": "DataDownload",
+             "encodingFormat": "JSON",
+             "contentUrl": "https://ddbj.nig.ac.jp/resource/biosample/" + acc }]
+
+
+def get_attribute(d:dict) -> list:
+    try:
+        attributes = d["properties"]["Attributes"]["Attribute"]
+        return [{"attribute_name": x.get("attribute_name", "") , 
+                            "display_name": x.get("display_name", ""), 
+                            "harmonized_name": x.get("harmonized_name", ""), 
+                            "content": x.get("content", "") } 
+                            for x in attributes]
+    except:
+        return []
+
+
+def get_sameas(d:dict) -> list:
+    try:
+        """
+        Ids.Id.db == "SRA"であればcontentをsameAsのidentifierとする
+        """
+        # TODO：これは引数
+        samples =  d["properties"]["Ids"]["Id"]
+        return  [{"identifier": x["content"], 
+                            "type": "sra-sample", 
+                            "url": "https://ddbj.nig.ac.jp/resource/sra-sample/" + x["content"]}
+                            for x in samples if x.get("db") == "SRA" or x.get("namespace") == "SRA"]
+    except:
+        return []
+    
+
+def get_downloadUrl():
+    return [
+                {
+                "name": "biosample_set.xml.gz",
+                "ftpUrl": "ftp://ftp.ddbj.nig.ac.jp/ddbj_database/biosample/biosample_set.xml.gz",
+                "type": "meta",
+                "url": "https://ddbj.nig.ac.jp/public/ddbj_database/biosample/biosample_set.xml.gz"
+                }
+            ]
+    
+
+def get_organism(d:dict, is_ddbj:bool) -> dict:
+    try:
+        organism_identifier = d.get("Organism").get("taxonomy_id", "")
+        if is_ddbj:
+            organism_name = d.get("Organism").get("OrganismName", "")
+        else:
+            organism_name = d.get("Organism").get("taxonomy_name", "")
+        organism_obj = {"identifier": str(organism_identifier), "name": organism_name}
+        return organism_obj
+    except:
+        return {}
+    
+
 def convert_datetime_format(datetime_str):
     """
     日付文字列を指定されたフォーマットに変換する関数
@@ -266,6 +284,7 @@ def convert_datetime_format(datetime_str):
         return dt.isoformat()
     except:
         return datetime_str
+
 
 def main():
     # cpu_count()次第で分割数は変える
