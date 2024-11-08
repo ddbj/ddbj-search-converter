@@ -72,14 +72,14 @@ def xml2jsonl(input_file:FilePath) -> dict:
             project = metadata["Package"]["Project"]
             doc["properties"]["Project"] = project
 
-            # organismをパースし共通項目に埋める
+            # organism：共通項目に書き出す
             try:
                 organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
                 name = organism_obj.get("OrganismName")
                 identifier = organism_obj.get("taxID")
                 organism = {"identifier": str(identifier), "name": name}
             except:
-                organism = None
+                organism = {}
 
             try:
                 published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
@@ -87,9 +87,17 @@ def xml2jsonl(input_file:FilePath) -> dict:
                 now = datetime.now()
                 published = now.strftime("%Y-%m-%dT00:00:00Z")
 
+            # ProjectType.ProjectTypeSubmission.Target.BioSampleSet.ID: 文字列で入力されてしまった場合properties内の値をobjectに整形する
+            try:
+                biosampleset_ids = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"]
+                if type(biosampleset_ids) is list:
+                    project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = [{"content": x} if type(x) is str else x for x in biosampleset_ids]
+                elif type(biosampleset_ids) is str:
+                    project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = {"content": biosampleset_ids}
+            except:
+                pass
 
-
-            # properties.Project.Project.ProjectDescr.LocusTagPrefix : 値が文字列の場合の処理
+            # properties.Project.Project.ProjectDescr.LocusTagPrefix : 文字列で入力されていた場合properties内の値をobjectに整形する
             try:
                 prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
                 if type(prefix) == list:
@@ -101,7 +109,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             except:
                 pass
 
-            # properties.Project.Project.ProjectID.LocalID: 値が文字列のケースの処理
+            # properties.Project.Project.ProjectID.LocalID:  文字列で入力されていた場合properties内の値をobjectに整形する
             try:
                 localid = project["Project"]["ProjectID"]["LocalID"]
                 if type(localid) == list:
@@ -113,7 +121,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             except:
                 pass
 
-            # Organizationを共通項目に出力するとともに、properties内部の値もスキーマに合わせる
+            # Organizationを共通項目に出力するとともに、properties内の値をmapping templateに合わせ整形する
             if ddbj_core:
                 try:
                     organization = project["Submission"]["Submission"]["Description"]["Organization"]
@@ -145,7 +153,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                             organization_role = item.get("role", "")
                             organization_url = item.get("url", "")
                             if  type(organization_name) == str:
-                                # properties内部の値も文字列のままではESのスキーマに合わないため修正する
+                                # properties内部の値もobjectに整形する
                                 doc["properties"]["Project"]["Submission"]["Description"]["Organization"][i]["Name"] = {"content":organization_name }
                                 organization_obj.append({"name":organization_name, "abbreviation": organization_name,
                                                     "role": organization_role, "organizationType": organization_type, "url": organization_url })
