@@ -2,6 +2,7 @@ import pg8000.native
 import sqlite3
 import datetime
 
+submission_dict = {}
 
 def date_records(conn, chunksize):
     """
@@ -32,17 +33,14 @@ def date_records(conn, chunksize):
         q = f"SELECT DISTINCT ON (accession_id) accession_id, submission_id FROM mass.biosample_summary"
         res = conn.run(q)
 
-
-        '''
         while True:
             if not res:
                 break
             yield res
             offset += chunksize
-        '''
 
 
-def submission_records(conn):
+def submission_records(conn) -> dict:
     """
     submission_id, datesの辞書を生成する関数（sqlのsub query等で効率よくdate情報を取得できないため）
     Returns:
@@ -53,8 +51,8 @@ def submission_records(conn):
     FROM mass.sample \
     ORDER BY submission_id ;"
     res = conn.run(q)
-    submission_dict = [{"submission_id": x[0], "dates": [x[1], x[2], x[3]]} for x in res]
-    return submission_dict
+    global submission_dict
+    submission_dict = {x[0]: [x[1], x[2], x[3]] for x in res}
 
 
 def cast_dt(dt):
@@ -105,7 +103,7 @@ def store_records(table_name, db, records):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     q = f"INSERT ITNO {table_name} VALUES (?, ?, ?, ?);"
-    t = [(r[0], cast_dt(r[1]), cast_dt(r[2]),cast_dt(r[3])) for r in records]
+    t = [(r[0], cast_dt(submission_dict.get(r[1])), cast_dt(submission_dict.get(r[1])),cast_dt(submission_dict.get(r[1]))) for r in records]
     cur.executemany(q, t)
     conn.commit()
 
@@ -171,13 +169,11 @@ if __name__ == "__main__":
         database='biosample'
     )
 
+    submission_records(conn_ps)
 
-    print(len(date_records(conn_ps, chunk_size)))
-
-    '''
     for records in date_records(conn_ps, chunk_size):
         store_records(table_name, db_file, records)
 
     create_index(db_file, table_name)
     print("date_biosample: ", count_records(db_file, table_name))
-    '''
+
