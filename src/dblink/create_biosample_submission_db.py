@@ -5,24 +5,17 @@ import datetime
 
 def submission_records(conn):
     """
-    chunk_sizeごとbiosampleのdate情報を取得し
-    sqliteにaccession, dateCreated, datePublishec, dateModifiedを保存する
-    Args:
-        conn (_type_): _description_
-        table_name (_type_): _description_
-        chunk_size (_type_, optional): _description_. Defaults to chunk_size.
+    submission_id, datesの辞書を生成する関数（sqlのsub query等で効率よくdate情報を取得できないため）
+    Returns:
+        dict: submission_id, list[create_date, release_date, modified_date]
     """
-
-    offset = 0
-
-    # TODO: create_dateが取得できればOKなためsubmission
-
     # sumibission_idの inner joinを1レコードに制限する
-    q = f"SELECT DISTINCT ON submission_id create_date release_date modified_date \
+    q = f"SELECT DISTINCT ON (submission_id) submission_id, create_date, release_date, modified_date \
     FROM mass.sample \
-    ORDER BY submission_id, some_column ;"
-    res = conn(q)
-    return res
+    ORDER BY submission_id ;"
+    res = conn.run(q)
+    submission_dict = [{"submission_id": x[0], "dates": [x[1], x[2], x[3]]} for x in res]
+    return submission_dict
 
 
 
@@ -99,6 +92,10 @@ def count_records(db, table_name):
 
 
 if __name__ == "__main__":
+    """
+    submissionとdate情報のdictを取得するためのテストモジュール
+    実際の更新には利用しない
+    """
     # sqliteのdbを設定
     table_name = "date_biosample"
     db_file = '/home/w3ddbjld/tasks/sra/resources/date.db'
@@ -115,10 +112,5 @@ if __name__ == "__main__":
     )
 
     # print(count_submission_id(conn_ps))
-    print(submission_records(conn_ps)[0:10])
-
-    '''
-    for records in submission_records(conn_ps, chunk_size):
-        print(records)
-        store_records(table_name, db_file, records)
-    '''
+    submission_dict = [{"submission_id": x[0], "dates": [x[1], x[2], x[3]]} for x in submission_records(conn_ps)]
+    print(submission_dict)

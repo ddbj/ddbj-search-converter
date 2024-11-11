@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 # 分割済みファイルのディレクトリ指定
 parser.add_argument("input")
 # sqliteデータベースのpath指定
+# TODO: 現状sqlalchemyのモデルに依存してレポジトリのdblink/にdbが作られる・sqlalchemyを廃止し速度を改善する
 parser.add_argument("db")
 args = parser.parse_args()
 

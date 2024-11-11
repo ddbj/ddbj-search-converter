@@ -14,19 +14,47 @@ def date_records(conn, chunksize):
     """
 
     offset = 0
-
-    # TODO: distinctを取らないと膨大なサイズのデータになる
     while True:
+        '''
         q = f"SELECT DISTINCT s.accession_id AS accession, p.create_date AS date_created, \
         p.release_date AS date_published, p.modified_date AS date_modified  \
         FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id \
         LIMIT {chunksize} OFFSET {offset} ;"
+        '''
+        # joinして一括でaccessionとdate情報を取得しようとしたが速度が出なかった（p.submissionをlimit 1できなかった）
+        '''        q = f"SELECT DISTINCT s.accession_id AS accession, p.create_date AS date_created, \
+        p.release_date AS date_published, p.modified_date AS date_modified  \
+        FROM mass.biosample_summary s \
+        INNER JOIN (SELECT * FROM mass.sample LIMIT 1) p ON s.submission_id = p.submission_id AND ROWNUM = 1\
+        LIMIT {chunksize} OFFSET {offset} ;"
+        '''
+
+        q = f"SELECT DISTINCT ON (accession_id) accession_id, submission_id FROM mass.biosample_summary"
         res = conn.run(q)
+
+
+        '''
         while True:
             if not res:
                 break
             yield res
             offset += chunksize
+        '''
+
+
+def submission_records(conn):
+    """
+    submission_id, datesの辞書を生成する関数（sqlのsub query等で効率よくdate情報を取得できないため）
+    Returns:
+        dict: submission_id, list[create_date, release_date, modified_date]
+    """
+    # sumibission_idの inner joinを1レコードに制限する
+    q = f"SELECT DISTINCT ON (submission_id) submission_id, create_date, release_date, modified_date \
+    FROM mass.sample \
+    ORDER BY submission_id ;"
+    res = conn.run(q)
+    submission_dict = [{"submission_id": x[0], "dates": [x[1], x[2], x[3]]} for x in res]
+    return submission_dict
 
 
 def cast_dt(dt):
@@ -90,9 +118,16 @@ def bs_date_query_sample(conn, ):
         password='',
         database='biosample'
     )
+    """
     q = 'SELECT s.accession_id AS accession, p.create_date AS date_created, \
     p.release_date AS date_published, p.modified_date AS date_modified  \
     FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id ;'
+    """
+
+    q = 'SELECT DISTINCT s.accession_id AS accession, p.create_date AS date_created, \
+    p.release_date AS date_published, p.modified_date AS date_modified  \
+    FROM mass.biosample_summary s INNER JOIN mass.sample p ON s.submission_id = p.submission_id \
+    WHERE LMIT;'
 
     date_table = []
     for row in conn.run(q):
@@ -136,8 +171,13 @@ if __name__ == "__main__":
         database='biosample'
     )
 
+
+    print(len(date_records(conn_ps, chunk_size)))
+
+    '''
     for records in date_records(conn_ps, chunk_size):
         store_records(table_name, db_file, records)
 
     create_index(db_file, table_name)
     print("date_biosample: ", count_records(db_file, table_name))
+    '''
