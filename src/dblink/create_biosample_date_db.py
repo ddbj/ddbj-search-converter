@@ -30,15 +30,13 @@ def date_records(conn, chunksize):
         LIMIT {chunksize} OFFSET {offset} ;"
         '''
 
-        q = f"SELECT DISTINCT ON (accession_id) accession_id, submission_id FROM mass.biosample_summary"
+        q = f"SELECT DISTINCT ON (accession_id) accession_id, submission_id FROM mass.biosample_summary LIMIT {chunksize} OFFSET {offset} ;"
         res = conn.run(q)
 
-        while True:
-            if not res:
-                break
-            yield res
-            offset += chunksize
-
+        if not res:
+            break
+        yield res
+        offset += chunksize
 
 def submission_records(conn) -> dict:
     """
@@ -102,8 +100,9 @@ def store_records(table_name, db, records):
     """
     conn = sqlite3.connect(db)
     cur = conn.cursor()
-    q = f"INSERT ITNO {table_name} VALUES (?, ?, ?, ?);"
-    t = [(r[0], cast_dt(submission_dict.get(r[1])), cast_dt(submission_dict.get(r[1])),cast_dt(submission_dict.get(r[1]))) for r in records]
+    q = f"INSERT INTO {table_name} VALUES(?, ?, ?, ?)"
+    # r[1]がsubmission, r[4]がbiosample, submission_dict.get(submission_id)の返り値はLIST[create_date, release_date, modified_date]
+    t = [(r[4], cast_dt(submission_dict.get(r[1])[0]), cast_dt(submission_dict.get(r[1])[1]),cast_dt(submission_dict.get(r[1])[2])) for r in records]
     cur.executemany(q, t)
     conn.commit()
 
@@ -175,5 +174,4 @@ if __name__ == "__main__":
         store_records(table_name, db_file, records)
 
     create_index(db_file, table_name)
-    print("date_biosample: ", count_records(db_file, table_name))
 
