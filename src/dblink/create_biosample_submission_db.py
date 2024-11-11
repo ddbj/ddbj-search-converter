@@ -3,7 +3,7 @@ import sqlite3
 import datetime
 
 
-def submission_records(conn, chunksize):
+def submission_records(conn):
     """
     chunk_sizeごとbiosampleのdate情報を取得し
     sqliteにaccession, dateCreated, datePublishec, dateModifiedを保存する
@@ -16,19 +16,14 @@ def submission_records(conn, chunksize):
     offset = 0
 
     # TODO: create_dateが取得できればOKなためsubmission
-    while True:
 
-        # sumibission_idの inner joinを1レコードに制限する
-        q = f"SELECT DISTINCT ON (submission_id) * \
-        FROM mass.sample \
-        ORDER BY submission_id, some_column \
-        LIMIT {chunksize} OFFSET {offset} ;"
-        res = conn.run(q)
-        while True:
-            if not res:
-                break
-            yield res
-            offset += chunksize
+    # sumibission_idの inner joinを1レコードに制限する
+    q = f"SELECT DISTINCT ON submission_id create_date release_date modified_date \
+    FROM mass.sample \
+    ORDER BY submission_id, some_column ;"
+    res = conn(q)
+    return res
+
 
 
 def count_submission_id(conn):
@@ -119,7 +114,8 @@ if __name__ == "__main__":
         database='biosample'
     )
 
-    print(count_submission_id(conn_ps))
+    # print(count_submission_id(conn_ps))
+    print(submission_records(conn_ps)[0:10])
 
     '''
     for records in submission_records(conn_ps, chunk_size):
