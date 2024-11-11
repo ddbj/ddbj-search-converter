@@ -20,7 +20,7 @@ def submission_records(conn, chunksize):
 
         # sumibission_idの inner joinを1レコードに制限する
         q = f"SELECT DISTINCT ON (submission_id) * \
-        FROM your_table \
+        FROM mass.sample \
         ORDER BY submission_id, some_column \
         LIMIT {chunksize} OFFSET {offset} ;"
         res = conn.run(q)
@@ -29,6 +29,17 @@ def submission_records(conn, chunksize):
                 break
             yield res
             offset += chunksize
+
+
+def count_submission_id(conn):
+    q = f"SELECT COUNT(*) \
+            FROM ( 
+            SELECT DISTINCT ON (submission_id) *
+            FROM mass.sample
+            ORDER BY submission_id
+        ) AS subquery;"
+    res = conn.run(q)
+    return res
 
 
 def cast_dt(dt):
@@ -108,6 +119,10 @@ if __name__ == "__main__":
         database='biosample'
     )
 
+    print(count_submission_id(conn_ps))
+
+    '''
     for records in submission_records(conn_ps, chunk_size):
         print(records)
         store_records(table_name, db_file, records)
+    '''
