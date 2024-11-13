@@ -145,7 +145,7 @@ def convert(input:FilePath):
             if ddbj_biosample:
                 try:
                     submission_date = get_submission_date(doc["accession"])
-                    # deplicated: date.dbを修正したため不要
+                    # DEPRECATED: date.dbを修正したため不要
                     # submission_date = convert_datetime_format(submission_date)
                     doc["dateCreated"] = submission_date if submission_date else iso_format_now
                 except:
