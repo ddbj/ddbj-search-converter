@@ -409,7 +409,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["type"] = "bioproject"
             # umbrellaの判定はobjectTypeに格納する
             doc["objectType"] = object_type
-            doc["name"] =  None
+            doc["name"] =  ""
             doc["url"] = "https://ddbj.nig.ac.jp/search/entry/bioproject/" + accession
             doc["organism"] = organism
             doc["title"] = title

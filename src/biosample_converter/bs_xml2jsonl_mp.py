@@ -145,8 +145,8 @@ def convert(input:FilePath):
             if ddbj_biosample:
                 try:
                     submission_date = get_submission_date(doc["accession"])
-                    # DBの日時の型がisoformatでないケースが見られるためisoformatに変換する
-                    submission_date = convert_datetime_format(submission_date)
+                    # deplicated: date.dbを修正したため不要
+                    # submission_date = convert_datetime_format(submission_date)
                     doc["dateCreated"] = submission_date if submission_date else iso_format_now
                 except:
                     doc["dateCreated"] = iso_format_now
@@ -206,6 +206,7 @@ def get_submission_date(accession: str) -> str:
         accession (str): _description_
     """
     table_name = "date_biosample"
+    # TODO: DBの情報設定に記述
     db = '/home/w3ddbjld/tasks/sra/resources/date.db'
     conn = sqlite3.connect(db)
     cur = conn.cursor()
