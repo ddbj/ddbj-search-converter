@@ -77,7 +77,7 @@ def convert(input:FilePath):
             doc["type"] =  "biosample"
             doc["sameAs"] = get_sameas(doc)
             doc["name"] = ""
-            doc["url"] = "https://ddbj.nig.ac.jp/search/entry/biosample/" + doc["accession"],
+            doc["url"] = "https://ddbj.nig.ac.jp/search/entry/biosample/" + doc["accession"]
             # Descriptionから共通項目のtitleとdescription, organismを生成する
             description = doc["properties"].get("Description")
             doc["organism"] = get_organism(description, ddbj_biosample)

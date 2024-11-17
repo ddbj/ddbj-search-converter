@@ -420,7 +420,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["externalLink"] = externalLink
             doc["dbXref"] = get_related_ids(accession, "bioproject")
             doc["sameAs"] = get_sameas(project)
-            doc["download"] = None
+            # doc["download"] = None
             doc["status"] = status
             doc["visibility"] = "unrestricted-access"
             
