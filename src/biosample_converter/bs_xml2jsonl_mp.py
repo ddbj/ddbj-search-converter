@@ -90,7 +90,7 @@ def convert(input:FilePath):
                     doc["description"] = ",".join(paragaraph)
             except:
                 doc["description"] = ""
-            doc["attribute"] = get_attribute(doc)
+            doc["attributes"] = get_attribute(doc)
             # Models.Modelのproperties内の値の正規化と共通項目用の生成
             # ESのmappingは[{"content":str, "version":str}]
             # 共通項目のスキーマは[{"name": str}]
@@ -136,7 +136,7 @@ def convert(input:FilePath):
                 except:
                     doc["Package"] = None
             doc["dbXref"] = get_related_ids(doc["accession"], "biosample")
-            doc["downloadUrl"] = get_downloadUrl()
+            # doc["downloadUrl"] = get_downloadUrl()
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
             now = datetime.now()
@@ -219,7 +219,7 @@ def get_submission_date(accession: str) -> str:
 def get_distribution(acc: str):
     return [{"type": "DataDownload",
              "encodingFormat": "JSON",
-             "contentUrl": "https://ddbj.nig.ac.jp/resource/biosample/" + acc }]
+             "contentUrl": f"https://ddbj.nig.ac.jp/search/entry/biosample/{acc}.json"}]
 
 
 def get_attribute(d:dict) -> list:

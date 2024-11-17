@@ -403,7 +403,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["distribution"] = [{
                     "type": "DataDownload",
                     "encodingFormat":"JSON",
-                    "contentUrl":f"https://ddbj.nig.ac.jp/resource/bioproject/{accession}"
+                    "contentUrl":f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json"
                 }]
             doc["isPartOf"]= "BioProject"
             doc["type"] = "bioproject"
