@@ -136,6 +136,7 @@ def convert(input:FilePath):
                 except:
                     doc["Package"] = None
             doc["dbXref"] = get_related_ids(doc["accession"], "biosample")
+            # depricated
             # doc["downloadUrl"] = get_downloadUrl()
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
