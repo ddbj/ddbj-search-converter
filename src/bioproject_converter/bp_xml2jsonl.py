@@ -72,14 +72,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
             project = metadata["Package"]["Project"]
             doc["properties"]["Project"] = project
 
-            # organism：共通項目に書き出す
-            try:
-                organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
-                name = organism_obj.get("OrganismName")
-                identifier = organism_obj.get("taxID")
-                organism = {"identifier": str(identifier), "name": name}
-            except:
-                organism = {}
+
 
             try:
                 published = project["Project"]["ProjectDescr"]["ProjectReleaseDate"]
@@ -346,8 +339,18 @@ def xml2jsonl(input_file:FilePath) -> dict:
 
             # centerごとの差異があるケース: status, description, title,  ,organization, Nameのxmlからの取得
             if ddbj_core is False:
-                # ddbj_coreのフラグがない場合の処理を記述
-                # ddbj_coreeにはSubmissionの下の属性が無いため以下の処理を行わない
+                # *.ddbj.xml由来では無い場合のレコードの処理
+                # organism：propertiesの値を整形したうえ共通項目に書き出す
+                try:
+                    organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
+                    name = organism_obj.get("OrganismName")
+                    identifier = organism_obj.get("taxID")
+                    organism = {"identifier": str(identifier), "name": name}
+                except:
+                    # 空の場合nullを返す
+                    organism = None
+
+                # ddbj.xmlにはSubmissionの下の属性が無いため以下の処理を行わない
                 try:
                     status = project["Submission"]["Description"]["Access"]
                 except:
@@ -367,7 +370,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     title = None
 
             else:
-                # DDBJ_coreの場合
+                # DDBJ_coreの場合の処理
                 # accessions.tabよりdateを取得
                 # submitted, published, last_update = accessions_data.ddbj_dates(accession)
                 status = "public"
@@ -377,7 +380,7 @@ def xml2jsonl(input_file:FilePath) -> dict:
                     identifier = organism_obj.get("taxID")
                     organism = {"identifier": str(identifier), "name": name}
                 except:
-                    pass
+                    organism = None
 
                 # 共通項目のTitle, Descriptionを取得する
                 try:
