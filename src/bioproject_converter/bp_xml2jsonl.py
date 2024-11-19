@@ -428,20 +428,10 @@ def xml2jsonl(input_file:FilePath) -> dict:
             doc["visibility"] = "unrestricted-access"
             
             if ddbj_core:
-                # TODO
                 dates = get_dates(accession)
-                # dated = [2, 3, 4]
-                now = datetime.now()
-                iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-                try:
-                    doc["dateCreated"] = dates[0]
-                    doc["dateModified"] = dates[2]
-                    doc["datePublished"] = dates[1]
-                except:
-                    doc["dateCreated"] = iso_format_now
-                    doc["dateModified"] = iso_format_now
-                    doc["datePublished"] = iso_format_now
-
+                doc["dateCreated"] = dates[0]
+                doc["dateModified"] = dates[1]
+                doc["datePublished"] = dates[2]
             else:
                 doc["dateCreated"] = submitted
                 doc["dateModified"] = last_update
@@ -594,7 +584,7 @@ def rm_old_file(file_path:FilePath):
 
 def get_dates(accession: str) -> str:
     """
-    ddbjのxmlにはsubmission_date情報が一部欠けているためdbから取得した値を用いる
+    - ddbjのxmlにはsubmission_date情報が一部欠けているためdate.dbから取得した値を用いる
     Args:
         accession (str): _description_
     """
@@ -605,7 +595,12 @@ def get_dates(accession: str) -> str:
     q = f"SELECT date_created,date_published,date_modified from {table_name} WHERE accession='{accession}';"
     cur.execute(q)
     res = cur.fetchone()
-    return res
+    try:
+        return [res[0], res[2], res[1]]
+    except:
+        now = datetime.now()
+        iso_format_now = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return [iso_format_now] * 3
 
 def get_sameas(prj:str)->dict:
     """
