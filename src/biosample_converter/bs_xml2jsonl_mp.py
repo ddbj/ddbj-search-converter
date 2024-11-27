@@ -117,24 +117,25 @@ def convert(input:FilePath):
             except:
                 doc["model"] = []
             # Package
+            # TODO: Package をpackageに変更する
             if ddbj_biosample:
                 # DDBJのxmlにはPackage属性が無いためmodel.nameの値をpackageに利用する
                 try:
                     package_dct = {}
                     package_dct["display_name"] = doc["model"][0].get("name")
                     package_dct["name"] = doc["model"][0].get("name")
-                    doc["Package"] = package_dct
+                    doc["package"] = package_dct
                 except:
-                    doc["Package"] = None
+                    doc["package"] = None
             else:
                 try: 
                     package = doc["properties"]["Package"]
                     package_dct = {}
                     package_dct["display_name"] = package["display_name"]
                     package_dct["name"] = package["content"]
-                    doc["Package"] = package_dct
+                    doc["package"] = package_dct
                 except:
-                    doc["Package"] = None
+                    doc["package"] = None
             doc["dbXref"] = get_related_ids(doc["accession"], "biosample")
             # depricated
             # doc["downloadUrl"] = get_downloadUrl()

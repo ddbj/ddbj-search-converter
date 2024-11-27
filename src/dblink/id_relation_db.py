@@ -5,6 +5,9 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String
 
+# depricated　（モジュール全体）
+# storeのパフォーマンスが悪いためsqlalchemyを使わない方法で実装を行う
+
 # TODO:環境に合わせ書き換える・環境変数に記述するように
 engine = create_engine("sqlite:///sra_accessions.sqlite")
 session = scoped_session(sessionmaker(autocommit=False,

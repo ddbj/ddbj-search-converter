@@ -533,7 +533,7 @@ def dict2esjsonl(docs: List[dict]):
 
 def dict2es(docs: List[dict]):
     """
-    documentsをesにbulk insertする
+    depricated: 全てjsonlからbulk insertするので不要
     Args:
         docks (List[dict]): 
     """

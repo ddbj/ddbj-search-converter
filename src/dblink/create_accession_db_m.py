@@ -133,6 +133,8 @@ def close_chunked_list():
 
 def drop_all_tables():
     """
+    depricated: sqlalchemy廃止のためcreate_id_relation_tableモジュールで直接sqlを操作する
+
     sqlalchemyから全テーブル削除する
     :return:
     """
@@ -210,7 +212,11 @@ base = {
 }
 
 def main():
-    drop_all_tables()
+    # dep.
+    # drop_all_tables()
+
+    # TODO: table作成モジュールを呼ぶ
+
     # cpu_count()次第で分割数は変える
     p = Pool(32)
     try:
