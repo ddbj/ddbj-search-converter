@@ -47,14 +47,14 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                 {
-                    "identifier": "JGAS000751",
+                    "identifier": "JGAS000738",
                     "type": "jga-study",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000751"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000738"
                 }
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            dt_list_str = ["2024-10-15 12:35:36.017013+09","2024-11-12 16:20:47.798278+09","2024-10-15 15:31:48.71+09"]
+            dt_list_str = ["2024-09-18 12:15:59.689837+09","2024-11-29 09:00:53.917621+09","2024-11-28 06:06:25.384+09"]
             doc["dateCreated"] = isoformat_converter(dt_list_str)[0]
             doc["dateModified"] = isoformat_converter(dt_list_str)[2]
             doc["datePublished"] = isoformat_converter(dt_list_str)[1]
@@ -92,7 +92,7 @@ def isoformat_converter(dt_list_str:List[str])-> list:
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_JGAD000890.json"
+    jsonl_output = "jga-dataset_JGAD000873.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -105,6 +105,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAD000890.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAD000873.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
