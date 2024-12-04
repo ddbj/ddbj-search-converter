@@ -6,7 +6,9 @@ import glob
 import argparse
 from multiprocessing import Pool
 from typing import NewType, List
+# dep.
 from id_relation_db import *
+from create_id_relation_table import initialize_table
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 # 分割済みファイルのディレクトリ指定
@@ -43,13 +45,16 @@ class ChunkedList(list):
     def store_rest(self, t):
         """
         登録し残したself.dsが最後に残るのでこれをsqliteに保存する
-        Todo:最後にchunkedlistに残った全てデータをdbに保存するためこのメソッドを呼ぶイベント
+        Todo:最後にchunkedlistに残った全データをdbに保存するためこのメソッドを呼ぶイベント
         :return:
         """
         rows = [base[t](id0=d[0], id1=d[1]) for d in self.ds if d[1] != "-"]
+        # 以下sqlqlchemyの条件
         # session.bulk_save_objects(d, return_defaults=True)　# 同じデータがreplaceされない
         # session.add_all(d) # 同じデータがreplaceされない
         #session.merge(d, load=True) # 同じデータがreplaceされない
+        # TODO
+        # sqlite3でbulk insertする処理に書き直す
         try:
             session.bulk_save_objects(rows)
             #session.add_all(d)
@@ -85,8 +90,8 @@ def create_db(path: FilePath):
 
 def store_relation_data(path:FilePath):
     """
-    SRA_Accessionをid->Study, id->Experiment, id->Sampleのように分解し（自分の該当するtypeは含まない）しList[set]に保存
-    各リストが一定の長さになったらsqliteのテーブルに保存し、リストを初期化する（処理が終了する際にも最後に残ったリストをsqliteに保存）
+    SRA_Accessionをid->Study, id->Experiment, id->Sampleのように分解し（自分の該当するtypeは含まない）し一時リスト List[set]に保存
+    各リストが一定の長さになったらsqliteのテーブルに保存し、一時リストを初期化する（処理が終了する際にも最後に残ったリストをsqliteに保存）
     :return:
     """
     reader = csv.reader(open(path), delimiter="\t", quoting=csv.QUOTE_NONE)
@@ -195,6 +200,7 @@ convert_row = {
     "ANALYSIS": store_analysis_set
 }
 
+# depricated: sqlalchemyは今後つかわない
 base = {
     "study_submission": StudySubmission,
     "study_bioproject": StudyBioProject,
@@ -212,11 +218,11 @@ base = {
 }
 
 def main():
-    # dep.
-    # drop_all_tables()
 
-    # TODO: table作成モジュールを呼ぶ
-
+    # TODO: table初期化モジュールを呼ぶ
+    db = args.db
+    initialize_table(db)
+    
     # cpu_count()次第で分割数は変える
     p = Pool(32)
     try:

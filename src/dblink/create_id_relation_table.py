@@ -12,24 +12,24 @@ def create_table_sql(table_name):
     return table_sql
 
 
-def  create_StudyBioProject():
-    cursor.execute(create_table_sql)
+def  create_table(conn, table_name):
+    cur = conn.cursor()
+    cur.execute(create_table_sql(table_name))
     conn.commit()
-    cursor.close()
 
 
+def drop_table(conn, table_name):
+    cur = conn.cursor()
+    q = f"DROP TABLE IF EXISTs {table_name}"
+    cur.execute(q)
+    conn.commit()
 
-def drop_all():
+
+def initialize_table(db):
     """
-    すべてのtableを破棄する
-    """
-    pass
-
-
-def create_index(input_path, db_path):
-    """
-    - このモジュールはcreate_accession_db_m.pyから呼ばれる
-    - id relation tableを生成する
+    table listを元にtableの
+    drop_all,create_tableを呼び
+    sraの関係テーブルを初期化する
     """
     table_list = [
         "study_bioproject",
@@ -45,22 +45,11 @@ def create_index(input_path, db_path):
         "run_sample",
         "run_biosample"
     ]
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
+    conn = sqlite3.connect(db)
+    for t in table_list:
+        drop_table(conn, t)
+        create_table(conn, create_table_sql(t))
 
-    for tbl in table_list:
-        cur.execute(drop_all(tbl))
-        cur.execute(create_table_sql(tbl))
-
-
-    conn.commit()
-    cursor.close()
-    pass
-
-
-def main():
     
-
-
-def main():
-    pass
+if __name__ == "__main__":
+    initialize_table()
