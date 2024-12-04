@@ -4,10 +4,11 @@ import requests
 import os
 import glob
 import argparse
+import sqlite3
 from multiprocessing import Pool
 from typing import NewType, List
 # dep.
-from id_relation_db import *
+# from id_relation_db import *
 from create_id_relation_table import initialize_table
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
@@ -27,19 +28,24 @@ class ChunkedList(list):
         self.ds = set()
         
     def push(self, id1, id2, t):
+        # TODO: sqlite3のbulk save処理に書き換える（sqlalchemyのコードが残っている）
+        conn = sqlite3.connect(args.db)
         if id1 and id2 and id2 != "-": 
             self.ds.add((id1, id2))
         if len(self.ds) > chunk_size:
+            # TODO: baseは使わない方法で！！
             rows = list(set([base[t](id0=d[0], id1=d[1]) for d in self.ds]))
             try:
-                session.bulk_save_objects(rows)
+                bulk_insert(conn, rows)
+                #session.bulk_save_objects(rows)
                 #session.add_all(rows)
-                session.commit()
+                #session.commit()
             except Exception as e:
                 print("insert error: ", e)
             finally:
                 self.ds.clear()
-                session.close()
+                #session.close()
+                conn.commit()
 
     # pushを読んだのと同じインスタンスから呼ぶ必要がある
     def store_rest(self, t):
@@ -66,6 +72,7 @@ class ChunkedList(list):
 
 # 保存したい関係の変換クラスをインスタンス化する
 # TODO: 要検討・インスタンスは各プロセスで呼ばないと効率的で無いのでは << 一旦グローバルなインスタンスで処理してみる
+# TODO: ChunkedListは内部でstoreまで実行するクラスで名前が機能に一致していないためクラス名を変更する
 study_submission_set = ChunkedList()
 study_bioproject_set = ChunkedList()
 study_experiment_set = ChunkedList()
@@ -82,7 +89,11 @@ run_biosample_set = ChunkedList()
 
 
 def create_db(path: FilePath):
-    # インサート前にテーブルを空にする
+    """
+    typeに応じてChunkdListを呼び出す
+    Args:
+        path (FilePath): _description_
+    """
     store_relation_data(path)
     # ChunkedListに保存されず残ったデータを保存する
     close_chunked_list()
@@ -109,8 +120,7 @@ def store_relation_data(path:FilePath):
                 try:
                     # store_{type}_set.store_rest(row)を呼ぶ
                     acc_type = r[6]
-
-                    # store_*_set(row)関数を呼ぶ
+                    # typeに応じてstore_{type}_set(row)関数を呼ぶ
                     convert_row[acc_type](r)
                 except KeyError as E:
                     print(E)
@@ -120,6 +130,12 @@ def store_relation_data(path:FilePath):
                     pass
         except:
             pass
+
+def bulk_insert(conn, lst:list):
+    # bulk挿入
+    cur = conn.cursor()
+    sql = "INSERT INTO users (id, name, age) VALUES (?, ?, ?)"
+    cur.executemany(sql, lst)
 
 
 # store_restには各chunkedListインスタンスに残ったid Set[tuple](=self.ds)を登録する処理を書く
@@ -135,7 +151,8 @@ def close_chunked_list():
     run_biosample_set.store_rest("run_biosample")
     analysis_submission_set.store_rest("analysis_submission")
 
-
+# depricated 
+'''
 def drop_all_tables():
     """
     depricated: sqlalchemy廃止のためcreate_id_relation_tableモジュールで直接sqlを操作する
@@ -145,7 +162,9 @@ def drop_all_tables():
     """
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+'''
 
+# TODO: typeごとに
 
 def store_study_set(r: list):
     """
@@ -201,6 +220,7 @@ convert_row = {
 }
 
 # depricated: sqlalchemyは今後つかわない
+'''
 base = {
     "study_submission": StudySubmission,
     "study_bioproject": StudyBioProject,
@@ -216,6 +236,7 @@ base = {
     "run_biosample": RunBioSample,
     "analysis_submission": AnalysisSubmission
 }
+'''
 
 def main():
 
@@ -225,6 +246,7 @@ def main():
     
     # cpu_count()次第で分割数は変える
     p = Pool(32)
+    '''
     try:
         target_dir = args.input
         target_pattern = "*.txt"
@@ -234,6 +256,6 @@ def main():
     except Exception as e:
         print("main: ", e)
 
-
+    '''
 if __name__ == "__main__":
     main()

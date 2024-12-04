@@ -5,10 +5,11 @@ def create_table_sql(table_name):
     
     table_sql = f"""
     CREATE TABLE {table_name} (
-        id0 VARCHAR(16) PRIMARY KEY,
-        id1 VARCHAR(16) PRIMARY KEY
+        id0 VARCHAR(16),
+        id1 VARCHAR(16)
     );
     """
+    print("table: ", table_sql)
     return table_sql
 
 
@@ -48,7 +49,7 @@ def initialize_table(db):
     conn = sqlite3.connect(db)
     for t in table_list:
         drop_table(conn, t)
-        create_table(conn, create_table_sql(t))
+        create_table(conn, t)
 
     
 if __name__ == "__main__":
