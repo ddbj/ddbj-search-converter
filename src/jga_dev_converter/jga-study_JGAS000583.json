@@ -1,0 +1,116 @@
+{
+    "index": {
+        "_index": "jga-study",
+        "_id": "JGAS000583"
+    }
+}
+{
+    "properties": {
+        "alias": "JSUB000807_Study_000001",
+        "center_name": "Individual",
+        "accession": "JGAS000583",
+        "DESCRIPTOR": {
+            "STUDY_TITLE": "Whole exome sequencing of a cold agglutinin disease patient",
+            "STUDY_TYPES": {
+                "STUDY_TYPE": {
+                    "existing_study_type": "Tumor vs. Matched-Normal"
+                }
+            },
+            "STUDY_ABSTRACT": "We performed whole exome sequencing of bone marrow monoclear cells derived from a cold agglutinin disease patient. Aim of our study is to elucidate the pathogenesis of hemolytic anemia."
+        },
+        "STUDY_ATTRIBUTES": {
+            "STUDY_ATTRIBUTE": [
+                {
+                    "TAG": "NBDC Number",
+                    "VALUE": "hum0378"
+                },
+                {
+                    "TAG": "Registration date",
+                    "VALUE": "2022-11-24"
+                },
+                {
+                    "TAG": "Submitting organization",
+                    "VALUE": "Fukushima Medical University"
+                },
+                {
+                    "TAG": "Principal Investigator",
+                    "VALUE": "TakayukiIkezoe"
+                },
+                {
+                    "TAG": "Molecular Data Type",
+                    "VALUE": "Whole exome sequencing"
+                },
+                {
+                    "TAG": "Platform",
+                    "VALUE": "NovaSeq 6000"
+                },
+                {
+                    "TAG": "Vendor",
+                    "VALUE": "Illumina"
+                },
+                {
+                    "TAG": "Comment",
+                    "VALUE": null
+                },
+                {
+                    "TAG": "Primary Phenotype",
+                    "VALUE": "cold agglutinin disease"
+                },
+                {
+                    "TAG": "Phenotype",
+                    "VALUE": "autoimmune hemolytic anemia"
+                },
+                {
+                    "TAG": "Phenotype",
+                    "VALUE": "aplastic anemia"
+                },
+                {
+                    "TAG": "Study Inclusion/Exclusion Criteria",
+                    "VALUE": "This study includes the patients with autoimmune hemolytic anemia."
+                },
+                {
+                    "TAG": "ICD-10 Disease Classification",
+                    "VALUE": "Cold agglutinin disease (D59.1)"
+                },
+                {
+                    "TAG": "ICD-10 Disease Classification",
+                    "VALUE": "Aplastic anemia (D619)"
+                }
+            ]
+        }
+    },
+    "identifier": "JGAS000583",
+    "title": "Whole exome sequencing of a cold agglutinin disease patient",
+    "description": "We performed whole exome sequencing of bone marrow monoclear cells derived from a cold agglutinin disease patient. Aim of our study is to elucidate the pathogenesis of hemolytic anemia.",
+    "name": "JSUB000807_Study_000001",
+    "type": "jga-study",
+    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000583",
+    "sameAs": null,
+    "isPartOf": "jga",
+    "organism": {
+        "identifier": 9606,
+        "name": "Homo sapiens"
+    },
+    "dbXrefs": [
+        {
+            "identifier": "JGAP000001",
+            "type": "jga-policy",
+            "url": "https://ddbj.nig.ac.jp/resource/jga-policy/JGAP000001"
+        },
+        {
+            "identifier": "JGAC000001",
+            "type": "jga-dac",
+            "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
+        },
+        {
+            "identifier": "JGAD000709",
+            "type": "jga-dataset",
+            "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000709"
+        }
+    ],
+    "status": "public",
+    "visibility": "unrestricted-access",
+    "dateCreated": "2022-12-02T09:55:38+09:00",
+    "dateModified": "2022-12-02T10:20:49.151+09:00",
+    "datePublished": "2024-09-11T16:05:59.940469+09:00"
+}

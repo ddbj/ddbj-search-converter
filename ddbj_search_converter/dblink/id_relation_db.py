@@ -41,6 +41,15 @@ def get_session(config: Optional[Config] = None, engine: Optional[Engine] = None
 
 class Base(DeclarativeBase):
     pass
+# depricated予定　（モジュール全体）
+# storeのパフォーマンスが悪いためsqlalchemyを使わない方法で実装を行う予定
+
+
+# TODO:環境に合わせ書き換える・環境変数に記述するように
+engine = create_engine("sqlite:///sra_accessions.sqlite")
+session = scoped_session(sessionmaker(autocommit=False,
+                                      bind=engine))
+Base = declarative_base()
 
 
 class StudySubmission(Base):
