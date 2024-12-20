@@ -52,9 +52,9 @@ $ docker compose exec app bp_xml2jsonl --help
 開発環境:
 
 ```bash
-$ docker network create ddbj-search-network-dev
-$ docker compose -f compose.dev.yml up -d
-$ docker compose -f compose.dev.yml exec app bash
+docker network create ddbj-search-network-dev
+docker compose -f compose.dev.yml up -d
+docker compose -f compose.dev.yml exec app bash
 ```
 
 ## Usage
@@ -98,20 +98,16 @@ $ docker compose -f compose.dev.yml exec app bash
 curl -# -o ./converter_results/SRA_Accessions.tab ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
 
 # biosample XML の解凍
-gunzip -c /usr/local/resources/biosample/biosample_set.xml.gz > /home/w3ddbjld/tasks/biosample_jsonl/biosample_set.xml
-gunzip -c /usr/local/resources/biosample/ddbj_biosample_set.xml.gz > /home/w3ddbjld/tasks/biosample_jsonl/ddbj/ddbj_biosample_set.xml
+gunzip -c /usr/local/resources/biosample/biosample_set.xml.gz > ./converter_results/biosample_set.xml
+gunzip -c /usr/local/resources/biosample/ddbj_biosample_set.xml.gz > ./converter_results/ddbj_biosample_set.xml
 ```
 
 ### 1.1. Create Accession Database (`create_accession_db`)
 
 ```bash
-cd /home/w3ddbjld/tasks/ddbj-search-converter/src
-source .venv/bin/activate
-mkdir /home/w3ddbjld/tasks/sra/resources/$(date +%Y%m%d)
-cd utils
-time ./split_sra_accessions.pl /home/w3ddbjld/tasks/sra/resources/SRA_Accessions.tab /home/w3ddbjld/tasks/sra/resources/$(date +%Y%m%d)
-cd ../dblink
-time python create_accession_db_m.py /home/w3ddbjld/tasks/sra/resources/$(date +%Y%m%d)  /home/w3ddbjld/tasks/sra/resources/sra_accessions.sqlite
+mkdir ./converter_results/sra_accessions
+perl ./scripts/split_sra_accessions.pl ./converter_results/SRA_Accessions.tab ./converter_results/sra_accessions
+create_accession_db ./converter_results/sra_accessions ./converter_results/sra_accessions.sqlite
 ```
 
 ### 1.2. Create DBLink Database (`create_dblink_db`)
