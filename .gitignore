@@ -168,18 +168,3 @@ cython_debug/
 
 elasticsearch-dev/logs
 elasticsearch-dev/data
-.DS_Store
-__pycache__
-.venv/
-.gitignore
-.python-version
-bioproject.jsonl
-bioproject*.jsonl
-count_ids.py
-get_target_xml.py
-*logs*
-test*.json
-sample/PR*.xml
-memo/
-jga_dev_converter/*.json
-jga_dev_converter/*.jsonl

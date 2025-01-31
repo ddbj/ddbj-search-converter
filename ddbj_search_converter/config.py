@@ -2,7 +2,6 @@
 - default 値と、環境変数から取得する値を取り扱う
 - 各所で get_config() として呼び出すことも可能だが、それぞれの cli script が argparse を使っているため、設定の不都合が生じる可能性がある
     - そのため、各 script の main 関数や parse_args で config の値の上書きをし、その後、config のバケツリレーを行う
-
 """
 
 import datetime
@@ -14,18 +13,22 @@ from pathlib import Path
 from pydantic import BaseModel
 
 DATE_FORMAT = "%Y%m%d"
-WORK_DIR = Path.cwd().joinpath("converter_results")
+WORK_DIR = Path.cwd().joinpath("ddbj_search_converter_results")
 TODAY = datetime.date.today().strftime(DATE_FORMAT)
 
 
 class Config(BaseModel):
     debug: bool = False
-    accessions_dir: Path = WORK_DIR.joinpath(f"sra_accessions/{TODAY}")
-    accessions_db_path: Path = WORK_DIR.joinpath("sra_accessions.sqlite")
-    process_pool_size: int = 8
-    dblink_db_path: Path = WORK_DIR.joinpath("ddbj_dblink.sqlite")
-    dblink_files_base_path: Path = Path("/lustre9/open/shared_data/dblink")
-    es_base_url: str = "http://localhost:9200"
+    work_dir: Path = WORK_DIR
+    postgres_url: str = "postgresql://const:@at098:54301"  # e.g., postgresql://{username}:{password}@{host}:{port}
+    # postgres_url
+    # sra_accession_tab_file_path
+    # accessions_dir: Path = WORK_DIR.joinpath(f"sra_accessions/{TODAY}")
+    # accessions_db_path: Path = WORK_DIR.joinpath("sra_accessions.sqlite")
+    # process_pool_size: int = 8
+    # dblink_db_path: Path = WORK_DIR.joinpath("ddbj_dblink.sqlite")
+    # dblink_files_base_path: Path = Path("/lustre9/open/shared_data/dblink")
+    # es_base_url: str = "http://localhost:9200"
 
 
 default_config = Config()
@@ -39,12 +42,14 @@ def get_config() -> Config:
 
     return Config(
         debug=bool(os.environ.get(f"{ENV_PREFIX}_DEBUG", default_config.debug)),
-        accessions_dir=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DIR", default_config.accessions_dir)),
-        accessions_db_path=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DB_PATH", default_config.accessions_db_path)),
-        process_pool_size=int(os.environ.get(f"{ENV_PREFIX}_PROCESS_POOL_SIZE", default_config.process_pool_size)),
-        dblink_db_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_DB_PATH", default_config.dblink_db_path)),
-        dblink_files_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_FILES_BASE_PATH", default_config.dblink_files_base_path)),
-        es_base_url=os.environ.get(f"{ENV_PREFIX}_ES_BASE_URL", default_config.es_base_url),
+        work_dir=Path(os.environ.get(f"{ENV_PREFIX}_WORK_DIR", default_config.work_dir)),
+        postgres_url=os.environ.get(f"{ENV_PREFIX}_POSTGRES_URL", default_config.postgres_url),
+        # accessions_dir=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DIR", default_config.accessions_dir)),
+        # accessions_db_path=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DB_PATH", default_config.accessions_db_path)),
+        # process_pool_size=int(os.environ.get(f"{ENV_PREFIX}_PROCESS_POOL_SIZE", default_config.process_pool_size)),
+        # dblink_db_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_DB_PATH", default_config.dblink_db_path)),
+        # dblink_files_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_FILES_BASE_PATH", default_config.dblink_files_base_path)),
+        # es_base_url=os.environ.get(f"{ENV_PREFIX}_ES_BASE_URL", default_config.es_base_url),
     )
 
 
@@ -61,7 +66,7 @@ def set_logging_config() -> None:
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             },
             "sqlalchemy": {
-                "format": "%(levelprefix)s DB - %(message)s",
+                "format": "%(levelprefix)s SQLAlchemy - %(message)s",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             }
         },
