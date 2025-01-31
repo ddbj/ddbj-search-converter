@@ -9,18 +9,17 @@ from multiprocessing import Pool
 from typing import NewType, List
 # dep.
 # from id_relation_db import *
-from create_id_relation_table import initialize_table
+from create_id_relation_table import initialize_table, create_indexes
 
 parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
 # 分割済みファイルのディレクトリ指定
 parser.add_argument("input")
 # sqliteデータベースのpath指定
-# TODO: 現状sqlalchemyのモデルに依存してレポジトリのdblink/にdbが作られる・sqlalchemyを廃止し速度を改善する
 parser.add_argument("db")
 args = parser.parse_args()
 
 FilePath = NewType('FilePath', str)
-chunk_size = 100000
+chunk_size = 20000
 
 
 class ChunkedList(list):
@@ -31,12 +30,14 @@ class ChunkedList(list):
         # TODO: sqlite3のbulk save処理に書き換える（sqlalchemyのコードが残っている）
         conn = sqlite3.connect(args.db)
         if id1 and id2 and id2 != "-": 
+            # ペアの値があればイテレーション用のsetにidの対を追加する
             self.ds.add((id1, id2))
+        # idペアのリストがchunk_sizeを超えたらdbに追加する
         if len(self.ds) > chunk_size:
-            # TODO: baseは使わない方法で！！
-            rows = list(set([base[t](id0=d[0], id1=d[1]) for d in self.ds]))
+            # uniqueなidペアに変換する
+            rows = list(set([(d[0],d[1]) for d in self.ds]))
             try:
-                bulk_insert(conn, rows)
+                bulk_insert(conn, rows, t)
                 #session.bulk_save_objects(rows)
                 #session.add_all(rows)
                 #session.commit()
@@ -44,8 +45,8 @@ class ChunkedList(list):
                 print("insert error: ", e)
             finally:
                 self.ds.clear()
-                #session.close()
                 conn.commit()
+
 
     # pushを読んだのと同じインスタンスから呼ぶ必要がある
     def store_rest(self, t):
@@ -54,21 +55,16 @@ class ChunkedList(list):
         Todo:最後にchunkedlistに残った全データをdbに保存するためこのメソッドを呼ぶイベント
         :return:
         """
-        rows = [base[t](id0=d[0], id1=d[1]) for d in self.ds if d[1] != "-"]
-        # 以下sqlqlchemyの条件
-        # session.bulk_save_objects(d, return_defaults=True)　# 同じデータがreplaceされない
-        # session.add_all(d) # 同じデータがreplaceされない
-        #session.merge(d, load=True) # 同じデータがreplaceされない
-        # TODO
+        conn = sqlite3.connect(args.db)
+        rows = list(set([(d[0],d[1]) for d in self.ds]))
         # sqlite3でbulk insertする処理に書き直す
         try:
-            session.bulk_save_objects(rows)
-            #session.add_all(d)
-            session.commit()
+            bulk_insert(conn, rows, t)
+            conn.commit()
         except Exception as e:
             print("insert error: ", e)
         finally:
-            session.close()
+            conn.close()
 
 # 保存したい関係の変換クラスをインスタンス化する
 # TODO: 要検討・インスタンスは各プロセスで呼ばないと効率的で無いのでは << 一旦グローバルなインスタンスで処理してみる
@@ -120,7 +116,8 @@ def store_relation_data(path:FilePath):
                 try:
                     # store_{type}_set.store_rest(row)を呼ぶ
                     acc_type = r[6]
-                    # typeに応じてstore_{type}_set(row)関数を呼ぶ
+                    # convert_row辞書を参照し、typeに応じてstore_{type}_set(row)関数を呼び一連の処理を実行する
+                    # 処理はChunkedListのインスタンスとして呼ばれ実行される
                     convert_row[acc_type](r)
                 except KeyError as E:
                     print(E)
@@ -131,10 +128,11 @@ def store_relation_data(path:FilePath):
         except:
             pass
 
-def bulk_insert(conn, lst:list):
+def bulk_insert(conn, lst:List[set], t:str):
     # bulk挿入
     cur = conn.cursor()
-    sql = "INSERT INTO users (id, name, age) VALUES (?, ?, ?)"
+    # TODO:検討。sqliteで二重キーを指定できるならON CONFLICT(id0, id1) DO NOTHINGを設定する
+    sql = f"INSERT INTO {t} VALUES (?, ?)"
     cur.executemany(sql, lst)
 
 
@@ -239,14 +237,13 @@ base = {
 '''
 
 def main():
-
-    # TODO: table初期化モジュールを呼ぶ
     db = args.db
+    '''
     initialize_table(db)
     
     # cpu_count()次第で分割数は変える
-    p = Pool(32)
-    '''
+    p = Pool(24)
+    
     try:
         target_dir = args.input
         target_pattern = "*.txt"
@@ -255,7 +252,10 @@ def main():
         p.map(create_db, file_list)
     except Exception as e:
         print("main: ", e)
-
     '''
+    # create_index
+    create_indexes(db)
+    
+
 if __name__ == "__main__":
     main()
