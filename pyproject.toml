@@ -10,6 +10,7 @@ version = "0.1.0"
 requires-python = ">=3.8"
 license = { text = "Apache-2.0" }
 dependencies = [
+    "httpx",
     "lxml",
     "pydantic",
     "requests",
@@ -31,27 +32,26 @@ tests = [
     "pytest-cov",
     "pytest-mock",
     "pytest",
-    "sqlalchemy-stubs",
     "types-requests",
     "types-xmltodict",
 ]
 
-[project.scripts]
-create_accession_db = "ddbj_search_converter.dblink.create_accession_db:main"
-create_dblink_db = "ddbj_search_converter.dblink.create_dblink_db:main"
-bp_xml2jsonl = "ddbj_search_converter.bioproject.bp_xml2jsonl:main"
-bp_split_jsonl = "ddbj_search_converter.bioproject.bp_split_jsonl:main"
-bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
-bs_xml2jsonl = "ddbj_search_converter.biosample.bs_xml2jsonl:main"
-bs_split_jsonl = "ddbj_search_converter.biosample.bs_split_jsonl:main"
-bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+# [project.scripts]
+# create_accession_db = "ddbj_search_converter.dblink.create_accession_db:main"
+# create_dblink_db = "ddbj_search_converter.dblink.create_dblink_db:main"
+# bp_xml2jsonl = "ddbj_search_converter.bioproject.bp_xml2jsonl:main"
+# bp_split_jsonl = "ddbj_search_converter.bioproject.bp_split_jsonl:main"
+# bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
+# bs_xml2jsonl = "ddbj_search_converter.biosample.bs_xml2jsonl:main"
+# bs_split_jsonl = "ddbj_search_converter.biosample.bs_split_jsonl:main"
+# bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
 
 [tool.setuptools]
 packages = [
     "ddbj_search_converter",
     "ddbj_search_converter.bioproject",
     "ddbj_search_converter.biosample",
-    "ddbj_search_converter.dblink",
+    "ddbj_search_converter.cache_db",
 ]
 
 [tool.pytest.ini_options]

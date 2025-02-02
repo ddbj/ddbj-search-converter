@@ -12,8 +12,8 @@ from pydantic import BaseModel
 
 from ddbj_search_converter.config import (LOGGER, Config, default_config,
                                           get_config, set_logging_level)
-from ddbj_search_converter.dblink.bp_date import get_dates as get_bp_dates
-from ddbj_search_converter.dblink.bp_date import \
+from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
+from ddbj_search_converter.cache_db.bp_date import \
     get_session as get_bp_date_session
 from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           ExternalLink, Grant, Organism,

@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -50,9 +50,23 @@ class ExternalLink(BaseModel):
     label: str
 
 
+XrefType = Literal[
+    "biosample",
+    "bioproject",
+    "sra-experiment",
+    "sra-run",
+    "sra-sample",
+    "sra-study",
+    "gea",
+    "assemblies",
+    "metabobank",
+    "taxonomy",
+]
+
+
 class Xref(BaseModel):
     identifier: str
-    type_: str = Field(alias="type")
+    type_: XrefType = Field(alias="type")
     url: str
 
 

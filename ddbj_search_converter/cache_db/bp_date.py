@@ -1,3 +1,10 @@
+"""\
+- BioProject の date 情報を管理するための DB 周り
+    - model 定義、初期化 (postgres -> sqlite) 関数、getter 関数などを提供する
+- 元データは、PostgreSQL から取得し、SQLite に保存する
+    - PostgreSQL: at098:54301 に存在する (config.postgres_url で指定)
+    - SQLite: ${config.work_dir}/${DB_FILE_NAME (bp_date.sqlite)} に保存する
+"""
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Generator, Optional, Sequence, Tuple, Union
@@ -29,7 +36,7 @@ class Record(Base):
     date_published: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
-# === CRUD, etc. ===
+# === Abstracted functions ===
 
 
 def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
@@ -54,6 +61,9 @@ def get_session(config: Config) -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
     engine.dispose()
+
+
+# === CRUD, etc. ===
 
 
 def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generator[Sequence[Row[Any]], None, None]:
@@ -90,7 +100,7 @@ def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generat
         engine.dispose()
 
 
-def format_date(value: Optional[Union[str, datetime]]) -> Optional[str]:
+def _format_date(value: Optional[Union[str, datetime]]) -> Optional[str]:
     if value is None:
         return None
     try:
@@ -114,15 +124,15 @@ def store_data_to_sqlite(config: Config) -> None:
                     insert(Record),
                     [{
                         "accession": record.accession,
-                        "date_created": format_date(record.date_created),
-                        "date_modified": format_date(record.date_modified),
-                        "date_published": format_date(record.date_published),
+                        "date_created": _format_date(record.date_created),
+                        "date_modified": _format_date(record.date_modified),
+                        "date_published": _format_date(record.date_published),
                     } for record in records]
                 )
                 session.commit()
         except Exception as e:
-            session.rollback()
             LOGGER.error("Failed to store data to SQLite: %s", e)
+            session.rollback()
             raise
 
 
