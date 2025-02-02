@@ -61,6 +61,7 @@ XrefType = Literal[
     "assemblies",
     "metabobank",
     "taxonomy",
+    "GEO",
 ]
 
 

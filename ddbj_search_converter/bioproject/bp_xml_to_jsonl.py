@@ -1,3 +1,11 @@
+"""\
+- BioProject XML を JSON-Lines に変換する
+- is_core で、それぞれ処理が分岐する
+    - core (/usr/local/resources/bioproject/ddbj_core_bioproject.xml) の場合は、work_dir/${date}/ddbj_core_bioproject.jsonl に出力
+    - non-core (/usr/local/resources/bioproject/bioproject.xml) の場合は、work_dir/${date}/bioproject_${n}.jsonl に BATCH_SIZE (2000) 件ずつ出力
+- 生成される JSON-Lines は 1 line が 1 BioProject Accession に対応する
+"""
+
 import argparse
 import csv
 import json
@@ -10,14 +18,19 @@ import xmltodict
 from lxml import etree
 from pydantic import BaseModel
 
-from ddbj_search_converter.config import (LOGGER, Config, default_config,
-                                          get_config, set_logging_level)
 from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
 from ddbj_search_converter.cache_db.bp_date import \
     get_session as get_bp_date_session
+from ddbj_search_converter.cache_db.fusion_getter import get_xrefs
+from ddbj_search_converter.config import (LOGGER, Config, default_config,
+                                          get_config, set_logging_level)
 from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           ExternalLink, Grant, Organism,
                                           Organization, Publication, Xref)
+
+BATCH_SIZE = 2000
+CORE_JSONL_FILE_NAME = "ddbj_core_bioproject.jsonl"
+NOT_CORE_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
 
 # from ddbj_search_converter.utils import bulk_insert_to_es
 
@@ -93,10 +106,13 @@ def xml_to_jsonl(
     config: Config,
     xml_file: Path,
     is_core: bool,
+    output_dir: Path,
+    batch_size: int = BATCH_SIZE,
 ) -> None:
     context = etree.iterparse(xml_file, tag="Package", recover=True)
     docs: List[BioProject] = []
     batch_count = 0
+    file_count = 1
     with get_bp_date_session(config) as session:
         for _events, element in context:
             if element.tag == "Package":
@@ -133,8 +149,8 @@ def xml_to_jsonl(
                     publication=_parse_and_update_publication(accession, project),
                     grant=_parse_and_update_grant(accession, project),
                     externalLink=_parse_external_link(accession, project),
-                    dbXref=get_related_ids(accession, "bioproject"),
-                    sameAs=_parse_sameas(project),
+                    dbXref=get_xrefs(config, accession, "bioproject"),
+                    sameAs=_parse_same_as(project),
                     status=_parse_status(project, is_core),
                     visibility="unrestricted-access",
                     dateCreated=date_created,
@@ -142,21 +158,36 @@ def xml_to_jsonl(
                     datePublished=date_published,
                 )
 
+                # properties の中の object に対して整形を行う
                 _update_prefix(project)
+                _update_locus_tag_prefix(project)
                 _update_local_id(project)
 
                 docs.append(bp_instance)
 
-                batch_count += 1
-                if batch_count > batch_size:
-                    jsonl = docs_to_jsonl(docs)
-                    if output_file is not None:
-                        dump_to_file(output_file, jsonl)
-                    batch_count = 0
-                    docs = []
+                if is_core is False:
+                    batch_count += 1
+                    if batch_count >= batch_size:
+                        output_file = output_dir.joinpath(NOT_CORE_JSONL_FILE_NAME.format(n=file_count))
+                        write_jsonl(output_file, docs)
+                        batch_count = 0
+                        file_count += 1
+                        docs = []
+                else:
+                    pass  # core の場合、後ほど 1 file にまとめて書き込む
 
             # メモリリークを防ぐために要素をクリアする
             clear_element(element)
+
+    if is_core:
+        output_file = output_dir.joinpath(CORE_JSONL_FILE_NAME)
+        write_jsonl(output_file, docs)
+        docs = []
+
+    if len(docs) > 0:
+        # 余りの docs の書き込み
+        output_file = output_dir.joinpath(NOT_CORE_JSONL_FILE_NAME.format(n=file_count))
+        write_jsonl(output_file, docs)
 
 
 def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "UmbrellaBioProject"]:
@@ -458,7 +489,7 @@ def _parse_external_link(accession: str, project: Dict[str, Any]) -> List[Extern
     return links
 
 
-def _parse_sameas(project: Dict[str, Any]) -> List[Xref]:
+def _parse_same_as(project: Dict[str, Any]) -> List[Xref]:
     try:
         center = project["Project"]["ProjectID"]["CenterID"]["center"]
         if center == "GEO":
@@ -496,6 +527,77 @@ def _parse_date(project: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], 
     date_published = project.get("Project", {}).get("ProjectDescr", {}).get("ProjectReleaseDate", None)
 
     return (date_created, date_modified, date_published)
+
+
+def _update_prefix(project: Dict[str, Any]) -> None:
+    """\
+    - ProjectType.ProjectTypeSubmission.Target.BioSampleSet.ID
+    - 文字列で入力されてしまった場合、properties 内の値を object に整形する
+    """
+    try:
+        bs_set_ids = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"]
+        if isinstance(bs_set_ids, list):
+            for i, item in enumerate(bs_set_ids):
+                if isinstance(item, str):
+                    project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"][i] = {"content": item}
+        elif isinstance(bs_set_ids, str):
+            project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = {"content": bs_set_ids}
+    except Exception as e:
+        LOGGER.debug("Failed to update prefix: %s", e)
+
+
+def _update_locus_tag_prefix(project: Dict[str, Any]) -> None:
+    """\
+    - properties.Project.Project.ProjectDescr.LocusTagPrefix
+    - 文字列で入力されていた場合 properties 内の値を object に整形する
+    """
+    try:
+        prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
+        if isinstance(prefix, list):
+            for i, item in enumerate(prefix):
+                if isinstance(item, str):
+                    project["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
+        elif isinstance(prefix, str):
+            project["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
+    except Exception as e:
+        LOGGER.debug("Failed to update locus tag prefix: %s", e)
+
+
+def _update_local_id(project: Dict[str, Any]) -> None:
+    """\
+    - properties.Project.Project.ProjectID.LocalID
+    - 文字列で入力されていた場合 properties 内の値を object に整形する
+    """
+    try:
+        local_id = project["Project"]["ProjectID"]["LocalID"]
+        if isinstance(local_id, list):
+            for i, item in enumerate(local_id):
+                if isinstance(item, str):
+                    project["Project"]["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
+        elif isinstance(local_id, str):
+            project["Project"]["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
+    except Exception as e:
+        LOGGER.debug("Failed to update local id: %s", e)
+
+
+def write_jsonl(output_file: Path, docs: List[BioProject]) -> None:
+    """\
+    - memory のほうが多いと見越して、一気に書き込む
+    """
+    with output_file.open(mode="w", encoding="utf-8") as f:
+        f.write("\n".join(doc.model_dump_json() for doc in docs))
+
+
+def clear_element(element: Any) -> None:
+    try:
+        element.clear()
+        while element.getprevious() is not None:
+            try:
+                del element.getparent()[0]
+            except Exception as e:
+                LOGGER.debug("Failed to clear element: %s", e)
+    except Exception as e:
+        LOGGER.debug("Failed to clear element: %s", e)
 
 
 # def main() -> None:
