@@ -238,7 +238,7 @@ base = {
 
 def main():
     db = args.db
-    '''
+
     initialize_table(db)
     
     # cpu_count()次第で分割数は変える
@@ -252,7 +252,7 @@ def main():
         p.map(create_db, file_list)
     except Exception as e:
         print("main: ", e)
-    '''
+
     # create_index
     create_indexes(db)
     
