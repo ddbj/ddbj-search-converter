@@ -129,7 +129,6 @@ def xml_to_jsonl(
                     date_created, date_modified, date_published = _parse_date(project)
 
                 bp_instance = BioProject(
-                    accession=accession,
                     identifier=accession,
                     properties={"Project": project},
                     distribution=[Distribution(

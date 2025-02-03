@@ -72,7 +72,6 @@ class Xref(BaseModel):
 
 
 class BioProject(BaseModel):
-    accession: str
     identifier: str
     properties: Any
     distribution: List[Distribution]

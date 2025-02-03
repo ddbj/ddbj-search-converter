@@ -15,6 +15,8 @@ from pydantic import BaseModel
 DATE_FORMAT = "%Y%m%d"
 WORK_DIR = Path.cwd().joinpath("ddbj_search_converter_results")
 TODAY = datetime.date.today().strftime(DATE_FORMAT)
+BP_JSONL_DIR_NAME = "bioproject_jsonl"
+BS_JSONL_DIR_NAME = "biosample_jsonl"
 
 
 class Config(BaseModel):
@@ -25,13 +27,13 @@ class Config(BaseModel):
     debug: bool = False
     work_dir: Path = WORK_DIR
     postgres_url: str = "postgresql://const:@at098:54301"  # e.g., postgresql://{username}:{password}@{host}:{port}
+    es_url: str = "http://localhost:9200"
     # postgres_url
     # accessions_dir: Path = WORK_DIR.joinpath(f"sra_accessions/{TODAY}")
     # accessions_db_path: Path = WORK_DIR.joinpath("sra_accessions.sqlite")
     # process_pool_size: int = 8
     # dblink_db_path: Path = WORK_DIR.joinpath("ddbj_dblink.sqlite")
     # dblink_files_base_path: Path = Path("/lustre9/open/shared_data/dblink")
-    # es_base_url: str = "http://localhost:9200"
 
 
 default_config = Config()
@@ -46,6 +48,7 @@ def get_config() -> Config:
         debug=bool(os.environ.get(f"{ENV_PREFIX}_DEBUG", default_config.debug)),
         work_dir=Path(os.environ.get(f"{ENV_PREFIX}_WORK_DIR", default_config.work_dir)),
         postgres_url=os.environ.get(f"{ENV_PREFIX}_POSTGRES_URL", default_config.postgres_url),
+        es_url=os.environ.get(f"{ENV_PREFIX}_ES_URL", default_config.es_url),
         # sra_accessions_tab_file_path=
         # accessions_dir=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DIR", default_config.accessions_dir)),
         # accessions_db_path=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DB_PATH", default_config.accessions_db_path)),
