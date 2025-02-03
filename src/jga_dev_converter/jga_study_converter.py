@@ -50,15 +50,15 @@ def xml2json(input:FilePath):
                     "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
                 },
                 {
-                    "identifier": "JGAD000871",
+                    "identifier": "JGAD000847",
                     "type": "jga-dataset",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000871"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-dataset/JGAD000847"
                 }
 
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            dt_list_str = ["2024-08-30 15:40:05.829942+09","2025-01-08 15:30:49.054852+09","2024-09-02 15:38:38.432+09"]
+            dt_list_str = ["2024-05-30 09:52:52.40194+09","2025-01-30 12:45:53.77827+09","2024-05-30 11:51:06.629+09"]
             doc["dateCreated"] = isoformat_converter(dt_list_str)[0]
             doc["dateModified"] = isoformat_converter(dt_list_str)[2]
             doc["datePublished"] = isoformat_converter(dt_list_str)[1]
@@ -94,7 +94,7 @@ def isoformat_converter(dt_list_str:List[str])-> list:
     
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-study_JGAS000736.json"
+    jsonl_output = "jga-study_JGAS000714.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
             # 差分更新でファイル後方からjsonlを分割する場合は通常のESのjsonlとはindexとbodyの配置を逆にする << しない
@@ -106,6 +106,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAS000736.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAS000714.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
