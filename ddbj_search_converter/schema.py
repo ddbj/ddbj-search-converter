@@ -87,7 +87,7 @@ class BioProject(BaseModel):
     publication: List[Publication]
     grant: List[Grant]
     externalLink: List[ExternalLink]
-    dbXref: Optional[List[Xref]]
+    dbXref: List[Xref]
     sameAs: List[Xref]
     status: str
     visibility: Literal["unrestricted-access"]
@@ -108,49 +108,40 @@ class BioProjectLD(BioProject):
 # === BioSample ===
 
 
-# class Attribute(BaseModel):
-#     attribute_name: str
-#     display_name: str
-#     harmonized_name: str
-#     content: str
+class Attribute(BaseModel):
+    attribute_name: Optional[str]
+    display_name: Optional[str]
+    harmonized_name: Optional[str]
+    content: Optional[str]
 
 
-# class Model(BaseModel):
-#     name: str
+class Model(BaseModel):
+    name: str
 
 
-# class Package(BaseModel):
-#     name: str
-#     display_name: str
+class Package(BaseModel):
+    name: str
+    display_name: str
 
 
-# class BioSample(BaseModel):
-#     type_: Literal["biosample"] = Field(alias="type")
-#     identifier: str
-#     name: Optional[str]
-#     dateCreated: str
-#     datePublished: Optional[str]
-#     dateModified: str
-#     visibility: str
-#     status: str
-#     isPartOf: str
-#     url: str
-#     distribution: List[Distribution]
-#     properties: Any
-#     sameAs: Union[List[Xref], None]
-#     description: Optional[str]
-#     title: Optional[str]
-#     dbXref: Union[List[Xref], None]
-#     organism: Union[Organism, None]
-#     attributes: List[Attribute]
-#     model: List[Model]
-#     Package: Package
-
-
-# class BioSampleLD(BioSample):
-#     context: str = Field(alias="@context")
-#     id_: str = Field(alias="@id")
-
-#     model_config = ConfigDict(
-#         populate_by_name=True
-#     )
+class BioSample(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["BioSample"]
+    type_: Literal["biosample"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    organism: Optional[Organism]
+    title: Optional[str]
+    description: Optional[str]
+    attributes: List[Attribute]
+    model: List[Model]
+    package: Optional[Package]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: Literal["public"]
+    visibility: Literal["unrestricted-access"]
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]

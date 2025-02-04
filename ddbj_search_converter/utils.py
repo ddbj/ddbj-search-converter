@@ -1,5 +1,6 @@
 """\
 - BP, BS における共通処理をまとめる
+- その他、共通化できそうな処理をまとめる
 """
 import hashlib
 from datetime import datetime

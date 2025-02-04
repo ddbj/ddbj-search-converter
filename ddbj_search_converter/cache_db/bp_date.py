@@ -65,6 +65,41 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 
 # === CRUD, etc. ===
 
+# > \d mass.bioproject_summary
+# +---------------+---------+-----------+
+# | Column        | Type    | Modifiers |
+# |---------------+---------+-----------|
+# | submitter_id  | text    |           |
+# | submission_id | text    |           |
+# | acc_type      | text    |           |
+# | accession     | text    |           |
+# | entity_status | integer |           |
+# | title         | text    |           |
+# +---------------+---------+-----------+
+
+# > \d mass.project
+# +--------------------+--------------------------+-------------------------------------------------------->
+# | Column             | Type                     | Modifiers                                              >
+# |--------------------+--------------------------+-------------------------------------------------------->
+# | submission_id      | text                     |  not null                                              >
+# | project_id_prefix  | text                     |  default 'PRJDB'::text                                 >
+# | project_id_counter | integer                  |  default nextval('mass.project_project_id_counter_seq':>
+# | create_date        | timestamp with time zone |  not null default now()                                >
+# | modified_date      | timestamp with time zone |  not null default now()                                >
+# | issued_date        | timestamp with time zone |                                                        >
+# | status_id          | integer                  |                                                        >
+# | project_type       | text                     |  not null                                              >
+# | release_date       | timestamp with time zone |                                                        >
+# | dist_date          | timestamp with time zone |                                                        >
+# | comment            | text                     |                                                        >
+# +--------------------+--------------------------+-------------------------------------------------------->
+# Indexes:
+#     "project_pkey2" PRIMARY KEY, btree (submission_id)
+#     "project_project_id_prefix_key1" UNIQUE CONSTRAINT, btree (project_id_prefix, project_id_counter)
+
+# Note:
+# - accession と submission_id の関係は 1 対 1
+#   - -> DISTINCT ON は不要
 
 def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generator[Sequence[Row[Any]], None, None]:
     engine = create_engine(
@@ -85,6 +120,7 @@ def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generat
                 FROM mass.bioproject_summary s
                 INNER JOIN mass.project p
                 ON s.submission_id = p.submission_id
+                ORDER BY s.accession
                 LIMIT :chunk_size OFFSET :offset;
                 """)
                 try:

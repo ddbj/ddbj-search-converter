@@ -1,11 +1,11 @@
 """\
 - BioProject XML を JSON-Lines に変換する
-- is_core で、それぞれ処理が分岐する
-    - core (/usr/local/resources/bioproject/ddbj_core_bioproject.xml) の場合は、work_dir/${date}/ddbj_core_bioproject.jsonl に出力
-    - non-core (/usr/local/resources/bioproject/bioproject.xml) の場合は、work_dir/${date}/bioproject_${n}.jsonl に BATCH_SIZE (2000) 件ずつ出力
+- is_ddbj で、それぞれ処理が分岐する
+    - ddbj xml (/usr/local/resources/bioproject/ddbj_bioproject.xml) の場合は、work_dir/${date}/ddbj_bioproject.jsonl に出力
+    - それ以外 (/usr/local/resources/bioproject/bioproject.xml) の場合は、work_dir/${date}/bioproject_${n}.jsonl に BATCH_SIZE (2000) 件ずつ出力
+        - -> ddbj_xml と common_xml という呼び方をすることにする
 - 生成される JSON-Lines は 1 line が 1 BioProject Accession に対応する
 """
-
 import argparse
 import csv
 import json
@@ -29,8 +29,8 @@ from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           Organization, Publication, Xref)
 
 BATCH_SIZE = 2000
-CORE_JSONL_FILE_NAME = "ddbj_core_bioproject.jsonl"
-NOT_CORE_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
+DDBJ_JSONL_FILE_NAME = "ddbj_bioproject.jsonl"
+COMMON_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
 
 # from ddbj_search_converter.utils import bulk_insert_to_es
 
@@ -105,7 +105,7 @@ NOT_CORE_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
 def xml_to_jsonl(
     config: Config,
     xml_file: Path,
-    is_core: bool,
+    is_ddbj: bool,
     output_dir: Path,
     batch_size: int = BATCH_SIZE,
 ) -> None:
@@ -123,7 +123,7 @@ def xml_to_jsonl(
                 metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
                 project = metadata["Package"]["Project"]
 
-                if is_core:
+                if is_ddbj:
                     date_created, date_modified, date_published = get_bp_dates(session, accession)
                 else:
                     date_created, date_modified, date_published = _parse_date(project)
@@ -141,16 +141,16 @@ def xml_to_jsonl(
                     objectType=_parse_object_type(project),
                     name=None,
                     url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
-                    organism=_parse_organism(accession, project, is_core),
+                    organism=_parse_organism(accession, project, is_ddbj),
                     title=_parse_title(accession, project),
                     description=_parse_description(accession, project),
-                    organization=_parse_and_update_organization(accession, project, is_core),
+                    organization=_parse_and_update_organization(accession, project, is_ddbj),
                     publication=_parse_and_update_publication(accession, project),
                     grant=_parse_and_update_grant(accession, project),
                     externalLink=_parse_external_link(accession, project),
                     dbXref=get_xrefs(config, accession, "bioproject"),
                     sameAs=_parse_same_as(project),
-                    status=_parse_status(project, is_core),
+                    status=_parse_status(project, is_ddbj),
                     visibility="unrestricted-access",
                     dateCreated=date_created,
                     dateModified=date_modified,
@@ -164,29 +164,25 @@ def xml_to_jsonl(
 
                 docs.append(bp_instance)
 
-                if is_core is False:
-                    batch_count += 1
-                    if batch_count >= batch_size:
-                        output_file = output_dir.joinpath(NOT_CORE_JSONL_FILE_NAME.format(n=file_count))
-                        write_jsonl(output_file, docs)
-                        batch_count = 0
-                        file_count += 1
-                        docs = []
-                else:
-                    pass  # core の場合、後ほど 1 file にまとめて書き込む
+                batch_count += 1
+                if batch_count >= batch_size:
+                    output_file = output_dir.joinpath(
+                        DDBJ_JSONL_FILE_NAME if is_ddbj else COMMON_JSONL_FILE_NAME.format(n=file_count)
+                    )
+                    write_jsonl(output_file, docs, is_append=is_ddbj)
+                    batch_count = 0
+                    file_count += 1
+                    docs = []
 
             # メモリリークを防ぐために要素をクリアする
             clear_element(element)
 
-    if is_core:
-        output_file = output_dir.joinpath(CORE_JSONL_FILE_NAME)
-        write_jsonl(output_file, docs)
-        docs = []
-
     if len(docs) > 0:
         # 余りの docs の書き込み
-        output_file = output_dir.joinpath(NOT_CORE_JSONL_FILE_NAME.format(n=file_count))
-        write_jsonl(output_file, docs)
+        output_file = output_dir.joinpath(
+            DDBJ_JSONL_FILE_NAME if is_ddbj else COMMON_JSONL_FILE_NAME.format(n=file_count)
+        )
+        write_jsonl(output_file, docs, is_append=is_ddbj)
 
 
 def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "UmbrellaBioProject"]:
@@ -198,9 +194,9 @@ def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "Umbrel
     return "BioProject"
 
 
-def _parse_organism(accession: str, project: Dict[str, Any], is_core: bool) -> Optional[Organism]:
+def _parse_organism(accession: str, project: Dict[str, Any], is_ddbj: bool) -> Optional[Organism]:
     try:
-        if is_core:
+        if is_ddbj:
             organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
         else:
             organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
@@ -231,14 +227,14 @@ def _parse_description(accession: str, project: Dict[str, Any]) -> Optional[str]
         return None
 
 
-def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_core: bool) -> List[Organization]:
+def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_ddbj: bool) -> List[Organization]:
     """\
     Organization の parse、引数の project の update も行う
     """
     organizations: List[Organization] = []
 
     try:
-        if is_core:
+        if is_ddbj:
             organization = project["Submission"]["Submission"]["Description"]["Organization"]
         else:
             organization = project["Submission"]["Description"]["Organization"]
@@ -506,8 +502,8 @@ def _parse_same_as(project: Dict[str, Any]) -> List[Xref]:
     return []
 
 
-def _parse_status(project: Dict[str, Any], is_core: bool) -> str:
-    if is_core:
+def _parse_status(project: Dict[str, Any], is_ddbj: bool) -> str:
+    if is_ddbj:
         return "public"
     else:
         status = project.get("Submission", {}).get("Description", {}).get("Access", "public")
@@ -579,11 +575,14 @@ def _update_local_id(project: Dict[str, Any]) -> None:
         LOGGER.debug("Failed to update local id: %s", e)
 
 
-def write_jsonl(output_file: Path, docs: List[BioProject]) -> None:
+def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = False) -> None:
     """\
     - memory のほうが多いと見越して、一気に書き込む
     """
-    with output_file.open(mode="w", encoding="utf-8") as f:
+    mode = "a" if is_append else "w"
+    with output_file.open(mode=mode, encoding="utf-8") as f:
+        if is_append:
+            f.write("\n")
         f.write("\n".join(doc.model_dump_json() for doc in docs))
 
 
@@ -606,13 +605,13 @@ def clear_element(element: Any) -> None:
 #     LOGGER.info("Config: %s", config.model_dump())
 #     LOGGER.info("Args: %s", args.model_dump())
 
-#     is_core = False
+#     is_ddbj = False
 #     accessions_data = {}
 #     if CORE_FILENAME_PATTERN in args.xml_file.name:
 #         if args.accessions_tab_file is None:
 #             LOGGER.error("Your input xml file seems to be ddbj_core, so you need to specify accessions_tab_file")
 #             sys.exit(1)
-#         is_core = True
+#         is_ddbj = True
 #         accessions_data = parse_accessions_tab_file(args.accessions_tab_file)
 
 #     xml2jsonl(
@@ -620,7 +619,7 @@ def clear_element(element: Any) -> None:
 #         args.output_file,
 #         args.bulk_es,
 #         config.es_base_url,
-#         is_core,
+#         is_ddbj,
 #         accessions_data,
 #         args.batch_size,
 #     )
