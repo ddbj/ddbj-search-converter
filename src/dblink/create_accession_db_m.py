@@ -7,7 +7,7 @@ import argparse
 import sqlite3
 from multiprocessing import Pool
 from typing import NewType, List
-# dep.
+# dep.: sqlalchemyを利用したモジュールを廃止
 # from id_relation_db import *
 from create_id_relation_table import initialize_table, create_indexes
 
@@ -47,13 +47,10 @@ class ChunkedList(list):
                 self.ds.clear()
                 conn.commit()
 
-
-    # pushを読んだのと同じインスタンスから呼ぶ必要がある
     def store_rest(self, t):
         """
         登録し残したself.dsが最後に残るのでこれをsqliteに保存する
         Todo:最後にchunkedlistに残った全データをdbに保存するためこのメソッドを呼ぶイベント
-        :return:
         """
         conn = sqlite3.connect(args.db)
         rows = list(set([(d[0],d[1]) for d in self.ds]))

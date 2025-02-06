@@ -1,4 +1,5 @@
-# encoding:utf-8
+# DEP.: multiprocessingを使う（create_accession_db_m.py）かつ SQLAlchemyは使わない方向に
+
 import csv
 import requests
 from id_relation_db import *

@@ -1,12 +1,11 @@
-# encoding:utf-8
+# depricated　（モジュール全体）
+# storeのパフォーマンスが悪いためsqlalchemyを使わない方法で実装を行う予定
 
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String
 
-# depricated予定　（モジュール全体）
-# storeのパフォーマンスが悪いためsqlalchemyを使わない方法で実装を行う予定
 
 # TODO:環境に合わせ書き換える・環境変数に記述するように
 engine = create_engine("sqlite:///sra_accessions.sqlite")
