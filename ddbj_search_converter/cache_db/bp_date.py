@@ -5,19 +5,25 @@
     - PostgreSQL: at098:54301 に存在する (config.postgres_url で指定)
     - SQLite: ${config.work_dir}/${DB_FILE_NAME (bp_date.sqlite)} に保存する
 """
+import argparse
+import sys
 from contextlib import contextmanager
-from datetime import datetime
-from typing import Any, Generator, Optional, Sequence, Tuple, Union
+from pathlib import Path
+from typing import Any, Generator, List, Optional, Sequence, Tuple
 
+from pydantic import BaseModel
 from sqlalchemy import Row, String, create_engine, insert, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from ddbj_search_converter.config import LOGGER, Config
+from ddbj_search_converter.config import (LOGGER, Config, get_config,
+                                          set_logging_level)
+from ddbj_search_converter.utils import format_date
 
 DB_FILE_NAME = "bp_date.sqlite"
 TABLE_NAME = "bp_date"
 POSTGRES_DB_NAME = "bioproject"
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
+DEFAULT_CHUNK_SIZE = 10000
 
 
 # === Models ===
@@ -46,7 +52,7 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
 
     engine = create_engine(
         f"sqlite:///{db_file_path}",
-        echo=config.debug,
+        # echo=config.debug,
     )
     Base.metadata.create_all(engine)
     engine.dispose()
@@ -56,7 +62,7 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
 def get_session(config: Config) -> Generator[Session, None, None]:
     engine = create_engine(
         f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}",
-        echo=config.debug,
+        # echo=config.debug,
     )
     with Session(engine) as session:
         yield session
@@ -101,10 +107,10 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 # - accession と submission_id の関係は 1 対 1
 #   - -> DISTINCT ON は不要
 
-def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generator[Sequence[Row[Any]], None, None]:
+def fetch_data_from_postgres(config: Config, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Generator[Sequence[Row[Any]], None, None]:
     engine = create_engine(
         f"{config.postgres_url}/{POSTGRES_DB_NAME}",
-        echo=config.debug,
+        # echo=config.debug,
     )
 
     offset = 0
@@ -136,36 +142,19 @@ def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generat
         engine.dispose()
 
 
-def _format_date(value: Optional[Union[str, datetime]]) -> Optional[str]:
-    if value is None:
-        return None
-    try:
-        if isinstance(value, datetime):
-            return value.strftime(DATE_FORMAT)
-        elif isinstance(value, str):
-            return datetime.fromisoformat(value).strftime(DATE_FORMAT)
-        else:
-            raise ValueError(f"Invalid date format: {value}")
-    except Exception as e:
-        LOGGER.debug("Failed to format postgreSQL date to SQLite format: %s", e)
-
-    return None
-
-
-def store_data_to_sqlite(config: Config) -> None:
+def store_data_to_sqlite(config: Config, records: Sequence[Row[Any]]) -> None:
     with get_session(config) as session:
         try:
-            for records in fetch_data_from_postgres(config):
-                session.execute(
-                    insert(Record),
-                    [{
-                        "accession": record.accession,
-                        "date_created": _format_date(record.date_created),
-                        "date_modified": _format_date(record.date_modified),
-                        "date_published": _format_date(record.date_published),
-                    } for record in records]
-                )
-                session.commit()
+            session.execute(
+                insert(Record),
+                [{
+                    "accession": record.accession,
+                    "date_created": format_date(record.date_created),
+                    "date_modified": format_date(record.date_modified),
+                    "date_published": format_date(record.date_published),
+                } for record in records]
+            )
+            session.commit()
         except Exception as e:
             LOGGER.error("Failed to store data to SQLite: %s", e)
             session.rollback()
@@ -185,3 +174,83 @@ def get_dates(session: Session, accession: str) -> Tuple[Optional[str], Optional
     except Exception as e:
         LOGGER.debug("Failed to get dates from SQLite: %s", e)
         return None, None, None
+
+
+# === CLI implementation ===
+
+
+class Args(BaseModel):
+    chunk_size: int = DEFAULT_CHUNK_SIZE
+
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(
+        description="""\
+            Create SQLite DB for BioProject date information.
+            The actual date information is retrieved from PostgreSQL and stored in an SQLite database.
+            """
+    )
+
+    parser.add_argument(
+        "--work-dir",
+        help=f"""\
+            The base directory where the script outputs are stored.
+            By default, it is set to $PWD/ddbj_search_converter_results.
+            The resulting SQLite file will be stored in {{work_dir}}/{DB_FILE_NAME}.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--postgres-url",
+        help="""\
+            The PostgreSQL connection URL used to retrieve BioProject date information.
+            The format is 'postgresql://{{username}}:{{password}}@{{host}}:{{port}}'.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--chunk-size",
+        help="The number of records to fetch from PostgreSQL at a time. Default is {DEFAULT_CHUNK_SIZE}.",
+        nargs="?",
+        type=int,
+        default=DEFAULT_CHUNK_SIZE,
+    )
+    parser.add_argument(
+        "--debug",
+        help="Enable debug mode.",
+        action="store_true",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
+    config = get_config()
+    if parsed_args.work_dir is not None:
+        config.work_dir = Path(parsed_args.work_dir)
+        config.work_dir.mkdir(parents=True, exist_ok=True)
+    if parsed_args.postgres_url is not None:
+        config.postgres_url = parsed_args.postgres_url
+    if parsed_args.debug:
+        config.debug = True
+
+    return config, Args(chunk_size=parsed_args.chunk_size)
+
+
+def main() -> None:
+    LOGGER.info("Creating SQLite DB for BioProject date information")
+    config, args = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
+    LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
+
+    init_sqlite_db(config)
+    for records in fetch_data_from_postgres(config, args.chunk_size):
+        store_data_to_sqlite(config, records)
+
+    LOGGER.info("Completed. Saved to %s", config.work_dir.joinpath(DB_FILE_NAME))
+
+
+if __name__ == "__main__":
+    main()

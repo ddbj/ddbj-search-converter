@@ -36,15 +36,11 @@ tests = [
     "types-xmltodict",
 ]
 
-# [project.scripts]
-# create_accession_db = "ddbj_search_converter.dblink.create_accession_db:main"
-# create_dblink_db = "ddbj_search_converter.dblink.create_dblink_db:main"
-# bp_xml2jsonl = "ddbj_search_converter.bioproject.bp_xml2jsonl:main"
-# bp_split_jsonl = "ddbj_search_converter.bioproject.bp_split_jsonl:main"
-# bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
-# bs_xml2jsonl = "ddbj_search_converter.biosample.bs_xml2jsonl:main"
-# bs_split_jsonl = "ddbj_search_converter.biosample.bs_split_jsonl:main"
-# bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+[project.scripts]
+create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
+create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
+create_ddbj_dblink_db = "ddbj_search_converter.cache_db.ddbj_dblink:main"
+create_sra_accessions_db = "ddbj_search_converter.cache_db.sra_accessions:main"
 
 [tool.setuptools]
 packages = [

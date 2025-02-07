@@ -8,22 +8,34 @@
     - queue を使って、ある程度固めて insert する
     - relation を作る部分は、並列化しても多分、律速になると思われる
     - それより、メンテナンス性などを上げておく
+- どの accessions_tab_file を使うかの logic
+    - まず、config.py における DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_BASE_PATH がある
+        - 日時 batch では、これを元に find して、使用されると思われる
+    - 引数で --sra-accessions-tab-file が指定されている場合は、それを使用する
+        - 主に debug 用途
+    - file が指定されず、--download が指定されている場合は、download してきて、それを使用する
 """
+import argparse
+import datetime
+import sys
 from collections import deque
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Deque, Dict, Generator, List, Literal, Tuple
 
 import httpx
+from pydantic import BaseModel
 from sqlalchemy import String, create_engine, insert
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from ddbj_search_converter.config import LOGGER, Config
+from ddbj_search_converter.config import (LOGGER, Config, get_config,
+                                          set_logging_level)
 
 # SRA_ACCESSIONS_FILE_URL = "ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab"
 SRA_ACCESSIONS_FILE_URL = "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab"
 SRA_ACCESSIONS_FILE_NAME = "SRA_Accessions.tab"
 DB_FILE_NAME = "sra_accessions.sqlite"
+DEFAULT_CHUNK_SIZE = 10000
 
 
 # === Models ===
@@ -138,7 +150,7 @@ def init_db(config: Config, overwrite: bool = True) -> None:
 
     engine = create_engine(
         f"sqlite:///{db_file_path}",
-        echo=config.debug,
+        # echo=config.debug,
     )
     Base.metadata.create_all(engine)
     engine.dispose()
@@ -148,7 +160,7 @@ def init_db(config: Config, overwrite: bool = True) -> None:
 def get_session(config: Config) -> Generator[Session, None, None]:
     engine = create_engine(
         f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}",
-        echo=config.debug,
+        # echo=config.debug,
     )
     with Session(engine) as session:
         yield session
@@ -193,7 +205,7 @@ def _insert_data(config: Config, table_name: TableNames, data: Deque[Tuple[str, 
             raise
 
 
-def store_data(config: Config, sra_accessions_tab_file: Path, chunk_size: int = 10000) -> None:
+def store_data(config: Config, sra_accessions_tab_file: Path, chunk_size: int = DEFAULT_CHUNK_SIZE) -> None:
     """\
     - 行の Type（STUDY, EXPERIMENT, SAMPLE, RUN, ANALYSIS, SUBMISSION）ごとテーブルを生成する
     - relation は詳細表示に利用することを想定し、直接の検索では無いため status が live 以外は store しない
@@ -260,3 +272,125 @@ def store_data(config: Config, sra_accessions_tab_file: Path, chunk_size: int = 
     for table_name, queue in queues.items():
         if queue:
             _insert_data(config, table_name, queue)
+
+
+def find_latest_sra_accessions_tab_file(config: Config) -> Path:
+    """\
+    - スパコン上の SRA_Accessions.tab file の位置として、/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions 以下に存在する
+    - `{year}/{month}/SRA_Accessions.tab.{yyyymmdd}` という path で保存されている
+    - Today から遡って、最初に見つかったファイルを返す
+    """
+    today = datetime.date.today()
+    for days in range(90):  # Search for the last 90 days
+        check_date = today - datetime.timedelta(days=days)
+        year, month, yyyymmdd = check_date.strftime("%Y"), check_date.strftime("%m"), check_date.strftime("%Y%m%d")
+        sra_accessions_tab_file_path = config.dblink_base_path.joinpath(f"{year}/{month}/SRA_Accessions.tab.{yyyymmdd}")
+        if sra_accessions_tab_file_path.exists():
+            return sra_accessions_tab_file_path
+
+    raise FileNotFoundError("SRA_Accessions.tab file not found in the last 90 days")
+
+# === CLI implementation ===
+
+
+class Args(BaseModel):
+    chunk_size: int = DEFAULT_CHUNK_SIZE
+    download: bool = False
+
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(
+        description="""\
+            Create SQLite DB for SRA Accessions information.
+            The SRA_Accessions.tab file contains id relations between accessions.
+            """
+    )
+
+    parser.add_argument(
+        "--work-dir",
+        help=f"""\
+            The base directory where the script outputs are stored.
+            By default, it is set to $PWD/ddbj_search_converter_results.
+            The resulting SQLite file will be stored in {{work_dir}}/{DB_FILE_NAME}.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--sra-accessions-tab-file",
+        help="""\
+            The path to the SRA_Accessions.tab file.
+            If not specified, the file will be found in the DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_BASE_PATH directory.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--download",
+        help="""\
+            Download the SRA_Accessions.tab file from the NCBI FTP server.
+            Download to the work directory and use it.
+        """,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--chunk-size",
+        help=f"The number of records to store in a single transaction. Default is {DEFAULT_CHUNK_SIZE}.",
+        nargs="?",
+        type=int,
+        default=DEFAULT_CHUNK_SIZE,
+    )
+    parser.add_argument(
+        "--debug",
+        help="Enable debug mode.",
+        action="store_true",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
+    config = get_config()
+    if parsed_args.work_dir is not None:
+        config.work_dir = Path(parsed_args.work_dir)
+        config.work_dir.mkdir(parents=True, exist_ok=True)
+
+    # ここの logic は、この file の docstring に記載されている通り
+    if parsed_args.sra_accessions_tab_file is not None:
+        sra_accessions_tab_file = Path(parsed_args.sra_accessions_tab_file)
+        if not sra_accessions_tab_file.exists():
+            raise FileNotFoundError(f"SRA_Accessions.tab file not found: {sra_accessions_tab_file}")
+        config.sra_accessions_tab_file_path = sra_accessions_tab_file
+    else:
+        if parsed_args.download:
+            # Download the SRA_Accessions.tab file later
+            pass
+        else:
+            if config.sra_accessions_tab_base_path is not None:
+                config.sra_accessions_tab_file_path = find_latest_sra_accessions_tab_file(config)
+            else:
+                raise ValueError("SRA_Accessions.tab file path is not specified.")
+
+    if parsed_args.debug:
+        config.debug = True
+
+    return config, Args(chunk_size=parsed_args.chunk_size, download=parsed_args.download)
+
+
+def main() -> None:
+    LOGGER.info("Creating SRA Accessions SQLite DB")
+    config, args = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
+    LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
+    if args.download:
+        LOGGER.info("Downloading SRA_Accessions.tab file")
+        config.sra_accessions_tab_file_path = download_sra_accessions_tab_file(config)
+
+    init_db(config)
+    store_data(config, config.sra_accessions_tab_file_path, args.chunk_size)
+
+    LOGGER.info("Completed. Saved to %s", config.work_dir.joinpath(DB_FILE_NAME))
+
+
+if __name__ == "__main__":
+    main()

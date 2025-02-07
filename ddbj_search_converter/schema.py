@@ -1,6 +1,6 @@
 from typing import Any, List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 # === BioProject ===
 
@@ -94,15 +94,6 @@ class BioProject(BaseModel):
     dateCreated: Optional[str]
     dateModified: Optional[str]
     datePublished: Optional[str]
-
-
-class BioProjectLD(BioProject):
-    context: str = Field(alias="@context")
-    id_: str = Field(alias="@id")
-
-    model_config = ConfigDict(
-        populate_by_name=True
-    )
 
 
 # === BioSample ===

@@ -5,7 +5,7 @@
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from ddbj_search_converter.config import DATE_FORMAT, LOGGER
 
@@ -90,3 +90,19 @@ def find_insert_target_files(latest_dir: Path, prior_dir: Optional[Path]) -> Lis
                 target_files.append(latest_file)
 
     return target_files
+
+
+def format_date(value: Optional[Union[str, datetime]]) -> Optional[str]:
+    if value is None:
+        return None
+    try:
+        if isinstance(value, datetime):
+            return value.strftime(DATE_FORMAT)
+        elif isinstance(value, str):
+            return datetime.fromisoformat(value).strftime(DATE_FORMAT)
+        else:
+            raise ValueError(f"Invalid date format: {value}")
+    except Exception as e:
+        LOGGER.debug("Failed to format datetime %s: %s", value, e)
+
+    return None

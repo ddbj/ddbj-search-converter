@@ -9,6 +9,7 @@ import logging
 import logging.config
 import os
 from pathlib import Path
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -26,14 +27,11 @@ class Config(BaseModel):
     """
     debug: bool = False
     work_dir: Path = WORK_DIR
-    postgres_url: str = "postgresql://const:@at098:54301"  # e.g., postgresql://{username}:{password}@{host}:{port}
-    es_url: str = "http://localhost:9200"
-    # postgres_url
-    # accessions_dir: Path = WORK_DIR.joinpath(f"sra_accessions/{TODAY}")
-    # accessions_db_path: Path = WORK_DIR.joinpath("sra_accessions.sqlite")
-    # process_pool_size: int = 8
-    # dblink_db_path: Path = WORK_DIR.joinpath("ddbj_dblink.sqlite")
-    # dblink_files_base_path: Path = Path("/lustre9/open/shared_data/dblink")
+    postgres_url: str = "postgresql://const:const@at098:54301"  # format is postgresql://{username}:{password}@{host}:{port}
+    es_url: str = "http://ddbj-search-elasticsearch:9200"
+    sra_accessions_tab_base_path: Optional[Path] = None
+    sra_accessions_tab_file_path: Path = WORK_DIR.joinpath("SRA_Accessions.tab")
+    dblink_base_path: Path = Path("/lustre9/open/shared_data/dblink")
 
 
 default_config = Config()
@@ -44,18 +42,19 @@ def get_config() -> Config:
     """\
     notice: This config is generated from default values and environment variables.
     """
+    sra_accessions_tab_base_path: Optional[Path] = None
+    env_sra_accessions_tab_base_path = os.environ.get(f"{ENV_PREFIX}_SRA_ACCESSIONS_TAB_BASE_PATH", None)
+    if env_sra_accessions_tab_base_path is not None:
+        sra_accessions_tab_base_path = Path(env_sra_accessions_tab_base_path)
+
     return Config(
         debug=bool(os.environ.get(f"{ENV_PREFIX}_DEBUG", default_config.debug)),
         work_dir=Path(os.environ.get(f"{ENV_PREFIX}_WORK_DIR", default_config.work_dir)),
         postgres_url=os.environ.get(f"{ENV_PREFIX}_POSTGRES_URL", default_config.postgres_url),
         es_url=os.environ.get(f"{ENV_PREFIX}_ES_URL", default_config.es_url),
-        # sra_accessions_tab_file_path=
-        # accessions_dir=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DIR", default_config.accessions_dir)),
-        # accessions_db_path=Path(os.environ.get(f"{ENV_PREFIX}_ACCESSIONS_DB_PATH", default_config.accessions_db_path)),
-        # process_pool_size=int(os.environ.get(f"{ENV_PREFIX}_PROCESS_POOL_SIZE", default_config.process_pool_size)),
-        # dblink_db_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_DB_PATH", default_config.dblink_db_path)),
-        # dblink_files_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_FILES_BASE_PATH", default_config.dblink_files_base_path)),
-        # es_base_url=os.environ.get(f"{ENV_PREFIX}_ES_BASE_URL", default_config.es_base_url),
+        sra_accessions_tab_base_path=sra_accessions_tab_base_path,
+        sra_accessions_tab_file_path=Path(os.environ.get(f"{ENV_PREFIX}_SRA_ACCESSIONS_TAB_FILE_PATH", default_config.sra_accessions_tab_file_path)),
+        dblink_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_BASE_PATH", default_config.dblink_base_path)),
     )
 
 

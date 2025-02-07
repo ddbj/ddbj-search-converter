@@ -3,20 +3,23 @@
     - /lustre9/open/shared_data/dblink 以下のファイルのこと
     - それぞれ、tsv で、各行が id to id であるとする
 """
+import argparse
+import sys
 from collections import deque
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Deque, Generator, Literal, Tuple
+from typing import Deque, Generator, List, Literal, Tuple
 
+from pydantic import BaseModel
 from sqlalchemy import String, create_engine, insert
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from ddbj_search_converter.config import LOGGER, Config
+from ddbj_search_converter.config import (LOGGER, Config, default_config,
+                                          get_config, set_logging_level)
 
 DB_FILE_NAME = "ddbj_dblink.sqlite"
+DEFAULT_CHUNK_SIZE = 10000
 
-# Config.dblink_base_path として、以下の path を想定している
-# BASE_PATH = /lustre9/open/shared_data/dblink
 SOURCE_FILES = [
     "assembly_genome-bp/assembly_genome2bp.tsv",
     "assembly_genome-bs/assembly_genome2bs.tsv",
@@ -129,7 +132,7 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
 
     engine = create_engine(
         f"sqlite:///{db_file_path}",
-        echo=config.debug,
+        # echo=config.debug,
     )
     Base.metadata.create_all(engine)
     engine.dispose()
@@ -139,7 +142,7 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
 def get_session(config: Config) -> Generator[Session, None, None]:
     engine = create_engine(
         f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}",
-        echo=config.debug,
+        # echo=config.debug,
     )
     with Session(engine) as session:
         yield session
@@ -164,7 +167,7 @@ def _insert_data(config: Config, table_name: TableNames, data: Deque[Tuple[str, 
             raise
 
 
-def store_data(config: Config, source_file: Path, table_name: TableNames, chunk_size: int = 10000) -> None:
+def store_data(config: Config, source_file: Path, table_name: TableNames, chunk_size: int = DEFAULT_CHUNK_SIZE) -> None:
     queue: Deque[Tuple[str, str]] = deque()
 
     with source_file.open("r", encoding="utf-8") as f:
@@ -181,3 +184,87 @@ def store_data(config: Config, source_file: Path, table_name: TableNames, chunk_
 
     if queue:
         _insert_data(config, table_name, queue)
+
+
+# === CLI implementation ===
+
+
+class Args(BaseModel):
+    chunk_size: int = DEFAULT_CHUNK_SIZE
+
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(
+        description="""\
+            Create SQLite DB for DDBJ dblink information.
+            The dblink files are stored as TSV files and each line is an id to id relation.
+            """
+    )
+
+    parser.add_argument(
+        "--work-dir",
+        help=f"""\
+            The base directory where the script outputs are stored.
+            By default, it is set to $PWD/ddbj_search_converter_results.
+            The resulting SQLite file will be stored in {{work_dir}}/{DB_FILE_NAME}.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--dblink-base-path",
+        help=f"""\
+            The base directory where the dblink files are stored.
+            By default, it is set to {default_config.dblink_base_path}.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--chunk-size",
+        help=f"The number of records to store in a single transaction. Default is {DEFAULT_CHUNK_SIZE}.",
+        nargs="?",
+        type=int,
+        default=DEFAULT_CHUNK_SIZE,
+    )
+    parser.add_argument(
+        "--debug",
+        help="Enable debug mode.",
+        action="store_true",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
+    config = get_config()
+    if parsed_args.work_dir is not None:
+        config.work_dir = Path(parsed_args.work_dir)
+        config.work_dir.mkdir(parents=True, exist_ok=True)
+    if parsed_args.dblink_base_path is not None:
+        config.dblink_base_path = Path(parsed_args.dblink_base_path)
+        if not config.dblink_base_path.is_dir():
+            raise ValueError(f"dblink_base_path is not a directory: {config.dblink_base_path}")
+    if parsed_args.debug:
+        config.debug = True
+
+    return config, Args(chunk_size=parsed_args.chunk_size)
+
+
+def main() -> None:
+    LOGGER.info("Creating SQLite DB for DDBJ dblink information")
+    config, args = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
+    LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
+
+    init_sqlite_db(config)
+    for source_file in [config.dblink_base_path.joinpath(f) for f in SOURCE_FILES]:
+        table_name = source_file.stem
+        LOGGER.info("Storing data from %s to %s", source_file, table_name)
+        store_data(config, source_file, source_file.stem, args.chunk_size)  # type: ignore
+
+    LOGGER.info("Completed. Saved to %s", config.work_dir.joinpath(DB_FILE_NAME))
+
+
+if __name__ == "__main__":
+    main()
