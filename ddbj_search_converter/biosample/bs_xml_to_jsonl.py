@@ -2,22 +2,27 @@
 - BioSample XML を JSON-Lines に変換する
 - 生成される JSON-Lines は 1 line が 1 BioSample Accession に対応する
 """
+import argparse
+import sys
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import xmltodict
 from lxml import etree
+from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bs_date import get_dates as get_bs_dates
 from ddbj_search_converter.cache_db.bs_date import \
     get_session as get_bs_date_session
 from ddbj_search_converter.cache_db.fusion_getter import get_xrefs
-from ddbj_search_converter.config import LOGGER, Config
+from ddbj_search_converter.config import (BS_JSONL_DIR_NAME, LOGGER, TODAY,
+                                          Config, get_config,
+                                          set_logging_level)
 from ddbj_search_converter.schema import (Attribute, BioSample, Distribution,
                                           Model, Organism, Package, Xref)
 
-BATCH_SIZE = 2000
+DEFAULT_BATCH_SIZE = 2000
 DDBJ_JSONL_FILE_NAME = "ddbj_biosample.jsonl"
 COMMON_JSONL_FILE_NAME = "biosample_{n}.jsonl"
 
@@ -27,7 +32,7 @@ def xml_to_jsonl(
     xml_file: Path,
     is_ddbj: bool,
     output_dir: Path,
-    batch_size: int = BATCH_SIZE,
+    batch_size: int = DEFAULT_BATCH_SIZE,
 ) -> None:
     context = etree.iterparse(xml_file, tag="BioSample", recover=True)
     docs: List[BioSample] = []
@@ -55,7 +60,7 @@ def xml_to_jsonl(
                     distribution=[Distribution(
                         type="DataDownload",
                         encodingFormat="JSON",
-                        contentUrl=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json"
+                        contentUrl=f"https://ddbj.nig.ac.jp/search/entry/biosample/{accession}.json"
                     )],
                     isPartOf="BioSample",
                     type="biosample",
@@ -284,3 +289,104 @@ def clear_element(element: Any) -> None:
                 LOGGER.debug("Failed to clear element: %s", e)
     except Exception as e:
         LOGGER.debug("Failed to clear element: %s", e)
+
+
+# === CLI implementation ===
+
+
+class Args(BaseModel):
+    xml_file: Path
+    is_ddbj: bool = False
+    batch_size: int = DEFAULT_BATCH_SIZE
+
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(
+        description="""\
+            Convert BioSample XML to JSON-Lines
+        """
+    )
+
+    parser.add_argument(
+        "--xml-file",
+        help="""\
+            BioSample XML file path (Required).
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--work-dir",
+        help=f"""\
+            The base directory where the script outputs are stored.
+            By default, it is set to $PWD/ddbj_search_converter_results.
+            The resulting JSON-Lines files will be stored in {{work_dir}}/{BS_JSONL_DIR_NAME}/{{date}}.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--is-ddbj",
+        action="store_true",
+        help="""\
+            Whether the input xml file is ddbj or not.
+            This bool determines the processing branch.
+        """,
+    )
+    parser.add_argument(
+        "--batch-size",
+        help=f"The number of records to store in a single JSON-Lines file. Default is {DEFAULT_BATCH_SIZE}",
+        nargs="?",
+        type=int,
+        default=DEFAULT_BATCH_SIZE,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
+    config = get_config()
+    if parsed_args.xml_file is None:
+        raise Exception("Argument '--xml-file' is required.")
+    xml_file = Path(parsed_args.xml_file).resolve()
+    if xml_file.exists() is False:
+        raise FileNotFoundError(f"File not found: {xml_file}")
+    if parsed_args.work_dir is not None:
+        config.work_dir = Path(parsed_args.work_dir)
+        config.work_dir.mkdir(parents=True, exist_ok=True)
+    if parsed_args.debug:
+        config.debug = True
+
+    return config, Args(
+        xml_file=xml_file,
+        is_ddbj=parsed_args.is_ddbj,
+        batch_size=parsed_args.batch_size,
+    )
+
+
+def main() -> None:
+    LOGGER.info("Start converting BioSample XML to JSON-Lines")
+    config, args = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
+    LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
+
+    output_dir = config.work_dir.joinpath(BS_JSONL_DIR_NAME).joinpath(TODAY)
+    LOGGER.info("Output directory: %s", output_dir)
+    xml_to_jsonl(
+        config=config,
+        xml_file=args.xml_file,
+        is_ddbj=args.is_ddbj,
+        output_dir=output_dir,
+        batch_size=args.batch_size,
+    )
+
+    LOGGER.info("Finished converting BioSample XML to JSON-Lines")
+
+
+if __name__ == "__main__":
+    main()

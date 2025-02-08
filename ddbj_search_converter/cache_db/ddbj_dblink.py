@@ -198,7 +198,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         description="""\
             Create SQLite DB for DDBJ dblink information.
             The dblink files are stored as TSV files and each line is an id to id relation.
-            """
+        """
     )
 
     parser.add_argument(

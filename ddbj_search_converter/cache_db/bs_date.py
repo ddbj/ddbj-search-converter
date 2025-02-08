@@ -216,7 +216,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         description="""\
             Create SQLite DB for BioSample date information.
             The actual date information is retrieved from PostgreSQL and stored in an SQLite database.
-            """
+        """
     )
 
     parser.add_argument(

@@ -7,10 +7,7 @@
 - 生成される JSON-Lines は 1 line が 1 BioProject Accession に対応する
 """
 import argparse
-import csv
-import json
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
@@ -22,84 +19,16 @@ from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
 from ddbj_search_converter.cache_db.bp_date import \
     get_session as get_bp_date_session
 from ddbj_search_converter.cache_db.fusion_getter import get_xrefs
-from ddbj_search_converter.config import (LOGGER, Config, default_config,
-                                          get_config, set_logging_level)
+from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, TODAY,
+                                          Config, get_config,
+                                          set_logging_level)
 from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           ExternalLink, Grant, Organism,
                                           Organization, Publication, Xref)
 
-BATCH_SIZE = 2000
+DEFAULT_BATCH_SIZE = 2000
 DDBJ_JSONL_FILE_NAME = "ddbj_bioproject.jsonl"
 COMMON_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
-
-# from ddbj_search_converter.utils import bulk_insert_to_es
-
-
-# def parse_args(args: List[str]) -> Tuple[Config, Args]:
-#     parser = argparse.ArgumentParser(description="Convert BioProject XML to JSON-Lines")
-
-#     parser.add_argument(
-#         "xml_file",
-#         help="BioProject XML file path",
-#     )
-#     parser.add_argument(
-#         "output_file",
-#         help="Output JSON-Lines file path, if not specified, it will not output to a file",
-#         nargs="?",
-#         default=None,
-#     )
-#     parser.add_argument(
-#         "--accessions-tab-file",
-#         help="DDBJ accessions.tab file path",
-#         nargs="?",
-#         default=None,
-#     )
-#     parser.add_argument(
-#         "--debug",
-#         action="store_true",
-#         help="Enable debug mode",
-#     )
-
-#     parsed_args = parser.parse_args(args)
-
-#     # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
-#     config = get_config()
-#     if parsed_args.es_base_url != default_config.es_base_url:
-#         config.es_base_url = parsed_args.es_base_url
-#     if parsed_args.debug:
-#         config.debug = parsed_args.debug
-
-#     # Args の型変換と validation
-#     xml_file = Path(parsed_args.xml_file)
-#     if not xml_file.exists():
-#         LOGGER.error("Input BioProject XML file not found: %s", xml_file)
-#         sys.exit(1)
-
-#     output_file = None
-#     if parsed_args.output_file is None:
-#         if parsed_args.bulk_es is False:
-#             LOGGER.error("Output file path is required if not bulk inserting to Elasticsearch")
-#             sys.exit(1)
-#     else:
-#         output_file = Path(parsed_args.output_file)
-#         if output_file.exists():
-#             LOGGER.info("Output file %s already exists, will overwrite", output_file)
-#             output_file.unlink()
-
-#     accessions_tab_file = None
-#     if parsed_args.accessions_tab_file is not None:
-#         accessions_tab_file = Path(parsed_args.accessions_tab_file)
-#         if not accessions_tab_file.exists():
-#             LOGGER.error("DDBJ_Accessions.tab file not found: %s", accessions_tab_file)
-#             sys.exit(1)
-
-#     return (config, Args(
-#         xml_file=xml_file,
-#         output_file=output_file,
-#         accessions_tab_file=accessions_tab_file,
-#         bulk_es=parsed_args.bulk_es,
-#         batch_size=parsed_args.batch_size,
-#     ))
 
 
 def xml_to_jsonl(
@@ -107,7 +36,7 @@ def xml_to_jsonl(
     xml_file: Path,
     is_ddbj: bool,
     output_dir: Path,
-    batch_size: int = BATCH_SIZE,
+    batch_size: int = DEFAULT_BATCH_SIZE,
 ) -> None:
     context = etree.iterparse(xml_file, tag="Package", recover=True)
     docs: List[BioProject] = []
@@ -598,32 +527,102 @@ def clear_element(element: Any) -> None:
         LOGGER.debug("Failed to clear element: %s", e)
 
 
-# def main() -> None:
-#     config, args = parse_args(sys.argv[1:])
-#     set_logging_level(config.debug)
-#     LOGGER.info("Start converting BioProject XML %s to JSON-Lines", args.xml_file)
-#     LOGGER.info("Config: %s", config.model_dump())
-#     LOGGER.info("Args: %s", args.model_dump())
+# === CLI implementation ===
 
-#     is_ddbj = False
-#     accessions_data = {}
-#     if CORE_FILENAME_PATTERN in args.xml_file.name:
-#         if args.accessions_tab_file is None:
-#             LOGGER.error("Your input xml file seems to be ddbj_core, so you need to specify accessions_tab_file")
-#             sys.exit(1)
-#         is_ddbj = True
-#         accessions_data = parse_accessions_tab_file(args.accessions_tab_file)
 
-#     xml2jsonl(
-#         args.xml_file,
-#         args.output_file,
-#         args.bulk_es,
-#         config.es_base_url,
-#         is_ddbj,
-#         accessions_data,
-#         args.batch_size,
-#     )
+class Args(BaseModel):
+    xml_file: Path
+    is_ddbj: bool = False
+    batch_size: int = DEFAULT_BATCH_SIZE
 
-#     LOGGER.info("Finished converting BioProject XML %s to JSON-Lines", args.xml_file)
-# if __name__ == "__main__":
-#     main()
+
+def parse_args(args: List[str]) -> Tuple[Config, Args]:
+    parser = argparse.ArgumentParser(
+        description="""\
+            Convert BioProject XML to JSON-Lines
+        """
+    )
+
+    parser.add_argument(
+        "--xml-file",
+        help="""\
+            BioProject XML file path (Required).
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--work-dir",
+        help=f"""\
+            The base directory where the script outputs are stored.
+            By default, it is set to $PWD/ddbj_search_converter_results.
+            The resulting JSON-Lines files will be stored in {{work_dir}}/{BP_JSONL_DIR_NAME}/{{date}}.
+        """,
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
+        "--is-ddbj",
+        action="store_true",
+        help="""\
+            Whether the input xml file is ddbj or not.
+            This bool determines the processing branch.
+        """,
+    )
+    parser.add_argument(
+        "--batch-size",
+        help=f"The number of records to store in a single JSON-Lines file. Default is {DEFAULT_BATCH_SIZE}",
+        nargs="?",
+        type=int,
+        default=DEFAULT_BATCH_SIZE,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode",
+    )
+
+    parsed_args = parser.parse_args(args)
+
+    # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
+    config = get_config()
+    if parsed_args.xml_file is None:
+        raise Exception("Argument '--xml-file' is required.")
+    xml_file = Path(parsed_args.xml_file).resolve()
+    if xml_file.exists() is False:
+        raise FileNotFoundError(f"File not found: {xml_file}")
+    if parsed_args.work_dir is not None:
+        config.work_dir = Path(parsed_args.work_dir)
+        config.work_dir.mkdir(parents=True, exist_ok=True)
+    if parsed_args.debug:
+        config.debug = True
+
+    return config, Args(
+        xml_file=xml_file,
+        is_ddbj=parsed_args.is_ddbj,
+        batch_size=parsed_args.batch_size,
+    )
+
+
+def main() -> None:
+    LOGGER.info("Start converting BioProject XML to JSON-Lines")
+    config, args = parse_args(sys.argv[1:])
+    set_logging_level(config.debug)
+    LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
+    LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
+
+    output_dir = config.work_dir.joinpath(BP_JSONL_DIR_NAME).joinpath(TODAY)
+    LOGGER.info("Output directory: %s", output_dir)
+    xml_to_jsonl(
+        config=config,
+        xml_file=args.xml_file,
+        is_ddbj=args.is_ddbj,
+        output_dir=output_dir,
+        batch_size=args.batch_size,
+    )
+
+    LOGGER.info("Finished converting BioProject XML to JSON-Lines")
+
+
+if __name__ == "__main__":
+    main()

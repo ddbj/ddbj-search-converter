@@ -41,6 +41,10 @@ create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
 create_ddbj_dblink_db = "ddbj_search_converter.cache_db.ddbj_dblink:main"
 create_sra_accessions_db = "ddbj_search_converter.cache_db.sra_accessions:main"
+bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
+bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
+bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
+bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
 
 [tool.setuptools]
 packages = [
@@ -75,5 +79,6 @@ disable = [
     "R1705", # Unnecessary "else" after "return"
     "W0511", # Fixme
     "W0718", # Broad exception caught
+    "W0719", # Exception type of Exception
     "I1101", # c-extension-no-member
 ]

@@ -303,7 +303,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         description="""\
             Create SQLite DB for SRA Accessions information.
             The SRA_Accessions.tab file contains id relations between accessions.
-            """
+        """
     )
 
     parser.add_argument(
