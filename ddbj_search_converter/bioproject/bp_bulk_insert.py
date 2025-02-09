@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from elasticsearch import Elasticsearch, helpers
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import (LOGGER, Config, get_config,
@@ -16,6 +15,7 @@ from ddbj_search_converter.config import (LOGGER, Config, get_config,
 from ddbj_search_converter.schema import BioProject
 from ddbj_search_converter.utils import (find_insert_target_files,
                                          get_recent_dirs)
+from elasticsearch import Elasticsearch, helpers
 
 
 def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:

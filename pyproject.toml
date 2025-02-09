@@ -45,6 +45,7 @@ bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
 bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
 bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
 bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 
 [tool.setuptools]
 packages = [
@@ -52,7 +53,11 @@ packages = [
     "ddbj_search_converter.bioproject",
     "ddbj_search_converter.biosample",
     "ddbj_search_converter.cache_db",
+    "ddbj_search_converter.es_mappings",
 ]
+
+[tool.setuptools.package-data]
+ddbj_search_converter = ["es_mappings/*.json"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"

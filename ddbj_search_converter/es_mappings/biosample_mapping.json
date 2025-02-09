@@ -1,0 +1,135 @@
+{
+  "mappings": {
+    "properties": {
+      "identifier": {
+        "type": "keyword"
+      },
+      "properties": {
+        "type": "object",
+        "enabled": false
+      },
+      "distribution": {
+        "type": "nested",
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "encodingFormat": {
+            "type": "keyword"
+          },
+          "contentUrl": {
+            "type": "keyword"
+          }
+        }
+      },
+      "isPartOf": {
+        "type": "keyword"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "text"
+      },
+      "url": {
+        "type": "keyword"
+      },
+      "organism": {
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text"
+          }
+        }
+      },
+      "title": {
+        "type": "text"
+      },
+      "description": {
+        "type": "text"
+      },
+      "attributes": {
+        "type": "nested",
+        "properties": {
+          "attribute_name": {
+            "type": "keyword"
+          },
+          "display_name": {
+            "type": "keyword"
+          },
+          "harmonized_name": {
+            "type": "keyword"
+          },
+          "content": {
+            "type": "keyword"
+          }
+        }
+      },
+      "model": {
+        "type": "nested",
+        "properties": {
+          "name": {
+            "type": "keyword"
+          }
+        }
+      },
+      "package": {
+        "type": "nested",
+        "properties": {
+          "name": {
+            "type": "keyword"
+          },
+          "display_name": {
+            "type": "keyword"
+          }
+        }
+      },
+      "dbXref": {
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        }
+      },
+      "sameAs": {
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        }
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "visibility": {
+        "type": "keyword"
+      },
+      "dateCreated": {
+        "type": "date"
+      },
+      "dateModified": {
+        "type": "date"
+      },
+      "datePublished": {
+        "type": "date"
+      }
+    }
+  }
+}

@@ -1,5 +1,15 @@
 # ddbj-search-converter
 
+## Dev 環境 set up メモ
+
+```
+docker network create ddbj-search-network-dev
+mkdir -p ./elasticsearch/data
+mkdir -p ./elasticsearch/logs
+```
+
+---
+
 - [DDBJ-Search](https://ddbj.nig.ac.jp) のデータ投入用 script 群。
 `biosample_set.xml` や `bioproject.xml` といった XML file を JSON-Lines (ES bulk data file) に変換し、Elasticsearch に投入する。
 

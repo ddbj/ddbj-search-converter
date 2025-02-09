@@ -3,7 +3,7 @@
 - その他、共通化できそうな処理をまとめる
 """
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
@@ -93,13 +93,17 @@ def find_insert_target_files(latest_dir: Path, prior_dir: Optional[Path]) -> Lis
 
 
 def format_date(value: Optional[Union[str, datetime]]) -> Optional[str]:
+    """\
+    - to ISO 8601 string
+    """
     if value is None:
         return None
     try:
         if isinstance(value, datetime):
-            return value.strftime(DATE_FORMAT)
+            return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         elif isinstance(value, str):
-            return datetime.fromisoformat(value).strftime(DATE_FORMAT)
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
             raise ValueError(f"Invalid date format: {value}")
     except Exception as e:
