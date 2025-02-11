@@ -336,7 +336,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--batch-size",
         help=f"The number of records to store in a single JSON-Lines file. Default is {DEFAULT_BATCH_SIZE}",
-        nargs="?",
         type=int,
         default=DEFAULT_BATCH_SIZE,
     )

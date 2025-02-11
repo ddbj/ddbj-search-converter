@@ -251,7 +251,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--chunk-size",
         help="The number of records to fetch from PostgreSQL at a time. Default is {DEFAULT_CHUNK_SIZE}.",
-        nargs="?",
         type=int,
         default=DEFAULT_CHUNK_SIZE,
     )

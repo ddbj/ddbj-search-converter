@@ -354,7 +354,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--chunk-size",
         help=f"The number of records to store in a single transaction. Default is {DEFAULT_CHUNK_SIZE}.",
-        nargs="?",
         type=int,
         default=DEFAULT_CHUNK_SIZE,
     )

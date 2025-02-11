@@ -172,13 +172,18 @@ def count_records(config: Config) -> int:
             return -1
 
 
-def get_dates(session: Session, accession: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def get_dates(accession: str, session: Optional[Session] = None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """\
     Return (dateCreated, dateModified, datePublished)
     """
     try:
         query = select(Record).where(Record.accession == accession)
-        res = session.execute(query).fetchone()
+        if session is None:
+            with get_session(get_config()) as session:
+                res = session.execute(query).fetchone()
+        else:
+            res = session.execute(query).fetchone()
+
         if res is None:
             return None, None, None
         return res.date_created, res.date_modified, res.date_published
@@ -224,7 +229,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--chunk-size",
         help="The number of records to fetch from PostgreSQL at a time. Default is {DEFAULT_CHUNK_SIZE}.",
-        nargs="?",
         type=int,
         default=DEFAULT_CHUNK_SIZE,
     )

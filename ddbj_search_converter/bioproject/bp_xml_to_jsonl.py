@@ -5,9 +5,14 @@
     - それ以外 (/usr/local/resources/bioproject/bioproject.xml) の場合は、work_dir/${date}/bioproject_${n}.jsonl に BATCH_SIZE (2000) 件ずつ出力
         - -> ddbj_xml と common_xml という呼び方をすることにする
 - 生成される JSON-Lines は 1 line が 1 BioProject Accession に対応する
+- 並列化処理について:
+    - is_ddbj の場合は、並列化されない
+    - それ以外の場合は、先に xml を分割してから、並列化して処理する
 """
 import argparse
+import shutil
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
@@ -16,8 +21,6 @@ from lxml import etree
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
-from ddbj_search_converter.cache_db.bp_date import \
-    get_session as get_bp_date_session
 from ddbj_search_converter.cache_db.fusion_getter import get_xrefs
 from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, TODAY,
                                           Config, get_config,
@@ -27,6 +30,9 @@ from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           Organization, Publication, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
+DEFAULT_PARALLEL_NUM = 32
+TMP_XML_DIR_NAME = "tmp_xml"
+TMP_XML_FILE_NAME = "bioproject_{n}.xml"
 DDBJ_JSONL_FILE_NAME = "ddbj_bioproject.jsonl"
 COMMON_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
 
@@ -37,81 +43,148 @@ def xml_to_jsonl(
     is_ddbj: bool,
     output_dir: Path,
     batch_size: int = DEFAULT_BATCH_SIZE,
+    parallel_num: int = DEFAULT_PARALLEL_NUM,
 ) -> None:
+    if is_ddbj is True:
+        jsonl_file = output_dir.joinpath(DDBJ_JSONL_FILE_NAME)
+        xml_to_jsonl_worker(config, xml_file, is_ddbj, jsonl_file, batch_size)
+        return
+
+    # common xml の場合は、先に xml を分割してから、並列化して処理する
+    tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
+    if tmp_xml_dir.exists():
+        shutil.rmtree(tmp_xml_dir)
+    tmp_xml_dir.mkdir(parents=True, exist_ok=True)
+    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, batch_size)
+    jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
+    with ProcessPoolExecutor(max_workers=parallel_num) as executor:
+        executor.map(
+            xml_to_jsonl_worker,
+            [config] * len(tmp_xml_files),
+            tmp_xml_files,
+            [False] * len(tmp_xml_files),
+            jsonl_files,
+            [batch_size] * len(tmp_xml_files),
+        )
+
+    # 一時ファイルを削除
+    shutil.rmtree(tmp_xml_dir)
+
+
+def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> List[Path]:
+    head = b'<?xml version="1.0" encoding="UTF-8"?>\n<PackageSet>\n'
+    tail = b'</PackageSet>'
+
+    output_files: List[Path] = []
+
+    context = etree.iterparse(xml_file, tag="Package", recover=True)
+    batch_buffer: List[bytes] = []
+    batch_count = 0
+    file_count = 1
+    for _event, element in context:
+        if element.tag == "Package":
+            continue
+
+        batch_buffer.append(etree.tostring(element, encoding="utf-8"))
+
+        batch_count += 1
+        if batch_count >= batch_size:
+            output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
+            output_files.append(output_file)
+            with output_file.open(mode="wb", encoding="utf-8") as f:
+                f.write(head)
+                f.writelines(batch_buffer)
+                f.write(tail)
+            batch_count = 0
+            file_count += 1
+            batch_buffer = []
+
+        element.clear()
+
+    if len(batch_buffer) > 0:
+        output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
+        output_files.append(output_file)
+        with output_file.open(mode="wb", encoding="utf-8") as f:
+            f.write(head)
+            f.writelines(batch_buffer)
+            f.write(tail)
+
+    return output_files
+
+
+def xml_to_jsonl_worker(config: Config, xml_file: Path, is_ddbj: bool, jsonl_file: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
     context = etree.iterparse(xml_file, tag="Package", recover=True)
     docs: List[BioProject] = []
     batch_count = 0
-    file_count = 1
-    with get_bp_date_session(config) as session:
-        for _events, element in context:
-            if element.tag == "Package":
-                # Package tag 単位で xml を変換する
-                # center が指定されている場合は指定された center のデータのみ変換する（ddbjのみ対応）
-                accession = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["accession"]
-                xml_str = etree.tostring(element)
-                metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-                project = metadata["Package"]["Project"]
+    for _events, element in context:
+        if element.tag == "Package":
+            continue
 
-                if is_ddbj:
-                    date_created, date_modified, date_published = get_bp_dates(session, accession)
-                else:
-                    date_created, date_modified, date_published = _parse_date(project)
+        bp_instance = xml_element_to_bp_instance(config, element, is_ddbj)
+        docs.append(bp_instance)
 
-                bp_instance = BioProject(
-                    identifier=accession,
-                    properties={"Project": project},
-                    distribution=[Distribution(
-                        type="DataDownload",
-                        encodingFormat="JSON",
-                        contentUrl=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json",
-                    )],
-                    isPartOf="BioProject",
-                    type="bioproject",
-                    objectType=_parse_object_type(project),
-                    name=None,
-                    url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
-                    organism=_parse_organism(accession, project, is_ddbj),
-                    title=_parse_title(accession, project),
-                    description=_parse_description(accession, project),
-                    organization=_parse_and_update_organization(accession, project, is_ddbj),
-                    publication=_parse_and_update_publication(accession, project),
-                    grant=_parse_and_update_grant(accession, project),
-                    externalLink=_parse_external_link(accession, project),
-                    dbXref=get_xrefs(config, accession, "bioproject"),
-                    sameAs=_parse_same_as(accession, project),
-                    status=_parse_status(project, is_ddbj),
-                    visibility="unrestricted-access",
-                    dateCreated=date_created,
-                    dateModified=date_modified,
-                    datePublished=date_published,
-                )
+        batch_count += 1
+        if batch_count >= batch_size:
+            # ddbj 由来の xml など、大量のデータをそのまま処理する場合を考えて、一定数ごとに書き込む
+            write_jsonl(jsonl_file, docs, is_append=True)
+            batch_count = 0
+            docs = []
 
-                # properties の中の object に対して整形を行う
-                _update_prefix(accession, project)
-                _update_locus_tag_prefix(accession, project)
-                _update_local_id(accession, project)
-
-                docs.append(bp_instance)
-
-                batch_count += 1
-                if batch_count >= batch_size:
-                    output_file = output_dir.joinpath(
-                        DDBJ_JSONL_FILE_NAME if is_ddbj else COMMON_JSONL_FILE_NAME.format(n=file_count)
-                    )
-                    write_jsonl(output_file, docs, is_append=is_ddbj)
-                    batch_count = 0
-                    file_count += 1
-                    docs = []
-
-            # メモリリークを防ぐために要素をクリアする
-            clear_element(element)
+        element.clear()
 
     if len(docs) > 0:
-        # 余りの docs の書き込み
-        output_file = output_dir.joinpath(
-            DDBJ_JSONL_FILE_NAME if is_ddbj else COMMON_JSONL_FILE_NAME.format(n=file_count)
-        )
-        write_jsonl(output_file, docs, is_append=is_ddbj)
+        write_jsonl(jsonl_file, docs, is_append=True)
+
+
+def xml_element_to_bp_instance(config: Config, element: Any, is_ddbj: bool) -> BioProject:
+    if element.tag == "Package":
+        raise ValueError("Element tag must be 'Package'")
+
+    xml_str = etree.tostring(element)
+    metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
+    project = metadata["Package"]["Project"]
+    accession = project["ProjectID"]["ArchiveID"]["accession"]
+
+    if is_ddbj:
+        date_created, date_modified, date_published = get_bp_dates(accession)
+    else:
+        date_created, date_modified, date_published = _parse_date(project)
+
+    bp_instance = BioProject(
+        identifier=accession,
+        properties={"Project": project},
+        distribution=[Distribution(
+            type="DataDownload",
+            encodingFormat="JSON",
+            contentUrl=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json",
+        )],
+        isPartOf="BioProject",
+        type="bioproject",
+        objectType=_parse_object_type(project),
+        name=None,
+        url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
+        organism=_parse_organism(accession, project, is_ddbj),
+        title=_parse_title(accession, project),
+        description=_parse_description(accession, project),
+        organization=_parse_and_update_organization(accession, project, is_ddbj),
+        publication=_parse_and_update_publication(accession, project),
+        grant=_parse_and_update_grant(accession, project),
+        externalLink=_parse_external_link(accession, project),
+        dbXref=get_xrefs(config, accession, "bioproject"),
+        sameAs=_parse_same_as(accession, project),
+        status=_parse_status(project, is_ddbj),
+        visibility="unrestricted-access",
+        dateCreated=date_created,
+        dateModified=date_modified,
+        datePublished=date_published,
+    )
+
+    # properties の中の object に対して整形を行う
+    _update_prefix(accession, project)
+    _update_locus_tag_prefix(accession, project)
+    _update_local_id(accession, project)
+
+    return bp_instance
 
 
 def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "UmbrellaBioProject"]:
@@ -554,18 +627,6 @@ def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = Fal
         f.write("\n".join(doc.model_dump_json() for doc in docs))
 
 
-def clear_element(element: Any) -> None:
-    try:
-        element.clear()
-        while element.getprevious() is not None:
-            try:
-                del element.getparent()[0]
-            except Exception as e:
-                LOGGER.debug("Failed to clear element: %s", e)
-    except Exception as e:
-        LOGGER.debug("Failed to clear element: %s", e)
-
-
 # === CLI implementation ===
 
 
@@ -573,6 +634,7 @@ class Args(BaseModel):
     xml_file: Path
     is_ddbj: bool = False
     batch_size: int = DEFAULT_BATCH_SIZE
+    parallel_num: int = 32
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -611,9 +673,14 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--batch-size",
         help=f"The number of records to store in a single JSON-Lines file. Default is {DEFAULT_BATCH_SIZE}",
-        nargs="?",
         type=int,
         default=DEFAULT_BATCH_SIZE,
+    )
+    parser.add_argument(
+        "--parallel-num",
+        help=f"The number of parallel processes to use. Default is {DEFAULT_PARALLEL_NUM}",
+        type=int,
+        default=DEFAULT_PARALLEL_NUM,
     )
     parser.add_argument(
         "--debug",
@@ -640,6 +707,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         xml_file=xml_file,
         is_ddbj=parsed_args.is_ddbj,
         batch_size=parsed_args.batch_size,
+        parallel_num=parsed_args.parallel_num,
     )
 
 
@@ -659,6 +727,7 @@ def main() -> None:
         is_ddbj=args.is_ddbj,
         output_dir=output_dir,
         batch_size=args.batch_size,
+        parallel_num=args.parallel_num,
     )
 
     LOGGER.info("Finished converting BioProject XML to JSON-Lines")
