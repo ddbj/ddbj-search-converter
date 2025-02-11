@@ -14,12 +14,12 @@ FILE_LIST = [
     "policy-dac-relation",
 ]
 TABLE_LIST = [
-    "dataset-policy-relation",
-    "dataset-dac-relation",
-    "dataset-study-relation",
-    "study-dac-relation",
-    "study-policy-relation",
-    "policy-dac-relation"
+    "dataset_policy_relation",
+    "dataset_dac_relation",
+    "dataset_study_relation",
+    "study_dac_relation",
+    "study_policy_relation",
+    "policy_dac_relation"
 ]
 DB_PATH = "~/tasks/sra/resources/jga_link.sqlite"
 parser = argparse.ArgumentParser(description="jga relation file to sqlite")
@@ -112,7 +112,8 @@ def main():
     relations = {}
     for f in FILE_LIST:
         file_name = f"{LOCAL_FILE_PATH}{f}.csv"
-        relations[f] = load_id_set(file_name)
+        new_f = f.replace("-", "_")
+        relations[new_f] = load_id_set(file_name)
 
     dataset_dac, dataset_study = create_dataset_relation(relations)
     create_study_relation(dataset_dac, dataset_study, relations)

@@ -1,12 +1,12 @@
 import sqlite3
 
 TABLE_LIST = [
-    "dataset-policy-relation",
-    "dataset-dac-relation",
-    "dataset-study-relation",
-    "study-dac-relation",
-    "study-policy-relation",
-    "policy-dac-relation"
+    "dataset_policy_relation",
+    "dataset_dac_relation",
+    "dataset_study_relation",
+    "study_dac_relation",
+    "study_policy_relation",
+    "policy_dac_relation"
 ]
 
 # TODO: create_id_relation_tableと同じ処理なため
@@ -33,7 +33,7 @@ def create_table(conn, table_name):
 
 def drop_table(conn, table_name):
     cur = conn.cursor()
-    q = f"DROP TABLE IF EXISTs {table_name}"
+    q = f"DROP TABLE IF EXISTS {table_name};"
     cur.execute(q)
     conn.commit()
 
