@@ -8,14 +8,14 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from elasticsearch import Elasticsearch, helpers
 from pydantic import BaseModel
 
-from ddbj_search_converter.config import (LOGGER, Config, get_config,
-                                          set_logging_level)
+from ddbj_search_converter.config import (BS_JSONL_DIR_NAME, LOGGER, Config,
+                                          get_config, set_logging_level)
 from ddbj_search_converter.schema import BioSample
 from ddbj_search_converter.utils import (find_insert_target_files,
                                          get_recent_dirs)
+from elasticsearch import Elasticsearch, helpers
 
 
 def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:
@@ -28,12 +28,17 @@ def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:
                 if line == "":
                     continue
                 doc = BioSample.model_validate_json(line)
-                yield {"index": {"_index": "biosample"}, "_id": doc.identifier}
-                yield doc.model_dump()
+                yield {
+                    "_op_type": "index",
+                    "_index": "biosample",
+                    "_id": doc.identifier,
+                    "_source": doc.model_dump(by_alias=True),
+                }
 
     failed_docs: List[Dict[str, Any]] = []
 
     for file in jsonl_files:
+        LOGGER.info("Inserting file: %s", file.name)
         # helpers の内部実装的に、500 ずつで bulk insert される
         _success, failed = helpers.bulk(
             es_client,
@@ -144,7 +149,7 @@ def main() -> None:
     LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
 
-    latest_dir, prior_dir = get_recent_dirs(config.work_dir, args.latest_dir, args.prior_dir)
+    latest_dir, prior_dir = get_recent_dirs(config.work_dir.joinpath(BS_JSONL_DIR_NAME), args.latest_dir, args.prior_dir)
     LOGGER.info("Latest dir: %s", latest_dir)
     LOGGER.info("Prior dir: %s", prior_dir)
     if prior_dir is None:

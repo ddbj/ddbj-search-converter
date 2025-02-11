@@ -180,13 +180,18 @@ def get_dates(accession: str, session: Optional[Session] = None) -> Tuple[Option
         query = select(Record).where(Record.accession == accession)
         if session is None:
             with get_session(get_config()) as session:
-                res = session.execute(query).fetchone()
+                res = session.execute(query).scalar_one_or_none()
         else:
-            res = session.execute(query).fetchone()
+            res = session.execute(query).scalar_one_or_none()
 
         if res is None:
             return None, None, None
-        return res.date_created, res.date_modified, res.date_published
+
+        return (
+            getattr(res, "date_created", None),
+            getattr(res, "date_modified", None),
+            getattr(res, "date_published", None),
+        )
     except Exception as e:
         LOGGER.debug("Failed to get dates from SQLite: %s", e)
         return None, None, None

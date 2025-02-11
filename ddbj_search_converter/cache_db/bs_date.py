@@ -199,16 +199,26 @@ def count_records(config: Config) -> int:
             return -1
 
 
-def get_dates(session: Session, accession: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def get_dates(accession: str, session: Optional[Session] = None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """\
     Return (dateCreated, dateModified, datePublished)
     """
     try:
         query = select(Record).where(Record.accession == accession)
-        res = session.execute(query).fetchone()
+        if session is None:
+            with get_session(get_config()) as session:
+                res = session.execute(query).scalar_one_or_none()
+        else:
+            res = session.execute(query).scalar_one_or_none()
+
         if res is None:
             return None, None, None
-        return res.date_created, res.date_modified, res.date_published
+
+        return (
+            getattr(res, "date_created", None),
+            getattr(res, "date_modified", None),
+            getattr(res, "date_published", None),
+        )
     except Exception as e:
         LOGGER.debug("Failed to get dates from SQLite: %s", e)
         return None, None, None

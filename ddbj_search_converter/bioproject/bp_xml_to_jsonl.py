@@ -12,6 +12,7 @@
 import argparse
 import shutil
 import sys
+import traceback
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
@@ -40,35 +41,47 @@ COMMON_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
 def xml_to_jsonl(
     config: Config,
     xml_file: Path,
-    is_ddbj: bool,
     output_dir: Path,
+    is_ddbj: bool,
     batch_size: int = DEFAULT_BATCH_SIZE,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
+    remove_tmp_dir: bool = False,
 ) -> None:
     if is_ddbj is True:
         jsonl_file = output_dir.joinpath(DDBJ_JSONL_FILE_NAME)
-        xml_to_jsonl_worker(config, xml_file, is_ddbj, jsonl_file, batch_size)
+        xml_to_jsonl_worker(config, xml_file, jsonl_file, is_ddbj, batch_size)
         return
 
     # common xml の場合は、先に xml を分割してから、並列化して処理する
     tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
-    if tmp_xml_dir.exists():
-        shutil.rmtree(tmp_xml_dir)
     tmp_xml_dir.mkdir(parents=True, exist_ok=True)
+    LOGGER.info("Splitting XML file: %s", xml_file)
     tmp_xml_files = split_xml(xml_file, tmp_xml_dir, batch_size)
     jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
+
+    LOGGER.info("Starting parallel conversion of XML to JSON Lines. A total of %d JSON Lines files will be generated.", len(tmp_xml_files))
+
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
-        executor.map(
-            xml_to_jsonl_worker,
-            [config] * len(tmp_xml_files),
-            tmp_xml_files,
-            [False] * len(tmp_xml_files),
-            jsonl_files,
-            [batch_size] * len(tmp_xml_files),
-        )
+        futures = [
+            executor.submit(
+                xml_to_jsonl_worker,
+                config,
+                tmp_xml_file,
+                jsonl_file,
+                is_ddbj,
+                batch_size,
+            )
+            for tmp_xml_file, jsonl_file in zip(tmp_xml_files, jsonl_files)
+        ]
+        for future in futures:
+            try:
+                future.result()
+            except Exception as e:
+                LOGGER.error("Failed to convert XML to JSON-Lines: %s", e)
 
     # 一時ファイルを削除
-    shutil.rmtree(tmp_xml_dir)
+    if remove_tmp_dir:
+        shutil.rmtree(tmp_xml_dir)
 
 
 def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> List[Path]:
@@ -79,71 +92,80 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
 
     context = etree.iterparse(xml_file, tag="Package", recover=True)
     batch_buffer: List[bytes] = []
-    batch_count = 0
     file_count = 1
     for _event, element in context:
-        if element.tag == "Package":
+        if element.tag != "Package":
             continue
 
         batch_buffer.append(etree.tostring(element, encoding="utf-8"))
 
-        batch_count += 1
-        if batch_count >= batch_size:
+        # メモリ解放
+        element.clear()
+        while element.getprevious() is not None:
+            del element.getparent()[0]
+
+        if len(batch_buffer) >= batch_size:
             output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
             output_files.append(output_file)
-            with output_file.open(mode="wb", encoding="utf-8") as f:
+            with output_file.open(mode="wb") as f:
                 f.write(head)
                 f.writelines(batch_buffer)
                 f.write(tail)
-            batch_count = 0
             file_count += 1
-            batch_buffer = []
-
-        element.clear()
+            del batch_buffer[:]  # メモリ解放
 
     if len(batch_buffer) > 0:
         output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
         output_files.append(output_file)
-        with output_file.open(mode="wb", encoding="utf-8") as f:
+        with output_file.open(mode="wb") as f:
             f.write(head)
             f.writelines(batch_buffer)
             f.write(tail)
+        del batch_buffer[:]  # メモリ解放
+
+    del context  # メモリ解放
 
     return output_files
 
 
-def xml_to_jsonl_worker(config: Config, xml_file: Path, is_ddbj: bool, jsonl_file: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
+def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
+    LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
+
     context = etree.iterparse(xml_file, tag="Package", recover=True)
     docs: List[BioProject] = []
-    batch_count = 0
     for _events, element in context:
-        if element.tag == "Package":
+        if element.tag != "Package":
             continue
 
         bp_instance = xml_element_to_bp_instance(config, element, is_ddbj)
         docs.append(bp_instance)
 
-        batch_count += 1
-        if batch_count >= batch_size:
-            # ddbj 由来の xml など、大量のデータをそのまま処理する場合を考えて、一定数ごとに書き込む
-            write_jsonl(jsonl_file, docs, is_append=True)
-            batch_count = 0
-            docs = []
-
+        # メモリ解放
         element.clear()
+        while element.getprevious() is not None:
+            del element.getparent()[0]
+
+        if len(docs) >= batch_size:
+            write_jsonl(jsonl_file, docs, is_append=True)
+            del docs[:]  # メモリ解放
 
     if len(docs) > 0:
         write_jsonl(jsonl_file, docs, is_append=True)
+        del docs[:]  # メモリ解放
+
+    del context  # メモリ解放
 
 
 def xml_element_to_bp_instance(config: Config, element: Any, is_ddbj: bool) -> BioProject:
-    if element.tag == "Package":
+    if element.tag != "Package":
         raise ValueError("Element tag must be 'Package'")
 
     xml_str = etree.tostring(element)
     metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
+    del xml_str  # メモリ解放
+
     project = metadata["Package"]["Project"]
-    accession = project["ProjectID"]["ArchiveID"]["accession"]
+    accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
 
     if is_ddbj:
         date_created, date_modified, date_published = get_bp_dates(accession)
@@ -211,6 +233,7 @@ def _parse_organism(accession: str, project: Dict[str, Any], is_ddbj: bool) -> O
         )
     except Exception as e:
         LOGGER.warning("Failed to parse organism with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
         return None
 
 
@@ -220,6 +243,7 @@ def _parse_title(accession: str, project: Dict[str, Any]) -> Optional[str]:
         return str(title)
     except Exception as e:
         LOGGER.warning("Failed to parse title with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
         return None
 
 
@@ -232,6 +256,7 @@ def _parse_description(accession: str, project: Dict[str, Any]) -> Optional[str]
         return str(description)
     except Exception as e:
         LOGGER.warning("Failed to parse description with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
         return None
 
 
@@ -305,6 +330,7 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
 
     except Exception as e:
         LOGGER.warning("Failed to parse organization with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return organizations
 
@@ -328,14 +354,12 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
 
             for item in publication:
                 id_ = item.get("id", None)
-                id_ = str(id_) if id_ is not None else None
-                if id_ is None:
-                    LOGGER.warning("Publication ID is not found with accession %s", accession)
-                    continue
                 dbtype = item.get("DbType", None)
                 publication_url = None
-                if dbtype in ["ePubmed", "eDOI"]:
-                    publication_url = id_ if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+                if dbtype == "DOI":
+                    publication_url = f"https://doi.org/{id_}"
+                elif dbtype == "ePubmed":
+                    publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
                 elif dbtype.isdigit():
                     dbtype = "ePubmed"
                     publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
@@ -350,14 +374,12 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
                 ))
         elif isinstance(publication, dict):
             id_ = publication.get("id", None)
-            id_ = str(id_) if id_ is not None else None
-            if id_ is None:
-                LOGGER.warning("Publication ID is not found with accession %s", accession)
-                raise ValueError("Publication ID is not found")
             dbtype = publication.get("DbType", None)
             publication_url = None
-            if dbtype in ["ePubmed", "eDOI"]:
-                publication_url = id_ if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+            if dbtype == "DOI":
+                publication_url = f"https://doi.org/{id_}"
+            elif dbtype == "ePubmed":
+                publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
             elif dbtype.isdigit():
                 dbtype = "ePubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
@@ -373,6 +395,7 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
 
     except Exception as e:
         LOGGER.warning("Failed to parse publication with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return publications
 
@@ -431,6 +454,7 @@ def _parse_and_update_grant(accession: str, project: Dict[str, Any]) -> List[Gra
                 ))
     except Exception as e:
         LOGGER.warning("Failed to parse grant with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return grants
 
@@ -499,6 +523,7 @@ def _parse_external_link(accession: str, project: Dict[str, Any]) -> List[Extern
 
     except Exception as e:
         LOGGER.warning("Failed to parse external link with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return links
 
@@ -529,6 +554,7 @@ def _parse_same_as(accession: str, project: Dict[str, Any]) -> List[Xref]:
 
     except Exception as e:
         LOGGER.warning("Failed to parse sameAs with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return []
 
@@ -564,7 +590,7 @@ def _update_prefix(accession: str, project: Dict[str, Any]) -> None:
         bs_set_ids = project.get("Project", {}).get("ProjectType", {}).get(
             "ProjectTypeSubmission", {}).get("Target", {}).get("BioSampleSet", {}).get("ID", None)
         if bs_set_ids is None:
-            return
+            return None
 
         if isinstance(bs_set_ids, list):
             for i, item in enumerate(bs_set_ids):
@@ -574,6 +600,9 @@ def _update_prefix(accession: str, project: Dict[str, Any]) -> None:
             project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = {"content": bs_set_ids}
     except Exception as e:
         LOGGER.warning("Failed to update prefix with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
+
+    return None
 
 
 def _update_locus_tag_prefix(accession: str, project: Dict[str, Any]) -> None:
@@ -584,7 +613,7 @@ def _update_locus_tag_prefix(accession: str, project: Dict[str, Any]) -> None:
     try:
         prefix = project.get("Project", {}).get("ProjectDescr", {}).get("LocusTagPrefix", None)
         if prefix is None:
-            return
+            return None
 
         if isinstance(prefix, list):
             for i, item in enumerate(prefix):
@@ -594,6 +623,9 @@ def _update_locus_tag_prefix(accession: str, project: Dict[str, Any]) -> None:
             project["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
     except Exception as e:
         LOGGER.warning("Failed to update locus tag prefix with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
+
+    return None
 
 
 def _update_local_id(accession: str, project: Dict[str, Any]) -> None:
@@ -604,7 +636,7 @@ def _update_local_id(accession: str, project: Dict[str, Any]) -> None:
     try:
         local_id = project.get("Project", {}).get("ProjectID", {}).get("LocalID", None)
         if local_id is None:
-            return
+            return None
 
         if isinstance(local_id, list):
             for i, item in enumerate(local_id):
@@ -614,6 +646,9 @@ def _update_local_id(accession: str, project: Dict[str, Any]) -> None:
             project["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
     except Exception as e:
         LOGGER.warning("Failed to update local id with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
+
+    return None
 
 
 def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = False) -> None:
@@ -621,10 +656,11 @@ def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = Fal
     - memory のほうが多いと見越して、一気に書き込む
     """
     mode = "a" if is_append else "w"
+    is_file_exists = output_file.exists()
     with output_file.open(mode=mode, encoding="utf-8") as f:
-        if is_append:
+        if is_append and is_file_exists:
             f.write("\n")
-        f.write("\n".join(doc.model_dump_json() for doc in docs))
+        f.write("\n".join(doc.model_dump_json(by_alias=True) for doc in docs))
 
 
 # === CLI implementation ===
@@ -634,7 +670,8 @@ class Args(BaseModel):
     xml_file: Path
     is_ddbj: bool = False
     batch_size: int = DEFAULT_BATCH_SIZE
-    parallel_num: int = 32
+    parallel_num: int = DEFAULT_PARALLEL_NUM
+    remove_tmp_dir: bool = False
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -683,6 +720,11 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         default=DEFAULT_PARALLEL_NUM,
     )
     parser.add_argument(
+        "--remove-tmp-dir",
+        help="Remove the temporary directory after processing",
+        action="store_true",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Enable debug mode",
@@ -708,6 +750,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         is_ddbj=parsed_args.is_ddbj,
         batch_size=parsed_args.batch_size,
         parallel_num=parsed_args.parallel_num,
+        remove_tmp_dir=parsed_args.remove_tmp_dir,
     )
 
 
@@ -724,10 +767,11 @@ def main() -> None:
     xml_to_jsonl(
         config=config,
         xml_file=args.xml_file,
-        is_ddbj=args.is_ddbj,
         output_dir=output_dir,
+        is_ddbj=args.is_ddbj,
         batch_size=args.batch_size,
         parallel_num=args.parallel_num,
+        remove_tmp_dir=args.remove_tmp_dir,
     )
 
     LOGGER.info("Finished converting BioProject XML to JSON-Lines")
