@@ -1,15 +1,11 @@
 import sqlite3
 
 TABLE_LIST = [
-    "analysis-data-relation",
-    "analysis-sample-relation",
-    "analysis-study-relation",
-    "data-experiment-relation",
-    "dataset-analysis-relation",
-    "dataset-data-relation",
     "dataset-policy-relation",
-    "experiment-sample-relation",
-    "experiment-study-relation",
+    "dataset-dac-relation",
+    "dataset-study-relation",
+    "study-dac-relation",
+    "study-policy-relation",
     "policy-dac-relation"
 ]
 

@@ -1,127 +1,124 @@
 import csv
 import argparse
 import sqlite3
-from multiprocessing import Pool
-from typing import NewType, List
-from create_id_relation_table import initialize_table, create_indexes
+from typing import NewType, List, Tuple
+from create_jga_relation_table import initialize_table, create_indexes
 
-parser = argparse.ArgumentParser(description="BioProject XML to JSONL")
-# sqliteデータベースのpath指定
-# TODO: 環境変数に記述するように
-parser.add_argument("db", default="tasks/sra/resources/jga_link.sqlite")
-args = parser.parse_args()
 # TODO:環境変数に記述するように
 CHUNK_SIZE = 10000
 LOCAL_FILE_PATH = "/lustre9/open/shared_data/jga/metadata-history/metadata/"
-TABLE_LIST = [
-    "analysis-data-relation",
-    "analysis-sample-relation",
+FILE_LIST = [
     "analysis-study-relation",
-    "data-experiment-relation",
     "dataset-analysis-relation",
-    "dataset-data-relation",
     "dataset-policy-relation",
-    "experiment-sample-relation",
-    "experiment-study-relation",
+    "policy-dac-relation",
+]
+TABLE_LIST = [
+    "dataset-policy-relation",
+    "dataset-dac-relation",
+    "dataset-study-relation",
+    "study-dac-relation",
+    "study-policy-relation",
     "policy-dac-relation"
 ]
-
-FilePath = NewType('FilePath', str)
-
-
-# TODO: create_accession_db_m.pyと同じ処理なので処理を共有できるか検討
-class ChunkedList(list):
-    def __init__(self):
-        self.ds = set()
-        
-    def push(self, id1, id2, t):
-        # TODO: sqlite3のbulk save処理に書き換える（sqlalchemyのコードが残っている）
-        conn = sqlite3.connect(args.db)
-        if id1 and id2 and id2 != "-": 
-            # ペアの値があればイテレーション用のsetにidの対を追加する
-            self.ds.add((id1, id2))
-        # idペアのリストがchunk_sizeを超えたらdbに追加する
-        if len(self.ds) > CHUNK_SIZE:
-            # uniqueなidペアに変換する
-            rows = list(set([(d[0],d[1]) for d in self.ds]))
-            try:
-                bulk_insert(conn, rows, t)
-                #session.bulk_save_objects(rows)
-                #session.add_all(rows)
-                #session.commit()
-            except Exception as e:
-                print("insert error: ", e)
-            finally:
-                self.ds.clear()
-                conn.commit()
-    
-    def store_rest(self, t):
-        """
-        登録し残したself.dsが最後に残るのでこれをsqliteに保存する
-        """
-        conn = sqlite3.connect(args.db)
-        rows = list(set([(d[0],d[1]) for d in self.ds]))
-        # sqlite3でbulk insertする処理に書き直す
-        try:
-            bulk_insert(conn, rows, t)
-            conn.commit()
-        except Exception as e:
-            print("insert error: ", e)
-        finally:
-            conn.close()
+DB_PATH = "tasks/sra/resources/jga_link.sqlite"
+parser = argparse.ArgumentParser(description="jga relation file to sqlite")
+parser.add_argument("db", default=DB_PATH)
+args = parser.parse_args()
 
 
-def create_db(table_name: str):
+def load_id_set(file_name:str) -> List[tuple]:
     """
-    typeに応じてChunkdListを呼び出す
-    Args:
-        path (FilePath): _description_
+    csvファイルからrelationファイルを取得しidペアのLIST[set]を生成する
     """
-    file = f"{LOCAL_FILE_PATH}{table_name}.csv"
-    reader = csv.reader(open(file), delimiter=",", quoting=csv.QUOTE_NONE)
-    next(reader)
-    chunked_list = ChunkedList()
-    for r in reader:
-        chunked_list.push(r[1], r[2], table_name)
-    # chunked_listのchunk size以下のリストが残るのでDBに保存する
-    chunked_list.store_rest(table_name)
+    with open(file_name, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # 先頭行をスキップ
+        return [(row[1], row[2]) for row in reader]
 
 
-def store_relation_data(path:FilePath):
+def store_data(db, tbl, relation_list):
     """
-    SRA_Accessionをid->Study, id->Experiment, id->Sampleのように分解し（自分の該当するtypeは含まない）し一時リスト List[set]に保存
-    各リストが一定の長さになったらsqliteのテーブルに保存し、一時リストを初期化する（処理が終了する際にも最後に残ったリストをsqliteに保存）
-    :return:
+    id relationのリストをsqliteに保存する
     """
-    reader = csv.reader(open(path), delimiter="\t", quoting=csv.QUOTE_NONE)
-    next(reader)
-
-    with open(file, 'r') as f:
-        for line in f:
-            field1, field2 = line.strip().split('\t')
-            c.execute(f'INSERT INTO {table_name} VALUES (?, ?)', (field1, field2))
-
-
-def bulk_insert(conn, lst:List[set], t:str):
-    # bulk挿入
+    conn = sqlite3.connect(db)
     cur = conn.cursor()
-    sql = f"INSERT INTO {t} VALUES (?, ?)"
-    cur.executemany(sql, lst)
+    sql = f"INSERT INTO {tbl} VALUES (?, ?)"
+    cur.executemany(sql, relation_list)
+    conn.commit()
+
+
+def create_dataset_relation(relations:dict) -> Tuple[List[tuple]]:
+    """
+    dataset-policy,dataset-dac,dataset-studyペアを生成しsqliteに保存する
+    また続く処理に利用するため次のペアのリストを返す
+    Returns:
+        Tuple[List[tuple]]: dataset-study, dataset-dac
+    """
+    # dataset-dac-relation生成
+    dataset_dac = []
+    for d_p in relations["dataset-policy-relation"]:
+        dataset_dac.extend([(d_p[0],p_d[1]) for p_d in relations["policy-dac-relation"] if p_d[0] == d_p[1]])
+
+    # dataset-study-relation生成
+    dataset_study = []
+    for d_a in relations["dataset-analysis-relation"]:
+        dataset_study.extend([(d_a[0], a_s[1]) for a_s in relations["analysis-study-relation"] if a_s[1] == d_a[1] ])
+
+    # dataset-*-relationをsqliteに保存
+    for r in [dataset_dac, dataset_study, relations["dataset-policy-relation"]]:
+        store_data(r)
+
+    print("len dataset-dac, dataset-study: ", len(dataset_dac), len(dataset_study))
+    return dataset_dac, dataset_study
+
+
+def create_study_relation(dataset_dac,dataset_study, relations):
+    """
+    study-dac-relation,study-policy-relationの関係データを生成しsqliteに保存する
+
+    Args:
+        relations (dict): 
+        dataset_study (list): create_dataset_relation()で生成したlist
+        dataset_dac (list): create_dataset_relation()で生成したlist
+    """
+    # study-dac-relation生成
+    study_dac = []
+    for d_s in dataset_study:
+        study_dac.extend([(d_s[1], d_d[1]) for d_d in dataset_dac if d_s[0] == d_d[0]])
+    
+    # study-policy-relation生成
+    study_policy = []
+    for d_s in dataset_study:
+        study_policy.extend([(d_s[1], d_p[1]) for d_p in  relations["dataset-policy-relation"] if d_s[0] == d_p[0]])
+
+    # 生成したrelationを保存
+    for r in [study_dac, study_policy]:
+        store_data(r)
+
+    print("len study-dac, study-policy: ", len(study_dac), len(study_policy))
+
+
+def create_policy_relation(relations):
+    """
+    policy-dac-relationをsqliteに保存する
+    """
+    store_data(relations["policy-dac-relation"])
 
 
 def main():
-    db = args.db
-    initialize_table(db)
-    # 関係テーブル数とcpu_count()次第で分割数は調整する
-    p = Pool(10)
-    try:
-        p.map(create_db, TABLE_LIST)
-    except Exception as e:
-        print("main: ", e)
+    initialize_table()
+    # csvをList[tuple]に変換
+    relations = {}
+    for f in FILE_LIST:
+        file_name = f"{LOCAL_FILE_PATH}{f}.csv"
+        relations[f] = load_id_set(file_name)
 
-    # create_index
-    create_indexes(db)
-    
+    dataset_dac, dataset_study = create_dataset_relation(relations)
+    create_study_relation(dataset_dac, dataset_study, relations)
+    create_policy_relation(relations)
+    create_indexes(args.db)
 
 if __name__ == "__main__":
     main()
+
