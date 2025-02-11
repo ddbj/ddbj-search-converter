@@ -21,9 +21,9 @@ TABLE_LIST = [
     "study-policy-relation",
     "policy-dac-relation"
 ]
-DB_PATH = "tasks/sra/resources/jga_link.sqlite"
+DB_PATH = "~/tasks/sra/resources/jga_link.sqlite"
 parser = argparse.ArgumentParser(description="jga relation file to sqlite")
-parser.add_argument("db", default=DB_PATH)
+parser.add_argument("-d", default=DB_PATH)
 args = parser.parse_args()
 
 
@@ -107,7 +107,7 @@ def create_policy_relation(relations):
 
 
 def main():
-    initialize_table()
+    initialize_table(args.d)
     # csvをList[tuple]に変換
     relations = {}
     for f in FILE_LIST:
@@ -117,7 +117,7 @@ def main():
     dataset_dac, dataset_study = create_dataset_relation(relations)
     create_study_relation(dataset_dac, dataset_study, relations)
     create_policy_relation(relations)
-    create_indexes(args.db)
+    create_indexes(args.d)
 
 if __name__ == "__main__":
     main()
