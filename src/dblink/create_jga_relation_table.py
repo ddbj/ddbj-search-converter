@@ -61,5 +61,5 @@ def create_indexes(db):
         conn.commit()
 
 
-if __name__ == "__main__":
-    initialize_table()
+#if __name__ == "__main__":
+#    initialize_table(db)
