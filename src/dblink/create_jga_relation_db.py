@@ -61,10 +61,13 @@ def create_dataset_relation(relations:dict) -> Tuple[List[tuple]]:
     for d_p in relations["dataset_policy_relation"]:
         dataset_dac.extend([(d_p[0],p_d[1]) for p_d in relations["policy_dac_relation"] if p_d[0] == d_p[1]])
 
+    dataset_dac = list(set(dataset_dac))
+
     # dataset-study-relation生成
     dataset_study = []
     for d_a in relations["dataset_analysis_relation"]:
         dataset_study.extend([(d_a[0], a_s[1]) for a_s in relations["analysis_study_relation"] if a_s[0] == d_a[1] ])
+    dataset_study = list(set(dataset_study))
 
     # dataset-*-relationをsqliteに保存
     for r in [("dataset_dac_relation", dataset_dac), ("dataset_study_relation", dataset_study), ("dataset_policy_relation", relations["dataset_policy_relation"])]:
@@ -87,11 +90,13 @@ def create_study_relation(dataset_dac,dataset_study, relations):
     study_dac = []
     for d_s in dataset_study:
         study_dac.extend([(d_s[1], d_d[1]) for d_d in dataset_dac if d_s[0] == d_d[0]])
+    study_dac = list(set(study_dac))
     
     # study-policy-relation生成
     study_policy = []
     for d_s in dataset_study:
         study_policy.extend([(d_s[1], d_p[1]) for d_p in  relations["dataset_policy_relation"] if d_s[0] == d_p[0]])
+    study_policy = list(set(study_policy))
 
     # 生成したrelationを保存
     for r in [("study_dac_relation", study_dac), ("study_policy_relation",study_policy)]:
