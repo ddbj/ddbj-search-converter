@@ -7,12 +7,20 @@ services:
     container_name: ddbj-search-converter-dev
     volumes:
       - ${PWD}:/app
-      - ${PWD}/converter_results:/app/converter_results
+      - ${PWD}/ddbj_search_converter_results:/app/ddbj_search_converter_results
       # 遺伝研スパコン内の resource
-      - /lustre9/open/shared_data/dblink:/lustre9/open/shared_data/dblink:ro
       - /usr/local/resources/bioproject:/usr/local/resources/bioproject:ro
       - /usr/local/resources/biosample:/usr/local/resources/biosample:ro
-    restart: always
+      - /lustre9/open/shared_data/dblink:/lustre9/open/shared_data/dblink:ro
+      - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
+    environment:
+      TZ: "Asia/Tokyo"
+      DDBJ_SEARCH_CONVERTER_DEBUG: "true"
+      DDBJ_SEARCH_CONVERTER_WORK_DIR: "/app/ddbj_search_converter_results"
+      DDBJ_SEARCH_CONVERTER_POSTGRES_URL: "postgresql://const:const@at098:54301"
+      DDBJ_SEARCH_CONVERTER_ES_URL: "http://ddbj-search-elasticsearch-dev:9200"
+      DDBJ_SEARCH_CONVERTER_DBLINK_BASE_PATH: "/lustre9/open/shared_data/dblink"
+      DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_BASE_PATH: "/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
     working_dir: /app
     command: [ "sleep", "infinity" ]
     networks:

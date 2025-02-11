@@ -13,6 +13,7 @@ dependencies = [
     "elasticsearch",
     "httpx",
     "lxml",
+    "psycopg2-binary",
     "pydantic",
     "SQLAlchemy>=2.0.0",
     "xmltodict",

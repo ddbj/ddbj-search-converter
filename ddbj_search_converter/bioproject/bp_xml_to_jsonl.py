@@ -78,7 +78,7 @@ def xml_to_jsonl(
                     grant=_parse_and_update_grant(accession, project),
                     externalLink=_parse_external_link(accession, project),
                     dbXref=get_xrefs(config, accession, "bioproject"),
-                    sameAs=_parse_same_as(project),
+                    sameAs=_parse_same_as(accession, project),
                     status=_parse_status(project, is_ddbj),
                     visibility="unrestricted-access",
                     dateCreated=date_created,
@@ -87,9 +87,9 @@ def xml_to_jsonl(
                 )
 
                 # properties の中の object に対して整形を行う
-                _update_prefix(project)
-                _update_locus_tag_prefix(project)
-                _update_local_id(project)
+                _update_prefix(accession, project)
+                _update_locus_tag_prefix(accession, project)
+                _update_local_id(accession, project)
 
                 docs.append(bp_instance)
 
@@ -126,15 +126,18 @@ def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "Umbrel
 def _parse_organism(accession: str, project: Dict[str, Any], is_ddbj: bool) -> Optional[Organism]:
     try:
         if is_ddbj:
-            organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
+            organism_obj = project.get("Project", {}).get("ProjectType", {}).get("ProjectTypeTopAdmin", {}).get("Organism", None)
         else:
-            organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
+            organism_obj = project.get("Project", {}).get("ProjectType", {}).get("ProjectTypeSubmission", {}).get("Target", {}).get("Organism", None)
+        if organism_obj is None:
+            return None
+
         return Organism(
             identifier=str(organism_obj["taxID"]),
             name=organism_obj["OrganismName"],
         )
     except Exception as e:
-        LOGGER.debug("Failed to parse organism with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse organism with accession %s: %s", accession, e)
         return None
 
 
@@ -143,16 +146,19 @@ def _parse_title(accession: str, project: Dict[str, Any]) -> Optional[str]:
         title = project["Project"]["ProjectDescr"]["Title"]
         return str(title)
     except Exception as e:
-        LOGGER.debug("Failed to parse title with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse title with accession %s: %s", accession, e)
         return None
 
 
 def _parse_description(accession: str, project: Dict[str, Any]) -> Optional[str]:
     try:
-        description = project["Project"]["ProjectDescr"]["Description"]
+        description = project.get("Project", {}).get("ProjectDescr", {}).get("Description", None)
+        if description is None:
+            return None
+
         return str(description)
     except Exception as e:
-        LOGGER.debug("Failed to parse description with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse description with accession %s: %s", accession, e)
         return None
 
 
@@ -164,9 +170,11 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
 
     try:
         if is_ddbj:
-            organization = project["Submission"]["Submission"]["Description"]["Organization"]
+            organization = project.get("Submission", {}).get("Submission", {}).get("Description", {}).get("Organization", None)
         else:
-            organization = project["Submission"]["Description"]["Organization"]
+            organization = project.get("Project", {}).get("ProjectDescr", {}).get("Organization", None)
+        if organization is None:
+            return []
 
         if isinstance(organization, list):
             for i, item in enumerate(organization):
@@ -202,7 +210,7 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
             url = organization.get("url", None)
             if isinstance(name, str):
                 # 引数の project の update を行う
-                project["Submission"]["Description"]["Organization"][i]["Name"] = {"content": name}
+                project["Submission"]["Description"]["Organization"]["Name"] = {"content": name}
                 organizations.append(Organization(
                     name=name,
                     organizationType=_type,
@@ -223,8 +231,7 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
                     ))
 
     except Exception as e:
-        # TODO: 恐らく、エラー処理が不十分
-        LOGGER.debug("Failed to parse organization with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse organization with accession %s: %s", accession, e)
 
     return organizations
 
@@ -236,7 +243,10 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
     publications: List[Publication] = []
 
     try:
-        publication = project["Project"]["ProjectDescr"]["Publication"]
+        publication = project.get("Project", {}).get("ProjectDescr", {}).get("Publication", None)
+        if publication is None:
+            return []
+
         if isinstance(publication, list):
             # bulk insert できないサイズのリストに対応
             publication = publication[:10000]
@@ -247,7 +257,7 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
                 id_ = item.get("id", None)
                 id_ = str(id_) if id_ is not None else None
                 if id_ is None:
-                    LOGGER.debug("Publication ID is not found with accession %s", accession)
+                    LOGGER.warning("Publication ID is not found with accession %s", accession)
                     continue
                 dbtype = item.get("DbType", None)
                 publication_url = None
@@ -269,7 +279,7 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
             id_ = publication.get("id", None)
             id_ = str(id_) if id_ is not None else None
             if id_ is None:
-                LOGGER.debug("Publication ID is not found with accession %s", accession)
+                LOGGER.warning("Publication ID is not found with accession %s", accession)
                 raise ValueError("Publication ID is not found")
             dbtype = publication.get("DbType", None)
             publication_url = None
@@ -289,8 +299,7 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
             ))
 
     except Exception as e:
-        # TODO: 恐らく、エラー処理が不十分
-        LOGGER.debug("Failed to parse publication with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse publication with accession %s: %s", accession, e)
 
     return publications
 
@@ -299,7 +308,10 @@ def _parse_and_update_grant(accession: str, project: Dict[str, Any]) -> List[Gra
     grants: List[Grant] = []
 
     try:
-        grant = project["Project"]["ProjectDescr"]["Grant"]
+        grant = project.get("Project", {}).get("ProjectDescr", {}).get("Grant", None)
+        if grant is None:
+            return []
+
         if isinstance(grant, list):
             for i, item in enumerate(grant):
                 agency = item.get("Agency", None)
@@ -345,8 +357,7 @@ def _parse_and_update_grant(accession: str, project: Dict[str, Any]) -> List[Gra
                     )]
                 ))
     except Exception as e:
-        # TODO: 恐らく、エラー処理が不十分
-        LOGGER.debug("Failed to parse grant with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse grant with accession %s: %s", accession, e)
 
     return grants
 
@@ -358,7 +369,9 @@ EXTERNAL_LINK_MAP = {
     "SRA": "https://www.ncbi.nlm.nih.gov/sra/",
     "PUBMED": "https://pubmed.ncbi.nlm.nih.gov/",
     "DOI": "https://doi.org/",
-    "SRA|http": "",  # TODO: これなに
+    "SRA|http": "https:",  # <ID>//www.ncbi.nlm.nih.gov/bioproject/PRJNA41439/</ID>
+    "3000 rice genomes on aws|https": "https",  # <ID>//aws.amazon.com/public-data-sets/3000-rice-genome/</ID>
+    "ENA|http": "https:",  # <ID>//www.ebi.ac.uk/ena/data/view/ERP005654</ID>
 }
 
 
@@ -387,14 +400,18 @@ def _parse_external_link(accession: str, project: Dict[str, Any]) -> List[Extern
                         label=label,
                     )
                 else:
-                    raise ValueError(f"External link db {db} is not supported")
+                    LOGGER.warning("External link db %s is not supported", db)
+                    return None
 
         return None
 
     links: List[ExternalLink] = []
 
     try:
-        external_link_obj = project["Project"]["ProjectDescr"]["ExternalLink"]
+        external_link_obj = project.get("Project", {}).get("ProjectDescr", {}).get("ExternalLink", None)
+        if external_link_obj is None:
+            return []
+
         if isinstance(external_link_obj, dict):
             external_link_instance = _obj_to_external_link(external_link_obj)
             if external_link_instance is not None:
@@ -408,25 +425,37 @@ def _parse_external_link(accession: str, project: Dict[str, Any]) -> List[Extern
                     links.append(external_link_instance)
 
     except Exception as e:
-        LOGGER.debug("Failed to parse external link with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse external link with accession %s: %s", accession, e)
 
     return links
 
 
-def _parse_same_as(project: Dict[str, Any]) -> List[Xref]:
+def _parse_same_as(accession: str, project: Dict[str, Any]) -> List[Xref]:
+    def _to_geo_xref(center_obj: Dict[str, Any]) -> Optional[Xref]:
+        id_ = center_obj.get("content", None)
+        type_ = center_obj.get("center", None)
+        if id_ is None or type_ is None:
+            return None
+        if type_ != "GEO":
+            return None
+        return Xref(
+            identifier=id_,
+            type=type_,
+            url=f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id_}",
+        )
+
     try:
-        center = project["Project"]["ProjectID"]["CenterID"]["center"]
-        if center == "GEO":
-            id_ = project["Project"]["ProjectID"]["CenterID"]["content"]
-            return [Xref(
-                identifier=id_,
-                type="GEO",
-                url=f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id_}",
-            )]
-    except Exception as _e:
-        # そもそも sameAs が存在しない場合もある
-        # LOGGER.debug("Failed to parse sameAs: %s", e)
-        pass
+        center_obj = project.get("Project", {}).get("ProjectID", {}).get("CenterID", None)
+        if center_obj is None:
+            return []
+
+        if isinstance(center_obj, list):
+            return [xref for xref in [_to_geo_xref(item) for item in center_obj] if xref is not None]
+        elif isinstance(center_obj, dict):
+            return [xref for xref in [_to_geo_xref(center_obj)] if xref is not None]
+
+    except Exception as e:
+        LOGGER.warning("Failed to parse sameAs with accession %s: %s", accession, e)
 
     return []
 
@@ -453,13 +482,17 @@ def _parse_date(project: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], 
     return (date_created, date_modified, date_published)
 
 
-def _update_prefix(project: Dict[str, Any]) -> None:
+def _update_prefix(accession: str, project: Dict[str, Any]) -> None:
     """\
     - ProjectType.ProjectTypeSubmission.Target.BioSampleSet.ID
     - 文字列で入力されてしまった場合、properties 内の値を object に整形する
     """
     try:
-        bs_set_ids = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"]
+        bs_set_ids = project.get("Project", {}).get("ProjectType", {}).get(
+            "ProjectTypeSubmission", {}).get("Target", {}).get("BioSampleSet", {}).get("ID", None)
+        if bs_set_ids is None:
+            return
+
         if isinstance(bs_set_ids, list):
             for i, item in enumerate(bs_set_ids):
                 if isinstance(item, str):
@@ -467,41 +500,47 @@ def _update_prefix(project: Dict[str, Any]) -> None:
         elif isinstance(bs_set_ids, str):
             project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = {"content": bs_set_ids}
     except Exception as e:
-        LOGGER.debug("Failed to update prefix: %s", e)
+        LOGGER.warning("Failed to update prefix with accession %s: %s", accession, e)
 
 
-def _update_locus_tag_prefix(project: Dict[str, Any]) -> None:
+def _update_locus_tag_prefix(accession: str, project: Dict[str, Any]) -> None:
     """\
     - properties.Project.Project.ProjectDescr.LocusTagPrefix
     - 文字列で入力されていた場合 properties 内の値を object に整形する
     """
     try:
-        prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
+        prefix = project.get("Project", {}).get("ProjectDescr", {}).get("LocusTagPrefix", None)
+        if prefix is None:
+            return
+
         if isinstance(prefix, list):
             for i, item in enumerate(prefix):
                 if isinstance(item, str):
-                    project["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
+                    project["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
         elif isinstance(prefix, str):
-            project["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
+            project["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
     except Exception as e:
-        LOGGER.debug("Failed to update locus tag prefix: %s", e)
+        LOGGER.warning("Failed to update locus tag prefix with accession %s: %s", accession, e)
 
 
-def _update_local_id(project: Dict[str, Any]) -> None:
+def _update_local_id(accession: str, project: Dict[str, Any]) -> None:
     """\
     - properties.Project.Project.ProjectID.LocalID
     - 文字列で入力されていた場合 properties 内の値を object に整形する
     """
     try:
-        local_id = project["Project"]["ProjectID"]["LocalID"]
+        local_id = project.get("Project", {}).get("ProjectID", {}).get("LocalID", None)
+        if local_id is None:
+            return
+
         if isinstance(local_id, list):
             for i, item in enumerate(local_id):
                 if isinstance(item, str):
-                    project["Project"]["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
+                    project["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
         elif isinstance(local_id, str):
-            project["Project"]["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
+            project["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
     except Exception as e:
-        LOGGER.debug("Failed to update local id: %s", e)
+        LOGGER.warning("Failed to update local id with accession %s: %s", accession, e)
 
 
 def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = False) -> None:
@@ -612,6 +651,7 @@ def main() -> None:
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
 
     output_dir = config.work_dir.joinpath(BP_JSONL_DIR_NAME).joinpath(TODAY)
+    output_dir.mkdir(parents=True, exist_ok=True)
     LOGGER.info("Output directory: %s", output_dir)
     xml_to_jsonl(
         config=config,

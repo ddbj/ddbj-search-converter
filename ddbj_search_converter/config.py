@@ -67,11 +67,11 @@ def set_logging_config() -> None:
         "disable_existing_loggers": False,
         "formatters": {
             "default": {
-                "format": "%(levelprefix)s %(message)s",
+                "format": "%(asctime)s [%(levelname)s] %(message)s",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             },
             "sqlalchemy": {
-                "format": "%(levelprefix)s SQLAlchemy - %(message)s",
+                "format": "%(asctime)s [%(levelname)s] SQLAlchemy - %(message)s",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             }
         },
@@ -111,7 +111,7 @@ LOGGER = logging.getLogger("ddbj_search_converter")
 def set_logging_level(debug: bool) -> None:
     if debug:
         logging.getLogger("ddbj_search_converter").setLevel(logging.DEBUG)
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+        # logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     else:
         logging.getLogger("ddbj_search_converter").setLevel(logging.INFO)
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+        # logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)

@@ -29,6 +29,7 @@ def create_es_index(config: Config, index: IndexName) -> None:
         es.indices.create(index=index, body=mapping)
     except Exception as e:
         LOGGER.error("Failed to create index '%s': %s", index, e)
+        raise
 
 
 # === CLI implementation ===
@@ -85,9 +86,10 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
 
 
 def main() -> None:
-    LOGGER.info("Creating Elasticsearch index")
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
+
+    LOGGER.info("Creating Elasticsearch index")
     LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
 

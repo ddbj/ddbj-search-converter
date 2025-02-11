@@ -3,11 +3,12 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
     container_name: ddbj-search-elasticsearch-dev
     environment:
+      TZ: "Asia/Tokyo"
       discovery.type: "single-node"
       xpack.security.enabled: "false"
       bootstrap.memory_lock: "true"
       http.cors.enabled: "true"
-      http.cors.allow-origin: "*"
+      http.cors.allow-origin: '"*"'
       ELASTIC_PASSWORD: "ddbj-search-elasticsearch-dev-password" # change this password
     ports:
       - "0.0.0.0:19200:9200"

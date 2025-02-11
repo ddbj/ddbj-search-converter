@@ -195,7 +195,7 @@ def _insert_data(config: Config, table_name: TableNames, data: Deque[Tuple[str, 
         try:
             table = Base.metadata.tables[table_name]
             session.execute(
-                insert(table),
+                insert(table).prefix_with("OR IGNORE"),
                 [{"id0": id0, "id1": id1} for id0, id1 in data]
             )
             session.commit()
@@ -212,48 +212,66 @@ def store_data(config: Config, sra_accessions_tab_file: Path, chunk_size: int = 
     """
 
     queues: Dict[TableNames, Deque[Tuple[str, str]]] = {
-        "study_submission": deque(),
+        # "study_submission": deque(),
         "study_bioproject": deque(),
-        "study_experiment": deque(),
-        "experiment_study": deque(),
+        # "study_experiment": deque(),
+        # "experiment_study": deque(),
         "experiment_bioproject": deque(),
         "experiment_sample": deque(),
         "experiment_biosample": deque(),
-        "sample_experiment": deque(),
+        # "sample_experiment": deque(),
         "sample_biosample": deque(),
-        "analysis_submission": deque(),
-        "run_experiment": deque(),
-        "run_sample": deque(),
+        # "analysis_submission": deque(),
+        # "run_experiment": deque(),
+        # "run_sample": deque(),
         "run_biosample": deque(),
     }
 
-    with sra_accessions_tab_file.open("f", encoding="utf-8") as f:
+    with sra_accessions_tab_file.open(mode="r", encoding="utf-8") as f:
         next(f)  # skip header
         for i, line in enumerate(f):
             row = line.strip().split("\t")
             try:
                 if row[2] != "live":
                     continue
+                if row[0] == "-":
+                    continue
 
                 accession_type = row[6]
                 if accession_type == "SUBMISSION":
                     pass  # do nothing
                 elif accession_type == "STUDY":
-                    queues["study_submission"].append((row[0], row[1]))
-                    queues["study_bioproject"].append((row[0], row[18]))
-                    queues["study_experiment"].append((row[0], row[10]))
+                    # if row[1] != "-":
+                    #     queues["study_submission"].append((row[0], row[1]))
+                    if row[18] != "-":
+                        queues["study_bioproject"].append((row[0], row[18]))
+                    # if row[10] != "-":
+                    #     queues["study_experiment"].append((row[0], row[10]))
                 elif accession_type == "EXPERIMENT":
-                    queues["sample_experiment"].append((row[0], row[10]))
-                    queues["sample_biosample"].append((row[0], row[17]))
+                    if row[18] != "-":
+                        queues["experiment_bioproject"].append((row[0], row[18]))
+                    # if row[12] != "-":
+                    #     queues["experiment_study"].append((row[0], row[12]))
+                    if row[11] != "-":
+                        queues["experiment_sample"].append((row[0], row[11]))
+                    if row[17] != "-":
+                        queues["experiment_biosample"].append((row[0], row[17]))
                 elif accession_type == "SAMPLE":
-                    queues["sample_experiment"].append((row[0], row[10]))
-                    queues["sample_biosample"].append((row[0], row[17]))
+                    # if row[10] != "-":
+                    #     queues["sample_experiment"].append((row[0], row[10]))
+                    if row[17] != "-":
+                        queues["sample_biosample"].append((row[0], row[17]))
                 elif accession_type == "RUN":
-                    queues["run_experiment"].append((row[0], row[10]))
-                    queues["run_sample"].append((row[0], row[11]))
-                    queues["run_biosample"].append((row[0], row[17]))
+                    # if row[10] != "-":
+                    #     queues["run_experiment"].append((row[0], row[10]))
+                    # if row[11] != "-":
+                    #     queues["run_sample"].append((row[0], row[11]))
+                    if row[17] != "-":
+                        queues["run_biosample"].append((row[0], row[17]))
                 elif accession_type == "ANALYSIS":
-                    queues["analysis_submission"].append((row[0], row[1]))
+                    pass
+                    # if row[1] != "-":
+                    #     queues["analysis_submission"].append((row[0], row[1]))
                 else:
                     LOGGER.debug("Unknown accession type in %s: %s", row, accession_type)
 
@@ -284,7 +302,7 @@ def find_latest_sra_accessions_tab_file(config: Config) -> Path:
     for days in range(90):  # Search for the last 90 days
         check_date = today - datetime.timedelta(days=days)
         year, month, yyyymmdd = check_date.strftime("%Y"), check_date.strftime("%m"), check_date.strftime("%Y%m%d")
-        sra_accessions_tab_file_path = config.dblink_base_path.joinpath(f"{year}/{month}/SRA_Accessions.tab.{yyyymmdd}")
+        sra_accessions_tab_file_path = config.sra_accessions_tab_base_path.joinpath(f"{year}/{month}/SRA_Accessions.tab.{yyyymmdd}")  # type: ignore
         if sra_accessions_tab_file_path.exists():
             return sra_accessions_tab_file_path
 
@@ -377,15 +395,17 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
 
 
 def main() -> None:
-    LOGGER.info("Creating SRA Accessions SQLite DB")
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
+
+    LOGGER.info("Creating SRA Accessions SQLite DB")
     LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
     if args.download:
         LOGGER.info("Downloading SRA_Accessions.tab file")
         config.sra_accessions_tab_file_path = download_sra_accessions_tab_file(config)
 
+    LOGGER.info("Using SRA_Accessions.tab file: %s", config.sra_accessions_tab_file_path)
     init_db(config)
     store_data(config, config.sra_accessions_tab_file_path, args.chunk_size)
 

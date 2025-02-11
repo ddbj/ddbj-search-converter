@@ -157,7 +157,7 @@ def _insert_data(config: Config, table_name: TableNames, data: Deque[Tuple[str, 
         try:
             table = Base.metadata.tables[table_name]
             session.execute(
-                insert(table),
+                insert(table).prefix_with("OR IGNORE"),
                 [{"id0": id0, "id1": id1} for id0, id1 in data],
             )
             session.commit()
