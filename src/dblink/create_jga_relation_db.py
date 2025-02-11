@@ -64,7 +64,7 @@ def create_dataset_relation(relations:dict) -> Tuple[List[tuple]]:
     # dataset-study-relation生成
     dataset_study = []
     for d_a in relations["dataset_analysis_relation"]:
-        dataset_study.extend([(d_a[0], a_s[1]) for a_s in relations["analysis_study_relation"] if a_s[1] == d_a[1] ])
+        dataset_study.extend([(d_a[0], a_s[1]) for a_s in relations["analysis_study_relation"] if a_s[0] == d_a[1] ])
 
     # dataset-*-relationをsqliteに保存
     for r in [("dataset_dac_relation", dataset_dac), ("dataset_study_relation", dataset_study), ("dataset_policy_relation", relations["dataset_policy_relation"])]:
