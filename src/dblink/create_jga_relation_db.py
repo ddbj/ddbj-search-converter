@@ -13,6 +13,7 @@ FILE_LIST = [
     "dataset-policy-relation",
     "policy-dac-relation",
 ]
+# pythonのsqlite3からの操作で"-"を含むtable nameを受け付けなかったため変更
 TABLE_LIST = [
     "dataset_policy_relation",
     "dataset_dac_relation",
@@ -66,8 +67,8 @@ def create_dataset_relation(relations:dict) -> Tuple[List[tuple]]:
         dataset_study.extend([(d_a[0], a_s[1]) for a_s in relations["analysis_study_relation"] if a_s[1] == d_a[1] ])
 
     # dataset-*-relationをsqliteに保存
-    for r in [dataset_dac, dataset_study, relations["dataset_policy_relation"]]:
-        store_data(r)
+    for r in [("dataset_dac_relation", dataset_dac), ("dataset_study_relation", dataset_study), ("dataset_policy_relation", relations["dataset_policy_relation"])]:
+        store_data(DB_PATH, r[0], r[1])
 
     print("len dataset-dac, dataset-study: ", len(dataset_dac), len(dataset_study))
     return dataset_dac, dataset_study
@@ -93,8 +94,8 @@ def create_study_relation(dataset_dac,dataset_study, relations):
         study_policy.extend([(d_s[1], d_p[1]) for d_p in  relations["dataset_policy_relation"] if d_s[0] == d_p[0]])
 
     # 生成したrelationを保存
-    for r in [study_dac, study_policy]:
-        store_data(r)
+    for r in [("study_dac_relation", study_dac), ("study_policy_relation",study_policy)]:
+        store_data(DB_PATH, r[0], r[1])
 
     print("len study-dac, study-policy: ", len(study_dac), len(study_policy))
 
@@ -103,7 +104,7 @@ def create_policy_relation(relations):
     """
     policy-dac-relationをsqliteに保存する
     """
-    store_data(relations["policy_dac_relation"])
+    store_data(DB_PATH, "policy_dac_relation", relations["policy_dac_relation"])
 
 
 def main():
