@@ -115,10 +115,10 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
 
         batch_buffer.append(etree.tostring(element, encoding="utf-8"))
 
-        # メモリ解放
         element.clear()
-        while element.getprevious() is not None:
-            del element.getparent()[0]
+        parent = element.getparent()
+        if parent is not None:
+            parent.remove(element)
 
         if len(batch_buffer) >= batch_size:
             output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
@@ -128,7 +128,7 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
                 f.writelines(batch_buffer)
                 f.write(tail)
             file_count += 1
-            del batch_buffer[:]  # メモリ解放
+            batch_buffer.clear()
 
     if len(batch_buffer) > 0:
         output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
@@ -137,9 +137,9 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
             f.write(head)
             f.writelines(batch_buffer)
             f.write(tail)
-        del batch_buffer[:]  # メモリ解放
+        batch_buffer.clear()
 
-    del context  # メモリ解放
+    del context
 
     return output_files
 
@@ -156,20 +156,20 @@ def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddb
         bs_instance = xml_element_to_bs_instance(config, element, is_ddbj)
         docs.append(bs_instance)
 
-        # メモリ解放
         element.clear()
-        while element.getprevious() is not None:
-            del element.getparent()[0]
+        parent = element.getparent()
+        if parent is not None:
+            parent.remove(element)
 
         if len(docs) >= batch_size:
             write_jsonl(jsonl_file, docs, is_append=True)
-            del docs[:]  # メモリ解放
+            docs.clear()
 
     if len(docs) > 0:
         write_jsonl(jsonl_file, docs, is_append=True)
-        del docs[:]  # メモリ解放
+        docs.clear()
 
-    del context  # メモリ解放
+    del context
 
 
 def xml_element_to_bs_instance(config: Config, element: Any, is_ddbj: bool) -> BioSample:
@@ -292,7 +292,7 @@ def _parse_description(accession: str, sample: Dict[str, Any]) -> Optional[str]:
         if isinstance(description, str):
             return description
         elif isinstance(description, list):
-            return ",".join(description)
+            return ",".join([item for item in description if isinstance(item, str)])
     except Exception as e:
         LOGGER.warning("Failed to parse description with accession %s: %s", accession, e)
         LOGGER.warning("Traceback:\n%s", traceback.format_exc())
@@ -372,7 +372,10 @@ def _parse_and_update_package(accession: str, sample: Dict[str, Any], model: Lis
 def _parse_same_as(accession: str, sample: Dict[str, Any]) -> List[Xref]:
     try:
         same_as = []
-        for sample_obj in sample.get("Ids", {}).get("Id", []):
+        sample_objs = sample.get("Ids", {}).get("Id", [])
+        if isinstance(sample_objs, dict):
+            sample_objs = [sample_objs]
+        for sample_obj in sample_objs:
             if accession == sample_obj["content"]:
                 continue
             if sample_obj.get("db", None) == "SRA" or sample_obj.get("namespace", None) == "SRA":

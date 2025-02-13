@@ -99,10 +99,10 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
 
         batch_buffer.append(etree.tostring(element, encoding="utf-8"))
 
-        # メモリ解放
         element.clear()
-        while element.getprevious() is not None:
-            del element.getparent()[0]
+        parent = element.getparent()
+        if parent is not None:
+            parent.remove(element)
 
         if len(batch_buffer) >= batch_size:
             output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
@@ -112,7 +112,7 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
                 f.writelines(batch_buffer)
                 f.write(tail)
             file_count += 1
-            del batch_buffer[:]  # メモリ解放
+            batch_buffer.clear()
 
     if len(batch_buffer) > 0:
         output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
@@ -121,9 +121,9 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
             f.write(head)
             f.writelines(batch_buffer)
             f.write(tail)
-        del batch_buffer[:]  # メモリ解放
+        batch_buffer.clear()
 
-    del context  # メモリ解放
+    del context
 
     return output_files
 
@@ -140,20 +140,20 @@ def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddb
         bp_instance = xml_element_to_bp_instance(config, element, is_ddbj)
         docs.append(bp_instance)
 
-        # メモリ解放
         element.clear()
-        while element.getprevious() is not None:
-            del element.getparent()[0]
+        parent = element.getparent()
+        if parent is not None:
+            parent.remove(element)
 
         if len(docs) >= batch_size:
             write_jsonl(jsonl_file, docs, is_append=True)
-            del docs[:]  # メモリ解放
+            docs.clear()
 
     if len(docs) > 0:
         write_jsonl(jsonl_file, docs, is_append=True)
-        del docs[:]  # メモリ解放
+        docs.clear()
 
-    del context  # メモリ解放
+    del context
 
 
 def xml_element_to_bp_instance(config: Config, element: Any, is_ddbj: bool) -> BioProject:
@@ -161,14 +161,13 @@ def xml_element_to_bp_instance(config: Config, element: Any, is_ddbj: bool) -> B
         raise ValueError("Element tag must be 'Package'")
 
     xml_str = etree.tostring(element)
-    metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-    del xml_str  # メモリ解放
+    metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content", process_namespaces=False)
 
     project = metadata["Package"]["Project"]
     accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
 
     if is_ddbj:
-        date_created, date_modified, date_published = get_bp_dates(accession)
+        date_created, date_modified, date_published = get_bp_dates(config, accession)
     else:
         date_created, date_modified, date_published = _parse_date(project)
 
@@ -348,7 +347,7 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
 
         if isinstance(publication, list):
             # bulk insert できないサイズのリストに対応
-            publication = publication[:10000]
+            publication = publication[:1000]
             # 引数の project の update を行う
             project["Project"]["ProjectDescr"]["Publication"] = publication
 
