@@ -12,7 +12,6 @@ license = { text = "Apache-2.0" }
 dependencies = [
     "elasticsearch",
     "httpx",
-    "lxml",
     "psycopg2-binary",
     "pydantic",
     "SQLAlchemy>=2.0.0",
@@ -27,7 +26,6 @@ Repository = "https://github.com/ddbj/ddbj-search-converter.git"
 [project.optional-dependencies]
 tests = [
     "isort",
-    "lxml-stubs",
     "mypy",
     "pylint",
     "pytest-cov",
@@ -42,11 +40,11 @@ create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
 create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
 create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
+create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
 bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
 bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
 bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
-create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 
 [tool.setuptools]
 packages = [

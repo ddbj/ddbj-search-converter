@@ -9,10 +9,9 @@ import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import xmltodict
-from lxml import etree
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bs_date import get_dates as get_bs_dates
@@ -102,25 +101,36 @@ def extract_gz(gz_file: Path, output_dir: Path) -> Path:
     return output_file
 
 
+def _iterate_xml_element(xml_file: Path) -> Generator[bytes, None, None]:
+    """\
+    - XML file を行ごとに読み、<BioSample> ... </BioSample> の部分を抽出する
+    """
+    inside_package = False
+    buffer = bytearray()
+    with xml_file.open(mode="rb") as f:
+        for line in f:
+            stripped_line = line.strip()
+            if stripped_line.startswith(b"<BioSample>"):
+                inside_package = True
+                buffer = bytearray(line)
+            elif stripped_line.startswith(b"</BioSample>"):
+                inside_package = False
+                buffer.extend(line)
+                yield bytes(buffer)
+                buffer.clear()
+            elif inside_package:
+                buffer.extend(line)
+
+
 def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> List[Path]:
     head = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
     tail = b'</BioSampleSet>\n'
 
     output_files: List[Path] = []
-
-    context = etree.iterparse(xml_file, tag="BioSample", recover=True)
     batch_buffer: List[bytes] = []
     file_count = 1
-    for _event, element in context:
-        if element.tag != "BioSample":
-            continue
-
-        batch_buffer.append(etree.tostring(element, encoding="utf-8"))
-
-        element.clear()
-        parent = element.getparent()
-        if parent is not None:
-            parent.remove(element)
+    for xml_element in _iterate_xml_element(xml_file):
+        batch_buffer.append(xml_element)
 
         if len(batch_buffer) >= batch_size:
             output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
@@ -141,27 +151,16 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
             f.write(tail)
         batch_buffer.clear()
 
-    del context
-
     return output_files
 
 
 def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool, batch_size: int) -> None:
     LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
 
-    context = etree.iterparse(xml_file, tag="BioSample", recover=True)
     docs: List[BioSample] = []
-    for _events, element in context:
-        if element.tag != "BioSample":
-            continue
-
-        bs_instance = xml_element_to_bs_instance(config, element, is_ddbj)
-        docs.append(bs_instance)
-
-        element.clear()
-        parent = element.getparent()
-        if parent is not None:
-            parent.remove(element)
+    for xml_element in _iterate_xml_element(xml_file):
+        bp_instance = xml_element_to_bs_instance(config, xml_element, is_ddbj)
+        docs.append(bp_instance)
 
         if len(docs) >= batch_size:
             write_jsonl(jsonl_file, docs, is_append=True)
@@ -171,16 +170,9 @@ def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddb
         write_jsonl(jsonl_file, docs, is_append=True)
         docs.clear()
 
-    del context
 
-
-def xml_element_to_bs_instance(config: Config, element: Any, is_ddbj: bool) -> BioSample:
-    if element.tag != "BioSample":
-        raise ValueError("Element tag is not 'BioSample'")
-
-    xml_str = etree.tostring(element)
-    metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-    del xml_str
+def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool) -> BioSample:
+    metadata = xmltodict.parse(xml_element, attr_prefix="", cdata_key="content", process_namespaces=False)
 
     sample = metadata["BioSample"]
     accession = _parse_accession(sample, is_ddbj)
