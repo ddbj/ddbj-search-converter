@@ -40,8 +40,8 @@ tests = [
 [project.scripts]
 create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
-create_ddbj_dblink_db = "ddbj_search_converter.cache_db.ddbj_dblink:main"
-create_sra_accessions_db = "ddbj_search_converter.cache_db.sra_accessions:main"
+create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
+create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
 bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
 bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
 bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"

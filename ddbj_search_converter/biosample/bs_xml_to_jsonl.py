@@ -16,7 +16,9 @@ from lxml import etree
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bs_date import get_dates as get_bs_dates
-from ddbj_search_converter.cache_db.fusion_getter import get_xrefs
+from ddbj_search_converter.cache_db.bs_relation_ids import \
+    get_relation_ids as get_bs_relation_ids
+from ddbj_search_converter.cache_db.to_xref import to_xref
 from ddbj_search_converter.config import (BS_JSONL_DIR_NAME, LOGGER, TODAY,
                                           Config, get_config,
                                           set_logging_level)
@@ -209,7 +211,7 @@ def xml_element_to_bs_instance(config: Config, element: Any, is_ddbj: bool) -> B
         attributes=_parse_attributes(accession, sample),
         model=model,
         package=package,
-        dbXref=get_xrefs(config, accession, "biosample"),
+        dbXref=[to_xref(id_) for id_ in get_bs_relation_ids(config, accession)],
         sameAs=_parse_same_as(accession, sample),
         status="public",
         visibility="unrestricted-access",

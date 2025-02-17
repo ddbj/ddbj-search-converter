@@ -50,20 +50,14 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
     if db_file_path.exists() and overwrite:
         db_file_path.unlink()
 
-    engine = create_engine(
-        f"sqlite:///{db_file_path}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"sqlite:///{db_file_path}")
     Base.metadata.create_all(engine)
     engine.dispose()
 
 
 @contextmanager
 def get_session(config: Config) -> Generator[Session, None, None]:
-    engine = create_engine(
-        f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}")
     with Session(engine) as session:
         yield session
     engine.dispose()
@@ -108,10 +102,7 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 #   - -> DISTINCT ON は不要
 
 def fetch_data_from_postgres(config: Config, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Generator[Sequence[Row[Any]], None, None]:
-    engine = create_engine(
-        f"{config.postgres_url}/{POSTGRES_DB_NAME}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"{config.postgres_url}/{POSTGRES_DB_NAME}")
 
     offset = 0
     try:

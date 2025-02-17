@@ -49,20 +49,14 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
     if db_file_path.exists() and overwrite:
         db_file_path.unlink()
 
-    engine = create_engine(
-        f"sqlite:///{db_file_path}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"sqlite:///{db_file_path}")
     Base.metadata.create_all(engine)
     engine.dispose()
 
 
 @contextmanager
 def get_session(config: Config) -> Generator[Session, None, None]:
-    engine = create_engine(
-        f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}")
     with Session(engine) as session:
         yield session
     engine.dispose()
@@ -113,10 +107,7 @@ RowTuple = Tuple[str, Optional[str], Optional[str], Optional[str]]
 
 
 def fetch_data_from_postgres(config: Config, chunk_size: int = 10000) -> Generator[List[RowTuple], None, None]:
-    engine = create_engine(
-        f"{config.postgres_url}/{POSTGRES_DB_NAME}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"{config.postgres_url}/{POSTGRES_DB_NAME}")
 
     # key: submission_id, value: (date_created, date_modified, date_published)
     submission_date: Dict[str, DateTuple] = {}
