@@ -1,10 +1,10 @@
 """\
 - SRA_Accessions.tab から、BioProject/BioSample ID と SRA Accession ID の関連を取得するための module
-- bp_relation_ids や bs_relation_ids などの db を作成するために用いられる
+- relation ids (dbXrefs) の bulk insert のために使われる
 """
 import datetime
 from pathlib import Path
-from typing import Dict, Literal, Optional, Set
+from typing import Dict, Literal, Set
 
 import httpx
 
@@ -27,17 +27,15 @@ TYPE_FILTERS = {
     "biosample": ["SAMPLE", "EXPERIMENT", "RUN"],
 }
 
-# Key: BioProject/BioSample ID, Value: Set of SRA Accession IDs
-ACCESSIONS_TAB_CACHE: Optional[Dict[str, Set[str]]] = None
 
+def load_sra_accessions_tab(sra_accessions_tab_file: Path, accession_type: AccessionType) -> Dict[str, Set[str]]:
+    """\
+    - Return:
+        - Key: BioProject/BioSample ID
+        - Value: Set of DBLink IDs
+    """
 
-def load_sra_accessions_tab(sra_accessions_tab_file: Path, accession_type: AccessionType) -> None:
-    if sra_accessions_tab_file.exists() is False:
-        raise FileNotFoundError(f"{sra_accessions_tab_file} not found")
-
-    global ACCESSIONS_TAB_CACHE  # pylint: disable=global-statement
-    if ACCESSIONS_TAB_CACHE is None:
-        ACCESSIONS_TAB_CACHE = {}
+    id_to_relation_ids: Dict[str, Set[str]] = {}
 
     with sra_accessions_tab_file.open("r", encoding="utf-8") as f:
         next(f)  # skip header
@@ -47,23 +45,11 @@ def load_sra_accessions_tab(sra_accessions_tab_file: Path, accession_type: Acces
                 continue
 
             bp_bs_id = fields[BIOPROJECT_INDEX] if accession_type == "bioproject" else fields[BIOSAMPLE_INDEX]
-            if bp_bs_id not in ACCESSIONS_TAB_CACHE:
-                ACCESSIONS_TAB_CACHE[bp_bs_id] = set()
-            ACCESSIONS_TAB_CACHE[bp_bs_id].add(fields[ID_INDEX])
+            if bp_bs_id not in id_to_relation_ids:
+                id_to_relation_ids[bp_bs_id] = set()
+            id_to_relation_ids[bp_bs_id].add(fields[ID_INDEX])
 
-
-def get_relation_ids(bp_bs_id: str) -> Set[str]:
-    if ACCESSIONS_TAB_CACHE is None:
-        raise Exception("SRA Accessions Tab Cache is not loaded.")
-
-    return ACCESSIONS_TAB_CACHE.get(bp_bs_id, set())
-
-
-def get_cache() -> Dict[str, Set[str]]:
-    if ACCESSIONS_TAB_CACHE is None:
-        raise Exception("SRA Accessions Tab Cache is not loaded.")
-
-    return ACCESSIONS_TAB_CACHE
+    return id_to_relation_ids
 
 
 def download_sra_accessions_tab_file(config: Config) -> Path:

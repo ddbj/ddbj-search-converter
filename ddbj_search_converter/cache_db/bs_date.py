@@ -190,14 +190,14 @@ def count_records(config: Config) -> int:
             return -1
 
 
-def get_dates(accession: str, session: Optional[Session] = None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def get_dates(config: Config, accession: str, session: Optional[Session] = None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """\
     Return (dateCreated, dateModified, datePublished)
     """
     try:
         query = select(Record).where(Record.accession == accession)
         if session is None:
-            with get_session(get_config()) as session:
+            with get_session(config) as session:
                 res = session.execute(query).scalar_one_or_none()
         else:
             res = session.execute(query).scalar_one_or_none()

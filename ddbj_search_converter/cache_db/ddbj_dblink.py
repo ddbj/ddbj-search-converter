@@ -1,9 +1,9 @@
 """\
 - dblink 以下の id relation 情報 から、BioProject/BioSample ID と SRA Accession ID の関連を取得するための module
     - /lustre9/open/shared_data/dblink 以下のファイルのこと
-- bp_relation_ids や bs_relation_ids などの db を作成するために用いられる
+- relation ids (dbXrefs) の bulk insert のために使われる
 """
-from typing import Dict, Literal, Optional, Set, Tuple
+from typing import Dict, Literal, Set, Tuple
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.schema import XrefType
@@ -30,14 +30,14 @@ SOURCE_FILE_TO_ID_RELATION: Dict[str, Tuple[XrefType, XrefType]] = {
 }
 
 
-# Key: BioProject/BioSample ID, Value: Set of DBLink IDs
-DBLINK_FILES_CACHE: Optional[Dict[str, Set[str]]] = None
+def load_dblink_files(config: Config, accession_type: AccessionType) -> Dict[str, Set[str]]:
+    """\
+    - Return:
+        - Key: BioProject/BioSample ID
+        - Value: Set of DBLink IDs
+    """
 
-
-def load_dblink_files(config: Config, accession_type: AccessionType) -> None:
-    global DBLINK_FILES_CACHE  # pylint: disable=global-statement
-    if DBLINK_FILES_CACHE is None:
-        DBLINK_FILES_CACHE = {}
+    id_to_relation_ids: Dict[str, Set[str]] = {}
 
     for filename, relation in SOURCE_FILE_TO_ID_RELATION.items():
         if accession_type not in relation:
@@ -50,20 +50,8 @@ def load_dblink_files(config: Config, accession_type: AccessionType) -> None:
                     bp_bs_id, relation_id = id0, id1
                 else:
                     bp_bs_id, relation_id = id1, id0
-                if bp_bs_id not in DBLINK_FILES_CACHE:
-                    DBLINK_FILES_CACHE[bp_bs_id] = set()
-                DBLINK_FILES_CACHE[bp_bs_id].add(relation_id)
+                if bp_bs_id not in id_to_relation_ids:
+                    id_to_relation_ids[bp_bs_id] = set()
+                id_to_relation_ids[bp_bs_id].add(relation_id)
 
-
-def get_relation_ids(bp_bs_id: str) -> Set[str]:
-    if DBLINK_FILES_CACHE is None:
-        raise Exception("DBLink Files Cache is not loaded.")
-
-    return DBLINK_FILES_CACHE.get(bp_bs_id, set())
-
-
-def get_cache() -> Dict[str, Set[str]]:
-    if DBLINK_FILES_CACHE is None:
-        raise Exception("DBLink Files Cache is not loaded.")
-
-    return DBLINK_FILES_CACHE
+    return id_to_relation_ids

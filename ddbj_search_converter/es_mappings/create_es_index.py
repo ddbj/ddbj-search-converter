@@ -13,6 +13,14 @@ from elasticsearch import Elasticsearch
 IndexName = Literal["bioproject", "biosample"]
 
 
+SETTINGS = {
+    "index": {
+        "refresh_interval": "30s",
+        "mapping.nested_objects.limit": 100000,
+    }
+}
+
+
 def load_mapping(index: IndexName) -> Any:
     here = Path(__file__).resolve().parent
     mapping_file = here.joinpath(f"{index}_mapping.json")
@@ -26,6 +34,7 @@ def create_es_index(config: Config, index: IndexName) -> None:
         if es.indices.exists(index=index):
             raise Exception(f"Index '{index}' already exists.")
         mapping = load_mapping(index)
+        mapping["settings"] = SETTINGS
         es.indices.create(index=index, body=mapping)
     except Exception as e:
         LOGGER.error("Failed to create index '%s': %s", index, e)

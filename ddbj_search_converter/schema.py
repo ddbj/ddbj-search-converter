@@ -12,7 +12,7 @@ class Distribution(BaseModel):
 
 
 class Organism(BaseModel):
-    identifier: str
+    identifier: Optional[str]
     name: Optional[str]
 
 

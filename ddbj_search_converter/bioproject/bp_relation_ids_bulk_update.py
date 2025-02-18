@@ -1,7 +1,5 @@
 """\
-- BioProject ID とその他の ID との relation 情報を管理するための DB 周り
-    - model 定義、初期化 (postgres -> sqlite) 関数、getter 関数などを提供する
-- 元データは、dblink と SRA_Accessions.tab となる
+- dblink と SRA_Accessions.tab から BioProject ID とその他の ID との relation 情報 を作成し、es に bulk update する
 - どの accessions_tab_file を使うかの logic
     - まず、config.py における DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_BASE_PATH がある
         - 日時 batch では、これを元に find して、使用されると思われる
@@ -10,118 +8,101 @@
     - file が指定されず、--download が指定されている場合は、download してきて、それを使用する
 """
 import argparse
-import json
 import sys
 from collections import defaultdict
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, Tuple
+from typing import Any, Dict, List, Literal, Tuple
 
 from pydantic import BaseModel
-from sqlalchemy import String, create_engine, insert, select
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from ddbj_search_converter.cache_db.ddbj_dblink import \
-    get_cache as get_dblink_cache
 from ddbj_search_converter.cache_db.ddbj_dblink import load_dblink_files
 from ddbj_search_converter.cache_db.sra_accessions import (
-    download_sra_accessions_tab_file, find_latest_sra_accessions_tab_file)
-from ddbj_search_converter.cache_db.sra_accessions import \
-    get_cache as get_sra_accessions_cache
-from ddbj_search_converter.cache_db.sra_accessions import \
-    load_sra_accessions_tab
+    download_sra_accessions_tab_file, find_latest_sra_accessions_tab_file,
+    load_sra_accessions_tab)
+from ddbj_search_converter.cache_db.to_xref import to_xref
 from ddbj_search_converter.config import (LOGGER, Config, get_config,
                                           set_logging_level)
+from elasticsearch import Elasticsearch, helpers
 
-DB_FILE_NAME = "bp_relation_ids.sqlite"
-TABLE_NAME = "bp_relation_ids"
-
-
-# === Models ===
+AccessionType = Literal["bioproject", "biosample"]
 
 
-class Base(DeclarativeBase):
-    pass
+def is_document_mission_exception(error: Any) -> bool:
+    """\
+    e.g.,: {'update': {'_index': 'bioproject', '_id': 'PRJNA', 'status': 404, 'error': {'type': 'document_missing_exception', 'reason': '[PRJNA]: document missing', 'index_uuid': 'ujbdYuPJQdSaEZ954FJaXQ', 'shard': '0', 'index': 'bioproject'}}}
+    """
+    return (
+        isinstance(error, dict)
+        and "update" in error
+        and error["update"]["status"] == 404
+        and error["update"]["error"]["type"] == "document_missing_exception"
+    )
 
 
-class Record(Base):
-    __tablename__ = TABLE_NAME
-
-    accession: Mapped[str] = mapped_column(String, primary_key=True)
-    relation_ids: Mapped[str] = mapped_column(String)
-
-
-# === Abstracted functions ===
-
-
-def init_db(config: Config, overwrite: bool = True) -> None:
-    db_file_path = config.work_dir.joinpath(DB_FILE_NAME)
-    if db_file_path.exists() and overwrite:
-        db_file_path.unlink()
-
-    engine = create_engine(f"sqlite:///{db_file_path}")
-    Base.metadata.create_all(engine)
-    engine.dispose()
-
-
-@contextmanager
-def get_session(config: Config) -> Generator[Session, None, None]:
-    engine = create_engine(f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}")
-    with Session(engine) as session:
-        yield session
-    engine.dispose()
-
-
-# === CRUD, etc. ===
-
-
-def store_data(config: Config, sra_accessions_tab_file: Path) -> None:
+def bulk_update_to_es(config: Config, sra_accessions_tab_file: Path, accession_type: AccessionType) -> None:
     LOGGER.info("Loading DBLink files to cache.")
-    load_dblink_files(config, "bioproject")
+    dblink_cache = load_dblink_files(config, accession_type)
     LOGGER.info("Loading SRA Accessions Tab file to cache.")
-    load_sra_accessions_tab(sra_accessions_tab_file, "bioproject")
+    sra_accessions_cache = load_sra_accessions_tab(sra_accessions_tab_file, accession_type)
 
-    dblink_cache = get_dblink_cache()
-    sra_accessions_cache = get_sra_accessions_cache()
+    LOGGER.info("Merging DBLink and SRA Accessions cache.")
     merged_cache = defaultdict(set)
     for bp_id, dblink_ids in dblink_cache.items():
         merged_cache[bp_id].update(dblink_ids)
     for bp_id, sra_accessions in sra_accessions_cache.items():
         merged_cache[bp_id].update(sra_accessions)
 
-    with get_session(config) as session:
-        try:
-            session.execute(
-                insert(Record),
-                [{
-                    "accession": bp_id,
-                    "relation_ids": json.dumps(list(relation_ids)),
-                } for bp_id, relation_ids in merged_cache.items()]
+    LOGGER.info("Bulk updating to Elasticsearch.")
+    LOGGER.info("Updating %d documents.", len(merged_cache))
+    count = 0
+
+    es_client = Elasticsearch(config.es_url)
+    failed_docs: List[Dict[str, Any]] = []
+    actions = []
+    for accession_id, relation_ids in merged_cache.items():
+        actions.append({
+            "_op_type": "update",
+            "_index": accession_type,
+            "_id": accession_id,
+            "_source": {
+                "doc": {
+                    "dbXref": [to_xref(id_).model_dump(by_alias=True) for id_ in relation_ids]
+                },
+            },
+        })
+        count += 1
+        if len(actions) >= 2000:
+            LOGGER.info("Updating %d/%d documents.", count, len(merged_cache))
+            _success, failed = helpers.bulk(
+                es_client,
+                actions,
+                stats_only=False,
+                raise_on_error=False
             )
-            session.commit()
-        except Exception as e:
-            LOGGER.error("Failed to store data to SQLite: %s", e)
-            session.rollback()
-            raise
+            if isinstance(failed, list):
+                for error in failed:
+                    if not is_document_mission_exception(error):
+                        failed_docs.append(error)
+            actions.clear()
 
+    if len(actions) > 0:
+        LOGGER.info("Updating %d/%d documents.", count, len(merged_cache))
+        _success, failed = helpers.bulk(
+            es_client,
+            actions,
+            stats_only=False,
+            raise_on_error=False
+        )
+        if isinstance(failed, list):
+            for error in failed:
+                if not is_document_mission_exception(error):
+                    failed_docs.append(error)
 
-def get_relation_ids(config: Config, accession: str) -> List[str]:
-    try:
-        with get_session(config) as session:
-            record = session.execute(
-                select(Record).where(Record.accession == accession)
-            ).scalar_one_or_none()
-
-            if record is None:
-                return []
-
-            return json.loads(record.relation_ids)  # type: ignore
-    except Exception as e:
-        raise Exception(f"Failed to get relation IDs from SQLite: {e}") from e
+    if failed_docs:
+        LOGGER.error("Failed to update some docs: \n%s", failed_docs)
 
 
 # === CLI implementation ===
-
 
 class Args(BaseModel):
     download: bool = False
@@ -130,20 +111,10 @@ class Args(BaseModel):
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser = argparse.ArgumentParser(
         description="""\
-            Create SQLite DB for BioProject relation IDs.
+            Bulk update documents in Elasticsearch with relation IDs from DBLink and SRA Accessions.
         """
     )
 
-    parser.add_argument(
-        "--work-dir",
-        help=f"""\
-            The base directory where the script outputs are stored.
-            By default, it is set to $PWD/ddbj_search_converter_results.
-            The resulting SQLite file will be stored in {{work_dir}}/{DB_FILE_NAME}.
-        """,
-        nargs="?",
-        default=None,
-    )
     parser.add_argument(
         "--sra-accessions-tab-file",
         help="""\
@@ -162,6 +133,12 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         action="store_true",
     )
     parser.add_argument(
+        "--es-url",
+        help="The URL of the Elasticsearch server to update the data into.",
+        nargs="?",
+        default=None,
+    )
+    parser.add_argument(
         "--debug",
         help="Enable debug mode.",
         action="store_true",
@@ -171,9 +148,8 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
 
     # 優先順位: コマンドライン引数 > 環境変数 > デフォルト値 (config.py)
     config = get_config()
-    if parsed_args.work_dir is not None:
-        config.work_dir = Path(parsed_args.work_dir)
-        config.work_dir.mkdir(parents=True, exist_ok=True)
+    if parsed_args.es_url is not None:
+        config.es_url = parsed_args.es_url
 
     # ここの logic は、この file の docstring に記載されている通り
     if parsed_args.sra_accessions_tab_file is not None:
@@ -201,7 +177,7 @@ def main() -> None:
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
 
-    LOGGER.info("Creating SQLite DB for BioProject relation IDs.")
+    LOGGER.info("Bulk updating BioProject documents in Elasticsearch.")
     LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
     if args.download:
@@ -209,10 +185,9 @@ def main() -> None:
         config.sra_accessions_tab_file_path = download_sra_accessions_tab_file(config)
     LOGGER.info("Using SRA_Accessions.tab file: %s", config.sra_accessions_tab_file_path)
 
-    init_db(config)
-    store_data(config, config.sra_accessions_tab_file_path)
+    bulk_update_to_es(config, config.sra_accessions_tab_file_path, "bioproject")
 
-    LOGGER.info("Completed. Saved to %s", config.work_dir.joinpath(DB_FILE_NAME))
+    LOGGER.info("Finished updating BioProject documents in Elasticsearch.")
 
 
 if __name__ == "__main__":

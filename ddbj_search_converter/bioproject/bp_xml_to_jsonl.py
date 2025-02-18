@@ -21,9 +21,6 @@ import xmltodict
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
-from ddbj_search_converter.cache_db.bp_relation_ids import \
-    get_relation_ids as get_bp_relation_ids
-from ddbj_search_converter.cache_db.to_xref import to_xref
 from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, TODAY,
                                           Config, get_config,
                                           set_logging_level)
@@ -32,11 +29,13 @@ from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           Organization, Publication, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
-DEFAULT_PARALLEL_NUM = 32
+DEFAULT_PARALLEL_NUM = 64
 TMP_XML_DIR_NAME = "tmp_xml"
-TMP_XML_FILE_NAME = "bioproject_{n}.xml"
-DDBJ_JSONL_FILE_NAME = "ddbj_bioproject.jsonl"
-COMMON_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
+DDBJ_JSONL_FILE_NAME = "ddbj_{accession}_{n}.jsonl"
+COMMON_JSONL_FILE_NAME = "{accession}_{n}.jsonl"
+
+
+AccessionType = Literal["bioproject", "biosample"]
 
 
 def xml_to_jsonl(
@@ -48,16 +47,11 @@ def xml_to_jsonl(
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     remove_tmp_dir: bool = False,
 ) -> None:
-    if is_ddbj is True:
-        jsonl_file = output_dir.joinpath(DDBJ_JSONL_FILE_NAME)
-        xml_to_jsonl_worker(config, xml_file, jsonl_file, is_ddbj, batch_size)
-        return
-
-    # common xml の場合は、先に xml を分割してから、並列化して処理する
+    # 先に xml を分割してから、並列化して処理する
     tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
     tmp_xml_dir.mkdir(parents=True, exist_ok=True)
     LOGGER.info("Splitting XML file: %s", xml_file)
-    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, batch_size)
+    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "bioproject")
     jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
 
     LOGGER.info("Starting parallel conversion of XML to JSON Lines. A total of %d JSON Lines files will be generated.", len(tmp_xml_files))
@@ -85,19 +79,28 @@ def xml_to_jsonl(
         shutil.rmtree(tmp_xml_dir)
 
 
-def _iterate_xml_element(xml_file: Path) -> Generator[bytes, None, None]:
+def _iterate_xml_element(xml_file: Path, accession_type: AccessionType) -> Generator[bytes, None, None]:
     """\
     - XML file を行ごとに読み、<Package> ... </Package> の部分を抽出する
+    OR
+    - XML file を行ごとに読み、<BioSample> ... </BioSample> の部分を抽出する
     """
+    if accession_type == "bioproject":
+        tag_start = b"<Package>"
+        tag_end = b"</Package>"
+    else:
+        tag_start = b"<BioSample"
+        tag_end = b"</BioSample>"
+
     inside_package = False
     buffer = bytearray()
     with xml_file.open(mode="rb") as f:
         for line in f:
             stripped_line = line.strip()
-            if stripped_line.startswith(b"<Package>"):
+            if stripped_line.startswith(tag_start):
                 inside_package = True
                 buffer = bytearray(line)
-            elif stripped_line.startswith(b"</Package>"):
+            elif stripped_line.startswith(tag_end):
                 inside_package = False
                 buffer.extend(line)
                 yield bytes(buffer)
@@ -106,18 +109,30 @@ def _iterate_xml_element(xml_file: Path) -> Generator[bytes, None, None]:
                 buffer.extend(line)
 
 
-def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> List[Path]:
-    head = b'<?xml version="1.0" encoding="UTF-8"?>\n<PackageSet>\n'
-    tail = b'</PackageSet>'
+def split_xml(xml_file: Path, output_dir: Path, is_ddbj: bool, batch_size: int, accession_type: AccessionType) -> List[Path]:
+    if accession_type == "bioproject":
+        head = b'<?xml version="1.0" encoding="UTF-8"?>\n<PackageSet>\n'
+        tail = b'</PackageSet>'
+    else:
+        head = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
+        tail = b'</BioSampleSet>'
+
+    if is_ddbj:
+        file_name_template = DDBJ_JSONL_FILE_NAME
+    else:
+        file_name_template = COMMON_JSONL_FILE_NAME
 
     output_files: List[Path] = []
     batch_buffer: List[bytes] = []
     file_count = 1
-    for xml_element in _iterate_xml_element(xml_file):
+    for xml_element in _iterate_xml_element(xml_file, accession_type):
         batch_buffer.append(xml_element)
 
         if len(batch_buffer) >= batch_size:
-            output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
+            output_file = output_dir.joinpath(file_name_template.format(
+                accession=accession_type,
+                n=file_count
+            ).replace("jsonl", "xml"))
             output_files.append(output_file)
             with output_file.open(mode="wb") as f:
                 f.write(head)
@@ -127,7 +142,10 @@ def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_
             batch_buffer.clear()
 
     if len(batch_buffer) > 0:
-        output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
+        output_file = output_dir.joinpath(file_name_template.format(
+            accession=accession_type,
+            n=file_count
+        ).replace("jsonl", "xml"))
         output_files.append(output_file)
         with output_file.open(mode="wb") as f:
             f.write(head)
@@ -142,7 +160,7 @@ def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddb
     LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
 
     docs: List[BioProject] = []
-    for xml_element in _iterate_xml_element(xml_file):
+    for xml_element in _iterate_xml_element(xml_file, "bioproject"):
         bp_instance = xml_element_to_bp_instance(config, xml_element, is_ddbj)
         docs.append(bp_instance)
 
@@ -186,7 +204,7 @@ def xml_element_to_bp_instance(config: Config, xml_element: bytes, is_ddbj: bool
         publication=_parse_and_update_publication(accession, project),
         grant=_parse_and_update_grant(accession, project),
         externalLink=_parse_external_link(accession, project),
-        dbXref=[to_xref(id_) for id_ in get_bp_relation_ids(config, accession)],
+        dbXref=[],  # あとから、別途、es に bulk insert する
         sameAs=_parse_same_as(accession, project),
         status=_parse_status(project, is_ddbj),
         visibility="unrestricted-access",

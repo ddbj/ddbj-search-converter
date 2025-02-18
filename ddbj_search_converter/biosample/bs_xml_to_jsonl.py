@@ -9,15 +9,14 @@ import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import xmltodict
 from pydantic import BaseModel
 
+from ddbj_search_converter.bioproject.bp_xml_to_jsonl import (
+    _iterate_xml_element, split_xml)
 from ddbj_search_converter.cache_db.bs_date import get_dates as get_bs_dates
-from ddbj_search_converter.cache_db.bs_relation_ids import \
-    get_relation_ids as get_bs_relation_ids
-from ddbj_search_converter.cache_db.to_xref import to_xref
 from ddbj_search_converter.config import (BS_JSONL_DIR_NAME, LOGGER, TODAY,
                                           Config, get_config,
                                           set_logging_level)
@@ -25,11 +24,8 @@ from ddbj_search_converter.schema import (Attribute, BioSample, Distribution,
                                           Model, Organism, Package, Xref)
 
 DEFAULT_BATCH_SIZE = 10000
-DEFAULT_PARALLEL_NUM = 32
+DEFAULT_PARALLEL_NUM = 64
 TMP_XML_DIR_NAME = "tmp_xml"
-TMP_XML_FILE_NAME = "biosample_{n}.xml"
-DDBJ_JSONL_FILE_NAME = "ddbj_biosample.jsonl"
-COMMON_JSONL_FILE_NAME = "biosample_{n}.jsonl"
 
 
 def xml_to_jsonl(
@@ -49,19 +45,9 @@ def xml_to_jsonl(
         LOGGER.info("Extracting gz file: %s", xml_file)
         xml_file = extract_gz(xml_file, tmp_xml_dir)
 
-    if is_ddbj is True:
-        jsonl_file = output_dir.joinpath(DDBJ_JSONL_FILE_NAME)
-        xml_to_jsonl_worker(config, xml_file, jsonl_file, is_ddbj, batch_size)
-
-        # 一時ファイルを削除
-        if remove_tmp_dir:
-            shutil.rmtree(tmp_xml_dir)
-
-        return
-
-    # common xml の場合は、先に xml を分割してから、並列化して処理する
+    # 先に xml を分割してから、並列化して処理する
     LOGGER.info("Splitting XML file: %s", xml_file)
-    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, batch_size)
+    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "biosample")
     jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
 
     LOGGER.info("Starting parallel conversion of XML to JSON Lines. A total of %d JSON Lines files will be generated.", len(tmp_xml_files))
@@ -101,64 +87,11 @@ def extract_gz(gz_file: Path, output_dir: Path) -> Path:
     return output_file
 
 
-def _iterate_xml_element(xml_file: Path) -> Generator[bytes, None, None]:
-    """\
-    - XML file を行ごとに読み、<BioSample> ... </BioSample> の部分を抽出する
-    """
-    inside_package = False
-    buffer = bytearray()
-    with xml_file.open(mode="rb") as f:
-        for line in f:
-            stripped_line = line.strip()
-            if stripped_line.startswith(b"<BioSample>"):
-                inside_package = True
-                buffer = bytearray(line)
-            elif stripped_line.startswith(b"</BioSample>"):
-                inside_package = False
-                buffer.extend(line)
-                yield bytes(buffer)
-                buffer.clear()
-            elif inside_package:
-                buffer.extend(line)
-
-
-def split_xml(xml_file: Path, output_dir: Path, batch_size: int = DEFAULT_BATCH_SIZE) -> List[Path]:
-    head = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
-    tail = b'</BioSampleSet>\n'
-
-    output_files: List[Path] = []
-    batch_buffer: List[bytes] = []
-    file_count = 1
-    for xml_element in _iterate_xml_element(xml_file):
-        batch_buffer.append(xml_element)
-
-        if len(batch_buffer) >= batch_size:
-            output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
-            output_files.append(output_file)
-            with output_file.open(mode="wb") as f:
-                f.write(head)
-                f.writelines(batch_buffer)
-                f.write(tail)
-            file_count += 1
-            batch_buffer.clear()
-
-    if len(batch_buffer) > 0:
-        output_file = output_dir.joinpath(TMP_XML_FILE_NAME.format(n=file_count))
-        output_files.append(output_file)
-        with output_file.open(mode="wb") as f:
-            f.write(head)
-            f.writelines(batch_buffer)
-            f.write(tail)
-        batch_buffer.clear()
-
-    return output_files
-
-
-def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool, batch_size: int) -> None:
+def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
     LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
 
     docs: List[BioSample] = []
-    for xml_element in _iterate_xml_element(xml_file):
+    for xml_element in _iterate_xml_element(xml_file, "biosample"):
         bp_instance = xml_element_to_bs_instance(config, xml_element, is_ddbj)
         docs.append(bp_instance)
 
@@ -181,7 +114,7 @@ def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool
     package = _parse_and_update_package(accession, sample, model, is_ddbj)
 
     if is_ddbj:
-        date_created, date_modified, date_published = get_bs_dates(accession)
+        date_created, date_modified, date_published = get_bs_dates(config, accession)
     else:
         date_created, date_modified, date_published = _parse_date(sample)
 
@@ -203,7 +136,7 @@ def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool
         attributes=_parse_attributes(accession, sample),
         model=model,
         package=package,
-        dbXref=[to_xref(id_) for id_ in get_bs_relation_ids(config, accession)],
+        dbXref=[],  # あとから、別途、es に bulk insert する
         sameAs=_parse_same_as(accession, sample),
         status="public",
         visibility="unrestricted-access",
@@ -253,7 +186,7 @@ def _parse_organism(accession: str, sample: Dict[str, Any], is_ddbj: bool) -> Op
         else:
             name = organism_obj["taxonomy_name"]
         return Organism(
-            identifier=str(organism_obj["taxonomy_id"]),
+            identifier=organism_obj.get("taxonomy_id", None),
             name=name,
         )
     except Exception as e:

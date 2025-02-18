@@ -25,15 +25,15 @@
 
 ```toml
 [project.scripts]
+create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
-create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
-create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
-create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
 bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
+bp_relation_ids_bulk_update = "ddbj_search_converter.bioproject.bp_relation_ids_bulk_update:main"
 bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
 bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+bs_relation_ids_bulk_update = "ddbj_search_converter.biosample.bs_relation_ids_bulk_update:main"
 ```
 
 - それぞれの script は、`--help` で特有の argument が存在する
@@ -80,15 +80,13 @@ $ docker compose -f compose.dev.yml up -d --build
 $ docker compose -f compose.dev.yml exec app bash
 
 # Inside container
-# Cache 用 sqlite db を作成する
-$ create_bp_date_db
-$ create_bs_date_db
-$ create_bp_relation_ids
-$ create_bs_relation_ids
-
 # Elasticsearch の index を作成する
 $ create_es_index --index bioproject
 $ create_es_index --index biosample
+
+# Cache 用 sqlite db を作成する
+$ create_bp_date_db
+$ create_bs_date_db
 
 # XML to JSON-Lines
 $ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/bioproject.xml --remove-tmp-dir
@@ -106,16 +104,16 @@ $ bs_bulk_insert
 
 - `create_bp_date_db`: 一瞬
 - `create_bs_date_db`: 14m
-- `create_bp_relation_ids`: 8m
-- `create_bs_relation_ids`: 32m
 - `create_es_index --index bioproject`: 一瞬
 - `create_es_index --index biosample`: 一瞬
-- `bp_xml_to_jsonl`:
-- `bp_xml_to_jsonl --is-ddbj`:
-- `bs_xml_to_jsonl`:
-- `bs_xml_to_jsonl --is-ddbj`:
-- `bp_bulk_insert`:
+- `bp_xml_to_jsonl`: 2m
+- `bp_xml_to_jsonl --is-ddbj`: 1m
+- `bs_xml_to_jsonl`: 60m
+- `bs_xml_to_jsonl --is-ddbj`: 20m
+- `bp_bulk_insert`: 7m
 - `bs_bulk_insert`:
+- `bp_relation_ids_bulk_update`:
+- `bs_relation_ids_bulk_update`:
 
 ## Development
 

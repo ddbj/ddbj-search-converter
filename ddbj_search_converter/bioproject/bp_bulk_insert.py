@@ -6,20 +6,23 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple
 
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, Config,
                                           get_config, set_logging_level)
-from ddbj_search_converter.schema import BioProject
+from ddbj_search_converter.schema import BioProject, BioSample
 from ddbj_search_converter.utils import (find_insert_target_files,
                                          get_recent_dirs)
 from elasticsearch import Elasticsearch, helpers
 
+AccessionType = Literal["bioproject", "biosample"]
 
-def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:
+
+def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: AccessionType) -> None:
     es_client = Elasticsearch(config.es_url)
+    DocsClass = BioProject if accession_type == "bioproject" else BioSample
 
     def _generate_es_bulk_actions(file: Path) -> Iterator[Dict[str, Any]]:
         with file.open("r", encoding="utf-8") as f:
@@ -27,10 +30,10 @@ def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:
                 line = line.strip()
                 if line == "":
                     continue
-                doc = BioProject.model_validate_json(line)
+                doc = DocsClass.model_validate_json(line)
                 yield {
                     "_op_type": "index",
-                    "_index": "bioproject",
+                    "_index": accession_type,
                     "_id": doc.identifier,
                     "_source": doc.model_dump(by_alias=True),
                 }
@@ -162,7 +165,7 @@ def main() -> None:
         LOGGER.info("These files to be inserted:\n%s", "\n".join(str(f) for f in jsonl_files))
         sys.exit(0)
 
-    bulk_insert_to_es(config, jsonl_files)
+    bulk_insert_to_es(config, jsonl_files, "bioproject")
 
     LOGGER.info("Finished inserting BioProject data into Elasticsearch")
 
