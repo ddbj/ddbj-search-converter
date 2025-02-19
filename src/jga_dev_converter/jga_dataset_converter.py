@@ -49,12 +49,12 @@ def xml2json(input:FilePath):
                 {
                     "identifier": "JGAS000714",
                     "type": "jga-study",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000714"
+                    "url": "https://ddbj.nig.ac.jp/resource/jga-study/JGAS000284"
                 }
             ]
             doc["status"] = "public"
             doc["visibility"] = "unrestricted-access"
-            dt_list_str = ["2024-05-30 09:52:53.166475+09","2025-01-30 12:45:53.77827+09","2024-05-30 13:57:36.87+09"]
+            dt_list_str = ["2021-04-07 16:20:35.053027+09","2025-02-17 10:45:40.365462+09","2021-04-08 15:25:43.607+09"]
             doc["dateCreated"] = isoformat_converter(dt_list_str)[0]
             doc["dateModified"] = isoformat_converter(dt_list_str)[2]
             doc["datePublished"] = isoformat_converter(dt_list_str)[1]
@@ -92,7 +92,7 @@ def isoformat_converter(dt_list_str:List[str])-> list:
 
 
 def dict2jsonl(docs: List[dict]):
-    jsonl_output = "jga-dataset_JGAD000847.json"
+    jsonl_output = "jga-dataset_JGAD000390.json"
     with open(jsonl_output, "a") as f:
         for doc in docs:
 
@@ -105,6 +105,6 @@ def dict2jsonl(docs: List[dict]):
 
 
 if __name__ == "__main__":
-    input = "/mnt/data/ddbj/jga-adhoc/JGAD000847.xml"
+    input = "/mnt/data/ddbj/jga-adhoc/JGAD000390.xml"
     docs = xml2json(input)
     dict2jsonl(docs)
