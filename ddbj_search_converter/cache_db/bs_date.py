@@ -6,10 +6,11 @@
     - SQLite: ${config.work_dir}/${DB_FILE_NAME (bs_date.sqlite)} に保存する
 """
 import argparse
+import itertools
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, Iterable, List, Optional, Tuple
 
 from pydantic import BaseModel
 from sqlalchemy import String, create_engine, insert, select, text
@@ -190,29 +191,50 @@ def count_records(config: Config) -> int:
             return -1
 
 
-def get_dates(config: Config, accession: str, session: Optional[Session] = None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def get_dates(config: Config, accession: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """\
     Return (dateCreated, dateModified, datePublished)
     """
     try:
-        query = select(Record).where(Record.accession == accession)
-        if session is None:
-            with get_session(config) as session:
-                res = session.execute(query).scalar_one_or_none()
-        else:
-            res = session.execute(query).scalar_one_or_none()
+        with get_session(config) as session:
+            record = session.execute(
+                select(Record).where(Record.accession == accession)
+            ).scalar_one_or_none()
 
-        if res is None:
-            return None, None, None
+            if record is None:
+                return None, None, None
 
-        return (
-            getattr(res, "date_created", None),
-            getattr(res, "date_modified", None),
-            getattr(res, "date_published", None),
-        )
+            return record.date_created, record.date_modified, record.date_published
     except Exception as e:
         LOGGER.debug("Failed to get dates from SQLite: %s", e)
         return None, None, None
+
+
+def _chunked_iterable(iterable: Iterable[str], chunk_size: int) -> Generator[List[str], None, None]:
+    it = iter(iterable)
+    while chunk := list(itertools.islice(it, chunk_size)):
+        yield chunk
+
+
+def get_dates_bulk(config: Config, accessions: Iterable[str]) -> Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]:
+    """\
+    Return (dateCreated, dateModified, datePublished)
+    """
+    try:
+        results = {}
+        with get_session(config) as session:
+            for batch in _chunked_iterable(accessions, 2000):
+                records = session.execute(
+                    select(Record).where(Record.accession.in_(batch))
+                ).scalars().all()
+
+                for record in records:
+                    results[record.accession] = (record.date_created, record.date_modified, record.date_published)
+
+        return results
+    except Exception as e:
+        LOGGER.debug("Failed to get dates from SQLite: %s", e)
+        return {}
 
 
 # === CLI implementation ===

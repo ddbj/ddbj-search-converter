@@ -3,13 +3,12 @@
 - 各所で get_config() として呼び出すことも可能だが、それぞれの cli script が argparse を使っているため、設定の不都合が生じる可能性がある
     - そのため、各 script の main 関数や parse_args で config の値の上書きをし、その後、config のバケツリレーを行う
 """
-
 import datetime
 import logging
 import logging.config
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -18,6 +17,7 @@ WORK_DIR = Path.cwd().joinpath("ddbj_search_converter_results")
 TODAY = datetime.date.today().strftime(DATE_FORMAT)
 BP_JSONL_DIR_NAME = "bioproject_jsonl"
 BS_JSONL_DIR_NAME = "biosample_jsonl"
+AccessionType = Literal["bioproject", "biosample"]
 
 
 class Config(BaseModel):

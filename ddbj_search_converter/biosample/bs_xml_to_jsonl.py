@@ -15,13 +15,18 @@ import xmltodict
 from pydantic import BaseModel
 
 from ddbj_search_converter.bioproject.bp_xml_to_jsonl import (
-    _iterate_xml_element, split_xml)
+    _iterate_xml_element, listing_tmp_xml_files, split_xml)
 from ddbj_search_converter.cache_db.bs_date import get_dates as get_bs_dates
+from ddbj_search_converter.cache_db.bs_date import \
+    get_dates_bulk as get_bs_dates_bulk
+from ddbj_search_converter.cache_db.bs_relation_ids import (
+    get_relation_ids, get_relation_ids_bulk)
 from ddbj_search_converter.config import (BS_JSONL_DIR_NAME, LOGGER, TODAY,
                                           Config, get_config,
                                           set_logging_level)
 from ddbj_search_converter.schema import (Attribute, BioSample, Distribution,
                                           Model, Organism, Package, Xref)
+from ddbj_search_converter.utils import to_xref
 
 DEFAULT_BATCH_SIZE = 10000
 DEFAULT_PARALLEL_NUM = 64
@@ -36,18 +41,25 @@ def xml_to_jsonl(
     batch_size: int = DEFAULT_BATCH_SIZE,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     remove_tmp_dir: bool = False,
+    use_existing_tmp_dir: bool = False,
 ) -> None:
     tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
     tmp_xml_dir.mkdir(parents=True, exist_ok=True)
 
-    # gz ファイルの場合は、一時ファイルに展開してから処理する
-    if xml_file.suffix == ".gz":
-        LOGGER.info("Extracting gz file: %s", xml_file)
-        xml_file = extract_gz(xml_file, tmp_xml_dir)
+    if use_existing_tmp_dir:
+        if not tmp_xml_dir.exists():
+            raise FileNotFoundError(f"Temporary directory not found: {tmp_xml_dir}")
+        tmp_xml_files = listing_tmp_xml_files(tmp_xml_dir, is_ddbj, "biosample")
+    else:
+        # gz ファイルの場合は、一時ファイルに展開してから処理する
+        if xml_file.suffix == ".gz":
+            LOGGER.info("Extracting gz file: %s", xml_file)
+            xml_file = extract_gz(xml_file, tmp_xml_dir)
 
-    # 先に xml を分割してから、並列化して処理する
-    LOGGER.info("Splitting XML file: %s", xml_file)
-    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "biosample")
+        # 先に xml を分割してから、並列化して処理する
+        LOGGER.info("Splitting XML file: %s", xml_file)
+        tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "biosample")
+
     jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
 
     LOGGER.info("Starting parallel conversion of XML to JSON Lines. A total of %d JSON Lines files will be generated.", len(tmp_xml_files))
@@ -60,7 +72,6 @@ def xml_to_jsonl(
                 tmp_xml_file,
                 jsonl_file,
                 is_ddbj,
-                batch_size,
             )
             for tmp_xml_file, jsonl_file in zip(tmp_xml_files, jsonl_files)
         ]
@@ -87,24 +98,31 @@ def extract_gz(gz_file: Path, output_dir: Path) -> Path:
     return output_file
 
 
-def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
+def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool) -> None:
     LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
 
-    docs: List[BioSample] = []
+    docs: Dict[str, BioSample] = {}
     for xml_element in _iterate_xml_element(xml_file, "biosample"):
-        bp_instance = xml_element_to_bs_instance(config, xml_element, is_ddbj)
-        docs.append(bp_instance)
+        bs_instance = xml_element_to_bs_instance(config, xml_element, is_ddbj, use_db=False)
+        docs[bs_instance.identifier] = bs_instance
 
-        if len(docs) >= batch_size:
-            write_jsonl(jsonl_file, docs, is_append=True)
-            docs.clear()
+    # dbXref の一括取得
+    relation_ids_map = get_relation_ids_bulk(config, docs.keys())
+    for accession, relation_ids in relation_ids_map.items():
+        docs[accession].dbXref = [to_xref(id_) for id_ in relation_ids]
 
-    if len(docs) > 0:
-        write_jsonl(jsonl_file, docs, is_append=True)
-        docs.clear()
+    # date の一括取得
+    if is_ddbj:
+        date_map = get_bs_dates_bulk(config, docs.keys())
+        for accession, dates in date_map.items():
+            docs[accession].dateCreated = dates[0]
+            docs[accession].dateModified = dates[1]
+            docs[accession].datePublished = dates[2]
+
+    write_jsonl(jsonl_file, list(docs.values()))
 
 
-def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool) -> BioSample:
+def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool, use_db: bool = False) -> BioSample:
     metadata = xmltodict.parse(xml_element, attr_prefix="", cdata_key="content", process_namespaces=False)
 
     sample = metadata["BioSample"]
@@ -114,9 +132,19 @@ def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool
     package = _parse_and_update_package(accession, sample, model, is_ddbj)
 
     if is_ddbj:
-        date_created, date_modified, date_published = get_bs_dates(config, accession)
+        if use_db:
+            date_created, date_modified, date_published = get_bs_dates(config, accession)
+        else:
+            # 親関数とかで、bulk で取得し update する
+            date_created, date_modified, date_published = None, None, None
     else:
         date_created, date_modified, date_published = _parse_date(sample)
+
+    if use_db:
+        dbXref = [to_xref(id_) for id_ in get_relation_ids(config, accession)]  # pylint: disable=C0103
+    else:
+        # 親関数とかで、bulk で取得し update する
+        dbXref = []  # pylint: disable=C0103
 
     bs_instance = BioSample(
         identifier=accession,
@@ -136,7 +164,7 @@ def xml_element_to_bs_instance(config: Config, xml_element: bytes, is_ddbj: bool
         attributes=_parse_attributes(accession, sample),
         model=model,
         package=package,
-        dbXref=[],  # あとから、別途、es に bulk insert する
+        dbXref=dbXref,
         sameAs=_parse_same_as(accession, sample),
         status="public",
         visibility="unrestricted-access",
@@ -371,6 +399,7 @@ class Args(BaseModel):
     batch_size: int = DEFAULT_BATCH_SIZE
     parallel_num: int = DEFAULT_PARALLEL_NUM
     remove_tmp_dir: bool = False
+    use_existing_tmp_dir: bool = False
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -424,6 +453,11 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         action="store_true",
     )
     parser.add_argument(
+        "--use-existing-tmp-dir",
+        help="Use existing temporary directory",
+        action="store_true",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Enable debug mode",
@@ -450,6 +484,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         batch_size=parsed_args.batch_size,
         parallel_num=parsed_args.parallel_num,
         remove_tmp_dir=parsed_args.remove_tmp_dir,
+        use_existing_tmp_dir=parsed_args.use_existing_tmp_dir,
     )
 
 
@@ -471,6 +506,7 @@ def main() -> None:
         batch_size=args.batch_size,
         parallel_num=args.parallel_num,
         remove_tmp_dir=args.remove_tmp_dir,
+        use_existing_tmp_dir=args.use_existing_tmp_dir,
     )
 
     LOGGER.info("Finished converting BioSample XML to JSON-Lines")

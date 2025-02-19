@@ -9,7 +9,8 @@ import argparse
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator, List, Optional, Sequence, Tuple
+from typing import (Any, Dict, Generator, Iterable, List, Optional, Sequence,
+                    Tuple)
 
 from pydantic import BaseModel
 from sqlalchemy import Row, String, create_engine, insert, select, text
@@ -163,29 +164,42 @@ def count_records(config: Config) -> int:
             return -1
 
 
-def get_dates(config: Config, accession: str, session: Optional[Session] = None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def get_dates(config: Config, accession: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """\
     Return (dateCreated, dateModified, datePublished)
     """
     try:
-        query = select(Record).where(Record.accession == accession)
-        if session is None:
-            with get_session(config) as session:
-                res = session.execute(query).scalar_one_or_none()
-        else:
-            res = session.execute(query).scalar_one_or_none()
+        with get_session(config) as session:
+            record = session.execute(
+                select(Record).where(Record.accession == accession)
+            ).scalar_one_or_none()
 
-        if res is None:
-            return None, None, None
+            if record is None:
+                return None, None, None
 
-        return (
-            getattr(res, "date_created", None),
-            getattr(res, "date_modified", None),
-            getattr(res, "date_published", None),
-        )
+            return record.date_created, record.date_modified, record.date_published
     except Exception as e:
         LOGGER.debug("Failed to get dates from SQLite: %s", e)
         return None, None, None
+
+
+def get_dates_bulk(config: Config, accessions: Iterable[str]) -> Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]:
+    """\
+    Return (dateCreated, dateModified, datePublished)
+    """
+    try:
+        with get_session(config) as session:
+            records = session.execute(
+                select(Record).where(Record.accession.in_(accessions))
+            ).scalars().all()
+
+            return {
+                record.accession: (record.date_created, record.date_modified, record.date_published)
+                for record in records
+            }
+    except Exception as e:
+        LOGGER.debug("Failed to get dates from SQLite: %s", e)
+        return {}
 
 
 # === CLI implementation ===

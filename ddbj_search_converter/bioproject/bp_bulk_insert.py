@@ -6,18 +6,17 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from pydantic import BaseModel
 
-from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, Config,
-                                          get_config, set_logging_level)
+from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER,
+                                          AccessionType, Config, get_config,
+                                          set_logging_level)
 from ddbj_search_converter.schema import BioProject, BioSample
 from ddbj_search_converter.utils import (find_insert_target_files,
                                          get_recent_dirs)
 from elasticsearch import Elasticsearch, helpers
-
-AccessionType = Literal["bioproject", "biosample"]
 
 
 def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: AccessionType) -> None:
@@ -47,7 +46,8 @@ def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: A
             es_client,
             _generate_es_bulk_actions(file),
             stats_only=False,
-            raise_on_error=False
+            raise_on_error=False,
+            request_timeout=60
         )
         failed_docs.extend(failed)  # type: ignore
 

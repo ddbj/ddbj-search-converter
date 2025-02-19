@@ -21,21 +21,23 @@ import xmltodict
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
+from ddbj_search_converter.cache_db.bp_date import \
+    get_dates_bulk as get_bp_dates_bulk
+from ddbj_search_converter.cache_db.bp_relation_ids import (
+    get_relation_ids, get_relation_ids_bulk)
 from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, TODAY,
-                                          Config, get_config,
+                                          AccessionType, Config, get_config,
                                           set_logging_level)
 from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           ExternalLink, Grant, Organism,
                                           Organization, Publication, Xref)
+from ddbj_search_converter.utils import to_xref
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
 TMP_XML_DIR_NAME = "tmp_xml"
 DDBJ_JSONL_FILE_NAME = "ddbj_{accession}_{n}.jsonl"
 COMMON_JSONL_FILE_NAME = "{accession}_{n}.jsonl"
-
-
-AccessionType = Literal["bioproject", "biosample"]
 
 
 def xml_to_jsonl(
@@ -46,12 +48,20 @@ def xml_to_jsonl(
     batch_size: int = DEFAULT_BATCH_SIZE,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     remove_tmp_dir: bool = False,
+    use_existing_tmp_dir: bool = False,
 ) -> None:
     # 先に xml を分割してから、並列化して処理する
     tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
     tmp_xml_dir.mkdir(parents=True, exist_ok=True)
-    LOGGER.info("Splitting XML file: %s", xml_file)
-    tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "bioproject")
+
+    if use_existing_tmp_dir:
+        if not tmp_xml_dir.exists():
+            raise FileNotFoundError(f"Temporary directory not found: {tmp_xml_dir}")
+        tmp_xml_files = listing_tmp_xml_files(tmp_xml_dir, is_ddbj, "bioproject")
+    else:
+        LOGGER.info("Splitting XML file: %s", xml_file)
+        tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "bioproject")
+
     jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
 
     LOGGER.info("Starting parallel conversion of XML to JSON Lines. A total of %d JSON Lines files will be generated.", len(tmp_xml_files))
@@ -64,7 +74,6 @@ def xml_to_jsonl(
                 tmp_xml_file,
                 jsonl_file,
                 is_ddbj,
-                batch_size,
             )
             for tmp_xml_file, jsonl_file in zip(tmp_xml_files, jsonl_files)
         ]
@@ -156,33 +165,59 @@ def split_xml(xml_file: Path, output_dir: Path, is_ddbj: bool, batch_size: int, 
     return output_files
 
 
-def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool, batch_size: int = DEFAULT_BATCH_SIZE) -> None:
+def listing_tmp_xml_files(tmp_xml_dir: Path, is_ddbj: bool, accession_type: AccessionType) -> List[Path]:
+    if is_ddbj:
+        file_name_prefix = f"ddbj_{accession_type}"
+    else:
+        file_name_prefix = f"{accession_type}"
+
+    return [file for file in tmp_xml_dir.iterdir() if file.is_file() and file.name.startswith(file_name_prefix)]
+
+
+def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool) -> None:
     LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
 
-    docs: List[BioProject] = []
+    docs: Dict[str, BioProject] = {}
     for xml_element in _iterate_xml_element(xml_file, "bioproject"):
-        bp_instance = xml_element_to_bp_instance(config, xml_element, is_ddbj)
-        docs.append(bp_instance)
+        bp_instance = xml_element_to_bp_instance(config, xml_element, is_ddbj, use_db=False)
+        docs[bp_instance.identifier] = bp_instance
 
-        if len(docs) >= batch_size:
-            write_jsonl(jsonl_file, docs, is_append=True)
-            docs.clear()
+    # dbXref の一括取得
+    relation_ids_map = get_relation_ids_bulk(config, docs.keys())
+    for accession, relation_ids in relation_ids_map.items():
+        docs[accession].dbXref = [to_xref(id_) for id_ in relation_ids]
 
-    if len(docs) > 0:
-        write_jsonl(jsonl_file, docs, is_append=True)
-        docs.clear()
+    # date の一括取得
+    if is_ddbj:
+        date_map = get_bp_dates_bulk(config, docs.keys())
+        for accession, dates in date_map.items():
+            docs[accession].dateCreated = dates[0]
+            docs[accession].dateModified = dates[1]
+            docs[accession].datePublished = dates[2]
+
+    write_jsonl(jsonl_file, list(docs.values()))
 
 
-def xml_element_to_bp_instance(config: Config, xml_element: bytes, is_ddbj: bool) -> BioProject:
+def xml_element_to_bp_instance(config: Config, xml_element: bytes, is_ddbj: bool, use_db: bool = False) -> BioProject:
     metadata = xmltodict.parse(xml_element, attr_prefix="", cdata_key="content", process_namespaces=False)
 
     project = metadata["Package"]["Project"]
     accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
 
     if is_ddbj:
-        date_created, date_modified, date_published = get_bp_dates(config, accession)
+        if use_db:
+            date_created, date_modified, date_published = get_bp_dates(config, accession)
+        else:
+            # 親関数とかで、bulk で取得し update する
+            date_created, date_modified, date_published = None, None, None
     else:
         date_created, date_modified, date_published = _parse_date(project)
+
+    if use_db:
+        dbXref = [to_xref(id_) for id_ in get_relation_ids(config, accession)]  # pylint: disable=C0103
+    else:
+        # 親関数とかで、bulk で取得し update する
+        dbXref = []  # pylint: disable=C0103
 
     bp_instance = BioProject(
         identifier=accession,
@@ -204,7 +239,7 @@ def xml_element_to_bp_instance(config: Config, xml_element: bytes, is_ddbj: bool
         publication=_parse_and_update_publication(accession, project),
         grant=_parse_and_update_grant(accession, project),
         externalLink=_parse_external_link(accession, project),
-        dbXref=[],  # あとから、別途、es に bulk insert する
+        dbXref=dbXref,
         sameAs=_parse_same_as(accession, project),
         status=_parse_status(project, is_ddbj),
         visibility="unrestricted-access",
@@ -682,6 +717,7 @@ class Args(BaseModel):
     batch_size: int = DEFAULT_BATCH_SIZE
     parallel_num: int = DEFAULT_PARALLEL_NUM
     remove_tmp_dir: bool = False
+    use_existing_tmp_dir: bool = False
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -735,6 +771,11 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         action="store_true",
     )
     parser.add_argument(
+        "--use-existing-tmp-dir",
+        help="Use existing temporary directory",
+        action="store_true",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Enable debug mode",
@@ -761,6 +802,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         batch_size=parsed_args.batch_size,
         parallel_num=parsed_args.parallel_num,
         remove_tmp_dir=parsed_args.remove_tmp_dir,
+        use_existing_tmp_dir=parsed_args.use_existing_tmp_dir,
     )
 
 
@@ -782,6 +824,7 @@ def main() -> None:
         batch_size=args.batch_size,
         parallel_num=args.parallel_num,
         remove_tmp_dir=args.remove_tmp_dir,
+        use_existing_tmp_dir=args.use_existing_tmp_dir,
     )
 
     LOGGER.info("Finished converting BioProject XML to JSON-Lines")

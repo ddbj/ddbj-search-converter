@@ -3,13 +3,10 @@
     - /lustre9/open/shared_data/dblink 以下のファイルのこと
 - relation ids (dbXrefs) の bulk insert のために使われる
 """
-from typing import Dict, Literal, Set, Tuple
+from typing import Dict, Set, Tuple
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import AccessionType, Config
 from ddbj_search_converter.schema import XrefType
-
-AccessionType = Literal["bioproject", "biosample"]
-
 
 SOURCE_FILE_TO_ID_RELATION: Dict[str, Tuple[XrefType, XrefType]] = {
     "assembly_genome-bp/assembly_genome2bp.tsv": ("insdc-assembly", "bioproject"),

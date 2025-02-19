@@ -89,15 +89,18 @@ $ create_bp_date_db
 $ create_bs_date_db
 
 # XML to JSON-Lines
-$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/bioproject.xml --remove-tmp-dir
-$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/ddbj_core_bioproject.xml --is-ddbj --remove-tmp-dir
+$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/bioproject.xml
+$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/ddbj_core_bioproject.xml --is-ddbj
 
-$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/biosample_set.xml.gz --remove-tmp-dir
-$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/ddbj_biosample_set.xml.gz --is-ddbj --remove-tmp-dir
+$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/biosample_set.xml.gz
+$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/ddbj_biosample_set.xml.gz --is-ddbj --use-existing-tmp-dir
 
 # Bulk insert
 $ bp_bulk_insert
 $ bs_bulk_insert
+
+$ bp_relation_ids_bulk_update
+$ bs_relation_ids_bulk_update
 ```
 
 ### 時間メモ
@@ -108,12 +111,12 @@ $ bs_bulk_insert
 - `create_es_index --index biosample`: 一瞬
 - `bp_xml_to_jsonl`: 2m
 - `bp_xml_to_jsonl --is-ddbj`: 1m
-- `bs_xml_to_jsonl`: 60m
+- `bs_xml_to_jsonl`: 40m
 - `bs_xml_to_jsonl --is-ddbj`: 20m
 - `bp_bulk_insert`: 7m
+- `bp_bulk_insert_is_ddbj`: 一瞬
 - `bs_bulk_insert`:
-- `bp_relation_ids_bulk_update`:
-- `bs_relation_ids_bulk_update`:
+- `bs_bulk_insert_is_ddbj`: 30m
 
 ## Development
 

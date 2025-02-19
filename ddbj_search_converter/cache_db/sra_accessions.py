@@ -4,17 +4,14 @@
 """
 import datetime
 from pathlib import Path
-from typing import Dict, Literal, Set
+from typing import Dict, Set
 
 import httpx
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import AccessionType, Config
 
 SRA_ACCESSIONS_FILE_URL = "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab"
 SRA_ACCESSIONS_FILE_NAME = "SRA_Accessions.tab"
-
-
-AccessionType = Literal["bioproject", "biosample"]
 
 
 # ref.: https://github.com/linsalrob/SRA_Metadata/blob/master/README.md
@@ -45,6 +42,8 @@ def load_sra_accessions_tab(sra_accessions_tab_file: Path, accession_type: Acces
                 continue
 
             bp_bs_id = fields[BIOPROJECT_INDEX] if accession_type == "bioproject" else fields[BIOSAMPLE_INDEX]
+            if bp_bs_id == "-":
+                continue
             if bp_bs_id not in id_to_relation_ids:
                 id_to_relation_ids[bp_bs_id] = set()
             id_to_relation_ids[bp_bs_id].add(fields[ID_INDEX])
@@ -72,11 +71,11 @@ def find_latest_sra_accessions_tab_file(config: Config) -> Path:
     - Today から遡って、最初に見つかったファイルを返す
     """
     today = datetime.date.today()
-    for days in range(90):  # Search for the last 90 days
+    for days in range(180):  # Search for the last 180 days
         check_date = today - datetime.timedelta(days=days)
         year, month, yyyymmdd = check_date.strftime("%Y"), check_date.strftime("%m"), check_date.strftime("%Y%m%d")
         sra_accessions_tab_file_path = config.sra_accessions_tab_base_path.joinpath(f"{year}/{month}/SRA_Accessions.tab.{yyyymmdd}")  # type: ignore
         if sra_accessions_tab_file_path.exists():
             return sra_accessions_tab_file_path
 
-    raise FileNotFoundError("SRA_Accessions.tab file not found in the last 90 days")
+    raise FileNotFoundError("SRA_Accessions.tab file not found in the last 180 days")
