@@ -54,7 +54,7 @@ def xml_to_jsonl(
         # gz ファイルの場合は、一時ファイルに展開してから処理する
         if xml_file.suffix == ".gz":
             LOGGER.info("Extracting gz file: %s", xml_file)
-            xml_file = extract_gz(xml_file, tmp_xml_dir)
+            xml_file = extract_gz(xml_file, config.work_dir)
 
         # 先に xml を分割してから、並列化して処理する
         LOGGER.info("Splitting XML file: %s", xml_file)

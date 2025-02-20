@@ -15,7 +15,7 @@ IndexName = Literal["bioproject", "biosample"]
 
 SETTINGS = {
     "index": {
-        "refresh_interval": "30s",
+        "refresh_interval": "1s",
         "mapping.nested_objects.limit": 100000,
     }
 }

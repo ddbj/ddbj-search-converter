@@ -19,8 +19,23 @@ from ddbj_search_converter.utils import (find_insert_target_files,
 from elasticsearch import Elasticsearch, helpers
 
 
+def check_index_exists(es_client: Elasticsearch, index: str) -> bool:
+    return es_client.indices.exists(index=index).meta.status == 200
+
+
+def set_refresh_interval(es_client: Elasticsearch, index: str, interval: str) -> None:
+    es_client.indices.put_settings(
+        index=index,
+        body={"index": {"refresh_interval": interval}},
+    )
+
+
 def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: AccessionType) -> None:
     es_client = Elasticsearch(config.es_url)
+
+    if not check_index_exists(es_client, accession_type):
+        raise Exception(f"Index '{accession_type}' does not exist.")
+
     DocsClass = BioProject if accession_type == "bioproject" else BioSample
 
     def _generate_es_bulk_actions(file: Path) -> Iterator[Dict[str, Any]]:
@@ -37,19 +52,25 @@ def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: A
                     "_source": doc.model_dump(by_alias=True),
                 }
 
+    set_refresh_interval(es_client, accession_type, "-1")
+
     failed_docs: List[Dict[str, Any]] = []
 
-    for file in jsonl_files:
-        LOGGER.info("Inserting file: %s", file.name)
-        # helpers の内部実装的に、500 ずつで bulk insert される
-        _success, failed = helpers.bulk(
-            es_client,
-            _generate_es_bulk_actions(file),
-            stats_only=False,
-            raise_on_error=False,
-            request_timeout=60
-        )
-        failed_docs.extend(failed)  # type: ignore
+    try:
+        for file in jsonl_files:
+            LOGGER.info("Inserting file: %s", file.name)
+            # helpers の内部実装的に、500 ずつで bulk insert される
+            _success, failed = helpers.bulk(
+                es_client,
+                _generate_es_bulk_actions(file),
+                stats_only=False,
+                raise_on_error=False,
+                max_retries=3,
+                request_timeout=300,
+            )
+            failed_docs.extend(failed)  # type: ignore
+    finally:
+        set_refresh_interval(es_client, accession_type, "1s")
 
     if failed_docs:
         LOGGER.error("Failed to insert some docs: \n%s", failed_docs)

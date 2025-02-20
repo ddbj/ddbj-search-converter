@@ -98,9 +98,6 @@ $ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/ddbj_biosample_set.x
 # Bulk insert
 $ bp_bulk_insert
 $ bs_bulk_insert
-
-$ bp_relation_ids_bulk_update
-$ bs_relation_ids_bulk_update
 ```
 
 ### 時間メモ
@@ -112,11 +109,9 @@ $ bs_relation_ids_bulk_update
 - `bp_xml_to_jsonl`: 2m
 - `bp_xml_to_jsonl --is-ddbj`: 1m
 - `bs_xml_to_jsonl`: 40m
-- `bs_xml_to_jsonl --is-ddbj`: 20m
-- `bp_bulk_insert`: 7m
-- `bp_bulk_insert_is_ddbj`: 一瞬
-- `bs_bulk_insert`:
-- `bs_bulk_insert_is_ddbj`: 30m
+- `bs_xml_to_jsonl --is-ddbj`: 2m
+- `bp_bulk_insert`: 30m
+- `bs_bulk_insert`: 9h
 
 ## Development
 
