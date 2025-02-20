@@ -45,6 +45,11 @@ bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
 bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
 bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
 bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+jga_sra_dump_mappings = "ddbj_search_converter.jga_sra_utils.dump_mappings:main"
+jga_sra_load_mappings = "ddbj_search_converter.jga_sra_utils.load_mappings:main"
+jga_sra_dump_docs = "ddbj_search_converter.jga_sra_utils.dump_docs:main"
+jga_sra_load_docs = "ddbj_search_converter.jga_sra_utils.load_docs:main"
+jga_sra_reindex = "ddbj_search_converter.jga_sra_utils.reindex:main"
 
 [tool.setuptools]
 packages = [
@@ -53,6 +58,7 @@ packages = [
     "ddbj_search_converter.biosample",
     "ddbj_search_converter.cache_db",
     "ddbj_search_converter.es_mappings",
+    "ddbj_search_converter.jga_sra_utils",
 ]
 
 [tool.setuptools.package-data]

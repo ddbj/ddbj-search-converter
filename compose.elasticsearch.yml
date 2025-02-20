@@ -17,6 +17,7 @@ services:
       - ${PWD}/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ${PWD}/elasticsearch/data:/usr/share/elasticsearch/data:rw
       - ${PWD}/elasticsearch/logs:/usr/share/elasticsearch/logs:rw
+      - ${PWD}/elasticsearch/backup:/usr/share/elasticsearch/backup:rw
     ulimits:
       nofile:
         soft: 65536

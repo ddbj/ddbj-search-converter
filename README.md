@@ -68,8 +68,10 @@ $ docker network create ddbj-search-network
 # Up Elasticsearch Container
 $ mkdir -p ./elasticsearch/data
 $ mkdir -p ./elasticsearch/logs
+$ mkdir -p ./elasticsearch/backup
 $ chmod 777 ./elasticsearch/data
 $ chmod 777 ./elasticsearch/logs
+$ chmod 777 ./elasticsearch/backup
 $ docker compose -f compose.elasticsearch.yml up -d
 
 # ES 動作確認
