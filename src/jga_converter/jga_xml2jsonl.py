@@ -15,14 +15,16 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import xmltodict
 from lxml import etree
-from pydantic import BaseModel
-
+from schma import (Agency, jga, Distribution,
+                                          ExternalLink, Grant, Organism,
+                                          Organization, Publication, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
 JGA_STUDY_XML_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/jga-study.xml"
 JGA_DATASET_XML_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/jga-dataset.xml"
 DATASET_DATE_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/dataset.date.csv"
 STUDY_DATE_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/study.date.csv"
+
 
 
 def xml_to_jsonl(
@@ -56,19 +58,11 @@ def study_to_jsonl(input:FilePath):
             doc["isPartOf"] = "jga"
             doc["organism"] = {"identifier": 9606, "name": "Homo sapiens"}
             # TODO: dbxreをdblinkモジュールより取得し追加する
-            doc["dbXrefs"] = [
-                {
-                    "identifier": "JGAP000001",
-                    "type": "jga-policy",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-policy/JGAP000001"
-                },
-                {
-                    "identifier": "JGAC000001",
-                    "type": "jga-dac",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
-                }
-            ]
+            # jga-policy, jga-dac, jga-study: jga-datasetのrelationを埋める
+            doc["dbXrefs"] 
+            # ?? xmlから取得できる？
             doc["status"] = "public"
+            # ?? xmlから取得できる？？
             doc["visibility"] = "unrestricted-access"
             doc["dateCreated"] = ""
             doc["dateModified"] = ""
@@ -82,55 +76,6 @@ def study_to_jsonl(input:FilePath):
             dict2jsonl(docs)
             docs = []
 
-
-# TODO: jga_devのままなので大きく修正必要
-def dataset_to_jsonl(input:FilePath):
-    context = etree.iterparse(input, tag="DATASET")
-    docs:list[dict] = []
-    i = 0
-    for events, element in context:
-        if element.tag == "DATASET":
-            doc = {}
-            doc["accession"] = element.attrib["accession"]
-            xml_str = etree.tostring(element)
-            metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-            doc["properties"] = metadata["DATASET"]
-            doc["identifier"]= doc["accession"]
-            doc["title"] = doc["properties"].get("TITLE")
-            doc["description"] = doc["properties"].get("DESCRIPTION")
-            doc["name"] = doc["properties"].get("alias")
-            doc["type"] = "jga-dataset"
-            doc["url"] = "https://ddbj.nig.ac.jp/resource/jga-dataset/" + doc["accession"]
-            doc["sameAs"] = None
-            doc["isPartOf"] = "jga"
-            doc["organism"] = {"identifier": 9606, "name": "Homo sapiens"}
-            # TODO: dbxreをdblinkモジュールより取得し追加する
-            doc["dbXrefs"] = [
-                {
-                    "identifier": "JGAP000001",
-                    "type": "jga-policy",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-policy/JGAP000001"
-                },
-                {
-                    "identifier": "JGAC000001",
-                    "type": "jga-dac",
-                    "url": "https://ddbj.nig.ac.jp/resource/jga-dac/JGAC000001"
-                }
-            ]
-            doc["status"] = "public"
-            doc["visibility"] = "unrestricted-access"
-            doc["dateCreated"] = ""
-            doc["dateModified"] = ""
-            doc["datePublished"] = ""
-
-
-            docs.append(doc)
-            i +=1
-
-        clear_element(element)
-        if i > batch_size:
-            dict2jsonl(docs)
-            docs = []
 
 
 
@@ -170,12 +115,12 @@ class getDates:
         self.study_dates = {}
         self.dataset_dates = {}
 
-    def study_dates(self):
+    def dates(self, type: str, id: str):
         """
-        jga-study idをキーとし配列に
-        datecreated,datepublished,datemodifiedが登録される
+        idをキーとしdatecreated,datepublished,datemodifiedを取得
         """
         try:
+            # TODO: typeは引数で指定
             with open(STUDY_DATE_FILE, 'r', encoding='utf-8') as file:
                 reader = csv.reader(file)
                 header = next(reader)
@@ -189,29 +134,6 @@ class getDates:
         except Exception as e:
             print(f"error occured: {e}")
 
-    def dataset_dates(self):
-        try:
-            with open(DATASET_DATE_FILE, 'r', encoding='utf-8') as file:
-                reader = csv.reader(file)
-                header = next(reader)
-                dict_list = []
-                for row in reader:
-                    if len(row) > 0:
-                        key = row[0]
-                        value = row[1:] if len(row) > 1 else None
-                        dict_list.append({key: value})
-                return dict_list
-        except Exception as e:
-            print(f"error occured: {e}")
-    
-    def get_study_dates(self, id:str) -> list:
-        return self.study_dates[id]
-
-    def get_dataset_dates(self, id:str) -> list:
-        return self.dataset_dates[id]
-        
-
-
 
 def main():
     """
@@ -222,10 +144,21 @@ def main():
         - ヘッダ行をつけてファイルに書き出す
     - jsonlをElasticsearchにバルクインサートする
     """
-    # jga-studyの変換とESへの登録
+    types = [
+        {
+            "type": "jga-study",
+            "tag": "STUDY",
+            "file_path": JGA_STUDY_XML_FILE
+        },
+        {
+            "type": "jga-dataset",
+            "tag": "DATASET",
+            "file_path": JGA_DATASET_XML_FILE
+        }
+    ]
 
+    # typeごとに変換
 
-    # jga-datasetの変換とESへの登録
 
     
 
