@@ -6,7 +6,7 @@ services:
     image: ddbj-search-converter
     container_name: ddbj-search-converter
     volumes:
-      - /data1/ddbj-search/ddbj_search_converter_results:/app/ddbj_search_converter_results
+      - /data1/ddbj-search/ddbj_search_converter_results:/app/ddbj_search_converter_results:rw
       # 遺伝研スパコン内の resource
       - /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:/lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:ro
       - /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:/lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:ro
