@@ -8,18 +8,35 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from elasticsearch import Elasticsearch, helpers
 from pydantic import BaseModel
 
-from ddbj_search_converter.config import (LOGGER, Config, get_config,
+from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER,
+                                          AccessionType, Config, get_config,
                                           set_logging_level)
-from ddbj_search_converter.schema import BioProject
+from ddbj_search_converter.schema import BioProject, BioSample
 from ddbj_search_converter.utils import (find_insert_target_files,
                                          get_recent_dirs)
+from elasticsearch import Elasticsearch, helpers
 
 
-def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:
+def check_index_exists(es_client: Elasticsearch, index: str) -> bool:
+    return es_client.indices.exists(index=index).meta.status == 200
+
+
+def set_refresh_interval(es_client: Elasticsearch, index: str, interval: str) -> None:
+    es_client.indices.put_settings(
+        index=index,
+        body={"index": {"refresh_interval": interval}},
+    )
+
+
+def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: AccessionType) -> None:
     es_client = Elasticsearch(config.es_url)
+
+    if not check_index_exists(es_client, accession_type):
+        raise Exception(f"Index '{accession_type}' does not exist.")
+
+    DocsClass = BioProject if accession_type == "bioproject" else BioSample
 
     def _generate_es_bulk_actions(file: Path) -> Iterator[Dict[str, Any]]:
         with file.open("r", encoding="utf-8") as f:
@@ -27,21 +44,33 @@ def bulk_insert_to_es(config: Config, jsonl_files: List[Path]) -> None:
                 line = line.strip()
                 if line == "":
                     continue
-                doc = BioProject.model_validate_json(line)
-                yield {"index": {"_index": "bioproject"}, "_id": doc.identifier}
-                yield doc.model_dump()
+                doc = DocsClass.model_validate_json(line)
+                yield {
+                    "_op_type": "index",
+                    "_index": accession_type,
+                    "_id": doc.identifier,
+                    "_source": doc.model_dump(by_alias=True),
+                }
+
+    set_refresh_interval(es_client, accession_type, "-1")
 
     failed_docs: List[Dict[str, Any]] = []
 
-    for file in jsonl_files:
-        # helpers の内部実装的に、500 ずつで bulk insert される
-        _success, failed = helpers.bulk(
-            es_client,
-            _generate_es_bulk_actions(file),
-            stats_only=False,
-            raise_on_error=False
-        )
-        failed_docs.extend(failed)  # type: ignore
+    try:
+        for file in jsonl_files:
+            LOGGER.info("Inserting file: %s", file.name)
+            # helpers の内部実装的に、500 ずつで bulk insert される
+            _success, failed = helpers.bulk(
+                es_client,
+                _generate_es_bulk_actions(file),
+                stats_only=False,
+                raise_on_error=False,
+                max_retries=3,
+                request_timeout=300,
+            )
+            failed_docs.extend(failed)  # type: ignore
+    finally:
+        set_refresh_interval(es_client, accession_type, "1s")
 
     if failed_docs:
         LOGGER.error("Failed to insert some docs: \n%s", failed_docs)
@@ -144,7 +173,7 @@ def main() -> None:
     LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
 
-    latest_dir, prior_dir = get_recent_dirs(config.work_dir, args.latest_dir, args.prior_dir)
+    latest_dir, prior_dir = get_recent_dirs(config.work_dir.joinpath(BP_JSONL_DIR_NAME), args.latest_dir, args.prior_dir)
     LOGGER.info("Latest dir: %s", latest_dir)
     LOGGER.info("Prior dir: %s", prior_dir)
     if prior_dir is None:
@@ -157,7 +186,7 @@ def main() -> None:
         LOGGER.info("These files to be inserted:\n%s", "\n".join(str(f) for f in jsonl_files))
         sys.exit(0)
 
-    bulk_insert_to_es(config, jsonl_files)
+    bulk_insert_to_es(config, jsonl_files, "bioproject")
 
     LOGGER.info("Finished inserting BioProject data into Elasticsearch")
 

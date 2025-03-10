@@ -5,113 +5,255 @@
     - それ以外 (/usr/local/resources/bioproject/bioproject.xml) の場合は、work_dir/${date}/bioproject_${n}.jsonl に BATCH_SIZE (2000) 件ずつ出力
         - -> ddbj_xml と common_xml という呼び方をすることにする
 - 生成される JSON-Lines は 1 line が 1 BioProject Accession に対応する
+- 並列化処理について:
+    - is_ddbj の場合は、並列化されない
+    - それ以外の場合は、先に xml を分割してから、並列化して処理する
 """
 import argparse
+import shutil
 import sys
+import traceback
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, Generator, List, Literal, Optional, Tuple
 
 import xmltodict
-from lxml import etree
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.bp_date import get_dates as get_bp_dates
 from ddbj_search_converter.cache_db.bp_date import \
-    get_session as get_bp_date_session
-from ddbj_search_converter.cache_db.fusion_getter import get_xrefs
+    get_dates_bulk as get_bp_dates_bulk
+from ddbj_search_converter.cache_db.bp_relation_ids import (
+    get_relation_ids, get_relation_ids_bulk)
 from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, LOGGER, TODAY,
-                                          Config, get_config,
+                                          AccessionType, Config, get_config,
                                           set_logging_level)
 from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           ExternalLink, Grant, Organism,
                                           Organization, Publication, Xref)
+from ddbj_search_converter.utils import to_xref
 
 DEFAULT_BATCH_SIZE = 2000
-DDBJ_JSONL_FILE_NAME = "ddbj_bioproject.jsonl"
-COMMON_JSONL_FILE_NAME = "bioproject_{n}.jsonl"
+DEFAULT_PARALLEL_NUM = 64
+TMP_XML_DIR_NAME = "tmp_xml"
+DDBJ_JSONL_FILE_NAME = "ddbj_{accession}_{n}.jsonl"
+COMMON_JSONL_FILE_NAME = "{accession}_{n}.jsonl"
 
 
 def xml_to_jsonl(
     config: Config,
     xml_file: Path,
-    is_ddbj: bool,
     output_dir: Path,
+    is_ddbj: bool,
     batch_size: int = DEFAULT_BATCH_SIZE,
+    parallel_num: int = DEFAULT_PARALLEL_NUM,
+    remove_tmp_dir: bool = False,
+    use_existing_tmp_dir: bool = False,
 ) -> None:
-    context = etree.iterparse(xml_file, tag="Package", recover=True)
-    docs: List[BioProject] = []
-    batch_count = 0
+    # 先に xml を分割してから、並列化して処理する
+    tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
+    tmp_xml_dir.mkdir(parents=True, exist_ok=True)
+
+    if use_existing_tmp_dir:
+        if not tmp_xml_dir.exists():
+            raise FileNotFoundError(f"Temporary directory not found: {tmp_xml_dir}")
+        tmp_xml_files = listing_tmp_xml_files(tmp_xml_dir, is_ddbj, "bioproject")
+    else:
+        LOGGER.info("Splitting XML file: %s", xml_file)
+        tmp_xml_files = split_xml(xml_file, tmp_xml_dir, is_ddbj, batch_size, "bioproject")
+
+    jsonl_files = [output_dir.joinpath(f"{xml_file.stem}.jsonl") for xml_file in tmp_xml_files]
+
+    LOGGER.info("Starting parallel conversion of XML to JSON Lines. A total of %d JSON Lines files will be generated.", len(tmp_xml_files))
+
+    with ProcessPoolExecutor(max_workers=parallel_num) as executor:
+        futures = [
+            executor.submit(
+                xml_to_jsonl_worker,
+                config,
+                tmp_xml_file,
+                jsonl_file,
+                is_ddbj,
+            )
+            for tmp_xml_file, jsonl_file in zip(tmp_xml_files, jsonl_files)
+        ]
+        for future in futures:
+            try:
+                future.result()
+            except Exception as e:
+                LOGGER.error("Failed to convert XML to JSON-Lines: %s", e)
+
+    # 一時ファイルを削除
+    if remove_tmp_dir:
+        shutil.rmtree(tmp_xml_dir)
+
+
+def _iterate_xml_element(xml_file: Path, accession_type: AccessionType) -> Generator[bytes, None, None]:
+    """\
+    - XML file を行ごとに読み、<Package> ... </Package> の部分を抽出する
+    OR
+    - XML file を行ごとに読み、<BioSample> ... </BioSample> の部分を抽出する
+    """
+    if accession_type == "bioproject":
+        tag_start = b"<Package>"
+        tag_end = b"</Package>"
+    else:
+        tag_start = b"<BioSample"
+        tag_end = b"</BioSample>"
+
+    inside_package = False
+    buffer = bytearray()
+    with xml_file.open(mode="rb") as f:
+        for line in f:
+            stripped_line = line.strip()
+            if stripped_line.startswith(tag_start):
+                inside_package = True
+                buffer = bytearray(line)
+            elif stripped_line.startswith(tag_end):
+                inside_package = False
+                buffer.extend(line)
+                yield bytes(buffer)
+                buffer.clear()
+            elif inside_package:
+                buffer.extend(line)
+
+
+def split_xml(xml_file: Path, output_dir: Path, is_ddbj: bool, batch_size: int, accession_type: AccessionType) -> List[Path]:
+    if accession_type == "bioproject":
+        head = b'<?xml version="1.0" encoding="UTF-8"?>\n<PackageSet>\n'
+        tail = b'</PackageSet>'
+    else:
+        head = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
+        tail = b'</BioSampleSet>'
+
+    if is_ddbj:
+        file_name_template = DDBJ_JSONL_FILE_NAME
+    else:
+        file_name_template = COMMON_JSONL_FILE_NAME
+
+    output_files: List[Path] = []
+    batch_buffer: List[bytes] = []
     file_count = 1
-    with get_bp_date_session(config) as session:
-        for _events, element in context:
-            if element.tag == "Package":
-                # Package tag 単位で xml を変換する
-                # center が指定されている場合は指定された center のデータのみ変換する（ddbjのみ対応）
-                accession = element.find(".//Project/Project/ProjectID/ArchiveID").attrib["accession"]
-                xml_str = etree.tostring(element)
-                metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
-                project = metadata["Package"]["Project"]
+    for xml_element in _iterate_xml_element(xml_file, accession_type):
+        batch_buffer.append(xml_element)
 
-                if is_ddbj:
-                    date_created, date_modified, date_published = get_bp_dates(session, accession)
-                else:
-                    date_created, date_modified, date_published = _parse_date(project)
+        if len(batch_buffer) >= batch_size:
+            output_file = output_dir.joinpath(file_name_template.format(
+                accession=accession_type,
+                n=file_count
+            ).replace("jsonl", "xml"))
+            output_files.append(output_file)
+            with output_file.open(mode="wb") as f:
+                f.write(head)
+                f.writelines(batch_buffer)
+                f.write(tail)
+            file_count += 1
+            batch_buffer.clear()
 
-                bp_instance = BioProject(
-                    identifier=accession,
-                    properties={"Project": project},
-                    distribution=[Distribution(
-                        type="DataDownload",
-                        encodingFormat="JSON",
-                        contentUrl=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json",
-                    )],
-                    isPartOf="BioProject",
-                    type="bioproject",
-                    objectType=_parse_object_type(project),
-                    name=None,
-                    url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
-                    organism=_parse_organism(accession, project, is_ddbj),
-                    title=_parse_title(accession, project),
-                    description=_parse_description(accession, project),
-                    organization=_parse_and_update_organization(accession, project, is_ddbj),
-                    publication=_parse_and_update_publication(accession, project),
-                    grant=_parse_and_update_grant(accession, project),
-                    externalLink=_parse_external_link(accession, project),
-                    dbXref=get_xrefs(config, accession, "bioproject"),
-                    sameAs=_parse_same_as(project),
-                    status=_parse_status(project, is_ddbj),
-                    visibility="unrestricted-access",
-                    dateCreated=date_created,
-                    dateModified=date_modified,
-                    datePublished=date_published,
-                )
+    if len(batch_buffer) > 0:
+        output_file = output_dir.joinpath(file_name_template.format(
+            accession=accession_type,
+            n=file_count
+        ).replace("jsonl", "xml"))
+        output_files.append(output_file)
+        with output_file.open(mode="wb") as f:
+            f.write(head)
+            f.writelines(batch_buffer)
+            f.write(tail)
+        batch_buffer.clear()
 
-                # properties の中の object に対して整形を行う
-                _update_prefix(project)
-                _update_locus_tag_prefix(project)
-                _update_local_id(project)
+    return output_files
 
-                docs.append(bp_instance)
 
-                batch_count += 1
-                if batch_count >= batch_size:
-                    output_file = output_dir.joinpath(
-                        DDBJ_JSONL_FILE_NAME if is_ddbj else COMMON_JSONL_FILE_NAME.format(n=file_count)
-                    )
-                    write_jsonl(output_file, docs, is_append=is_ddbj)
-                    batch_count = 0
-                    file_count += 1
-                    docs = []
+def listing_tmp_xml_files(tmp_xml_dir: Path, is_ddbj: bool, accession_type: AccessionType) -> List[Path]:
+    if is_ddbj:
+        file_name_prefix = f"ddbj_{accession_type}"
+    else:
+        file_name_prefix = f"{accession_type}"
 
-            # メモリリークを防ぐために要素をクリアする
-            clear_element(element)
+    return [file for file in tmp_xml_dir.iterdir() if file.is_file() and file.name.startswith(file_name_prefix)]
 
-    if len(docs) > 0:
-        # 余りの docs の書き込み
-        output_file = output_dir.joinpath(
-            DDBJ_JSONL_FILE_NAME if is_ddbj else COMMON_JSONL_FILE_NAME.format(n=file_count)
-        )
-        write_jsonl(output_file, docs, is_append=is_ddbj)
+
+def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddbj: bool) -> None:
+    LOGGER.info("Converting XML to JSON-Lines: %s", jsonl_file.name)
+
+    docs: Dict[str, BioProject] = {}
+    for xml_element in _iterate_xml_element(xml_file, "bioproject"):
+        bp_instance = xml_element_to_bp_instance(config, xml_element, is_ddbj, use_db=False)
+        docs[bp_instance.identifier] = bp_instance
+
+    # dbXref の一括取得
+    relation_ids_map = get_relation_ids_bulk(config, docs.keys())
+    for accession, relation_ids in relation_ids_map.items():
+        docs[accession].dbXref = [to_xref(id_) for id_ in relation_ids]
+
+    # date の一括取得
+    if is_ddbj:
+        date_map = get_bp_dates_bulk(config, docs.keys())
+        for accession, dates in date_map.items():
+            docs[accession].dateCreated = dates[0]
+            docs[accession].dateModified = dates[1]
+            docs[accession].datePublished = dates[2]
+
+    write_jsonl(jsonl_file, list(docs.values()))
+
+
+def xml_element_to_bp_instance(config: Config, xml_element: bytes, is_ddbj: bool, use_db: bool = False) -> BioProject:
+    metadata = xmltodict.parse(xml_element, attr_prefix="", cdata_key="content", process_namespaces=False)
+
+    project = metadata["Package"]["Project"]
+    accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
+
+    if is_ddbj:
+        if use_db:
+            date_created, date_modified, date_published = get_bp_dates(config, accession)
+        else:
+            # 親関数とかで、bulk で取得し update する
+            date_created, date_modified, date_published = None, None, None
+    else:
+        date_created, date_modified, date_published = _parse_date(project)
+
+    if use_db:
+        dbXref = [to_xref(id_) for id_ in get_relation_ids(config, accession)]  # pylint: disable=C0103
+    else:
+        # 親関数とかで、bulk で取得し update する
+        dbXref = []  # pylint: disable=C0103
+
+    bp_instance = BioProject(
+        identifier=accession,
+        properties={"Project": project},
+        distribution=[Distribution(
+            type="DataDownload",
+            encodingFormat="JSON",
+            contentUrl=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json",
+        )],
+        isPartOf="BioProject",
+        type="bioproject",
+        objectType=_parse_object_type(project),
+        name=None,
+        url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
+        organism=_parse_organism(accession, project, is_ddbj),
+        title=_parse_title(accession, project),
+        description=_parse_description(accession, project),
+        organization=_parse_and_update_organization(accession, project, is_ddbj),
+        publication=_parse_and_update_publication(accession, project),
+        grant=_parse_and_update_grant(accession, project),
+        externalLink=_parse_external_link(accession, project),
+        dbXref=dbXref,
+        sameAs=_parse_same_as(accession, project),
+        status=_parse_status(project, is_ddbj),
+        visibility="unrestricted-access",
+        dateCreated=date_created,
+        dateModified=date_modified,
+        datePublished=date_published,
+    )
+
+    # properties の中の object に対して整形を行う
+    _update_prefix(accession, project)
+    _update_locus_tag_prefix(accession, project)
+    _update_local_id(accession, project)
+
+    return bp_instance
 
 
 def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "UmbrellaBioProject"]:
@@ -126,15 +268,19 @@ def _parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "Umbrel
 def _parse_organism(accession: str, project: Dict[str, Any], is_ddbj: bool) -> Optional[Organism]:
     try:
         if is_ddbj:
-            organism_obj = project["Project"]["ProjectType"]["ProjectTypeTopAdmin"]["Organism"]
+            organism_obj = project.get("Project", {}).get("ProjectType", {}).get("ProjectTypeTopAdmin", {}).get("Organism", None)
         else:
-            organism_obj = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["Organism"]
+            organism_obj = project.get("Project", {}).get("ProjectType", {}).get("ProjectTypeSubmission", {}).get("Target", {}).get("Organism", None)
+        if organism_obj is None:
+            return None
+
         return Organism(
             identifier=str(organism_obj["taxID"]),
             name=organism_obj["OrganismName"],
         )
     except Exception as e:
-        LOGGER.debug("Failed to parse organism with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse organism with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
         return None
 
 
@@ -143,16 +289,21 @@ def _parse_title(accession: str, project: Dict[str, Any]) -> Optional[str]:
         title = project["Project"]["ProjectDescr"]["Title"]
         return str(title)
     except Exception as e:
-        LOGGER.debug("Failed to parse title with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse title with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
         return None
 
 
 def _parse_description(accession: str, project: Dict[str, Any]) -> Optional[str]:
     try:
-        description = project["Project"]["ProjectDescr"]["Description"]
+        description = project.get("Project", {}).get("ProjectDescr", {}).get("Description", None)
+        if description is None:
+            return None
+
         return str(description)
     except Exception as e:
-        LOGGER.debug("Failed to parse description with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse description with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
         return None
 
 
@@ -164,9 +315,11 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
 
     try:
         if is_ddbj:
-            organization = project["Submission"]["Submission"]["Description"]["Organization"]
+            organization = project.get("Submission", {}).get("Submission", {}).get("Description", {}).get("Organization", None)
         else:
-            organization = project["Submission"]["Description"]["Organization"]
+            organization = project.get("Project", {}).get("ProjectDescr", {}).get("Organization", None)
+        if organization is None:
+            return []
 
         if isinstance(organization, list):
             for i, item in enumerate(organization):
@@ -202,7 +355,7 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
             url = organization.get("url", None)
             if isinstance(name, str):
                 # 引数の project の update を行う
-                project["Submission"]["Description"]["Organization"][i]["Name"] = {"content": name}
+                project["Submission"]["Description"]["Organization"]["Name"] = {"content": name}
                 organizations.append(Organization(
                     name=name,
                     organizationType=_type,
@@ -223,8 +376,8 @@ def _parse_and_update_organization(accession: str, project: Dict[str, Any], is_d
                     ))
 
     except Exception as e:
-        # TODO: 恐らく、エラー処理が不十分
-        LOGGER.debug("Failed to parse organization with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse organization with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return organizations
 
@@ -236,23 +389,22 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
     publications: List[Publication] = []
 
     try:
-        publication = project["Project"]["ProjectDescr"]["Publication"]
+        publication = project.get("Project", {}).get("ProjectDescr", {}).get("Publication", None)
+        if publication is None:
+            return []
+
         if isinstance(publication, list):
-            # bulk insert できないサイズのリストに対応
-            publication = publication[:10000]
             # 引数の project の update を行う
             project["Project"]["ProjectDescr"]["Publication"] = publication
 
             for item in publication:
                 id_ = item.get("id", None)
-                id_ = str(id_) if id_ is not None else None
-                if id_ is None:
-                    LOGGER.debug("Publication ID is not found with accession %s", accession)
-                    continue
                 dbtype = item.get("DbType", None)
                 publication_url = None
-                if dbtype in ["ePubmed", "eDOI"]:
-                    publication_url = id_ if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+                if dbtype == "DOI":
+                    publication_url = f"https://doi.org/{id_}"
+                elif dbtype == "ePubmed":
+                    publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
                 elif dbtype.isdigit():
                     dbtype = "ePubmed"
                     publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
@@ -267,14 +419,12 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
                 ))
         elif isinstance(publication, dict):
             id_ = publication.get("id", None)
-            id_ = str(id_) if id_ is not None else None
-            if id_ is None:
-                LOGGER.debug("Publication ID is not found with accession %s", accession)
-                raise ValueError("Publication ID is not found")
             dbtype = publication.get("DbType", None)
             publication_url = None
-            if dbtype in ["ePubmed", "eDOI"]:
-                publication_url = id_ if dbtype == "eDOI" else f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+            if dbtype == "DOI":
+                publication_url = f"https://doi.org/{id_}"
+            elif dbtype == "ePubmed":
+                publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
             elif dbtype.isdigit():
                 dbtype = "ePubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
@@ -289,8 +439,8 @@ def _parse_and_update_publication(accession: str, project: Dict[str, Any]) -> Li
             ))
 
     except Exception as e:
-        # TODO: 恐らく、エラー処理が不十分
-        LOGGER.debug("Failed to parse publication with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse publication with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return publications
 
@@ -299,7 +449,10 @@ def _parse_and_update_grant(accession: str, project: Dict[str, Any]) -> List[Gra
     grants: List[Grant] = []
 
     try:
-        grant = project["Project"]["ProjectDescr"]["Grant"]
+        grant = project.get("Project", {}).get("ProjectDescr", {}).get("Grant", None)
+        if grant is None:
+            return []
+
         if isinstance(grant, list):
             for i, item in enumerate(grant):
                 agency = item.get("Agency", None)
@@ -345,8 +498,8 @@ def _parse_and_update_grant(accession: str, project: Dict[str, Any]) -> List[Gra
                     )]
                 ))
     except Exception as e:
-        # TODO: 恐らく、エラー処理が不十分
-        LOGGER.debug("Failed to parse grant with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse grant with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return grants
 
@@ -358,7 +511,9 @@ EXTERNAL_LINK_MAP = {
     "SRA": "https://www.ncbi.nlm.nih.gov/sra/",
     "PUBMED": "https://pubmed.ncbi.nlm.nih.gov/",
     "DOI": "https://doi.org/",
-    "SRA|http": "",  # TODO: これなに
+    "SRA|http": "https:",  # <ID>//www.ncbi.nlm.nih.gov/bioproject/PRJNA41439/</ID>
+    "3000 rice genomes on aws|https": "https",  # <ID>//aws.amazon.com/public-data-sets/3000-rice-genome/</ID>
+    "ENA|http": "https:",  # <ID>//www.ebi.ac.uk/ena/data/view/ERP005654</ID>
 }
 
 
@@ -387,14 +542,18 @@ def _parse_external_link(accession: str, project: Dict[str, Any]) -> List[Extern
                         label=label,
                     )
                 else:
-                    raise ValueError(f"External link db {db} is not supported")
+                    LOGGER.warning("External link db %s is not supported", db)
+                    return None
 
         return None
 
     links: List[ExternalLink] = []
 
     try:
-        external_link_obj = project["Project"]["ProjectDescr"]["ExternalLink"]
+        external_link_obj = project.get("Project", {}).get("ProjectDescr", {}).get("ExternalLink", None)
+        if external_link_obj is None:
+            return []
+
         if isinstance(external_link_obj, dict):
             external_link_instance = _obj_to_external_link(external_link_obj)
             if external_link_instance is not None:
@@ -408,25 +567,39 @@ def _parse_external_link(accession: str, project: Dict[str, Any]) -> List[Extern
                     links.append(external_link_instance)
 
     except Exception as e:
-        LOGGER.debug("Failed to parse external link with accession %s: %s", accession, e)
+        LOGGER.warning("Failed to parse external link with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return links
 
 
-def _parse_same_as(project: Dict[str, Any]) -> List[Xref]:
+def _parse_same_as(accession: str, project: Dict[str, Any]) -> List[Xref]:
+    def _to_geo_xref(center_obj: Dict[str, Any]) -> Optional[Xref]:
+        id_ = center_obj.get("content", None)
+        type_ = center_obj.get("center", None)
+        if id_ is None or type_ is None:
+            return None
+        if type_ != "GEO":
+            return None
+        return Xref(
+            identifier=id_,
+            type=type_,
+            url=f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id_}",
+        )
+
     try:
-        center = project["Project"]["ProjectID"]["CenterID"]["center"]
-        if center == "GEO":
-            id_ = project["Project"]["ProjectID"]["CenterID"]["content"]
-            return [Xref(
-                identifier=id_,
-                type="GEO",
-                url=f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id_}",
-            )]
-    except Exception as _e:
-        # そもそも sameAs が存在しない場合もある
-        # LOGGER.debug("Failed to parse sameAs: %s", e)
-        pass
+        center_obj = project.get("Project", {}).get("ProjectID", {}).get("CenterID", None)
+        if center_obj is None:
+            return []
+
+        if isinstance(center_obj, list):
+            return [xref for xref in [_to_geo_xref(item) for item in center_obj] if xref is not None]
+        elif isinstance(center_obj, dict):
+            return [xref for xref in [_to_geo_xref(center_obj)] if xref is not None]
+
+    except Exception as e:
+        LOGGER.warning("Failed to parse sameAs with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
 
     return []
 
@@ -453,13 +626,17 @@ def _parse_date(project: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], 
     return (date_created, date_modified, date_published)
 
 
-def _update_prefix(project: Dict[str, Any]) -> None:
+def _update_prefix(accession: str, project: Dict[str, Any]) -> None:
     """\
     - ProjectType.ProjectTypeSubmission.Target.BioSampleSet.ID
     - 文字列で入力されてしまった場合、properties 内の値を object に整形する
     """
     try:
-        bs_set_ids = project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"]
+        bs_set_ids = project.get("Project", {}).get("ProjectType", {}).get(
+            "ProjectTypeSubmission", {}).get("Target", {}).get("BioSampleSet", {}).get("ID", None)
+        if bs_set_ids is None:
+            return None
+
         if isinstance(bs_set_ids, list):
             for i, item in enumerate(bs_set_ids):
                 if isinstance(item, str):
@@ -467,41 +644,56 @@ def _update_prefix(project: Dict[str, Any]) -> None:
         elif isinstance(bs_set_ids, str):
             project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = {"content": bs_set_ids}
     except Exception as e:
-        LOGGER.debug("Failed to update prefix: %s", e)
+        LOGGER.warning("Failed to update prefix with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
+
+    return None
 
 
-def _update_locus_tag_prefix(project: Dict[str, Any]) -> None:
+def _update_locus_tag_prefix(accession: str, project: Dict[str, Any]) -> None:
     """\
     - properties.Project.Project.ProjectDescr.LocusTagPrefix
     - 文字列で入力されていた場合 properties 内の値を object に整形する
     """
     try:
-        prefix = project["Project"]["ProjectDescr"]["LocusTagPrefix"]
+        prefix = project.get("Project", {}).get("ProjectDescr", {}).get("LocusTagPrefix", None)
+        if prefix is None:
+            return None
+
         if isinstance(prefix, list):
             for i, item in enumerate(prefix):
                 if isinstance(item, str):
-                    project["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
+                    project["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
         elif isinstance(prefix, str):
-            project["Project"]["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
+            project["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
     except Exception as e:
-        LOGGER.debug("Failed to update locus tag prefix: %s", e)
+        LOGGER.warning("Failed to update locus tag prefix with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
+
+    return None
 
 
-def _update_local_id(project: Dict[str, Any]) -> None:
+def _update_local_id(accession: str, project: Dict[str, Any]) -> None:
     """\
     - properties.Project.Project.ProjectID.LocalID
     - 文字列で入力されていた場合 properties 内の値を object に整形する
     """
     try:
-        local_id = project["Project"]["ProjectID"]["LocalID"]
+        local_id = project.get("Project", {}).get("ProjectID", {}).get("LocalID", None)
+        if local_id is None:
+            return None
+
         if isinstance(local_id, list):
             for i, item in enumerate(local_id):
                 if isinstance(item, str):
-                    project["Project"]["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
+                    project["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
         elif isinstance(local_id, str):
-            project["Project"]["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
+            project["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
     except Exception as e:
-        LOGGER.debug("Failed to update local id: %s", e)
+        LOGGER.warning("Failed to update local id with accession %s: %s", accession, e)
+        LOGGER.warning("Traceback:\n%s", traceback.format_exc())
+
+    return None
 
 
 def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = False) -> None:
@@ -509,22 +701,11 @@ def write_jsonl(output_file: Path, docs: List[BioProject], is_append: bool = Fal
     - memory のほうが多いと見越して、一気に書き込む
     """
     mode = "a" if is_append else "w"
+    is_file_exists = output_file.exists()
     with output_file.open(mode=mode, encoding="utf-8") as f:
-        if is_append:
+        if is_append and is_file_exists:
             f.write("\n")
-        f.write("\n".join(doc.model_dump_json() for doc in docs))
-
-
-def clear_element(element: Any) -> None:
-    try:
-        element.clear()
-        while element.getprevious() is not None:
-            try:
-                del element.getparent()[0]
-            except Exception as e:
-                LOGGER.debug("Failed to clear element: %s", e)
-    except Exception as e:
-        LOGGER.debug("Failed to clear element: %s", e)
+        f.write("\n".join(doc.model_dump_json(by_alias=True) for doc in docs))
 
 
 # === CLI implementation ===
@@ -534,6 +715,9 @@ class Args(BaseModel):
     xml_file: Path
     is_ddbj: bool = False
     batch_size: int = DEFAULT_BATCH_SIZE
+    parallel_num: int = DEFAULT_PARALLEL_NUM
+    remove_tmp_dir: bool = False
+    use_existing_tmp_dir: bool = False
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Args]:
@@ -572,9 +756,24 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--batch-size",
         help=f"The number of records to store in a single JSON-Lines file. Default is {DEFAULT_BATCH_SIZE}",
-        nargs="?",
         type=int,
         default=DEFAULT_BATCH_SIZE,
+    )
+    parser.add_argument(
+        "--parallel-num",
+        help=f"The number of parallel processes to use. Default is {DEFAULT_PARALLEL_NUM}",
+        type=int,
+        default=DEFAULT_PARALLEL_NUM,
+    )
+    parser.add_argument(
+        "--remove-tmp-dir",
+        help="Remove the temporary directory after processing",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--use-existing-tmp-dir",
+        help="Use existing temporary directory",
+        action="store_true",
     )
     parser.add_argument(
         "--debug",
@@ -601,6 +800,9 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
         xml_file=xml_file,
         is_ddbj=parsed_args.is_ddbj,
         batch_size=parsed_args.batch_size,
+        parallel_num=parsed_args.parallel_num,
+        remove_tmp_dir=parsed_args.remove_tmp_dir,
+        use_existing_tmp_dir=parsed_args.use_existing_tmp_dir,
     )
 
 
@@ -612,13 +814,17 @@ def main() -> None:
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
 
     output_dir = config.work_dir.joinpath(BP_JSONL_DIR_NAME).joinpath(TODAY)
+    output_dir.mkdir(parents=True, exist_ok=True)
     LOGGER.info("Output directory: %s", output_dir)
     xml_to_jsonl(
         config=config,
         xml_file=args.xml_file,
-        is_ddbj=args.is_ddbj,
         output_dir=output_dir,
+        is_ddbj=args.is_ddbj,
         batch_size=args.batch_size,
+        parallel_num=args.parallel_num,
+        remove_tmp_dir=args.remove_tmp_dir,
+        use_existing_tmp_dir=args.use_existing_tmp_dir,
     )
 
     LOGGER.info("Finished converting BioProject XML to JSON-Lines")

@@ -3,13 +3,12 @@
 - 各所で get_config() として呼び出すことも可能だが、それぞれの cli script が argparse を使っているため、設定の不都合が生じる可能性がある
     - そのため、各 script の main 関数や parse_args で config の値の上書きをし、その後、config のバケツリレーを行う
 """
-
 import datetime
 import logging
 import logging.config
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -18,6 +17,7 @@ WORK_DIR = Path.cwd().joinpath("ddbj_search_converter_results")
 TODAY = datetime.date.today().strftime(DATE_FORMAT)
 BP_JSONL_DIR_NAME = "bioproject_jsonl"
 BS_JSONL_DIR_NAME = "biosample_jsonl"
+AccessionType = Literal["bioproject", "biosample"]
 
 
 class Config(BaseModel):
@@ -67,11 +67,11 @@ def set_logging_config() -> None:
         "disable_existing_loggers": False,
         "formatters": {
             "default": {
-                "format": "%(levelprefix)s %(message)s",
+                "format": "%(asctime)s [%(levelname)s] %(message)s",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             },
             "sqlalchemy": {
-                "format": "%(levelprefix)s SQLAlchemy - %(message)s",
+                "format": "%(asctime)s [%(levelname)s] SQLAlchemy - %(message)s",
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             }
         },
@@ -111,7 +111,7 @@ LOGGER = logging.getLogger("ddbj_search_converter")
 def set_logging_level(debug: bool) -> None:
     if debug:
         logging.getLogger("ddbj_search_converter").setLevel(logging.DEBUG)
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+        # logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
     else:
         logging.getLogger("ddbj_search_converter").setLevel(logging.INFO)
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+        # logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)

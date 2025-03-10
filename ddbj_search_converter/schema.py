@@ -12,7 +12,7 @@ class Distribution(BaseModel):
 
 
 class Organism(BaseModel):
-    identifier: str
+    identifier: Optional[str]
     name: Optional[str]
 
 
@@ -25,7 +25,7 @@ class Organization(BaseModel):
 
 
 class Publication(BaseModel):
-    id_: str = Field(alias="id")
+    id_: Optional[str] = Field(alias="id")
     title: Optional[str]
     date: Optional[str]
     Reference: Optional[str]
@@ -58,7 +58,9 @@ XrefType = Literal[
     "sra-sample",
     "sra-study",
     "gea",
-    "assemblies",
+    "insdc-assembly",
+    "insdc-master",
+    "insdc",
     "metabobank",
     "taxonomy",
     "GEO",

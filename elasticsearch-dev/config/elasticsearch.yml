@@ -1,3 +1,0 @@
-http.max_content_length: 2gb
-threadpool.index.queue_size: -1
-threadpool.bulk.queue_size: -1

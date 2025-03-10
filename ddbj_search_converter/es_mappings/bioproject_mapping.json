@@ -1,0 +1,171 @@
+{
+  "mappings": {
+    "properties": {
+      "identifier": {
+        "type": "keyword"
+      },
+      "properties": {
+        "type": "object",
+        "enabled": false
+      },
+      "distribution": {
+        "type": "nested",
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "encodingFormat": {
+            "type": "keyword"
+          },
+          "contentUrl": {
+            "type": "keyword"
+          }
+        }
+      },
+      "isPartOf": {
+        "type": "keyword"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "objectType": {
+        "type": "keyword"
+      },
+      "name": {
+        "type": "text"
+      },
+      "url": {
+        "type": "keyword"
+      },
+      "organism": {
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text"
+          }
+        }
+      },
+      "title": {
+        "type": "text"
+      },
+      "description": {
+        "type": "text"
+      },
+      "organization": {
+        "type": "nested",
+        "properties": {
+          "name": {
+            "type": "text"
+          },
+          "organizationType": {
+            "type": "keyword"
+          },
+          "role": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          },
+          "abbreviation": {
+            "type": "keyword"
+          }
+        }
+      },
+      "publication": {
+        "type": "nested",
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "title": {
+            "type": "text"
+          },
+          "date": {
+            "type": "keyword"
+          },
+          "Reference": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          },
+          "DbType": {
+            "type": "keyword"
+          },
+          "status": {
+            "type": "keyword"
+          }
+        }
+      },
+      "grant": {
+        "type": "nested",
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "title": {
+            "type": "keyword"
+          },
+          "agency": {
+            "type": "nested",
+            "properties": {
+              "abbreviation": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      "externalLink": {
+        "type": "nested",
+        "properties": {
+          "url": {
+            "type": "keyword"
+          },
+          "label": {
+            "type": "keyword"
+          }
+        }
+      },
+      "dbXref": {
+        "type": "object",
+        "enabled": false
+      },
+      "sameAs": {
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        }
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "visibility": {
+        "type": "keyword"
+      },
+      "dateCreated": {
+        "type": "date"
+      },
+      "dateModified": {
+        "type": "date"
+      },
+      "datePublished": {
+        "type": "date"
+      }
+    }
+  }
+}

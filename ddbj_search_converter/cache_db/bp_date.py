@@ -9,7 +9,8 @@ import argparse
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator, List, Optional, Sequence, Tuple
+from typing import (Any, Dict, Generator, Iterable, List, Optional, Sequence,
+                    Tuple)
 
 from pydantic import BaseModel
 from sqlalchemy import Row, String, create_engine, insert, select, text
@@ -50,20 +51,14 @@ def init_sqlite_db(config: Config, overwrite: bool = True) -> None:
     if db_file_path.exists() and overwrite:
         db_file_path.unlink()
 
-    engine = create_engine(
-        f"sqlite:///{db_file_path}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"sqlite:///{db_file_path}")
     Base.metadata.create_all(engine)
     engine.dispose()
 
 
 @contextmanager
 def get_session(config: Config) -> Generator[Session, None, None]:
-    engine = create_engine(
-        f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"sqlite:///{config.work_dir.joinpath(DB_FILE_NAME)}")
     with Session(engine) as session:
         yield session
     engine.dispose()
@@ -108,10 +103,7 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 #   - -> DISTINCT ON は不要
 
 def fetch_data_from_postgres(config: Config, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Generator[Sequence[Row[Any]], None, None]:
-    engine = create_engine(
-        f"{config.postgres_url}/{POSTGRES_DB_NAME}",
-        # echo=config.debug,
-    )
+    engine = create_engine(f"{config.postgres_url}/{POSTGRES_DB_NAME}")
 
     offset = 0
     try:
@@ -126,6 +118,7 @@ def fetch_data_from_postgres(config: Config, chunk_size: int = DEFAULT_CHUNK_SIZ
                 FROM mass.bioproject_summary s
                 INNER JOIN mass.project p
                 ON s.submission_id = p.submission_id
+                WHERE s.accession IS NOT NULL
                 ORDER BY s.accession
                 LIMIT :chunk_size OFFSET :offset;
                 """)
@@ -161,19 +154,52 @@ def store_data_to_sqlite(config: Config, records: Sequence[Row[Any]]) -> None:
             raise
 
 
-def get_dates(session: Session, accession: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def count_records(config: Config) -> int:
+    with get_session(config) as session:
+        result = session.execute(text(f"SELECT COUNT(*) FROM {TABLE_NAME};"))
+        count = result.fetchone()[0]  # type: ignore
+        if isinstance(count, int):
+            return count
+        else:
+            return -1
+
+
+def get_dates(config: Config, accession: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """\
     Return (dateCreated, dateModified, datePublished)
     """
     try:
-        query = select(Record).where(Record.accession == accession)
-        res = session.execute(query).fetchone()
-        if res is None:
-            return None, None, None
-        return res.date_created, res.date_modified, res.date_published
+        with get_session(config) as session:
+            record = session.execute(
+                select(Record).where(Record.accession == accession)
+            ).scalar_one_or_none()
+
+            if record is None:
+                return None, None, None
+
+            return record.date_created, record.date_modified, record.date_published
     except Exception as e:
         LOGGER.debug("Failed to get dates from SQLite: %s", e)
         return None, None, None
+
+
+def get_dates_bulk(config: Config, accessions: Iterable[str]) -> Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]:
+    """\
+    Return (dateCreated, dateModified, datePublished)
+    """
+    try:
+        with get_session(config) as session:
+            records = session.execute(
+                select(Record).where(Record.accession.in_(accessions))
+            ).scalars().all()
+
+            return {
+                record.accession: (record.date_created, record.date_modified, record.date_published)
+                for record in records
+            }
+    except Exception as e:
+        LOGGER.debug("Failed to get dates from SQLite: %s", e)
+        return {}
 
 
 # === CLI implementation ===
@@ -213,7 +239,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--chunk-size",
         help="The number of records to fetch from PostgreSQL at a time. Default is {DEFAULT_CHUNK_SIZE}.",
-        nargs="?",
         type=int,
         default=DEFAULT_CHUNK_SIZE,
     )
@@ -239,17 +264,20 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
 
 
 def main() -> None:
-    LOGGER.info("Creating SQLite DB for BioProject date information")
     config, args = parse_args(sys.argv[1:])
     set_logging_level(config.debug)
+
+    LOGGER.info("Creating SQLite DB for BioProject date information")
     LOGGER.debug("Config:\n%s", config.model_dump_json(indent=2))
     LOGGER.debug("Args:\n%s", args.model_dump_json(indent=2))
 
     init_sqlite_db(config)
     for records in fetch_data_from_postgres(config, args.chunk_size):
         store_data_to_sqlite(config, records)
+    count = count_records(config)
 
     LOGGER.info("Completed. Saved to %s", config.work_dir.joinpath(DB_FILE_NAME))
+    LOGGER.info("Number of records: %d", count)
 
 
 if __name__ == "__main__":

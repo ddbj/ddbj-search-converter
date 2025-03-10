@@ -1,173 +1,130 @@
 # ddbj-search-converter
 
 - [DDBJ-Search](https://ddbj.nig.ac.jp) のデータ投入用 script 群。
-`biosample_set.xml` や `bioproject.xml` といった XML file を JSON-Lines (ES bulk data file) に変換し、Elasticsearch に投入する。
-
-## Installation and Start up
-
-`ddbj-search-converter` は、Python 3.8 以上での使用を想定している。
-
-pip を用いた install として:
-
-```bash
-python3 -m pip install .
-```
-
-これにより、以下の CLI が install される。
-
-- `create_accession_db`: `SRA_accessions.tab` からそれぞれの accession の関係をまとめた、SQLite database を生成する
-- `create_dblink_db`: `/lustre9/open/shared_data/dblink` 以下の各 TSV file から、SQLite database を生成する
-- `bp_xml2jsonl`: BioProject XML を ES bulk insert 用の JSON-Lines に変換する
-- `bp_split_jsonl`: 変換された JSON-Lines を bulk insert に向けて分割する
-- `bp_bulk_insert`: ES に bulk insert する
-- `bs_xml2jsonl`: BioSample XML を ES bulk insert 用の JSON-Lines に変換する
-- `bs_split_jsonl`: 変換された JSON-Lines を bulk insert に向けて分割する
-- `bs_bulk_insert`: ES に bulk insert する
-
-例として、
-
-```bash
-$ bp_xml2jsonl --help
-usage: bp_xml2jsonl [-h] [--accessions-tab-file [ACCESSIONS_TAB_FILE]]
-                    [--bulk-es] [--es-base-url ES_BASE_URL]
-                    [--batch-size BATCH_SIZE] [--debug]
-                    xml_file [output_file]
-
-Convert BioProject XML to JSON-Lines
-
-...
-```
-
-### Using Docker
-
-また、Docker を用いて環境を構築することも可能である。
-
-```bash
-$ docker network create ddbj-search-network
-$ docker compose up -d
-$ docker compose exec app bp_xml2jsonl --help
-...
-```
-
-開発環境:
-
-```bash
-docker network create ddbj-search-network-dev
-docker compose -f compose.dev.yml up -d
-docker compose -f compose.dev.yml exec app bash
-```
+- `biosample_set.xml` や `bioproject.xml` といった XML file を JSON-Lines (ES bulk data file) に変換し、Elasticsearch に投入する。
 
 ## Usage
 
-まず、全手順を通して、必要な外部 resource として、
+- まず、基本的に遺伝研スパコン上の resource と密結合した実装となっている
+- かつ、docker (or podman) での実行を前提としている
+- 依存している遺伝研スパコン上の resource としては、下記の通りである
+  - [`./compose.yml`](./compose.yml) も参照してください
 
-```bash
-- /lustre9/open/shared_data/dblink/assembly_genome-bp/assembly_genome2bp.tsv
-- /lustre9/open/shared_data/dblink/assembly_genome-bs/assembly_genome2bs.tsv
-- /lustre9/open/shared_data/dblink/bioproject-biosample/bioproject2biosample.tsv
-- /lustre9/open/shared_data/dblink/bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv
-- /lustre9/open/shared_data/dblink/biosample-bioproject/biosample2bioproject.tsv
-- /lustre9/open/shared_data/dblink/gea-bioproject/gea2bioproject.tsv
-- /lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv
-- /lustre9/open/shared_data/dblink/insdc-bioproject/insdc2bioproject.tsv
-- /lustre9/open/shared_data/dblink/insdc-biosample/insdc2biosample.tsv
-- /lustre9/open/shared_data/dblink/insdc_master-bioproject/insdc_master2bioproject.tsv
-- /lustre9/open/shared_data/dblink/insdc_master-biosample/insdc_master2biosample.tsv
-- /lustre9/open/shared_data/dblink/mtb2bp/mtb_id_bioproject.tsv
-- /lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv
-- /lustre9/open/shared_data/dblink/ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv
-- /lustre9/open/shared_data/dblink/taxonomy_biosample/trace_biosample_taxon2bs.tsv
-- /usr/local/resources/bioproject/bioproject.xml
-- /usr/local/resources/bioproject/ddbj_core_bioproject.xml
-- /usr/local/resources/biosample/biosample_set.xml.gz
-- /usr/local/resources/biosample/ddbj_biosample_set.xml.gz
+```yaml
+- /usr/local/resources/bioproject
+- /usr/local/resources/biosample
+- /lustre9/open/shared_data/dblink
+- /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions
 ```
 
-また、手順実行後の directory 構成は以下の通りである。
+### 環境変数
 
-```bash
-# TODO update
+- それぞれの処理は、cli script として実装されている
+  - [`./pyproject.toml`](./pyproject.toml) も参照してください
+- cli script 一覧としては、下記の通りである
+
+```toml
+[project.scripts]
+create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
+create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
+create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
+bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
+bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
+bp_relation_ids_bulk_update = "ddbj_search_converter.bioproject.bp_relation_ids_bulk_update:main"
+bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
+bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+bs_relation_ids_bulk_update = "ddbj_search_converter.biosample.bs_relation_ids_bulk_update:main"
 ```
 
-### 0.1. Prepare External Resources
+- それぞれの script は、`--help` で特有の argument が存在する
+- しかし、同時に、全体的な挙動を制御するための環境変数が存在する
+  - `DDBJ_SEARCH_CONVERTER_DEBUG`
+    - `true` or `false`
+    - 基本的に logger の出力
+    - debug mode で実行しておく方が、インシデント対応が楽だと思われる
+  - `DDBJ_SEARCH_CONVERTER_WORK_DIR`
+    - 出力される諸々の file の base path
+  - `DDBJ_SEARCH_CONVERTER_POSTGRES_URL`
+    - date 情報を取得する元となる PostgreSQL DB の URL
+    - `postgresql://{username}:{password}@{host}:{port}` のような形式
+  - `DDBJ_SEARCH_CONVERTER_ES_URL`
+    - data 格納先の Elasticsearch URL
+  - `DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_BASE_PATH`
+    - 最新の `SRA_Accessions.tab` file を find する際の base path
+  - `DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_FILE_PATH`
+    - 上の `BASE_PATH` と排他制御
+    - この環境変数が設定されている場合、その file path を用いる
+  - `DDBJ_SEARCH_CONVERTER_DBLINK_BASE_PATH`
+    - `dblink` 情報を取得するもととなる file の base path
+- これらの環境変数は、[`./compose.yml`](./compose.yml) などに設定する
+- `コマンドライン引数 > 環境変数 > デフォルト値 (config.py)` の優先度で処理される
 
-以下、全ての処理において、container 内の `/app` を作業 directory とし、`./converter_results` に結果を保存するものとする。
-
-```bash
-# SRA_Accessions.tab ダウンロード
-curl -# -o ./converter_results/SRA_Accessions.tab ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
-
-# biosample XML の解凍
-gunzip -c /usr/local/resources/biosample/biosample_set.xml.gz > ./converter_results/biosample_set.xml
-gunzip -c /usr/local/resources/biosample/ddbj_biosample_set.xml.gz > ./converter_results/ddbj_biosample_set.xml
-```
-
-### 1.1. Create Accession Database (`create_accession_db`)
-
-```bash
-mkdir ./converter_results/sra_accessions
-perl ./scripts/split_sra_accessions.pl ./converter_results/SRA_Accessions.tab ./converter_results/sra_accessions
-create_accession_db ./converter_results/sra_accessions ./converter_results/sra_accessions.sqlite
-```
-
-### 1.2. Create DBLink Database (`create_dblink_db`)
-
-```bash
-time python create_dblink_db.py
-```
-
-### 2.1. Convert BioProject XML to JSON-Lines (`bp_xml2jsonl`)
+### ともかく投入する
 
 ```bash
-time python bp_xml2jsonl.py /usr/local/resources/bioproject/bioproject.xml /home/w3ddbjld/tasks/bioproject_jsonl/bioproject.jsonl
-cp /usr/local/resources/bioproject/ddbj_core_bioproject.xml /home/w3ddbjld/tasks/bioproject_jsonl/ddbj/ddbj_core_bioproject.xml
-time python bp_xml2jsonl.py /home/w3ddbjld/tasks/bioproject_jsonl/ddbj/
+# Create docker network
+$ docker network create ddbj-search-network
+
+# Up Elasticsearch Container
+$ mkdir -p ./elasticsearch/data
+$ mkdir -p ./elasticsearch/logs
+$ mkdir -p ./elasticsearch/backup
+$ chmod 777 ./elasticsearch/data
+$ chmod 777 ./elasticsearch/logs
+$ chmod 777 ./elasticsearch/backup
+$ docker compose -f compose.elasticsearch.yml up -d
+
+# ES 動作確認
+$ curl localhost:19200/_cluster/health?pretty
+
+# Up Converter container
+$ docker compose -f compose.dev.yml up -d --build
+$ docker compose -f compose.dev.yml exec app bash
+
+# Inside container
+# Elasticsearch の index を作成する
+$ create_es_index --index bioproject
+$ create_es_index --index biosample
+
+# Cache 用 sqlite db を作成する
+$ create_bp_date_db
+$ create_bs_date_db
+
+# XML to JSON-Lines
+$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/bioproject.xml
+$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/ddbj_core_bioproject.xml --is-ddbj
+
+$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/biosample_set.xml.gz
+$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/ddbj_biosample_set.xml.gz --is-ddbj --use-existing-tmp-dir
+
+# Bulk insert
+$ bp_bulk_insert
+$ bs_bulk_insert
 ```
 
-### 2.2. Split JSON-Lines for Bulk Insert (`bp_split_jsonl`)
+### 時間メモ
 
-```bash
-time python split_jsonl.py /home/w3ddbjld/tasks/bioproject_jsonl/bioproject.jsonl  /home/w3ddbjld/tasks/bioproject_jsonl
-```
-
-### 2.3. Bulk Insert BioProject Data (`bp_bulk_insert`)
-
-```bash
-time python bp_bulk_insert.py /home/w3ddbjld/tasks/bioproject_jsonl/$(date -d yesterday +%Y%m%d)  /home/w3ddbjld/tasks/bioproject_jsonl$(date +%Y%m%d)
-```
-
-### 3.1. Convert BioSample XML to JSON-Lines (`bs_xml2jsonl`)
-
-```bash
-mkdir /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
-time ./split_xml.pl /home/w3ddbjld/tasks/biosample_jsonl/biosample_set.xml /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
-time python bs_xml2jsonl_mp.py /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d) /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
-time python bs_xml2jsonl_mp.py /home/w3ddbjld/tasks/biosample_jsonl/ddbj   /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
-mv /home/w3ddbjld/tasks/biosample_jsonl/ddbj/ddbj_biosample_set.jsonl  /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
-```
-
-### 3.2. Split JSON-Lines for Bulk Insert (`bs_split_jsonl`)
-
-```bash
-
-```
-
-### 3.3. Bulk Insert BioSample Data (`bs_bulk_insert`)
-
-```bash
-time python bs_bulk_insert.py /home/w3ddbjld/tasks/biosample_jsonl/ $(date -d yesterday +%Y%m%d)  /home/w3ddbjld/tasks/biosample_jsonl/$(date +%Y%m%d)
-```
+- `create_bp_date_db`: 一瞬
+- `create_bs_date_db`: 14m
+- `create_es_index --index bioproject`: 一瞬
+- `create_es_index --index biosample`: 一瞬
+- `bp_xml_to_jsonl`: 2m
+- `bp_xml_to_jsonl --is-ddbj`: 1m
+- `bs_xml_to_jsonl`: 40m
+- `bs_xml_to_jsonl --is-ddbj`: 2m
+- `bp_bulk_insert`: 30m
+- `bs_bulk_insert`: 9h
 
 ## Development
 
-開発用環境として、
+開発用環境として、`./ddbj_search_converter` が mount され、pip の development mode で install されている環境が存在する。
 
 ```bash
 $ docker network create ddbj-search-network-dev
 $ docker compose -f docker-compose.dev.yml up -d
 $ docker compose -f docker-compose.dev.yml exec app bash
 # inside the container
-$ bp_xml2jsonl --help
+$ create_bp_date_db --help
 ...
 ```
 

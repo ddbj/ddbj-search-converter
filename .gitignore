@@ -166,5 +166,7 @@ cython_debug/
 
 # === our settings ===
 
-elasticsearch-dev/logs
-elasticsearch-dev/data
+elasticsearch/logs
+elasticsearch/data
+elasticsearch/backup
+ddbj_search_converter_results
