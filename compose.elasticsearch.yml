@@ -10,9 +10,6 @@ services:
       http.cors.enabled: "true"
       http.cors.allow-origin: '"*"'
       ELASTIC_PASSWORD: "${ELASTIC_PASSWORD:-ddbj-search-elasticsearch-password}"
-    ports:
-      - "0.0.0.0:19200:9200"
-      - "0.0.0.0:19300:9300"
     volumes:
       - ${PWD}/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ${PWD}/elasticsearch/data:/usr/share/elasticsearch/data:rw
