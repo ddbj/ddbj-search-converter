@@ -11,8 +11,8 @@
   - [`./compose.yml`](./compose.yml) も参照してください
 
 ```yaml
-- /usr/local/resources/bioproject
-- /usr/local/resources/biosample
+- /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject
+- /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample
 - /lustre9/open/shared_data/dblink
 - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions
 ```
@@ -91,11 +91,11 @@ $ create_bp_date_db
 $ create_bs_date_db
 
 # XML to JSON-Lines
-$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/bioproject.xml
-$ bp_xml_to_jsonl --xml-file /usr/local/resources/bioproject/ddbj_core_bioproject.xml --is-ddbj
+$ bp_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject/bioproject.xml
+$ bp_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject/ddbj_core_bioproject.xml --is-ddbj
 
-$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/biosample_set.xml.gz
-$ bs_xml_to_jsonl --xml-file /usr/local/resources/biosample/ddbj_biosample_set.xml.gz --is-ddbj --use-existing-tmp-dir
+$ bs_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample/biosample_set.xml.gz
+$ bs_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample/ddbj_biosample_set.xml.gz --is-ddbj --use-existing-tmp-dir
 
 # Bulk insert
 $ bp_bulk_insert
@@ -127,6 +127,12 @@ $ docker compose -f docker-compose.dev.yml exec app bash
 $ create_bp_date_db --help
 ...
 ```
+
+### 環境の使い分け
+
+基本的に `-dev` 系は、local などで開発するための設定であるとする。(そのため、app dir とか mount されている)
+
+例えば、`a011` は本番環境、`a012` は Staging (dev) 環境であるが、これらの環境は、同じ prod 用の設定を用いる。
 
 ### Linting, Formatting and Testing
 

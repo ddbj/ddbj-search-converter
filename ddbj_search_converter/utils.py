@@ -4,6 +4,7 @@
 """
 import hashlib
 import re
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Pattern, Tuple, Union
@@ -52,6 +53,41 @@ def get_recent_dirs(base_dir: Path, latest_dir: Optional[Path], prior_dir: Optio
             prior_dir = None  # 例えば、初回実行時など
 
     return latest_dir, prior_dir
+
+
+def cleanup_old_dirs(base_dir: str, keep_latest: int = 3) -> List[str]:
+    """\
+    - base_dir 内の dir を日付順でソートし、最新の `keep_latest` 個を残して削除
+    - 削除した dir の名前を返す
+    - command line で呼ぶため、Path ではなく str で取り扱う
+    """
+    def _parse_date_from_name(dir_path: Path) -> datetime:
+        try:
+            return datetime.strptime(dir_path.name, DATE_FORMAT)
+        except ValueError as e:
+            LOGGER.error("Failed to parse date from %s: %s", dir_path, e)
+            raise
+
+    dirs: List[Path] = sorted(
+        [d for d in Path(base_dir).resolve().iterdir() if d.is_dir() and _parse_date_from_name(d) is not None],
+        key=_parse_date_from_name,
+        reverse=True,
+    )
+
+    if len(dirs) <= keep_latest:
+        return []
+
+    remove_dirs = dirs[keep_latest:]
+    removed_dirs = []
+    for d in remove_dirs:
+        try:
+            print(f"Removing old dir: {d}")
+            shutil.rmtree(d)
+            removed_dirs.append(str(d))
+        except Exception as e:
+            print(f"Failed to remove {d}: {e}")
+
+    return [str(d) for d in removed_dirs]
 
 
 def _compute_checksum(file: Path) -> str:

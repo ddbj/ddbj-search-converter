@@ -1,7 +1,7 @@
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
-    container_name: ddbj-search-elasticsearch
+    container_name: ddbj-search-elasticsearch-dev
     environment:
       TZ: "Asia/Tokyo"
       discovery.type: "single-node"
@@ -9,10 +9,10 @@ services:
       bootstrap.memory_lock: "true"
       http.cors.enabled: "true"
       http.cors.allow-origin: '"*"'
-      ELASTIC_PASSWORD: "${ELASTIC_PASSWORD:-ddbj-search-elasticsearch-password}"
+      ELASTIC_PASSWORD: "ddbj-search-elasticsearch-dev-password" # change this password
     ports:
-      - "0.0.0.0:19200:9200"
-      - "0.0.0.0:19300:9300"
+      - "127.0.0.1:19200:9200"
+      - "127.0.0.1:19300:9300"
     volumes:
       - ${PWD}/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ${PWD}/elasticsearch/data:/usr/share/elasticsearch/data:rw
@@ -27,10 +27,9 @@ services:
         hard: -1
     mem_limit: 32g
     networks:
-      - ddbj-search-network
-    userns_mode: "keep-id:uid=1000,gid=1000"
+      - ddbj-search-network-dev
 
 networks:
-  ddbj-search-network:
-    name: ddbj-search-network
+  ddbj-search-network-dev:
+    name: ddbj-search-network-dev
     external: true
