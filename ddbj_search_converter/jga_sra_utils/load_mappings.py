@@ -34,6 +34,11 @@ def main() -> None:
     for index_name in INDEX_NAMES:
         with mappings_dir.joinpath(f"{index_name}_mapping.json").open("r", encoding="utf-8") as f:
             mapping = json.load(f)
+            if "type" in mapping["mappings"]["properties"]:
+                mapping["mappings"]["properties"]["type"] = {"type": "keyword"}
+            if "organism" in mapping["mappings"]["properties"]:
+                if "name" in mapping["mappings"]["properties"]["organism"]["properties"]:
+                    mapping["mappings"]["properties"]["organism"]["properties"]["name"] = {"type": "keyword"}
             mapping["settings"] = SETTINGS
             es_client.indices.create(index=index_name, body=mapping)
 
