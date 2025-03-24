@@ -1,0 +1,107 @@
+<mxfile host="65bd71144e">
+    <diagram id="vpaei50TolRUxV6sy3FZ" name="ページ1">
+        <mxGraphModel dx="814" dy="851" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="9" value="BioProject, BioSampleデータのdate DBの生成" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=20;html=1;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="50.000000000000455" y="40" width="540" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="ddbj resources" style="swimlane;startSize=20;html=1;fontSize=10;" vertex="1" parent="9">
+                    <mxGeometry y="20" width="180" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="bioproject: postgresql" style="rounded=0;whiteSpace=wrap;html=1;" parent="10" vertex="1">
+                    <mxGeometry x="29.999999999999545" y="200" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="biosample:postgresql" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="10">
+                    <mxGeometry x="29.999999999999545" y="240" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="w3ddbjld 処理" style="swimlane;startSize=20;html=1;fontSize=10;" vertex="1" parent="9">
+                    <mxGeometry x="180" y="20" width="180" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="11" source="7" target="26">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="100,000件*ごと処理" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="11">
+                    <mxGeometry x="10" y="160" width="160" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=open;endFill=0;" edge="1" parent="7" source="6" target="16">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="select accession, create_date, relase_date,&lt;br&gt;modified_date" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="7">
+                    <mxGeometry x="20" y="30" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;endArrow=none;endFill=0;" edge="1" parent="7" source="16" target="18">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="accession-date list" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="7">
+                    <mxGeometry x="20" y="110" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="insert" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="7">
+                    <mxGeometry x="20" y="170" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="11" source="3" target="7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="create table&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;" parent="11" vertex="1">
+                    <mxGeometry x="29.999999999999545" y="110" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="create index" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="11">
+                    <mxGeometry x="30" y="400" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="11" source="29" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="if exist&lt;br&gt;drop table&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="11">
+                    <mxGeometry x="29.999999999999545" y="60" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="11" source="37">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="89.99999999999955" y="60" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="37" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;fillColor=#000000;" vertex="1" parent="11">
+                    <mxGeometry x="80" y="26" width="20" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;rounded=0;endArrow=open;endFill=0;" edge="1" parent="9" source="3" target="2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;endArrow=open;endFill=0;" edge="1" parent="9" source="18" target="2">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="370" y="365"/>
+                            <mxPoint x="370" y="255"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=none;endFill=0;" edge="1" parent="9" source="4" target="6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="9" source="26" target="8">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="w3ddbjld resource" style="swimlane;startSize=20;html=1;fontSize=10;" vertex="1" parent="9">
+                    <mxGeometry x="360" y="20" width="180" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="" style="group" vertex="1" connectable="0" parent="12">
+                    <mxGeometry x="29.999999999999545" y="220" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="date.sqlite" style="rounded=0;whiteSpace=wrap;html=1;" parent="13" vertex="1">
+                    <mxGeometry width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="date_bioproject: table&lt;br style=&quot;font-size: 10px;&quot;&gt;date_biosample:table" style="rounded=0;whiteSpace=wrap;html=1;align=left;fontSize=10;" vertex="1" parent="13">
+                    <mxGeometry y="30" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fontSize=11;endArrow=open;endFill=0;" edge="1" parent="9" source="29" target="2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="BioProject, BioSampleのdate DB更新プロセス　2024/9" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="10" width="290" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="*chunkサイズはより適したサイズに調整する" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="529" width="240" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

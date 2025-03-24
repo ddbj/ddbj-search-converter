@@ -19,6 +19,10 @@ file_path = [
 "/lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv",
 "/lustre9/open/shared_data/dblink/ncbi_biosample_bioproject/ncbi_biosample_bioproject.tsv",
 "/lustre9/open/shared_data/dblink/taxonomy_biosample/trace_biosample_taxon2bs.tsv",
+"/lustre9/open/shared_data/dblink/jga_study-humID/jga_study2humID.tsv",
+"/lustre9/open/shared_data/dblink/jga_study-jga_dataset/jga_study2jga_dataset.tsv",
+"/lustre9/open/shared_data/dblink/jga_study-pubmed_id/jga_study2pubmed_id.tsv",
+"/lustre9/open/shared_data/dblink/metabobank-jga_study/metabobank2jga_study.tsv",
 ]
 
 def create_database(file,file_name,table_name,sqlite_db_path):

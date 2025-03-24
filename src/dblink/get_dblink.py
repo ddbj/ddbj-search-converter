@@ -38,7 +38,20 @@ acc_table_names = {
         "run_biosample",
         "sample_biosample",
     ]
-    }
+}
+
+jga_table_names = {
+    "jga-study": [
+        "jga_study2humID",
+        "jga_study2jga_dataset",
+        "jga_study2pubmed_id",
+        "metabobank2jga_study",
+    ],
+    "jga-dataset": [
+        "jga_study2jga_dataset",
+    ]
+}
+
 
 
 class RelationObject():
@@ -142,8 +155,6 @@ def get_related_ids(id:str, type:str) -> List[dict]:
             related_ids.append(row[0])
             related_ids.append(row[1])
     conn.close()
-
-
 
     # TODO: 環境に合わせて変更する・環境変数に埋め込む
     acc_db_path = 'sra_accessions.sqlite'
