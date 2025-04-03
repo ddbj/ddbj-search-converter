@@ -10,12 +10,12 @@ INDEX_NAMES = [
     "jga-dataset",
     "jga-policy",
     "jga-study",
-    "sra-analysis",
-    "sra-experiment",
-    "sra-run",
-    "sra-sample",
-    "sra-study",
-    "sra-submission",
+    # "sra-analysis",
+    # "sra-experiment",
+    # "sra-run",
+    # "sra-sample",
+    # "sra-study",
+    # "sra-submission",
 ]
 
 
@@ -33,11 +33,13 @@ def _generate_es_bulk_actions(file: Path, index: str) -> Iterator[Dict[str, Any]
             if line == "":
                 continue
             doc = json.loads(line)
+            if "visibility" in doc:
+                doc["visibility"] = "controlled-access"
             yield {
                 "_op_type": "index",
                 "_index": index,
                 "_id": doc["identifier"],
-                "_source": line,
+                "_source": doc,
             }
 
 
