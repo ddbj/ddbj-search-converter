@@ -112,7 +112,7 @@ def create_policy_relation(relations):
     store_data(DB_PATH, "policy_dac_relation", relations["policy_dac_relation"])
 
 
-def main():
+def create_jga_relation():
     initialize_table(args.d)
     # csvをList[tuple]に変換
     relations = {}
@@ -127,5 +127,5 @@ def main():
     create_indexes(args.d)
 
 if __name__ == "__main__":
-    main()
+    create_jga_relation()
 

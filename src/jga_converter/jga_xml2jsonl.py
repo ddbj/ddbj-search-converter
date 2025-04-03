@@ -9,15 +9,19 @@ import argparse
 import csv
 import json
 import sys
-from datetime import datetime
+import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree as ET
 import urllib.request
 import urllib.parse
 import xmltodict
+import logging
+import sqlite3
 from lxml import etree
 from schema import (JGA, Organism, Xref)
+from dblink.create_jga_relation_db import create_jga_relation
+
 
 DEFAULT_BATCH_SIZE = 500
 JGA_STUDY_XML_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/jga-study.xml"
@@ -25,6 +29,12 @@ JGA_DATASET_XML_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/
 DATASET_DATE_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/dataset.date.csv"
 STUDY_DATE_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/study.date.csv"
 ELASTIC_SEARCH_ENDPOINT = "http://localhost:9200/_bulk"
+RELATION_DB_PATH = "~/tasks/sra/resources/jga_link.sqlite"
+
+log_file = f"{datetime.date.today()}_bulkinsert_error_log.txt"
+logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.DEBUG)
+logger = logging.getLogger()
+
 
 def xml_to_elasticsearch(xml_file: Path, type: str, tag: str):
     context = etree.iterparse(xml_file, tag=tag)
@@ -82,7 +92,6 @@ class BulkInsert:
         self.es_url = url
     def insert(self,docs):
         insert_lst = []
-        today = datetime.date.today()
         for doc in docs:
             try:
                 insert_lst.append({'index': {'_index': 'genome', '_id': doc['identifier']}})
@@ -98,14 +107,12 @@ class BulkInsert:
             log_str = json.dumps(response_data)
             word = "exception"
             if word in log_str:
-                file_name = f"{today}_bulkinsert_error_log.txt"
-                # TODO: loggerの設定
-                logs(log_str, file_name)
+                logger.info(log_str)
 
 
 def get_dates(tag: str, acc: str):
     """
-    idをキーとしdatecreated,datepublished,datemodifiedを取得
+    accessionをキーとしdatecreated,datepublished,datemodifiedを取得
     """
     match tag:
         case "DATASET":
@@ -128,15 +135,6 @@ def get_dates(tag: str, acc: str):
         print(f"error occured: {e}")
 
 
-# TODO:
-def get_relation(accession: str) -> list:
-    """
-    relation DBより関係するjgaのaccessionを取得し
-    accessinのlistを返す
-    """
-    return []
-
-
 def parse_oraganism():
     return Organism(
             identifier = "9606",
@@ -144,20 +142,55 @@ def parse_oraganism():
         )
 
 
+def get_relation(accession: str) -> list:
+    """
+    relation DBよjgaのaccessionのrelation(id0-id1)のリストを取得する
+    accessionのリストを返す
+    """
+    match accession:
+        case str() if accession.startswith("JGAD"):
+            tables = ["dataset_policy_relation","dataset_dac_relation","dataset_study_relation"]
+            return search_relation_table(accession, tables)
+        case str() if accession.startswith("JGAC"):
+            tables = ["dataset_dac_relation","study_dac_relation","policy_dac_relation"]
+            return search_relation_table(accession, tables)
+        case str() if accession.startswith("JGAP"):
+            tables = ["dataset_policy_relation","study_policy_relation","policy_dac_relation"]
+            return search_relation_table(accession, tables)
+        case str() if accession.startswith("JGAS"):
+            tables = ["dataset_study_relation","study_dac_relation","study_policy_relation"]
+            return search_relation_table(accession, tables)
+
+
+def search_relation_table(accession:str, tables:list) -> list:
+    conn = sqlite3.connect(RELATION_DB_PATH)
+    cur = conn.cursor()
+    results = []
+    for t in tables:
+        cur.execute(f"SELECT id1 AS result FROM {t} WHERE id0 = {accession} UNION SELECT id0 FROM {t} WHERE id1 = {accession};")
+        # resultsに取得したidのリストを追加する
+        results.extend([row[0] for row in cur.fetchall()])
+    return results
+
+
 def parse_dbxref(accession:str):
+    """
+    get_relation()で関連するaccessionを取得したのち
+    urlとtypeを付加したdb_Xrefsの型に整形してxrefsを返す
+    """
     xrefs = []
     for acc in get_relation(accession):
-        match accession:
-            case str() if accession.startswith("JGAD"):
+        match acc:
+            case str() if acc.startswith("JGAD"):
                 typ = "jga-dataset"
-            case str() if accession.startswith("JGAC"):
+            case str() if acc.startswith("JGAC"):
                 typ = "jga-dac"
-            case str() if accession.startswith("JGAP"):
-                type = "jga-policy"
-            case str() if accession.startswith("JGAS"):
+            case str() if acc.startswith("JGAP"):
+                typ = "jga-policy"
+            case str() if acc.startswith("JGAS"):
                 typ = "jga-study"
         
-        xrefs.append(Xref(identifier="", type_ = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{accession}"))
+        xrefs.append(Xref(identifier="", type_ = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
     return xrefs
 
 
@@ -182,6 +215,8 @@ def main():
             "file_path": JGA_DATASET_XML_FILE
         }
     ]
+    # jga_relation_dbを更新
+    create_jga_relation()
 
     # typeごとに変換しつつbulk insert
     for type in types:

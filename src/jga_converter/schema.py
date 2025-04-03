@@ -55,7 +55,7 @@ class JGA(BaseModel):
     organism: Optional[Organism]
     dbXref: List[Xref]
     status: Literal["public"]
-    visibility: Literal["unrestricted-access"]
+    visibility: Literal["controlled-access"]
     dateCreated: Optional[str]
     dateModified: Optional[str]
     datePublished: Optional[str]
