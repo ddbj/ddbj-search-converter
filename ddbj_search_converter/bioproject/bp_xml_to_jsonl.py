@@ -185,7 +185,10 @@ def xml_to_jsonl_worker(config: Config, xml_file: Path, jsonl_file: Path, is_ddb
     # dbXref の一括取得
     relation_ids_map = get_relation_ids_bulk(config, docs.keys())
     for accession, relation_ids in relation_ids_map.items():
-        docs[accession].dbXref = [to_xref(id_) for id_ in relation_ids]
+        docs[accession].dbXref = sorted(
+            [to_xref(id_) for id_ in relation_ids],
+            key=lambda x: x.identifier,
+        )
 
     # date の一括取得
     if is_ddbj:
