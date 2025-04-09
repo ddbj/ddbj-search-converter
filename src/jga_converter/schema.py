@@ -52,7 +52,7 @@ class JGA(BaseModel):
     title: Optional[str]
     description: Optional[str]
     name: Optional[str]
-    type: Literal["jga-study", "jga-dataset"]
+    type: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
     url: str
     sameAs: None
     isPartOf: Literal["jga"]

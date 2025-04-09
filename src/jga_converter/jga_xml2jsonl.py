@@ -31,8 +31,12 @@ DEFAULT_BATCH_SIZE = 500
 
 JGA_STUDY_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-study.xml'
 JGA_DATASET_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-dataset.xml'
+JGA_POLICY_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-policy.xml'
+JGA_DAC_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-dac.xml'
 DATASET_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dataset.date.csv'
 STUDY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/study.date.csv'
+POLICY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/policy.date.csv'
+DAC_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dac.date.csv'
 ELASTIC_SEARCH_ENDPOINT = 'http://localhost:19200/_bulk'
 ELASTIC_PASSWORD: ''
 RELATION_DB_PATH = '~/tasks/sra/resources/jga_link.sqlite'
@@ -42,36 +46,35 @@ logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.DEBUG)
 logger = logging.getLogger()
 
 
-def xml_to_elasticsearch(xml_file: Path, type: str, tag: str):
+def xml_to_elasticsearch(xml_file: Path, typ: str, tag: str):
     context = etree.iterparse(xml_file, tag=tag)
     docs:list[dict] = []
     bulkinsert = BulkInsert(ELASTIC_SEARCH_ENDPOINT)
     for events, element in context:
         if element.tag == tag:
-            jga_instance = xml_element_to_jga_instance(etree.tostring(element), type, tag)
+            jga_instance = xml_element_to_jga_instance(etree.tostring(element), typ, tag)
             # BaseModelのインスタンスをdictに変換してlistに格納する
             docs.append(jga_instance.dict())
         # TODO: es.helperに投入方法を置き換える
         if len(docs) > DEFAULT_BATCH_SIZE:
-            bulkinsert.insert(docs)
+            bulkinsert.insert(docs, typ)
             docs = []
     if len(docs) > 0:
-        bulkinsert.insert(docs)
+        bulkinsert.insert(docs, typ)
 
 
-def xml_element_to_jga_instance(xml_str, type,  tag) -> JGA:
+def xml_element_to_jga_instance(xml_str, typ,  tag) -> JGA:
     metadata = xmltodict.parse(xml_str, attr_prefix="", cdata_key="content")
     accession = metadata[tag]["accession"]
+    # TODO: get_datesがNoneTypeを返す際の処理を追加する
     dates = get_dates(tag, accession)
     jga_instance = JGA(
         identifier = accession,
         properties = metadata[tag],
-        # title = metadata[tag].get("DESCRIPTOR").get("STUDY_TITLE"),
         title = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_TITLE"),
-        # description = metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
         description = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
         name = metadata[tag].get("alias"),
-        type = type,
+        type = typ,
         url = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
         sameAs = None,
         isPartOf = "jga",
@@ -99,12 +102,11 @@ def clear_element(element):
 class BulkInsert:
     def __init__(self, url):
         self.es_url = url
-    def insert(self,docs):
+    def insert(self,docs, typ):
         insert_lst = []
         for doc in docs:
-            print(doc, type(doc))
             try:
-                insert_lst.append({'index': {'_index': 'genome', '_id': doc['identifier']}})
+                insert_lst.append({'index': {'_index': typ, '_id': doc['identifier']}})
                 insert_lst.append(doc)
             except:
                 print("cant open doc: ")
@@ -125,6 +127,8 @@ class BulkInsert:
 def get_dates(tag: str, acc: str):
     """
     accessionをキーとしdatecreated,datepublished,datemodifiedを取得
+    TODO: CSVに対応するレコードが存在しない場合""を返す。
+    レコードがないケースではNoneを返しexclude_none=Trueにした方が良いか検討する
     return: LIST[{acc: [dateCreated, dateModified, datePublished]}]
     """
     match tag:
@@ -132,6 +136,10 @@ def get_dates(tag: str, acc: str):
             file_path = DATASET_DATE_FILE
         case "STUDY":
             file_path = STUDY_DATE_FILE
+        case "POLICY":
+            file_path = POLICY_DATE_FILE
+        case "DAC":
+            file_path = DAC_DATE_FILE
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             reader = csv.reader(file)
@@ -143,6 +151,8 @@ def get_dates(tag: str, acc: str):
                     value = row[1:] if len(row) > 1 else None
                     # [dateCreated, dateModified, datePublished]がvalueとなる
                     dict_list.update({key: value})
+                else:
+                    dict_list.update({key:["","",""]})
             return dict_list[acc]
     except Exception as e:
         print(f"error occured: {e}")
@@ -203,7 +213,6 @@ def parse_dbxref(accession:str):
                 typ = "jga-policy"
             case str() if acc.startswith("JGAS"):
                 typ = "jga-study"
-        # xrefs.append(Xref(identifier="", type_ = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
         xrefs.append(Xref(identifier="", type = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
     return xrefs
 
@@ -217,7 +226,19 @@ def main():
         - ヘッダ行をつけてファイルに書き出す
     - jsonlをElasticsearchにバルクインサートする
     """
+    # TODO jga-policyとjga-dacを追加
     types = [
+        {
+            "type": "jga-dac",
+            "tag": "DAC",
+            "file_path": JGA_DAC_XML_FILE
+        },
+        {
+            "type": "jga-policy",
+            "tag": "POLICY",
+            "file_path": JGA_POLICY_XML_FILE
+
+        },
         {
             "type": "jga-study",
             "tag": "STUDY",
@@ -230,12 +251,13 @@ def main():
         }
     ]
     create_jga_relation()
+
     # typeごとに変換しつつbulk insert
     for type in types:
         xml_file = type["file_path"]
         tag = type["tag"]
-        type = type["type"]
-        xml_to_elasticsearch(xml_file, type, tag)
+        typ = type["type"]
+        xml_to_elasticsearch(xml_file, typ, tag)
 
 
 if __name__ == "__main__":
