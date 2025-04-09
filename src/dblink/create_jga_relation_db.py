@@ -7,8 +7,7 @@ from dblink.create_jga_relation_table import initialize_table, create_indexes
 # TODO:環境変数に記述するように
 CHUNK_SIZE = 10000
 LOCAL_FILE_PATH = "/lustre9/open/shared_data/jga/metadata-history/metadata/"
-# for local test
-LOCAL_FILE_PATH = '/mnt/data/jga/'
+
 FILE_LIST = [
     "analysis-study-relation",
     "dataset-analysis-relation",
@@ -25,8 +24,6 @@ TABLE_LIST = [
     "policy_dac_relation"
 ]
 DB_PATH = "~/tasks/sra/resources/jga_link.sqlite"
-# for local test
-DB_PATH = '/mnt/data/jga/jga_link.sqlite'
 parser = argparse.ArgumentParser(description="jga relation file to sqlite")
 parser.add_argument("-d", default=DB_PATH)
 args = parser.parse_args()
