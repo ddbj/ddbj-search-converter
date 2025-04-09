@@ -9,6 +9,9 @@ import argparse
 import csv
 import json
 import sys
+import os
+# for dev 
+sys.path.append(os.path.abspath("/mnt/ddbj/ddbj-search-converter/src"))
 import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -18,18 +21,32 @@ import urllib.parse
 import xmltodict
 import logging
 import sqlite3
+import base64
 from lxml import etree
 from schema import (JGA, Organism, Xref)
 from dblink.create_jga_relation_db import create_jga_relation
 
 
 DEFAULT_BATCH_SIZE = 500
-JGA_STUDY_XML_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/jga-study.xml"
-JGA_DATASET_XML_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/jga-dataset.xml"
-DATASET_DATE_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/dataset.date.csv"
-STUDY_DATE_FILE = "/lustre9/open/shared_data/jga/metadata-history/metadata/study.date.csv"
-ELASTIC_SEARCH_ENDPOINT = "http://localhost:9200/_bulk"
-RELATION_DB_PATH = "~/tasks/sra/resources/jga_link.sqlite"
+
+"""
+JGA_STUDY_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-study.xml'
+JGA_DATASET_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-dataset.xml'
+DATASET_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dataset.date.csv'
+STUDY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/study.date.csv'
+ELASTIC_SEARCH_ENDPOINT = 'http://localhost:9200/_bulk'
+ELASTIC_PASSWORD: ''
+RELATION_DB_PATH = '~/tasks/sra/resources/jga_link.sqlite'
+"""
+
+# for local test
+JGA_STUDY_XML_FILE = '/mnt/data/jga/jga-study.xml'
+JGA_DATASET_XML_FILE = '/mnt/data/jga/jga-dataset.xml'
+DATASET_DATE_FILE = '/mnt/data/jga/dataset.date.csv'
+STUDY_DATE_FILE = '/mnt/data/jga/study.date.csv'
+ELASTIC_SEARCH_ENDPOINT = 'http://localhost:19200/_bulk'
+ELASTIC_PASSWORD = 'ddbj-search-elasticsearch-dev-password'
+RELATION_DB_PATH = '/mnt/data/jga/jga_link.sqlite'
 
 log_file = f"{datetime.date.today()}_bulkinsert_error_log.txt"
 logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.DEBUG)
@@ -43,13 +60,14 @@ def xml_to_elasticsearch(xml_file: Path, type: str, tag: str):
     for events, element in context:
         if element.tag == tag:
             jga_instance = xml_element_to_jga_instance(etree.tostring(element), type, tag)
-            docs.append(jga_instance)
+            # BaseModelのインスタンスをdictに変換してlistに格納する
+            docs.append(jga_instance.dict())
         # TODO: es.helperに投入方法を置き換える
         if len(docs) > DEFAULT_BATCH_SIZE:
             bulkinsert.insert(docs)
             docs = []
     if len(docs) > 0:
-        bulkinsert(docs)
+        bulkinsert.insert(docs)
 
 
 def xml_element_to_jga_instance(xml_str, type,  tag) -> JGA:
@@ -59,8 +77,10 @@ def xml_element_to_jga_instance(xml_str, type,  tag) -> JGA:
     jga_instance = JGA(
         identifier = accession,
         properties = metadata[tag],
-        title = metadata[tag].get("DESCRIPTOR").get("STUDY_TITLE"),
-        description = metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
+        # title = metadata[tag].get("DESCRIPTOR").get("STUDY_TITLE"),
+        title = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_TITLE"),
+        # description = metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
+        description = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
         name = metadata[tag].get("alias"),
         type = type,
         url = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
@@ -69,7 +89,7 @@ def xml_element_to_jga_instance(xml_str, type,  tag) -> JGA:
         organism = parse_oraganism(),
         dbXref = parse_dbxref(accession),
         status = "public",
-        visibility = "unrestricted-access",
+        visibility = "controlled-access",
         dateCreated = dates[0],
         dateModified = dates[1],
         datePublished = dates[2]
@@ -93,13 +113,16 @@ class BulkInsert:
     def insert(self,docs):
         insert_lst = []
         for doc in docs:
+            print(doc, type(doc))
             try:
                 insert_lst.append({'index': {'_index': 'genome', '_id': doc['identifier']}})
                 insert_lst.append(doc)
             except:
                 print("cant open doc: ")
         post_data = "\n".join(json.dumps(d) for d in insert_lst) + "\n"
-        headers = {"Content-Type": "application/x-ndjson"}
+        auth_str = f"elastic:{ELASTIC_PASSWORD}"
+        encoded_auth_str = base64.b64encode(auth_str.encode("utf-8")).decode("utf-8")
+        headers = {"Content-Type": "application/x-ndjson", "Authorization": f"Basic {encoded_auth_str}"}
         req = urllib.request.Request(self.es_url, data=post_data.encode('utf-8'),headers=headers)
         with urllib.request.urlopen(req) as res:
             response_data = json.loads(res.read().decode('utf-8'))
@@ -113,6 +136,7 @@ class BulkInsert:
 def get_dates(tag: str, acc: str):
     """
     accessionをキーとしdatecreated,datepublished,datemodifiedを取得
+    return: LIST[{acc: [dateCreated, dateModified, datePublished]}]
     """
     match tag:
         case "DATASET":
@@ -123,14 +147,14 @@ def get_dates(tag: str, acc: str):
         with open(file_path, 'r', encoding='utf-8') as file:
             reader = csv.reader(file)
             header = next(reader)
-            dict_list = []
+            dict_list = {}
             for row in reader:
                 if len(row) > 0:
                     key = row[0]
                     value = row[1:] if len(row) > 1 else None
                     # [dateCreated, dateModified, datePublished]がvalueとなる
-                    dict_list.append({key: value})
-            return dict_list
+                    dict_list.update({key: value})
+            return dict_list[acc]
     except Exception as e:
         print(f"error occured: {e}")
 
@@ -167,7 +191,8 @@ def search_relation_table(accession:str, tables:list) -> list:
     cur = conn.cursor()
     results = []
     for t in tables:
-        cur.execute(f"SELECT id1 AS result FROM {t} WHERE id0 = {accession} UNION SELECT id0 FROM {t} WHERE id1 = {accession};")
+        q = f"SELECT id1 AS result FROM {t} WHERE id0 = '{accession}' UNION SELECT id0 FROM {t} WHERE id1 = '{accession}';"
+        cur.execute(q)
         # resultsに取得したidのリストを追加する
         results.extend([row[0] for row in cur.fetchall()])
     return results
@@ -189,8 +214,8 @@ def parse_dbxref(accession:str):
                 typ = "jga-policy"
             case str() if acc.startswith("JGAS"):
                 typ = "jga-study"
-        
-        xrefs.append(Xref(identifier="", type_ = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
+        # xrefs.append(Xref(identifier="", type_ = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
+        xrefs.append(Xref(identifier="", type = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
     return xrefs
 
 
@@ -216,7 +241,8 @@ def main():
         }
     ]
     # jga_relation_dbを更新
-    create_jga_relation()
+    # if dev, comment out
+    # create_jga_relation()
 
     # typeごとに変換しつつbulk insert
     for type in types:
