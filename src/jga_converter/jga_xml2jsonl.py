@@ -75,11 +75,15 @@ def xml_element_to_jga_instance(xml_str, typ,  tag) -> JGA:
         description = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
         name = metadata[tag].get("alias"),
         type = typ,
-        url = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
+        # url = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
+        # 一旦属性名としてdownloadUrlを採用する
+        downloadUrl = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
         sameAs = None,
         isPartOf = "jga",
         organism = parse_oraganism(),
-        dbXref = parse_dbxref(accession),
+        # dbXref = parse_dbxref(accession),
+        # 一旦属性名としてdbXrefsを採用する
+        dbXrefs = parse_dbxref(accession),
         status = "public",
         visibility = "controlled-access",
         dateCreated = dates[0],
@@ -213,7 +217,7 @@ def parse_dbxref(accession:str):
                 typ = "jga-policy"
             case str() if acc.startswith("JGAS"):
                 typ = "jga-study"
-        xrefs.append(Xref(identifier="", type = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
+        xrefs.append(Xref(identifier=f"{acc}", type = typ, url = f"https://ddbj.nig.ac.jp/search/resource/{typ}/{acc}"))
     return xrefs
 
 

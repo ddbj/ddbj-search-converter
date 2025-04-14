@@ -53,11 +53,15 @@ class JGA(BaseModel):
     description: Optional[str]
     name: Optional[str]
     type: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
-    url: str
+    # url: str
+    # 現行（-2025）のバージョンに合わせdownloadUrlを一旦利用する
+    downloadUrl: str
     sameAs: None
     isPartOf: Literal["jga"]
     organism: Optional[Organism]
-    dbXref: List[Xref]
+    # dbXref: List[Xref]
+    # 現行（-2025）のバージョンに合わせdbXrefsを一旦利用する
+    dbXrefs: List[Xref]
     status: Literal["public"]
     visibility: Literal["controlled-access"]
     dateCreated: Optional[str]
