@@ -10,8 +10,8 @@ import csv
 import json
 import sys
 import os
-# for dev 
-sys.path.append(os.path.abspath("/mnt/ddbj/ddbj-search-converter/src"))
+# TODO: Define according to the environment
+sys.path.append(os.path.abspath(""))
 import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -38,7 +38,7 @@ STUDY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/study
 POLICY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/policy.date.csv'
 DAC_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dac.date.csv'
 ELASTIC_SEARCH_ENDPOINT = 'http://localhost:19200/_bulk'
-ELASTIC_PASSWORD: ''
+ELASTIC_PASSWORD = ''
 RELATION_DB_PATH = '~/tasks/sra/resources/jga_link.sqlite'
 
 log_file = f"{datetime.date.today()}_bulkinsert_error_log.txt"
