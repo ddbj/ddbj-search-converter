@@ -75,9 +75,9 @@ def xml_element_to_jga_instance(xml_str, typ,  tag) -> JGA:
         description = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
         name = metadata[tag].get("alias"),
         type = typ,
-        # url = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
+        # url = f"https://ddbj.nig.ac.jp/resource/{typ}/{accession}",
         # 一旦属性名としてdownloadUrlを採用する
-        downloadUrl = f"https://ddbj.nig.ac.jp/resource/{type}/{accession}",
+        downloadUrl = f"https://ddbj.nig.ac.jp/resource/{typ}/{accession}",
         sameAs = None,
         isPartOf = "jga",
         organism = parse_oraganism(),
