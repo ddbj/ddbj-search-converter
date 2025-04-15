@@ -53,9 +53,7 @@ class JGA(BaseModel):
     description: Optional[str]
     name: Optional[str]
     type: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
-    # url: str
-    # 現行（-2025）のバージョンに合わせdownloadUrlを一旦利用する
-    downloadUrl: str
+    url: str
     sameAs: None
     isPartOf: Literal["jga"]
     organism: Optional[Organism]

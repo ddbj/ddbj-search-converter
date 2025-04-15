@@ -39,7 +39,7 @@ POLICY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/poli
 DAC_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dac.date.csv'
 ELASTIC_SEARCH_ENDPOINT = 'http://localhost:19200/_bulk'
 ELASTIC_PASSWORD = ''
-RELATION_DB_PATH = '~/tasks/sra/resources/jga_link.sqlite'
+RELATION_DB_PATH = '/home/w3ddbjld/tasks/sra/resources/jga_link.sqlite'
 
 log_file = f"{datetime.date.today()}_bulkinsert_error_log.txt"
 logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.DEBUG)
@@ -75,9 +75,7 @@ def xml_element_to_jga_instance(xml_str, typ,  tag) -> JGA:
         description = None if metadata[tag].get("DESCRIPTOR") is None else metadata[tag].get("DESCRIPTOR").get("STUDY_ABSTRACT"),
         name = metadata[tag].get("alias"),
         type = typ,
-        # url = f"https://ddbj.nig.ac.jp/resource/{typ}/{accession}",
-        # 一旦属性名としてdownloadUrlを採用する
-        downloadUrl = f"https://ddbj.nig.ac.jp/resource/{typ}/{accession}",
+        url = f"https://ddbj.nig.ac.jp/resource/{typ}/{accession}",
         sameAs = None,
         isPartOf = "jga",
         organism = parse_oraganism(),
