@@ -25,6 +25,7 @@ services:
     command: [ "sleep", "infinity" ]
     networks:
       - ddbj-search-network-dev
+    init: true
 
 networks:
   ddbj-search-network-dev:
