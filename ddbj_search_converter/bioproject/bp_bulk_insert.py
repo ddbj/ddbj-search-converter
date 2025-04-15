@@ -82,6 +82,7 @@ def bulk_insert_to_es(config: Config, jsonl_files: List[Path], accession_type: A
 class Args(BaseModel):
     latest_dir: Optional[Path] = None
     prior_dir: Optional[Path] = None
+    full_insert: bool = False
     dry_run: bool = False
     debug: bool = False
 
@@ -120,6 +121,13 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
             """,
         nargs="?",
         default=None,
+    )
+    parser.add_argument(
+        "--full-insert",
+        help="""\
+            If specified, all latest JSONL files will be inserted, regardless of the prior directory.
+            """,
+        action="store_true",
     )
     parser.add_argument(
         "--es-url",
@@ -161,6 +169,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     return config, Args(
         latest_dir=latest_dir,
         prior_dir=prior_dir,
+        full_insert=parsed_args.full_insert,
         dry_run=parsed_args.dry_run,
         debug=parsed_args.debug,
     )
@@ -175,9 +184,13 @@ def main() -> None:
 
     latest_dir, prior_dir = get_recent_dirs(config.work_dir.joinpath(BP_JSONL_DIR_NAME), args.latest_dir, args.prior_dir)
     LOGGER.info("Latest dir: %s", latest_dir)
-    LOGGER.info("Prior dir: %s", prior_dir)
-    if prior_dir is None:
-        LOGGER.info("No prior dir found. Inserting only the latest data.")
+    if args.full_insert:
+        LOGGER.info("Full insert mode. Ignoring prior dir.")
+        prior_dir = None
+    else:
+        LOGGER.info("Prior dir: %s", prior_dir)
+        if prior_dir is None:
+            LOGGER.info("No prior dir found. Inserting only the latest data.")
 
     jsonl_files = find_insert_target_files(latest_dir, prior_dir)
     LOGGER.info("Inserting %d files", len(jsonl_files))

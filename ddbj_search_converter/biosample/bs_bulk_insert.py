@@ -22,9 +22,13 @@ def main() -> None:
 
     latest_dir, prior_dir = get_recent_dirs(config.work_dir.joinpath(BS_JSONL_DIR_NAME), args.latest_dir, args.prior_dir)
     LOGGER.info("Latest dir: %s", latest_dir)
-    LOGGER.info("Prior dir: %s", prior_dir)
-    if prior_dir is None:
-        LOGGER.info("No prior dir found. Inserting only the latest data.")
+    if args.full_insert:
+        LOGGER.info("Full insert mode. Ignoring prior dir.")
+        prior_dir = None
+    else:
+        LOGGER.info("Prior dir: %s", prior_dir)
+        if prior_dir is None:
+            LOGGER.info("No prior dir found. Inserting only the latest data.")
 
     jsonl_files = find_insert_target_files(latest_dir, prior_dir)
     LOGGER.info("Inserting %d files", len(jsonl_files))

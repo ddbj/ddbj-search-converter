@@ -88,9 +88,6 @@ def xml_to_jsonl(
 
 def extract_gz(gz_file: Path, output_dir: Path) -> Path:
     output_file = output_dir.joinpath(gz_file.stem)
-    if output_file.exists():
-        return output_file
-
     with gzip.open(gz_file, "rb") as f_in:
         with output_file.open("wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
