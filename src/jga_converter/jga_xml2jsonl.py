@@ -28,7 +28,9 @@ from dblink.create_jga_relation_db import create_jga_relation
 
 
 DEFAULT_BATCH_SIZE = 500
-
+ELASTIC_SEARCH_ENDPOINT = 'http://localhost:19200/_bulk'
+ELASTIC_PASSWORD = ''
+# XMLファイルのパスおよびDATEファイルのパス
 JGA_STUDY_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-study.xml'
 JGA_DATASET_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-dataset.xml'
 JGA_POLICY_XML_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/jga-policy.xml'
@@ -37,8 +39,8 @@ DATASET_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dat
 STUDY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/study.date.csv'
 POLICY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/policy.date.csv'
 DAC_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dac.date.csv'
-ELASTIC_SEARCH_ENDPOINT = 'http://localhost:19200/_bulk'
-ELASTIC_PASSWORD = ''
+# relation DB構築用のローカルパス
+LOCAL_FILE_PATH = '/home/w3ddbjld/tasks/sra/resources/jga/metadata-history/metadata/'
 RELATION_DB_PATH = '/home/w3ddbjld/tasks/sra/resources/jga_link.sqlite'
 
 log_file = f"{datetime.date.today()}_bulkinsert_error_log.txt"
@@ -252,7 +254,7 @@ def main():
             "file_path": JGA_DATASET_XML_FILE
         }
     ]
-    create_jga_relation()
+    create_jga_relation(local_file_path="/home/w3ddbjld/tasks/sra/resources/jga_link.sqlite", db_path=RELATION_DB_PATH)
 
     # typeごとに変換しつつbulk insert
     for type in types:
