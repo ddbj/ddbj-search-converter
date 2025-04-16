@@ -254,7 +254,7 @@ def main():
             "file_path": JGA_DATASET_XML_FILE
         }
     ]
-    create_jga_relation(local_file_path="/home/w3ddbjld/tasks/sra/resources/jga_link.sqlite", db_path=RELATION_DB_PATH)
+    create_jga_relation(LOCAL_FILE_PATH, RELATION_DB_PATH)
 
     # typeごとに変換しつつbulk insert
     for type in types:

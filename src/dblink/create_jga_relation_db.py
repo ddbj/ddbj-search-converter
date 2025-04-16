@@ -1,13 +1,9 @@
 import csv
-import argparse
 import sqlite3
 from typing import NewType, List, Tuple
 from dblink.create_jga_relation_table import initialize_table, create_indexes
 
-# TODO:環境変数に記述するように
 CHUNK_SIZE = 10000
-LOCAL_FILE_PATH = "/lustre9/open/shared_data/jga/metadata-history/metadata/"
-
 FILE_LIST = [
     "analysis-study-relation",
     "dataset-analysis-relation",
@@ -23,15 +19,6 @@ TABLE_LIST = [
     "study_policy_relation",
     "policy_dac_relation"
 ]
-DB_PATH = "~/tasks/sra/resources/jga_link.sqlite"
-
-"""
-# sqlite3のDB_PATHを引数で受け取るようにする
-parser = argparse.ArgumentParser(description="jga relation file to sqlite")
-parser.add_argument("-d", default=DB_PATH)
-args = parser.parse_args()
-"""
-
 
 def load_id_set(file_name:str) -> List[tuple]:
     """
@@ -54,7 +41,7 @@ def store_data(db, tbl, relation_list):
     conn.commit()
 
 
-def create_dataset_relation(relations:dict) -> Tuple[List[tuple]]:
+def create_dataset_relation(relations:dict, db_path:str) -> Tuple[List[tuple]]:
     """
     dataset-policy,dataset-dac,dataset-studyペアを生成しsqliteに保存する
     また続く処理に利用するため次のペアのリストを返す
@@ -76,13 +63,13 @@ def create_dataset_relation(relations:dict) -> Tuple[List[tuple]]:
 
     # dataset-*-relationをsqliteに保存
     for r in [("dataset_dac_relation", dataset_dac), ("dataset_study_relation", dataset_study), ("dataset_policy_relation", relations["dataset_policy_relation"])]:
-        store_data(DB_PATH, r[0], r[1])
+        store_data(db_path, r[0], r[1])
 
     print("len dataset-dac, dataset-study: ", len(dataset_dac), len(dataset_study))
     return dataset_dac, dataset_study
 
 
-def create_study_relation(dataset_dac,dataset_study, relations):
+def create_study_relation(dataset_dac,dataset_study, relations, db_path:str):
     """
     study-dac-relation,study-policy-relationの関係データを生成しsqliteに保存する
 
@@ -105,19 +92,19 @@ def create_study_relation(dataset_dac,dataset_study, relations):
 
     # 生成したrelationを保存
     for r in [("study_dac_relation", study_dac), ("study_policy_relation",study_policy)]:
-        store_data(DB_PATH, r[0], r[1])
+        store_data(db_path, r[0], r[1])
 
     print("len study-dac, study-policy: ", len(study_dac), len(study_policy))
 
 
-def create_policy_relation(relations):
+def create_policy_relation(relations, db_path:str):
     """
     policy-dac-relationをsqliteに保存する
     """
-    store_data(DB_PATH, "policy_dac_relation", relations["policy_dac_relation"])
+    store_data(db_path, "policy_dac_relation", relations["policy_dac_relation"])
 
 
-def create_jga_relation(local_file_path:str=LOCAL_FILE_PATH, db_path:str=DB_PATH):
+def create_jga_relation(local_file_path:str, db_path:str):
     initialize_table(db_path)
     # csvをList[tuple]に変換
     relations = {}
@@ -126,9 +113,9 @@ def create_jga_relation(local_file_path:str=LOCAL_FILE_PATH, db_path:str=DB_PATH
         new_f = f.replace("-", "_")
         relations[new_f] = load_id_set(file_name)
 
-    dataset_dac, dataset_study = create_dataset_relation(relations)
-    create_study_relation(dataset_dac, dataset_study, relations)
-    create_policy_relation(relations)
+    dataset_dac, dataset_study = create_dataset_relation(relations, db_path)
+    create_study_relation(dataset_dac, dataset_study, relations, db_path)
+    create_policy_relation(relations, db_path)
     create_indexes(db_path)
 
 if __name__ == "__main__":

@@ -42,7 +42,8 @@ class Organism(BaseModel):
 
 class Xref(BaseModel):
     identifier: str
-    type_: XrefType = Field(alias="type")
+    # type_: XrefType = Field(alias="type")
+    type: XrefType
     url: str
 
 
