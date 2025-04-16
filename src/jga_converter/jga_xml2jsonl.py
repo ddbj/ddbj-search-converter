@@ -40,7 +40,7 @@ STUDY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/study
 POLICY_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/policy.date.csv'
 DAC_DATE_FILE = '/lustre9/open/shared_data/jga/metadata-history/metadata/dac.date.csv'
 # relation DB構築用のローカルパス
-LOCAL_FILE_PATH = '/home/w3ddbjld/tasks/sra/resources/jga/metadata-history/metadata/'
+LOCAL_FILE_PATH = '/lustre9/open/shared_data/jga/metadata-history/metadata/'
 RELATION_DB_PATH = '/home/w3ddbjld/tasks/sra/resources/jga_link.sqlite'
 
 log_file = f"{datetime.date.today()}_bulkinsert_error_log.txt"
