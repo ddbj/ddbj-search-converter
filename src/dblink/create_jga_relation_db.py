@@ -9,9 +9,9 @@ FILE_LIST = [
     "dataset-analysis-relation",
     "dataset-policy-relation",
     "policy-dac-relation",
-    "experiment-study",
-    "data-experiment",
-    "dataset-data",
+    "experiment-study-relation",
+    "data-experiment-relation",
+    "dataset-data-relation"
 ]
 # pythonのsqlite3からの操作で"-"を含むtable nameを受け付けなかったため変更
 TABLE_LIST = [
