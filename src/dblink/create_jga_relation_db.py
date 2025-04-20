@@ -9,6 +9,9 @@ FILE_LIST = [
     "dataset-analysis-relation",
     "dataset-policy-relation",
     "policy-dac-relation",
+    "experiment-study",
+    "data-experiment",
+    "dataset-data",
 ]
 # pythonのsqlite3からの操作で"-"を含むtable nameを受け付けなかったため変更
 TABLE_LIST = [
@@ -60,6 +63,18 @@ def create_dataset_relation(relations:dict, db_path:str) -> Tuple[List[tuple]]:
     for d_a in relations["dataset_analysis_relation"]:
         dataset_study.extend([(d_a[0], a_s[1]) for a_s in relations["analysis_study_relation"] if a_s[0] == d_a[1] ])
     dataset_study = list(set(dataset_study))
+
+
+    # dataset-study-relationにdataset-data-relation, data-experiment-relation, experiment-study-relationによるdataset-study--relationを追加
+    dataset_d_e_study = list(set([
+        (d_d[0], e_s[1])
+        for d_d in relations["dataset_data_relation"]
+        for d_e in relations["data_experiment_relation"] if d_d[1] == d_e[0]
+        for e_s in relations["experiment_study_relation"] if d_e[1] == e_s[0]
+    ]))
+    dataset_study.extend(dataset_d_e_study)
+    dataset_study = list(set(dataset_study))
+
 
     # dataset-*-relationをsqliteに保存
     for r in [("dataset_dac_relation", dataset_dac), ("dataset_study_relation", dataset_study), ("dataset_policy_relation", relations["dataset_policy_relation"])]:
