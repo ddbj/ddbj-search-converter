@@ -230,7 +230,6 @@ def main():
         - ヘッダ行をつけてファイルに書き出す
     - jsonlをElasticsearchにバルクインサートする
     """
-    # TODO jga-policyとjga-dacを追加
     types = [
         {
             "type": "jga-dac",
@@ -257,10 +256,10 @@ def main():
     create_jga_relation(LOCAL_FILE_PATH, RELATION_DB_PATH)
 
     # typeごとに変換しつつbulk insert
-    for type in types:
-        xml_file = type["file_path"]
-        tag = type["tag"]
-        typ = type["type"]
+    for type_ in types:
+        xml_file = type_["file_path"]
+        tag = type_["tag"]
+        typ = type_["type"]
         xml_to_elasticsearch(xml_file, typ, tag)
 
 
