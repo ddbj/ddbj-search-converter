@@ -57,6 +57,8 @@ XrefType = Literal[
     "sra-run",
     "sra-sample",
     "sra-study",
+    "sra-submission",
+    "sra-analysis",
     "gea",
     "insdc-assembly",
     "insdc-master",
@@ -137,4 +139,35 @@ class BioSample(BaseModel):
     visibility: Literal["unrestricted-access"]
     dateCreated: Optional[str]
     dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+# === SRA (DRA) ===
+
+
+class DownloadUrl(BaseModel):
+    type_: str = Field(alias="type")
+    name: str
+    url: str
+    ftpUrl: str
+
+
+class SRA(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["sra"]
+    type_: Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"] = Field(alias="type")
+    name: str
+    url: str
+    organism: Optional[Organism]
+    title: Optional[str]
+    description: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    downloadUrl: List[DownloadUrl]
+    status: Literal["public"]
+    visibility: Literal["unrestricted-access"]
+    dateCreated: Optional[str]
+    dateModified: str
     datePublished: Optional[str]

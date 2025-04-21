@@ -56,6 +56,8 @@ bs_relation_ids_bulk_update = "ddbj_search_converter.biosample.bs_relation_ids_b
     - この環境変数が設定されている場合、その file path を用いる
   - `DDBJ_SEARCH_CONVERTER_DBLINK_BASE_PATH`
     - `dblink` 情報を取得するもととなる file の base path
+  - `DDBJ_SEARCH_CONVERTER_DBLINK_BASE_PATH`
+    - `dra`  情報を取得するもととなる file の base path
 - これらの環境変数は、[`./compose.yml`](./compose.yml) などに設定する
 - `コマンドライン引数 > 環境変数 > デフォルト値 (config.py)` の優先度で処理される
 
