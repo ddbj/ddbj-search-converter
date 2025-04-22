@@ -2,11 +2,12 @@
 - SRA Accession tab file などから、JSON-Lines 形式のファイルを生成する
 - 生成される JSON-Lines は 1 line が 1 accession に対応する
 """
-
 import argparse
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor
+from copy import deepcopy
+from functools import lru_cache
 from itertools import islice
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
@@ -31,8 +32,8 @@ from ddbj_search_converter.schema import (SRA, Distribution, DownloadUrl,
                                           Organism)
 from ddbj_search_converter.utils import to_xref
 
-DEFAULT_BATCH_SIZE = 10000
-DEFAULT_PARALLEL_NUM = 64
+DEFAULT_BATCH_SIZE = 2000
+DEFAULT_PARALLEL_NUM = 32
 
 
 def generate_dra_jsonl(
@@ -49,7 +50,7 @@ def generate_dra_jsonl(
         for accession_type in ACCESSION_TYPE:
             sra_iterator = iterate_sra_metadata(config, accession_type, exist_xml_files, not_exist_xml_files)
             for i, sra_metadata_list in enumerate(_chunked_iterator(sra_iterator, batch_size)):
-                jsonl_file = output_dir.joinpath(f"sra-{accession_type.lower()}-{i + 1}.jsonl")
+                jsonl_file = output_dir.joinpath(f"sra-{accession_type.lower()}_{i + 1}.jsonl")
                 future = executor.submit(jsonl_worker, config, sra_metadata_list, jsonl_file)
                 futures.append(future)
 
@@ -94,10 +95,8 @@ def sra_metadata_to_dra_instance(
     sra_metadata: SraMetadata,
 ) -> Optional[SRA]:
     xml_file_path = config.dra_base_path.joinpath(generate_xml_file_path(sra_metadata))
-    with xml_file_path.open("rb") as f:
-        xml_bytes = f.read()
-    xml_metadata = xmltodict.parse(xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False)
-    properties = _parse_properties(sra_metadata, xml_metadata)
+    xml_metadata = _load_xml_file(xml_file_path)
+    properties = deepcopy(_parse_properties(sra_metadata, xml_metadata))
     if properties is None:
         # LOGGER.warning("No properties found for %s, submission %s", sra_metadata.accession, sra_metadata.submission)
         return None
@@ -124,6 +123,15 @@ def sra_metadata_to_dra_instance(
     )
 
     return dra_instance
+
+
+@lru_cache(maxsize=10)
+def _load_xml_file(xml_file_path: Path) -> Dict[str, Any]:
+    with xml_file_path.open("rb") as f:
+        xml_bytes = f.read()
+    xml_metadata = xmltodict.parse(xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False)
+
+    return xml_metadata  # type: ignore
 
 
 def _parse_properties(sra_metadata: SraMetadata, xml_metadata: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -220,24 +228,14 @@ def _parse_download_url(config: Config, sra_metadata: SraMetadata, properties: D
     urls = []
 
     xml_file_path = Path(generate_xml_file_path(sra_metadata))
-    if sra_metadata.type == "SUBMISSION":
-        urls.append(
-            DownloadUrl(
-                type="meta",
-                name="Submitted metadata",
-                url=f"https://ddbj.nig.ac.jp/public/ddbj_database/dra/{xml_file_path.parent}/",
-                ftpUrl=f"ftp://ddbj.nig.ac.jp/public/ddbj_database/dra/{xml_file_path.parent}/",
-            )
+    urls.append(
+        DownloadUrl(
+            type="meta",
+            name=f"{sra_metadata.submission}.{sra_metadata.type.lower()}.xml",
+            url=f"https://ddbj.nig.ac.jp/public/ddbj_database/dra/{str(xml_file_path)}",
+            ftpUrl=f"ftp://ddbj.nig.ac.jp/public/ddbj_database/dra/{str(xml_file_path)}",
         )
-    else:
-        urls.append(
-            DownloadUrl(
-                type="meta",
-                name=f"{sra_metadata.submission}.{sra_metadata.type.lower()}.xml",
-                url=f"https://ddbj.nig.ac.jp/public/ddbj_database/dra/{str(xml_file_path)}",
-                ftpUrl=f"ftp://ddbj.nig.ac.jp/public/ddbj_database/dra/{str(xml_file_path)}",
-            )
-        )
+    )
 
     if sra_metadata.type == "RUN":
         experiment = properties.get("EXPERIMENT_REF", {}).get("accession", None)
@@ -276,15 +274,22 @@ def _parse_download_url(config: Config, sra_metadata: SraMetadata, properties: D
             if isinstance(files, dict):
                 files = [files]
             file_items.extend(files)
+
+        base_dir = config.dra_base_path.joinpath("fastq", sra_metadata.submission[:6], sra_metadata.submission, sra_metadata.accession)
+        existing_files: Set[str] = set()
+        if base_dir.exists():
+            for glob_file in base_dir.rglob("*"):
+                if glob_file.is_file():
+                    rel_path = glob_file.relative_to(config.dra_base_path)
+                    existing_files.add(str(rel_path))
+
         for file in file_items:
             file_name = file["filename"]
             file_type = file["filetype"]
-            file_path_str = f"fastq/{sra_metadata.submission[:6]}/{sra_metadata.submission}/{sra_metadata.accession}/provisional/{file_name}"
-            file_path = config.dra_base_path.joinpath(file_path_str)
-            if not file_path.exists():
-                file_path_str = f"fastq/{sra_metadata.submission[:6]}/{sra_metadata.submission}/{sra_metadata.accession}/{file_name}"
-                file_path = config.dra_base_path.joinpath(file_path_str)
-                if not file_path.exists():
+            file_path_str = f"fastq/{sra_metadata.submission[:6]}/{sra_metadata.submission}/{sra_metadata.accession}/{file_name}"
+            if file_path_str not in existing_files:
+                file_path_str = f"fastq/{sra_metadata.submission[:6]}/{sra_metadata.submission}/{sra_metadata.accession}/provisional/{file_name}"
+                if file_path_str not in existing_files:
                     continue
 
             urls.append(

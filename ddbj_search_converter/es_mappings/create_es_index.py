@@ -10,7 +10,9 @@ from ddbj_search_converter.config import (LOGGER, Config, get_config,
                                           set_logging_level)
 from elasticsearch import Elasticsearch
 
-IndexName = Literal["bioproject", "biosample"]
+IndexName = Literal["bioproject", "biosample", "sra", "jga"]
+SRA_INDEXES = ["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"]
+JGA_INDEXES = ["jga-dac", "jga-dataset", "jga-policy", "jga-study"]
 
 
 SETTINGS = {
@@ -35,7 +37,14 @@ def create_es_index(config: Config, index: IndexName) -> None:
             raise Exception(f"Index '{index}' already exists.")
         mapping = load_mapping(index)
         mapping["settings"] = SETTINGS
-        es.indices.create(index=index, body=mapping)
+        if index == "sra":
+            for sra_index in SRA_INDEXES:
+                es.indices.create(index=sra_index, body=mapping)
+        elif index == "jga":
+            for jga_index in JGA_INDEXES:
+                es.indices.create(index=jga_index, body=mapping)
+        else:
+            es.indices.create(index=index, body=mapping)
     except Exception as e:
         LOGGER.error("Failed to create index '%s': %s", index, e)
         raise
@@ -58,7 +67,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     parser.add_argument(
         "--index",
         help="""\
-            Index name to create (required, bioproject or biosample)
+            Index name to create (required, bioproject, biosample, sra, or, jga)
         """,
         nargs="?",
         default=None,
@@ -82,8 +91,8 @@ def parse_args(args: List[str]) -> Tuple[Config, Args]:
     if parsed_args.index is None:
         raise Exception("Argument '--index' is required.")
     index = parsed_args.index
-    if index not in ["bioproject", "biosample"]:
-        raise Exception("Argument '--index' must be 'bioproject' or 'biosample'.")
+    if index not in ["bioproject", "biosample", "sra", "jga"]:
+        raise Exception("Argument '--index' must be 'bioproject', 'biosample', 'sra', or 'jga'.")
     if parsed_args.es_url is not None:
         config.es_url = parsed_args.es_url
     if parsed_args.debug:

@@ -59,6 +59,10 @@ XrefType = Literal[
     "sra-study",
     "sra-submission",
     "sra-analysis",
+    "jga-study",
+    "jga-dataset",
+    "jga-dac",
+    "jga-policy",
     "gea",
     "insdc-assembly",
     "insdc-master",
@@ -146,10 +150,10 @@ class BioSample(BaseModel):
 
 
 class DownloadUrl(BaseModel):
-    type_: str = Field(alias="type")
-    name: str
+    type_: Optional[str] = Field(alias="type")  # TODO: optional for prev jsonl
+    name: Optional[str]  # TODO: optional for prev jsonl
     url: str
-    ftpUrl: str
+    ftpUrl: Optional[str]  # TODO: optional for prev jsonl
 
 
 class SRA(BaseModel):
@@ -170,4 +174,26 @@ class SRA(BaseModel):
     visibility: Literal["unrestricted-access"]
     dateCreated: Optional[str]
     dateModified: str
+    datePublished: Optional[str]
+
+
+# === JGA ===
+
+
+class JGA(BaseModel):
+    identifier: str
+    properties: Any
+    isPartOf: Literal["jga"]
+    type_: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    organism: Optional[Organism]
+    title: Optional[str]
+    description: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: Literal["public"]
+    visibility: Literal["controlled-access"]
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
     datePublished: Optional[str]

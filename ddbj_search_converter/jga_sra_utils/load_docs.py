@@ -5,18 +5,8 @@ from typing import Any, Dict, Iterator, List
 from ddbj_search_converter.config import LOGGER, get_config
 from elasticsearch import Elasticsearch, helpers
 
-INDEX_NAMES = [
-    "jga-dac",
-    "jga-dataset",
-    "jga-policy",
-    "jga-study",
-    # "sra-analysis",
-    # "sra-experiment",
-    # "sra-run",
-    # "sra-sample",
-    # "sra-study",
-    # "sra-submission",
-]
+INDEXES = ["jga-dac", "jga-dataset", "jga-policy", "jga-study",
+           "sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"]
 
 
 def set_refresh_interval(es_client: Elasticsearch, index: str, interval: str) -> None:
@@ -49,10 +39,10 @@ def main() -> None:
 
     LOGGER.info("Loading documents")
 
-    for index_name in INDEX_NAMES:
+    for index_name in INDEXES:
         LOGGER.info("Loading docs for index: %s", index_name)
-        jsonl_dir = config.work_dir.joinpath(f"jga_sra/{index_name}_jsonld")
-        jsonl_files = list(jsonl_dir.glob("*.jsonl"))
+        jsonl_dir = config.work_dir.joinpath("jga_sra")
+        jsonl_files = list(jsonl_dir.glob(f"{index_name}_*.jsonl"))
 
         set_refresh_interval(es_client, index_name, "-1")
         failed_docs: List[Dict[str, Any]] = []

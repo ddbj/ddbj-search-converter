@@ -10,7 +10,7 @@ version = "0.1.0"
 requires-python = ">=3.8"
 license = { text = "Apache-2.0" }
 dependencies = [
-    "elasticsearch",
+    "elasticsearch>=8,<9",
     "httpx",
     "psycopg2-binary",
     "pydantic",
@@ -36,10 +36,10 @@ tests = [
 ]
 
 [project.scripts]
+create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
 create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
-create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
 create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
 create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
 create_dra_relation_ids = "ddbj_search_converter.cache_db.dra_relation_ids:main"
@@ -47,12 +47,11 @@ bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
 bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
 bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
 bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
-dra_generate_jsonl = "ddbj_search_converter.dra.generate_jsonl:main"
-jga_sra_dump_mappings = "ddbj_search_converter.jga_sra_utils.dump_mappings:main"
-jga_sra_load_mappings = "ddbj_search_converter.jga_sra_utils.load_mappings:main"
-jga_sra_dump_docs = "ddbj_search_converter.jga_sra_utils.dump_docs:main"
+dra_generate_jsonl = "ddbj_search_converter.dra.dra_generate_jsonl:main"
+dra_bulk_insert = "ddbj_search_converter.dra.dra_bulk_insert:main"
+jga_sra_delete_es_index = "ddbj_search_converter.jga_sra_utils.delete_indexes:main"
+jga_sra_rewrite_docs = "ddbj_search_converter.jga_sra_utils.rewrite_docs:main"
 jga_sra_load_docs = "ddbj_search_converter.jga_sra_utils.load_docs:main"
-jga_sra_reindex = "ddbj_search_converter.jga_sra_utils.reindex:main"
 
 [tool.setuptools]
 packages = [
