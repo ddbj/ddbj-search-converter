@@ -5,7 +5,7 @@ from typing import NewType, List, Tuple
 
 
 BIOPROJECT_FILE = "/usr/local/resources/bioproject/bioproject"
-BIOPROJECT_RELATION_DB = "/home/w3ddbjld/tasks/sra/resources//bioproject_relation.db"
+BIOPROJECT_RELATION_DB = "/home/w3ddbjld/tasks/relations/bioproject_relation.sqlite"
 OUTPUT_FILE_PATH = "/home/w3ddbjld/tasks/relations/bioproject_umbrella2bioproject.csv"
 TABLE_LIST = [
     "bioproject_umbrella2bioproject"
