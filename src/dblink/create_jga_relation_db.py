@@ -118,6 +118,8 @@ def create_policy_relation(relations, db_path:str):
     """
     store_data(db_path, "policy_dac_relation", relations["policy_dac_relation"])
 
+    # TODO:CSVファイルに保存
+
 
 def create_jga_relation(local_file_path:str, db_path:str):
     initialize_table(db_path)
