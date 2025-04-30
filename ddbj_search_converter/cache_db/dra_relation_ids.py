@@ -67,7 +67,10 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 def store_data(config: Config) -> None:
     records = defaultdict(set)
     for sra_metadata in iterate_sra_metadata(config):
-        records[sra_metadata.submission].add(sra_metadata.accession)
+        if sra_metadata.submission is None:
+            continue
+        if sra_metadata.accession is not None:
+            records[sra_metadata.submission].add(sra_metadata.accession)
         if sra_metadata.bioproject is not None:
             records[sra_metadata.submission].add(sra_metadata.bioproject)
         if sra_metadata.biosample is not None:

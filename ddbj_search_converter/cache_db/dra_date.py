@@ -67,6 +67,9 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 def store_data_to_sqlite(config: Config) -> None:
     records: List[Tuple[str, Optional[str]]] = []
     for sra_metadata in iterate_sra_metadata(config, "SUBMISSION"):
+        if sra_metadata.accession is None:
+            continue
+
         xml_file_path = config.dra_base_path.joinpath(generate_xml_file_path(sra_metadata))
         with xml_file_path.open("rb") as f_xml:
             xml_bytes = f_xml.read()

@@ -36,10 +36,10 @@ tests = [
 ]
 
 [project.scripts]
-create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
 create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
+create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
 create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
 create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
 create_dra_relation_ids = "ddbj_search_converter.cache_db.dra_relation_ids:main"

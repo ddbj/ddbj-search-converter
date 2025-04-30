@@ -89,7 +89,7 @@ def iterate_sra_metadata(
 
             sra_metadata = line_to_sra_metadata(line)
 
-            if sra_metadata.type != accession_type:
+            if accession_type is not None and sra_metadata.type != accession_type:
                 continue
 
             # Skip if the ReplacedBy field is not None

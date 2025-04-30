@@ -22,7 +22,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 64g
+    mem_limit: 128g
     pids_limit: -1
     networks:
       - ddbj-search-network
