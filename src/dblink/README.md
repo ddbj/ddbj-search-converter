@@ -40,6 +40,7 @@ dataset-studyは以下の二種類の関係情報をマージして生成して�
 - dataset-analysis-study
 - dataset-data-experiment-study
 
+
 ## bioproject_umbrella2bioprojectの関係情報
 
 BioProjectのumbrellaの親子関係についてはbioproject.xmlのProjectLinks.Linkから取得しています。
@@ -72,14 +73,25 @@ ProjectIDRefとMemberIDのaccessionです。
 </ProjectLinks>
 ```
 
-### 処理の実行
-
-src/dblink/create_bioproject_relation.pyを実行すると、
-sqliteにユニークなbioproject-umbrellaのペアがchild-parentカラムに保存され、
-全てのペアが保存された後にcsvを書き出します。
-
 ### privateなBioProjectの除外
 
 bioproject-umbrellaにはbioproject.xmlに含まれないaccessionが含まれます。
 primaryがbioproject.xmlに含まれない場合はprivateなaccessionであると判断し、
-保存する情報から除きます。
+保存する情報から除外します。
+
+
+### bioproject_umbrella2bioproject.csv書き出し処理の実行
+
+```
+cd /home/w3ddbjld/tasks/ddbj-search-converter/src
+source .venv/bin/activate
+python dblink/create_bioproject_relation.py
+```
+
+create_bioproject_relation.pyを実行すると、
+sqliteにユニークなbioproject-umbrellaのペアがchild-parentカラムに保存され、
+sqliteに保存された後にcsvを書き出します。
+
+sqlite: /home/w3ddbjld/tasks/relations/bioproject_relation.sqlite
+csv: /home/w3ddbjld/tasks/relations/bioproject_umbrella2bioproject.csv
+
