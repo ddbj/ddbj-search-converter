@@ -166,7 +166,7 @@ cython_debug/
 
 # === our settings ===
 
-elasticsearch/logs
+elasticsearch/logs*
 elasticsearch/data*
 elasticsearch/backup
 ddbj_search_converter_results

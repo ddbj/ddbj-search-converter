@@ -5,8 +5,7 @@
         "type": "keyword"
       },
       "properties": {
-        "type": "object",
-        "enabled": false
+        "type": "flattened"
       },
       "isPartOf": {
         "type": "keyword"
@@ -27,7 +26,7 @@
             "type": "keyword"
           },
           "name": {
-            "type": "text"
+            "type": "keyword"
           }
         }
       },
@@ -38,8 +37,18 @@
         "type": "text"
       },
       "dbXref": {
-        "type": "object",
-        "enabled": false
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        }
       },
       "sameAs": {
         "type": "nested",

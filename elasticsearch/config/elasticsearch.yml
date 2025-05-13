@@ -3,4 +3,4 @@ http.max_content_length: 2147483647b
 thread_pool.write.queue_size: -1
 indices.memory.index_buffer_size: 30%
 path.repo: ["/usr/share/elasticsearch/backup"]
-reindex.remote.whitelist: ["ddbjld-elasticsearch:9200"]
+reindex.remote.whitelist: ["ddbj-search-elasticsearch:9200"]
