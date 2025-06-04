@@ -90,10 +90,10 @@ python dblink/create_bioproject_relation.py
 ```
 
 取得方法
-bioproject.xmlのProjectLinks.Link.Hierarchical@type == "TopSingle" である場合
+bioproject.xmlのProjectLinks.Link.Hierarchical@type == "TopAdmin" である場合
 ```
-member_id =  ProjectLinks.Link.Hierarchical.MemberID@accession -> member_id
-project_id =  ProjectLinks.Link@accession -> project_id -> project_id
+member_id =  ProjectLinks.Link.Hierarchical.MemberID@accession
+project_id =  ProjectLinks.Link.ProjectIDRef@accession
 ```
 とする
 
