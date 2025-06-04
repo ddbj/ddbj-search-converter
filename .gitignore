@@ -14,4 +14,5 @@ sample/PR*.xml
 memo/
 jga_dev_converter/*.json
 jga_dev_converter/*.jsonl
+*_error_log.txt
 *_bak*

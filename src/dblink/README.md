@@ -82,16 +82,30 @@ primaryがbioproject.xmlに含まれない場合はprivateなaccessionである�
 
 ### bioproject_umbrella2bioproject.csv書き出し処理の実行
 
+実行方法
 ```
 cd /home/w3ddbjld/tasks/ddbj-search-converter/src
 source .venv/bin/activate
 python dblink/create_bioproject_relation.py
 ```
 
-create_bioproject_relation.pyを実行すると、
-sqliteにユニークなbioproject-umbrellaのペアがchild-parentカラムに保存され、
-sqliteに保存された後にcsvを書き出します。
+取得方法
+bioproject.xmlのProjectLinks.Link.Hierarchical@type == "TopSingle" である場合
+```
+member_id =  ProjectLinks.Link.Hierarchical.MemberID@accession -> member_id
+project_id =  ProjectLinks.Link@accession -> project_id -> project_id
+```
+とする
 
-sqlite: /home/w3ddbjld/tasks/relations/bioproject_relation.sqlite
-csv: /home/w3ddbjld/tasks/relations/bioproject_umbrella2bioproject.csv
+書き出し先
+- sqlite: /home/w3ddbjld/tasks/relations/bioproject_relation.sqlite
+    - table:  "bioproject_umbrella2bioproject"
+    - INSERT INTO bioproject_umbrella2bioproject (child, parent) VALUES (project_id, mamber_id);
+- file: /home/w3ddbjld/tasks/relations/bioproject_umbrella2bioproject.csv
+```
+child, parent
+project_id, member_id
+...
+```
+
 
