@@ -18,6 +18,7 @@ TODAY = datetime.date.today().strftime(DATE_FORMAT)
 BP_JSONL_DIR_NAME = "bioproject_jsonl"
 BS_JSONL_DIR_NAME = "biosample_jsonl"
 DRA_JSONL_DIR_NAME = "dra_jsonl"
+JGA_JSONL_DIR_NAME = "jga_jsonl"
 AccessionType = Literal["bioproject", "biosample"]
 
 
@@ -34,6 +35,7 @@ class Config(BaseModel):
     sra_accessions_tab_file_path: Path = WORK_DIR.joinpath("SRA_Accessions.tab")
     dblink_base_path: Path = Path("/lustre9/open/shared_data/dblink")
     dra_base_path: Path = Path("/lustre9/open/shared_data/dra")
+    jga_base_path: Path = Path("/lustre9/open/shared_data/jga/metadata-history/metadata")
 
 
 default_config = Config()
@@ -58,6 +60,7 @@ def get_config() -> Config:
         sra_accessions_tab_file_path=Path(os.environ.get(f"{ENV_PREFIX}_SRA_ACCESSIONS_TAB_FILE_PATH", default_config.sra_accessions_tab_file_path)),
         dblink_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_BASE_PATH", default_config.dblink_base_path)),
         dra_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DRA_BASE_PATH", default_config.dra_base_path)),
+        jga_base_path=Path(os.environ.get(f"{ENV_PREFIX}_JGA_BASE_PATH", default_config.jga_base_path)),
     )
 
 

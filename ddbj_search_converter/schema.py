@@ -183,6 +183,7 @@ class SRA(BaseModel):
 class JGA(BaseModel):
     identifier: str
     properties: Any
+    distribution: List[Distribution]
     isPartOf: Literal["jga"]
     type_: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"] = Field(alias="type")
     name: Optional[str]
@@ -191,6 +192,7 @@ class JGA(BaseModel):
     title: Optional[str]
     description: Optional[str]
     dbXref: List[Xref]
+    dbXrefs: List[Xref]  # for backward compatibility
     sameAs: List[Xref]
     status: Literal["public"]
     visibility: Literal["controlled-access"]

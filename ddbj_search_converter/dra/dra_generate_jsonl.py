@@ -131,7 +131,7 @@ def _load_xml_file(xml_file_path: Path) -> Dict[str, Any]:
         xml_bytes = f.read()
     xml_metadata = xmltodict.parse(xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False)
 
-    return xml_metadata  # type: ignore
+    return xml_metadata
 
 
 def _parse_properties(sra_metadata: SraMetadata, xml_metadata: Dict[str, Any]) -> Optional[Dict[str, Any]]:

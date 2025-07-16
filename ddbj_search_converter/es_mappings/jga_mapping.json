@@ -5,7 +5,22 @@
         "type": "keyword"
       },
       "properties": {
-        "type": "flattened"
+        "type": "object",
+        "enabled": false
+      },
+      "distribution": {
+        "type": "nested",
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "encodingFormat": {
+            "type": "keyword"
+          },
+          "contentUrl": {
+            "type": "keyword"
+          }
+        }
       },
       "isPartOf": {
         "type": "keyword"
@@ -37,18 +52,12 @@
         "type": "text"
       },
       "dbXref": {
-        "type": "nested",
-        "properties": {
-          "identifier": {
-            "type": "keyword"
-          },
-          "type": {
-            "type": "keyword"
-          },
-          "url": {
-            "type": "keyword"
-          }
-        }
+        "type": "object",
+        "enabled": false
+      },
+      "dbXrefs": {
+        "type": "object",
+        "enabled": false
       },
       "sameAs": {
         "type": "nested",
