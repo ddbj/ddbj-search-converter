@@ -52,7 +52,7 @@ dra_generate_jsonl = "ddbj_search_converter.dra.dra_generate_jsonl:main"
 dra_bulk_insert = "ddbj_search_converter.dra.dra_bulk_insert:main"
 jga_generate_jsonl = "ddbj_search_converter.jga.jga_generate_jsonl:main"
 jga_bulk_insert = "ddbj_search_converter.jga.jga_bulk_insert:main"
-# jga_sra_delete_es_index = "ddbj_search_converter.jga_sra_utils.delete_indexes:main"
+jga_delete_indexes = "ddbj_search_converter.jga.delete_indexes:main"
 # jga_sra_rewrite_docs = "ddbj_search_converter.jga_sra_utils.rewrite_docs:main"
 # jga_sra_load_docs = "ddbj_search_converter.jga_sra_utils.load_docs:main"
 

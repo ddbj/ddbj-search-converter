@@ -5,8 +5,7 @@
         "type": "keyword"
       },
       "properties": {
-        "type": "object",
-        "enabled": false
+        "type": "flattened"
       },
       "distribution": {
         "type": "nested",
@@ -52,12 +51,32 @@
         "type": "text"
       },
       "dbXref": {
-        "type": "object",
-        "enabled": false
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        }
       },
       "dbXrefs": {
-        "type": "object",
-        "enabled": false
+        "type": "nested",
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          },
+          "type": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        }
       },
       "sameAs": {
         "type": "nested",
