@@ -8,7 +8,7 @@ import argparse
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Generator, Iterable, List, Optional, Tuple
+from typing import Dict, Generator, Iterable, List, Optional, Set, Tuple
 
 import xmltodict
 from pydantic import BaseModel
@@ -66,8 +66,12 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 
 def store_data_to_sqlite(config: Config) -> None:
     records: List[Tuple[str, Optional[str]]] = []
+    submission_accessions: Set[str] = set()
     for sra_metadata in iterate_sra_metadata(config, "SUBMISSION"):
         if sra_metadata.accession is None:
+            continue
+        if sra_metadata.accession in submission_accessions:
+            LOGGER.debug("Duplicate submission accession found: %s", sra_metadata.accession)
             continue
 
         xml_file_path = config.dra_base_path.joinpath(generate_xml_file_path(sra_metadata))
@@ -77,6 +81,7 @@ def store_data_to_sqlite(config: Config) -> None:
         created_date: Optional[str] = xml_metadata.get("SUBMISSION", {}).get("submission_date", None)
 
         records.append((sra_metadata.accession, created_date))
+        submission_accessions.add(sra_metadata.accession)
 
     with get_session(config) as session:
         try:
