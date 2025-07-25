@@ -40,15 +40,21 @@ def load_dblink_files(config: Config, accession_type: AccessionType) -> Dict[str
         if accession_type not in relation:
             continue
         source_file = config.dblink_base_path.joinpath(filename)
-        with source_file.open("r", encoding="utf-8") as f:
-            for line in f:
-                id0, id1 = line.strip().split("\t")
-                if relation.index(accession_type) == 0:
-                    bp_bs_id, relation_id = id0, id1
-                else:
-                    bp_bs_id, relation_id = id1, id0
-                if bp_bs_id not in id_to_relation_ids:
-                    id_to_relation_ids[bp_bs_id] = set()
-                id_to_relation_ids[bp_bs_id].add(relation_id)
+        try:
+            with source_file.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line == "":
+                        continue
+                    id0, id1 = line.split("\t")
+                    if relation.index(accession_type) == 0:
+                        bp_bs_id, relation_id = id0, id1
+                    else:
+                        bp_bs_id, relation_id = id1, id0
+                    if bp_bs_id not in id_to_relation_ids:
+                        id_to_relation_ids[bp_bs_id] = set()
+                    id_to_relation_ids[bp_bs_id].add(relation_id)
+        except Exception as e:
+            raise RuntimeError(f"Failed to read {source_file}: {e}") from e
 
     return id_to_relation_ids
