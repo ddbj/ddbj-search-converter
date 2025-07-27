@@ -337,7 +337,7 @@ def _parse_same_as(accession: str, sample: Dict[str, Any]) -> List[Xref]:
                 same_as.append(Xref(
                     identifier=sample_obj["content"],
                     type="sra-sample",
-                    url=f"https://ddbj.nig.ac.jp/resource/sra-sample/{sample_obj['content']}"
+                    url=f"https://ddbj.nig.ac.jp/search/entry/sra-sample/{sample_obj['content']}"
                 ))
         return same_as
     except Exception as e:
