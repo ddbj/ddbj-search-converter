@@ -1,4 +1,4 @@
-FROM python:3.10.14-slim-bookworm
+FROM 3.12.12-bookworm
 
 RUN apt update && \
     apt install -y --no-install-recommends \
@@ -13,4 +13,5 @@ COPY . .
 RUN python3 -m pip install --no-cache-dir --progress-bar off -U pip && \
     python3 -m pip install --no-cache-dir --progress-bar off -e .[tests]
 
+ENTRYPOINT [""]
 CMD ["sleep", "infinity"]

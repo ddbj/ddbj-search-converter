@@ -17,7 +17,7 @@ services:
       - /lustre9/open/shared_data/jga/metadata-history/metadata:/lustre9/open/shared_data/jga/metadata-history/metadata:ro
     environment:
       TZ: "Asia/Tokyo"
-      DDBJ_SEARCH_CONVERTER_DEBUG: "${DDBJ_SEARCH_CONVERTER_DEBUG:-true}"
+      DDBJ_SEARCH_CONVERTER_DEBUG: "false"
       DDBJ_SEARCH_CONVERTER_WORK_DIR: "/app/ddbj_search_converter_results"
       DDBJ_SEARCH_CONVERTER_POSTGRES_URL: "postgresql://guestuser:guestuser@a011:54306"
       DDBJ_SEARCH_CONVERTER_ES_URL: "http://ddbj-search-elasticsearch:9200"

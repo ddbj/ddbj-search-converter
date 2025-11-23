@@ -41,7 +41,7 @@ jobs:
 
   deploy_ghcr:
     if: github.repository == 'ddbj/ddbj-search-converter'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
   create_release:
     if: github.repository == 'ddbj/ddbj-search-converter'
     needs: [build_wheel]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Download sdist
         uses: actions/download-artifact@v4

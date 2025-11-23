@@ -7,16 +7,9 @@ name = "ddbj-search-converter"
 authors = [{ name = "Bioinformatics and DDBJ Center" }]
 readme = { file = "README.md", content-type = "text/markdown" }
 version = "0.1.0"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
-dependencies = [
-    "elasticsearch>=8,<9",
-    "httpx",
-    "psycopg2-binary",
-    "pydantic",
-    "SQLAlchemy>=2.0.0",
-    "xmltodict",
-]
+dependencies = ["elasticsearch>=8,<9", "httpx", "pydantic", "xmltodict"]
 
 [project.urls]
 Homepage = "https://github.com/ddbj/ddbj-search-converter"
@@ -36,38 +29,38 @@ tests = [
 ]
 
 [project.scripts]
-create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
-create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
-create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
-create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
-create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
-create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
-create_dra_relation_ids = "ddbj_search_converter.cache_db.dra_relation_ids:main"
-create_jga_relation_ids = "ddbj_search_converter.cache_db.jga_relation_ids:main"
-bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
-bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
-bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
-bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
-dra_generate_jsonl = "ddbj_search_converter.dra.dra_generate_jsonl:main"
-dra_bulk_insert = "ddbj_search_converter.dra.dra_bulk_insert:main"
-jga_generate_jsonl = "ddbj_search_converter.jga.jga_generate_jsonl:main"
-jga_bulk_insert = "ddbj_search_converter.jga.jga_bulk_insert:main"
-jga_delete_indexes = "ddbj_search_converter.jga.delete_indexes:main"
+# create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
+# create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
+# create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
+# create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
+# create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
+# create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
+# create_dra_relation_ids = "ddbj_search_converter.cache_db.dra_relation_ids:main"
+# create_jga_relation_ids = "ddbj_search_converter.cache_db.jga_relation_ids:main"
+# bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
+# bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
+# bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
+# bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
+# dra_generate_jsonl = "ddbj_search_converter.dra.dra_generate_jsonl:main"
+# dra_bulk_insert = "ddbj_search_converter.dra.dra_bulk_insert:main"
+# jga_generate_jsonl = "ddbj_search_converter.jga.jga_generate_jsonl:main"
+# jga_bulk_insert = "ddbj_search_converter.jga.jga_bulk_insert:main"
+# jga_delete_indexes = "ddbj_search_converter.jga.delete_indexes:main"
 
 [tool.setuptools]
 packages = [
     "ddbj_search_converter",
-    "ddbj_search_converter.bioproject",
-    "ddbj_search_converter.biosample",
-    "ddbj_search_converter.dra",
-    "ddbj_search_converter.jga",
-    "ddbj_search_converter.cache_db",
-    "ddbj_search_converter.es_mappings",
-    "ddbj_search_converter.jga_sra_utils",
+    # "ddbj_search_converter.bioproject",
+    # "ddbj_search_converter.biosample",
+    # "ddbj_search_converter.dra",
+    # "ddbj_search_converter.jga",
+    # "ddbj_search_converter.cache_db",
+    # "ddbj_search_converter.es_mappings",
+    # "ddbj_search_converter.jga_sra_utils",
 ]
 
-[tool.setuptools.package-data]
-ddbj_search_converter = ["es_mappings/*.json"]
+# [tool.setuptools.package-data]
+# ddbj_search_converter = ["es_mappings/*.json"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"

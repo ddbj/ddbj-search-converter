@@ -2,8 +2,8 @@ name: pytest
 
 on:
   push:
-    # branches:
-    #   - main
+    branches:
+      - main
     paths:
       - "ddbj_search_converter/**"
       - "pyproject.toml"

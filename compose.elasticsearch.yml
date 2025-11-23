@@ -9,7 +9,6 @@ services:
       bootstrap.memory_lock: "true"
       http.cors.enabled: "true"
       http.cors.allow-origin: '"*"'
-      ELASTIC_PASSWORD: "${ELASTIC_PASSWORD:-ddbj-search-elasticsearch-password}"
     volumes:
       - ${PWD}/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
       - ${PWD}/elasticsearch/data:/usr/share/elasticsearch/data:rw
