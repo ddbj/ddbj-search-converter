@@ -10,7 +10,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Dict, Generator, Iterable, List, Optional, Set, Tuple
 
-import xmltodict
 from pydantic import BaseModel
 from sqlalchemy import String, create_engine, insert, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
@@ -19,8 +18,8 @@ from ddbj_search_converter.cache_db.sra_accessions import (
     download_sra_accessions_tab_file, find_latest_sra_accessions_tab_file)
 from ddbj_search_converter.config import (LOGGER, Config, get_config,
                                           set_logging_level)
-from ddbj_search_converter.dra.utils import (generate_xml_file_path,
-                                             iterate_sra_metadata)
+from ddbj_search_converter.dra.utils import (TarXmlStore, iterate_sra_metadata,
+                                             load_xml_metadata_from_tar)
 
 DB_FILE_NAME = "dra_date.sqlite"
 TABLE_NAME = "dra_date"
@@ -65,23 +64,24 @@ def get_session(config: Config) -> Generator[Session, None, None]:
 
 
 def store_data_to_sqlite(config: Config) -> None:
+    tar_store = TarXmlStore(config.dra_xml_tar_file_path)
     records: List[Tuple[str, Optional[str]]] = []
     submission_accessions: Set[str] = set()
-    for sra_metadata in iterate_sra_metadata(config, "SUBMISSION"):
-        if sra_metadata.accession is None:
-            continue
-        if sra_metadata.accession in submission_accessions:
-            LOGGER.debug("Duplicate submission accession found: %s", sra_metadata.accession)
-            continue
+    try:
+        for sra_metadata in iterate_sra_metadata(config, "SUBMISSION", tar_store=tar_store):
+            if sra_metadata.accession is None:
+                continue
+            if sra_metadata.accession in submission_accessions:
+                LOGGER.debug("Duplicate submission accession found: %s", sra_metadata.accession)
+                continue
 
-        xml_file_path = config.dra_base_path.joinpath(generate_xml_file_path(sra_metadata))
-        with xml_file_path.open("rb") as f_xml:
-            xml_bytes = f_xml.read()
-        xml_metadata = xmltodict.parse(xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False)
-        created_date: Optional[str] = xml_metadata.get("SUBMISSION", {}).get("submission_date", None)
+            xml_metadata = load_xml_metadata_from_tar(tar_store, sra_metadata)
+            created_date: Optional[str] = xml_metadata.get("SUBMISSION", {}).get("submission_date", None)
 
-        records.append((sra_metadata.accession, created_date))
-        submission_accessions.add(sra_metadata.accession)
+            records.append((sra_metadata.accession, created_date))
+            submission_accessions.add(sra_metadata.accession)
+    finally:
+        tar_store.close()
 
     with get_session(config) as session:
         try:

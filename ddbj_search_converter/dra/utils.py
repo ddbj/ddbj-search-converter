@@ -1,6 +1,9 @@
+import re
+import tarfile
 from pathlib import Path
-from typing import Generator, List, Literal, Optional, Set
+from typing import Any, Dict, Generator, List, Literal, Optional, Set, Tuple
 
+import xmltodict
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import Config
@@ -12,13 +15,13 @@ ACCESSION_TYPE: List[AccessionType] = ["SUBMISSION", "STUDY", "EXPERIMENT", "RUN
 class SraMetadata(BaseModel):
     accession: str
     submission: str
-    status: Literal["live", "suppressed", "unpublished", "withdrawn"]  # no withdrawn status in DRA
+    status: Literal["live", "suppressed", "unpublished", "withdrawn"]
     updated: str  # YYYY-MM-DDTHH:MM:SSZ
     published: Optional[str]  # YYYY-MM-DDTHH:MM:SSZ
     received: str  # YYYY-MM-DDTHH:MM:SSZ
     type: AccessionType
     center: Optional[str]
-    visibility: Literal["public"]
+    visibility: Literal["public", "controlled_access"]
     alias: Optional[str]
     experiment: Optional[str]
     sample: Optional[str]
@@ -71,22 +74,62 @@ def generate_sra_file_path(sra_metadata: SraMetadata, experiment: str) -> str:
     return f"sra/ByExp/sra/DRX/{experiment[:6]}/{experiment}/{sra_metadata.accession}/{sra_metadata.accession}.sra"
 
 
+class TarXmlStore:
+    """
+    A utility class to read XML files from a tar.gz archive.
+    Dir structure inside the tar.gz: <SUBMISSION>/<SUBMISSION>.<kind>.xml
+    e.g., DRA000001/DRA000001.experiment.xml
+    """
+    _name_re = re.compile(r"^(?P<submission>[^/]+)/(?P=submission)\.(?P<kind>experiment|sample|run|study|submission)\.xml$",
+                          re.IGNORECASE)
+
+    def __init__(self, tar_path: Path) -> None:
+        self._tar = tarfile.open(tar_path, "r:*")
+        self._index: Dict[Tuple[str, str], tarfile.TarInfo] = {}  # (submission, kind) -> TarInfo
+        self._build_index()
+
+    def _build_index(self) -> None:
+        for member in self._tar.getmembers():
+            if not member.isfile():
+                continue
+            match = self._name_re.match(member.name)
+            if match:
+                submission = match.group("submission")
+                kind = match.group("kind").lower()
+                self._index[(submission, kind)] = member
+
+    def has(self, submission: str, kind: AccessionType) -> bool:
+        return (submission, kind.lower()) in self._index
+
+    def read_xml_bytes(self, submission: str, kind: AccessionType) -> bytes:
+        ti = self._index.get((submission, kind.lower()))
+        if ti is None:
+            raise FileNotFoundError(f"XML not found: {submission}.{kind}.xml")
+        f = self._tar.extractfile(ti)
+        assert f is not None
+        return f.read()
+
+    def close(self) -> None:
+        self._tar.close()
+
+
 def iterate_sra_metadata(
     config: Config,
     accession_type: Optional[AccessionType] = None,
-    exist_xml_files: Optional[Set[Path]] = None,
-    not_exist_xml_files: Optional[Set[Path]] = None
+    exist_keys: Optional[Set[Tuple[str, AccessionType]]] = None,
+    not_exist_keys: Optional[Set[Tuple[str, AccessionType]]] = None,
+    tar_store: Optional[TarXmlStore] = None,
 ) -> Generator[SraMetadata, None, None]:
-    if exist_xml_files is None:
-        exist_xml_files = set()
-    if not_exist_xml_files is None:
-        not_exist_xml_files = set()
+    if tar_store is None:
+        tar_store = TarXmlStore(config.dra_xml_tar_file_path)
+    if exist_keys is None:
+        exist_keys = set()
+    if not_exist_keys is None:
+        not_exist_keys = set()
+
     with config.sra_accessions_tab_file_path.open("r", encoding="utf-8") as f:
         next(f, None)  # skip header
         for line in f:
-            if not line.startswith("D"):
-                continue
-
             sra_metadata = line_to_sra_metadata(line)
 
             if accession_type is not None and sra_metadata.type != accession_type:
@@ -100,18 +143,26 @@ def iterate_sra_metadata(
             if sra_metadata.status == "unpublished":
                 continue
 
-            xml_file_path = config.dra_base_path.joinpath(generate_xml_file_path(sra_metadata))
-            if xml_file_path in exist_xml_files:
+            key = (sra_metadata.submission, sra_metadata.type)
+            if key in exist_keys:
+                yield sra_metadata
+                continue
+            if key in not_exist_keys:
+                continue
+
+            if tar_store.has(sra_metadata.submission, sra_metadata.type):
+                exist_keys.add(key)
                 yield sra_metadata
             else:
-                if xml_file_path in not_exist_xml_files:
-                    # Skip if the XML file does not exist
-                    continue
+                not_exist_keys.add(key)
+                continue
 
-                if xml_file_path.exists():
-                    exist_xml_files.add(xml_file_path)
-                    yield sra_metadata
-                else:
-                    not_exist_xml_files.add(xml_file_path)
-                    # Skip if the XML file does not exist
-                    continue
+
+def load_xml_metadata_from_tar(
+    tar_store: TarXmlStore,
+    sra_metadata: SraMetadata,
+) -> Dict[str, Any]:
+    xml_bytes = tar_store.read_xml_bytes(sra_metadata.submission, sra_metadata.type)
+    xml_metadata = xmltodict.parse(xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False)
+
+    return xml_metadata

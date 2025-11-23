@@ -87,10 +87,17 @@ $ docker compose -f compose.dev.yml exec app bash
 # Elasticsearch の index を作成する
 $ create_es_index --index bioproject
 $ create_es_index --index biosample
+$ create_es_index --index sra
+$ create_es_index --index jga
 
 # Cache 用 sqlite db を作成する
 $ create_bp_date_db
 $ create_bs_date_db
+$ create_dra_date_db
+$ create_bp_relation_ids
+$ create_bs_relation_ids
+$ create_dra_relation_ids
+$ create_jga_relation_ids
 
 # XML to JSON-Lines
 $ bp_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject/bioproject.xml
@@ -99,9 +106,13 @@ $ bp_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bp-public/biopr
 $ bs_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample/biosample_set.xml.gz
 $ bs_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample/ddbj_biosample_set.xml.gz --is-ddbj --use-existing-tmp-dir
 
+$ jga_delete_indexes
+
 # Bulk insert
 $ bp_bulk_insert
 $ bs_bulk_insert
+$ dra_bulk_insert
+$ jga_bulk_insert
 ```
 
 ### 時間メモ

@@ -170,8 +170,8 @@ class SRA(BaseModel):
     dbXref: List[Xref]
     sameAs: List[Xref]
     downloadUrl: List[DownloadUrl]
-    status: Literal["public"]
-    visibility: Literal["unrestricted-access"]
+    status: Literal["live", "suppressed", "unpublished", "withdrawn"]
+    visibility: Literal["public", "controlled_access"]
     dateCreated: Optional[str]
     dateModified: str
     datePublished: Optional[str]

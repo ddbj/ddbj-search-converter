@@ -3,16 +3,15 @@
 - 生成される JSON-Lines は 1 line が 1 accession に対応する
 """
 import argparse
+import json
 import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor
 from copy import deepcopy
-from functools import lru_cache
 from itertools import islice
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
-import xmltodict
 from pydantic import BaseModel
 
 from ddbj_search_converter.cache_db.dra_date import get_dates_bulk
@@ -23,11 +22,13 @@ from ddbj_search_converter.cache_db.sra_accessions import (
 from ddbj_search_converter.config import (DRA_JSONL_DIR_NAME, LOGGER, TODAY,
                                           Config, get_config,
                                           set_logging_level)
-from ddbj_search_converter.dra.utils import (ACCESSION_TYPE, SraMetadata,
+from ddbj_search_converter.dra.utils import (ACCESSION_TYPE, AccessionType,
+                                             SraMetadata, TarXmlStore,
                                              generate_experiment_dir_path,
                                              generate_sra_file_path,
                                              generate_xml_file_path,
-                                             iterate_sra_metadata)
+                                             iterate_sra_metadata,
+                                             load_xml_metadata_from_tar)
 from ddbj_search_converter.schema import (SRA, Distribution, DownloadUrl,
                                           Organism)
 from ddbj_search_converter.utils import to_xref
@@ -42,23 +43,27 @@ def generate_dra_jsonl(
     batch_size: int = DEFAULT_BATCH_SIZE,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
 ) -> None:
-    exist_xml_files: Set[Path] = set()
-    not_exist_xml_files: Set[Path] = set()
+    exist_keys: Set[Tuple[str, AccessionType]] = set()
+    not_exist_keys: Set[Tuple[str, AccessionType]] = set()
+    tar_store = TarXmlStore(config.dra_xml_tar_file_path)
 
-    futures = []
-    with ProcessPoolExecutor(max_workers=parallel_num) as executor:
-        for accession_type in ACCESSION_TYPE:
-            sra_iterator = iterate_sra_metadata(config, accession_type, exist_xml_files, not_exist_xml_files)
-            for i, sra_metadata_list in enumerate(_chunked_iterator(sra_iterator, batch_size)):
-                jsonl_file = output_dir.joinpath(f"sra-{accession_type.lower()}_{i + 1}.jsonl")
-                future = executor.submit(jsonl_worker, config, sra_metadata_list, jsonl_file)
-                futures.append(future)
+    try:
+        futures = []
+        with ProcessPoolExecutor(max_workers=parallel_num) as executor:
+            for accession_type in ACCESSION_TYPE:
+                sra_iterator = iterate_sra_metadata(config, accession_type, exist_keys, not_exist_keys, tar_store)
+                for i, sra_metadata_list in enumerate(_chunked_iterator(sra_iterator, batch_size)):
+                    jsonl_file = output_dir.joinpath(f"sra-{accession_type.lower()}_{i + 1}.jsonl")
+                    future = executor.submit(jsonl_worker, config, sra_metadata_list, jsonl_file, tar_store)
+                    futures.append(future)
 
-        for future in futures:
-            try:
-                future.result()
-            except Exception as e:
-                LOGGER.error("Failed to generate JSON-Lines: %s", e)
+            for future in futures:
+                try:
+                    future.result()
+                except Exception as e:
+                    LOGGER.error("Failed to generate JSON-Lines: %s", e)
+    finally:
+        tar_store.close()
 
 
 def _chunked_iterator(iterator: Iterator[SraMetadata], batch_size: int) -> Iterator[List[SraMetadata]]:
@@ -69,7 +74,7 @@ def _chunked_iterator(iterator: Iterator[SraMetadata], batch_size: int) -> Itera
         yield chunk
 
 
-def jsonl_worker(config: Config, sra_metadata_list: List[SraMetadata], jsonl_file: Path) -> None:
+def jsonl_worker(config: Config, sra_metadata_list: List[SraMetadata], jsonl_file: Path, tar_store: TarXmlStore) -> None:
     LOGGER.info("Converting to JSON-Lines: %s", jsonl_file.name)
     submission_ids = [sra_metadata.submission for sra_metadata in sra_metadata_list]
     date_map = get_dates_bulk(config, submission_ids)
@@ -77,7 +82,7 @@ def jsonl_worker(config: Config, sra_metadata_list: List[SraMetadata], jsonl_fil
 
     docs: List[SRA] = []
     for sra_metadata in sra_metadata_list:
-        dra_instance = sra_metadata_to_dra_instance(config, sra_metadata)
+        dra_instance = sra_metadata_to_dra_instance(config, sra_metadata, tar_store)
         if dra_instance is None:
             continue
         dra_instance.dbXref = [
@@ -93,12 +98,13 @@ def jsonl_worker(config: Config, sra_metadata_list: List[SraMetadata], jsonl_fil
 def sra_metadata_to_dra_instance(
     config: Config,
     sra_metadata: SraMetadata,
+    tar_store: TarXmlStore,
 ) -> Optional[SRA]:
-    xml_file_path = config.dra_base_path.joinpath(generate_xml_file_path(sra_metadata))
-    xml_metadata = _load_xml_file(xml_file_path)
+    xml_metadata = load_xml_metadata_from_tar(tar_store, sra_metadata)
     properties = deepcopy(_parse_properties(sra_metadata, xml_metadata))
     if properties is None:
-        # LOGGER.warning("No properties found for %s, submission %s", sra_metadata.accession, sra_metadata.submission)
+        LOGGER.warning("Failed to parse properties for accession %s", sra_metadata.accession)
+        LOGGER.warning("XML Metadata: %s", json.dumps(xml_metadata, indent=2))
         return None
 
     dra_instance = SRA(
@@ -115,8 +121,8 @@ def sra_metadata_to_dra_instance(
         dbXref=[],  # Update after by bulk
         sameAs=[],
         downloadUrl=_parse_download_url(config, sra_metadata, properties),
-        status="public",
-        visibility="unrestricted-access",
+        status=sra_metadata.status,
+        visibility=sra_metadata.visibility,
         dateCreated=None,  # Update after by bulk
         dateModified=sra_metadata.updated,
         datePublished=sra_metadata.published,
@@ -125,29 +131,26 @@ def sra_metadata_to_dra_instance(
     return dra_instance
 
 
-@lru_cache(maxsize=10)
-def _load_xml_file(xml_file_path: Path) -> Dict[str, Any]:
-    with xml_file_path.open("rb") as f:
-        xml_bytes = f.read()
-    xml_metadata = xmltodict.parse(xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False)
-
-    return xml_metadata
-
-
 def _parse_properties(sra_metadata: SraMetadata, xml_metadata: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if sra_metadata.type == "SUBMISSION":
         item = xml_metadata["SUBMISSION"]
-        if sra_metadata.accession != item["accession"]:
-            return None
+        # if sra_metadata.accession != item["accession"]:
+        #     LOGGER.warning("Accession mismatch in SUBMISSION: expected %s, found %s", sra_metadata.accession, item["accession"])
+        #     LOGGER.warning("XML Metadata: %s", json.dumps(xml_metadata, indent=2))
+        #     return None
         return item  # type: ignore
     else:
         items = xml_metadata[f"{sra_metadata.type}_SET"][f"{sra_metadata.type}"]
         if isinstance(items, list):
             items = [item for item in items if item["accession"] == sra_metadata.accession]
             if len(items) == 0:
+                LOGGER.warning("No matching accession found in %s: %s", sra_metadata.type, sra_metadata.accession)
+                LOGGER.warning("XML Metadata: %s", json.dumps(xml_metadata, indent=2))
                 return None
             return items[0]  # type: ignore
         if sra_metadata.accession != items["accession"]:
+            LOGGER.warning("Accession mismatch in %s: expected %s, found %s", sra_metadata.type, sra_metadata.accession, items["accession"])
+            LOGGER.warning("XML Metadata: %s", json.dumps(xml_metadata, indent=2))
             return None
         return items  # type: ignore
 
@@ -184,6 +187,10 @@ def _parse_organism(sra_metadata: SraMetadata, properties: Dict[str, Any]) -> Op
         if name is None:
             name = sample_name.get("SCIENTIFIC_NAME", None)
 
+        if identifier is None and name is None:
+            LOGGER.warning("No organism information found for SAMPLE %s", sra_metadata.accession)
+            LOGGER.warning("XML Metadata: %s", json.dumps(properties, indent=2))
+
         return Organism(
             identifier=identifier,
             name=name,
@@ -193,16 +200,13 @@ def _parse_organism(sra_metadata: SraMetadata, properties: Dict[str, Any]) -> Op
 
 
 def _parse_title(sra_metadata: SraMetadata, properties: Dict[str, Any]) -> Optional[str]:
-    try:
-        if sra_metadata.type == "STUDY":
-            return properties.get("DESCRIPTOR", {}).get("STUDY_TITLE", sra_metadata.accession)  # type: ignore
-        else:
-            return properties.get("TITLE", sra_metadata.accession)  # type: ignore
-    except Exception as e:
-        LOGGER.warning("Failed to parse title with accession %s: %s", sra_metadata.accession, e)
-        LOGGER.warning("Properties: %s", properties)
-        LOGGER.warning("Traceback: %s", traceback.format_exc())
-        return sra_metadata.accession
+    if sra_metadata.type == "STUDY":
+        if "DESCRIPTOR" not in properties or "STUDY_TITLE" not in properties.get("DESCRIPTOR", {}):
+            LOGGER.warning("No STUDY_TITLE found for accession %s", sra_metadata.accession)
+            LOGGER.warning("XML Metadata: %s", json.dumps(properties, indent=2))
+        return properties.get("DESCRIPTOR", {}).get("STUDY_TITLE", sra_metadata.accession)  # type: ignore
+    else:
+        return properties.get("TITLE", properties.get("alias", sra_metadata.accession))  # type: ignore
 
 
 def _parse_description(sra_metadata: SraMetadata, properties: Dict[str, Any]) -> Optional[str]:
@@ -212,8 +216,20 @@ def _parse_description(sra_metadata: SraMetadata, properties: Dict[str, Any]) ->
             description = descriptor.get("STUDY_DESCRIPTION", None)
             if description is None:
                 description = descriptor.get("STUDY_ABSTRACT", None)
+            if description is None:
+                LOGGER.warning("No STUDY_DESCRIPTION or STUDY_ABSTRACT found for accession %s", sra_metadata.accession)
+                LOGGER.warning("XML Metadata: %s", json.dumps(properties, indent=2))
             return description  # type: ignore
         elif sra_metadata.type == "EXPERIMENT":
+            design = properties.get("DESIGN", {})
+            if properties.get("DESIGN", {}).get("DESIGN_DESCRIPTION", None) is None:
+                try:
+                    if properties["DESIGN"]["DESIGN_DESCRIPTION"] is None:
+                        return None
+                except KeyError:
+                    pass
+                LOGGER.warning("No DESIGN_DESCRIPTION found for accession %s", sra_metadata.accession)
+                LOGGER.warning("XML Metadata: %s", json.dumps(properties, indent=2))
             return properties.get("DESIGN", {}).get("DESIGN_DESCRIPTION", None)  # type: ignore
         else:
             return properties.get("DESCRIPTION", None)  # type: ignore

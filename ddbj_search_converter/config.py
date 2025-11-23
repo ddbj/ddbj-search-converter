@@ -36,6 +36,7 @@ class Config(BaseModel):
     dblink_base_path: Path = Path("/lustre9/open/shared_data/dblink")
     dra_base_path: Path = Path("/lustre9/open/shared_data/dra")
     jga_base_path: Path = Path("/lustre9/open/shared_data/jga/metadata-history/metadata")
+    dra_xml_tar_file_path: Path = dra_base_path.joinpath("/app/NCBI_SRA_Metadata_Full_20251017.tar.gz")
 
 
 default_config = Config()
