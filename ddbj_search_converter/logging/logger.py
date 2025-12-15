@@ -94,7 +94,7 @@ def _append_jsonl(path: Path, record: LogRecord) -> None:
 def _emit_stderr(record: LogRecord) -> None:
     try:
         event = record.event
-        if event in ["start", "end", "failed", "progress"]:
+        if event not in ["start", "end", "failed", "progress"]:
             return
 
         ts = record.timestamp.isoformat(timespec="seconds")
