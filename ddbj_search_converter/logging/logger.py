@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import inspect
 import sys
 import traceback
@@ -9,7 +7,8 @@ from pathlib import Path
 from secrets import token_hex
 from typing import Any, Dict, Optional
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import (LOCAL_TZ, LOG_DIR_NAME, TODAY,
+                                          TODAY_STR, Config, default_config)
 from ddbj_search_converter.logging.schema import (ErrorInfo, Event, LogRecord,
                                                   RunName, Target)
 
@@ -23,26 +22,19 @@ def init_logger(
     *,
     run_name: RunName,
     config: Optional[Config] = None,
-    run_date: Optional[date] = None,
 ) -> None:
-    if run_date is None:
-        run_date = date.today()
-
-    run_id = f"{run_date:%Y%m%d}_{run_name}_{token_hex(2)}"
+    if config is None:
+        config = default_config
+    run_id = f"{TODAY_STR}_{run_name}_{token_hex(2)}"
+    log_file = config.work_dir.joinpath(LOG_DIR_NAME, f"{run_id}.log.jsonl")
 
     _run_name.set(run_name)
     _run_id.set(run_id)
-    _run_date.set(run_date)
+    _run_date.set(TODAY)
     _log_file.set(log_file)
 
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    log(event="start", message=f"run started: {run_name}")
-
-
-# ----------------------------------------------------------------------
-# Logging API
-# ----------------------------------------------------------------------
 
 def log(
     *,
@@ -77,10 +69,10 @@ def log(
             )
 
     record = LogRecord(
-        timestamp=datetime.utcnow(),
-        run_date=run_date,
-        run_id=run_id,
-        run_name=run_name,
+        timestamp=datetime.now(LOCAL_TZ),
+        run_date=run_date,  # type: ignore
+        run_id=run_id,  # type: ignore
+        run_name=run_name,  # type: ignore
         source=source,
         event=event,
         message=message,
@@ -89,66 +81,51 @@ def log(
         extra=extra or {},
     )
 
-    _append_jsonl(log_file, record)
+    _append_jsonl(log_file, record)  # type: ignore
     _emit_stderr(record)
 
 
-# ----------------------------------------------------------------------
-# Internal helpers
-# ----------------------------------------------------------------------
-
 def _append_jsonl(path: Path, record: LogRecord) -> None:
     with path.open("a", encoding="utf-8") as f:
-        f.write(record.model_dump_json(ensure_ascii=False))
+        f.write(record.model_dump_json())
         f.write("\n")
 
 
 def _emit_stderr(record: LogRecord) -> None:
-    """
-    人間向けの簡易ログを stderr に出す。
-    失敗しても例外は投げない。
-    """
     try:
-        parts = [
-            record.timestamp.isoformat(timespec="seconds"),
-            record.run_name,
-            record.run_id,
-            record.event,
-            record.source,
-        ]
+        event = record.event
+        if event in ["start", "end", "failed", "progress"]:
+            return
 
-        if record.message:
-            parts.append(record.message)
+        ts = record.timestamp.isoformat(timespec="seconds")
+        run = record.run_name
+        msg = record.message or ""
 
-        if record.target:
-            t = record.target
-            target_bits = []
-            if t.file:
-                target_bits.append(f"file={t.file}")
-            if t.accession:
-                target_bits.append(f"accession={t.accession}")
-            if t.index:
-                target_bits.append(f"index={t.index}")
-            if target_bits:
-                parts.append(f"[{' '.join(target_bits)}]")
+        line = f"{ts} - {run} - {event}"
+        if msg:
+            line += f" - {msg}"
 
-        if record.error:
-            parts.append(f"{record.error.type}: {record.error.message}")
-
-        sys.stderr.write(" | ".join(parts) + "\n")
+        sys.stderr.write(line + "\n")
         sys.stderr.flush()
+
     except Exception:
-        # stderr 出力失敗では処理を止めない
         pass
 
 
 def _detect_source() -> str:
     frame = inspect.currentframe()
     try:
-        caller = frame.f_back.f_back
+        if frame is None:
+            return "<unknown>"
+
+        caller = frame.f_back
+        if caller is None:
+            return "<unknown>"
+
         module = inspect.getmodule(caller)
         if module and module.__name__:
             return module.__name__
+
         return "<unknown>"
     finally:
         del frame

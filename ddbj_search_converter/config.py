@@ -4,7 +4,7 @@
     - そのため、各 script の main 関数や parse_args で config の値の上書きをし、その後、config のバケツリレーを行う
 """
 import os
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Literal, Optional
 from zoneinfo import ZoneInfo
@@ -14,12 +14,19 @@ from pydantic import BaseModel
 WORK_DIR = Path.cwd().joinpath("ddbj_search_converter_results")
 DATE_FORMAT = "%Y%m%d"
 LOCAL_TZ = ZoneInfo("Asia/Tokyo")
-TODAY = datetime.now(LOCAL_TZ).date().strftime(DATE_FORMAT)
+TODAY = datetime.now(LOCAL_TZ).date()
+TODAY_STR = TODAY.strftime(DATE_FORMAT)
+
 BP_JSONL_DIR_NAME = "bioproject_jsonl"
 BS_JSONL_DIR_NAME = "biosample_jsonl"
 DRA_JSONL_DIR_NAME = "dra_jsonl"
 JGA_JSONL_DIR_NAME = "jga_jsonl"
+LOG_DIR_NAME = "logs"
 AccessionType = Literal["bioproject", "biosample"]
+
+TRAD_BASE_PATH = Path("/lustre9/open/shared_data/trad")
+# DBLINK_BASE_PATH = Path("/lustre9/open/shared_data/dblink")
+DBLINK_BASE_PATH = WORK_DIR.joinpath("dblink")
 
 
 class Config(BaseModel):
@@ -33,7 +40,6 @@ class Config(BaseModel):
     es_url: str = "http://ddbj-search-elasticsearch:9200"
     # sra_accessions_tab_base_path: Optional[Path] = None
     # sra_accessions_tab_file_path: Path = WORK_DIR.joinpath("SRA_Accessions.tab")
-    # dblink_base_path: Path = Path("/lustre9/open/shared_data/dblink")
     # dra_base_path: Path = Path("/lustre9/open/shared_data/dra")
     # jga_base_path: Path = Path("/lustre9/open/shared_data/jga/metadata-history/metadata")
     # dra_xml_tar_file_path: Path = dra_base_path.joinpath("/app/NCBI_SRA_Metadata_Full_20251017.tar.gz")
@@ -59,7 +65,6 @@ def get_config() -> Config:
         es_url=os.environ.get(f"{ENV_PREFIX}_ES_URL", default_config.es_url),
         # sra_accessions_tab_base_path=sra_accessions_tab_base_path,
         # sra_accessions_tab_file_path=Path(os.environ.get(f"{ENV_PREFIX}_SRA_ACCESSIONS_TAB_FILE_PATH", default_config.sra_accessions_tab_file_path)),
-        # dblink_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DBLINK_BASE_PATH", default_config.dblink_base_path)),
         # dra_base_path=Path(os.environ.get(f"{ENV_PREFIX}_DRA_BASE_PATH", default_config.dra_base_path)),
         # jga_base_path=Path(os.environ.get(f"{ENV_PREFIX}_JGA_BASE_PATH", default_config.jga_base_path)),
     )

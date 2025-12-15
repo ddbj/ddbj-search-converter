@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field
 # この run が「何の処理か」を表す名前
 # 基本は CLI スクリプト名だが、書き捨て・緊急対応などのための adhoc を用意する
 RunName = Literal[
+    # DBLink 関連
+    "create_dblink_assembly_and_master_relations",
+
     "create_es_index",
 
     "create_bp_date_db",

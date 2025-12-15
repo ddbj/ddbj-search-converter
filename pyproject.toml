@@ -57,6 +57,8 @@ tests = [
 [tool.setuptools]
 packages = [
     "ddbj_search_converter",
+    "ddbj_search_converter.dblink",
+    "ddbj_search_converter.logging",
     # "ddbj_search_converter.bioproject",
     # "ddbj_search_converter.biosample",
     # "ddbj_search_converter.dra",
