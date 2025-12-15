@@ -36,6 +36,7 @@ tests = [
 ]
 
 [project.scripts]
+create_dblink_assembly_and_master_relations = "ddbj_search_converter.dblink.assembly_and_master:main"
 # create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 # create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 # create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
