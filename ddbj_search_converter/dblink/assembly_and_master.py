@@ -108,7 +108,7 @@ def process_trad_files(
     for path in TRAD_FILES:
         log(event="progress", message=f"processing file: {path}", extra={"file_path": str(path)})
 
-        with path.open("w", encoding="utf-8") as f:
+        with path.open("r", encoding="utf-8") as f:
             for line in f:
                 if line.startswith((" ", "\t", "-")):
                     continue
