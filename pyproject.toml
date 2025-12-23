@@ -31,12 +31,12 @@ tests = [
     "pytest-cov",
     "pytest-mock",
     "pytest",
-    "types-requests",
     "types-xmltodict",
 ]
 
 [project.scripts]
-create_dblink_assembly_and_master_relations = "ddbj_search_converter.dblink.assembly_and_master:main"
+init_dblink_db = "ddbj_search_converter.cli.init_dblink_db:main"
+# create_dblink_assembly_and_master_relations = "ddbj_search_converter.dblink.assembly_and_master:main"
 # create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 # create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 # create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
@@ -58,15 +58,9 @@ create_dblink_assembly_and_master_relations = "ddbj_search_converter.dblink.asse
 [tool.setuptools]
 packages = [
     "ddbj_search_converter",
+    "ddbj_search_converter.cli",
     "ddbj_search_converter.dblink",
     "ddbj_search_converter.logging",
-    # "ddbj_search_converter.bioproject",
-    # "ddbj_search_converter.biosample",
-    # "ddbj_search_converter.dra",
-    # "ddbj_search_converter.jga",
-    # "ddbj_search_converter.cache_db",
-    # "ddbj_search_converter.es_mappings",
-    # "ddbj_search_converter.jga_sra_utils",
 ]
 
 # [tool.setuptools.package-data]
@@ -80,7 +74,6 @@ testpaths = ["tests/py_tests"]
 files = ["./ddbj_search_converter/**/*.py"]
 follow_imports = "silent"
 strict = true
-plugins = "sqlalchemy.ext.mypy.plugin"
 
 [tool.pylint.messages_control]
 disable = [

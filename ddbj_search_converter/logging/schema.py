@@ -9,31 +9,33 @@ from pydantic import BaseModel, Field
 # 基本は CLI スクリプト名だが、書き捨て・緊急対応などのための adhoc を用意する
 RunName = Literal[
     # DBLink 関連
-    "create_dblink_assembly_and_master_relations",
+    "init_dblink_db",
 
-    "create_es_index",
+    # "create_dblink_assembly_and_master_relations",
 
-    "create_bp_date_db",
-    "create_bs_date_db",
-    "create_dra_date_db",
+    # "create_es_index",
 
-    "create_bp_relation_ids",
-    "create_bs_relation_ids",
-    "create_dra_relation_ids",
-    "create_jga_relation_ids",
+    # "create_bp_date_db",
+    # "create_bs_date_db",
+    # "create_dra_date_db",
 
-    "bp_xml_to_jsonl",
-    "bp_bulk_insert",
+    # "create_bp_relation_ids",
+    # "create_bs_relation_ids",
+    # "create_dra_relation_ids",
+    # "create_jga_relation_ids",
 
-    "bs_xml_to_jsonl",
-    "bs_bulk_insert",
+    # "bp_xml_to_jsonl",
+    # "bp_bulk_insert",
 
-    "dra_generate_jsonl",
-    "dra_bulk_insert",
+    # "bs_xml_to_jsonl",
+    # "bs_bulk_insert",
 
-    "jga_generate_jsonl",
-    "jga_bulk_insert",
-    "jga_delete_indexes",
+    # "dra_generate_jsonl",
+    # "dra_bulk_insert",
+
+    # "jga_generate_jsonl",
+    # "jga_bulk_insert",
+    # "jga_delete_indexes",
 
     "adhoc"
 ]

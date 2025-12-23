@@ -26,7 +26,7 @@ def init_logger(
     if config is None:
         config = default_config
     run_id = f"{TODAY_STR}_{run_name}_{token_hex(2)}"
-    log_file = config.work_dir.joinpath(LOG_DIR_NAME, f"{run_id}.log.jsonl")
+    log_file = config.result_dir.joinpath(LOG_DIR_NAME, f"{run_id}.log.jsonl")
 
     _run_name.set(run_name)
     _run_id.set(run_id)
@@ -115,17 +115,13 @@ def _emit_stderr(record: LogRecord) -> None:
 def _detect_source() -> str:
     frame = inspect.currentframe()
     try:
-        if frame is None:
-            return "<unknown>"
-
-        caller = frame.f_back
-        if caller is None:
-            return "<unknown>"
-
-        module = inspect.getmodule(caller)
-        if module and module.__name__:
-            return module.__name__
-
+        while frame:
+            module = inspect.getmodule(frame)
+            if module and module.__name__:
+                name = module.__name__
+                if not name.startswith("ddbj_search_converter.logging"):
+                    return name
+            frame = frame.f_back
         return "<unknown>"
     finally:
         del frame

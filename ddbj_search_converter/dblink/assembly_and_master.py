@@ -36,12 +36,10 @@ from typing import Iterable, Set
 
 import httpx
 
-from ddbj_search_converter.config import (DBLINK_BASE_PATH, TRAD_BASE_PATH,
-                                          Config, get_config)
+from ddbj_search_converter.config import TRAD_BASE_PATH, Config, get_config
 from ddbj_search_converter.logging.logger import init_logger, log
 
 ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt"
-ASSEMBLY_SUMMARY_FILE_NAME = "assembly_summary_genbank.txt"
 
 TRAD_FILES = [
     TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt"),
@@ -51,12 +49,6 @@ TRAD_FILES = [
     TRAD_BASE_PATH.joinpath("tpa/tsa/TPA_TSA_ORGANISM_LIST.txt"),
     TRAD_BASE_PATH.joinpath("tpa/tls/TPA_TLS_ORGANISM_LIST.txt"),
 ]
-
-ASSEMBLY_TO_INSDC_OUTPUT_FILE = DBLINK_BASE_PATH.joinpath("assembly_genome-insdc/assembly_genome2insdc.tsv")
-ASSEMBLY_TO_BP_OUTPUT_FILE = DBLINK_BASE_PATH.joinpath("assembly_genome-bp/assembly_genome2bp.tsv")
-ASSEMBLY_TO_BS_OUTPUT_FILE = DBLINK_BASE_PATH.joinpath("assembly_genome-bs/assembly_genome2bs.tsv")
-INSDC_MASTER_TO_BP_OUTPUT_FILE = DBLINK_BASE_PATH.joinpath("insdc_master-bioproject/insdc_master2bioproject.tsv")
-INSDC_MASTER_TO_BS_OUTPUT_FILE = DBLINK_BASE_PATH.joinpath("insdc_master-biosample/insdc_master2biosample.tsv")
 
 
 def normalize_insdc_master_id(raw_master_id: str) -> str:
@@ -72,56 +64,14 @@ def normalize_insdc_master_id(raw_master_id: str) -> str:
     return "".join("0" if char.isdigit() else char for char in base_id)
 
 
-def write_sorted_lines(output_file: Path, lines: Iterable[str]) -> None:
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    with output_file.open("w", encoding="utf-8") as file:
-        for line in sorted(lines):
-            file.write(line + "\n")
-
-    log(event="progress", message=f"written {output_file}", target={"file": str(output_file)})
-
-
-def download_assembly_summary_file(config: Config) -> Path:
-    assembly_summary_file = config.work_dir.joinpath(ASSEMBLY_SUMMARY_FILE_NAME)
-
-    log(
-        event="progress",
-        message="downloading assembly_summary_genbank.txt",
-        target={"file": str(assembly_summary_file)},
-        extra={"url": ASSEMBLY_SUMMARY_URL}
-    )
-
-    assembly_summary_file.parent.mkdir(parents=True, exist_ok=True)
-
-    with httpx.Client(follow_redirects=True, timeout=60.0) as client:
-        with client.stream("GET", ASSEMBLY_SUMMARY_URL) as response:
-            response.raise_for_status()
-
-            with assembly_summary_file.open("wb") as f:
-                for chunk in response.iter_bytes():
-                    f.write(chunk)
-
-    log(
-        event="progress",
-        message="assembly summary file downloaded",
-        target={"file": str(assembly_summary_file)},
-        extra={"url": ASSEMBLY_SUMMARY_URL}
-    )
-
-    return assembly_summary_file
-
-
 def process_assembly_summary_file(
-    config: Config,
     assembly_to_bp: Set[str],
     assembly_to_bs: Set[str],
     assembly_to_insdc: Set[str],
     master_to_bp: Set[str],
     master_to_bs: Set[str],
 ) -> None:
-    assembly_summary_file = download_assembly_summary_file(config)
-
-    log(event="progress", message="processing assembly_summary_genbank.txt", target={"file": str(assembly_summary_file)})
+    log(event="progress", message="streaming assembly_summary_genbank.txt", extra={"url": ASSEMBLY_SUMMARY_URL})
 
     relations = [
         ("asm", "bp", assembly_to_bp),
@@ -131,27 +81,30 @@ def process_assembly_summary_file(
         ("master", "bs", master_to_bs),
     ]
 
-    with assembly_summary_file.open("r", encoding="utf-8") as f:
-        for line in f:
-            if line.startswith("#"):
-                continue
+    with httpx.Client(follow_redirects=True, timeout=60.0) as client:
+        with client.stream("GET", ASSEMBLY_SUMMARY_URL) as response:
+            response.raise_for_status()
 
-            cols = line.rstrip("\r\n").split("\t")
-            if len(cols) < 4:
-                continue
+            for line in response.iter_lines():
+                if not line or line.startswith("#"):
+                    continue
 
-            values = {
-                "asm": cols[0].split(".", 1)[0],
-                "bp": cols[1],
-                "bs": cols[2],
-                "master": cols[3].split(".", 1)[0],
-            }
+                cols = line.rstrip("\r\n").split("\t")
+                if len(cols) < 4:
+                    continue
 
-            for left, right, target_set in relations:
-                l = values[left]
-                r = values[right]
-                if l != "na" and r != "na":
-                    target_set.add(f"{l}\t{r}")
+                values = {
+                    "asm": cols[0].split(".", 1)[0],
+                    "bp": cols[1],
+                    "bs": cols[2],
+                    "master": cols[3].split(".", 1)[0],
+                }
+
+                for left, right, target_set in relations:
+                    l = values[left]
+                    r = values[right]
+                    if l != "na" and r != "na":
+                        target_set.add(f"{l}\t{r}")
 
 
 def process_trad_files(
@@ -204,16 +157,15 @@ def main() -> None:
         process_assembly_summary_file(config, assembly_to_bp, assembly_to_bs, assembly_to_insdc, master_to_bp, master_to_bs,)
         process_trad_files(master_to_bp, master_to_bs)
 
-        log(event="progress", message="writing output files")
+        # log(event="progress", message="writing output files")
 
-        write_sorted_lines(ASSEMBLY_TO_BP_OUTPUT_FILE, assembly_to_bp)
-        write_sorted_lines(ASSEMBLY_TO_BS_OUTPUT_FILE, assembly_to_bs)
-        write_sorted_lines(ASSEMBLY_TO_INSDC_OUTPUT_FILE, assembly_to_insdc)
-        write_sorted_lines(INSDC_MASTER_TO_BP_OUTPUT_FILE, master_to_bp)
-        write_sorted_lines(INSDC_MASTER_TO_BS_OUTPUT_FILE, master_to_bs)
+        # write_sorted_lines(ASSEMBLY_TO_BP_OUTPUT_FILE, assembly_to_bp)
+        # write_sorted_lines(ASSEMBLY_TO_BS_OUTPUT_FILE, assembly_to_bs)
+        # write_sorted_lines(ASSEMBLY_TO_INSDC_OUTPUT_FILE, assembly_to_insdc)
+        # write_sorted_lines(INSDC_MASTER_TO_BP_OUTPUT_FILE, master_to_bp)
+        # write_sorted_lines(INSDC_MASTER_TO_BS_OUTPUT_FILE, master_to_bs)
 
         log(event="end", message="relation generation completed")
-
     except Exception as e:
         log(event="failed", error=e)
         raise e
