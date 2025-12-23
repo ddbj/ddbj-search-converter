@@ -12,6 +12,8 @@ RunName = Literal[
     "init_dblink_db",
     "create_dblink_assembly_and_master_relations",
 
+    "build_sra_dra_accessions_db",
+
     # "create_dblink_assembly_and_master_relations",
 
     # "create_es_index",

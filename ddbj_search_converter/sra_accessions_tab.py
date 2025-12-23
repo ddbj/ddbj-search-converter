@@ -3,85 +3,149 @@
 - relation ids (dbXrefs) の bulk insert のために使われる
 """
 import datetime
+import shutil
 from pathlib import Path
-from typing import Dict, Set
+from typing import Iterator, Literal, Tuple
 
 import duckdb
-import httpx
 
-from ddbj_search_converter.config import AccessionType, Config
+from ddbj_search_converter.config import TODAY, Config, get_config
+from ddbj_search_converter.logging.logger import init_logger, log
+from ddbj_search_converter.logging.schema import Target
 
-DRA_ACCESSION_TAB_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public")
-SRA_ACCESSION_TAB_BASE_PATH = Path()
+DRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public")
+SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions")
 
-SRA_ACCESSIONS_FILE_NAME = "SRA_Accessions.tab"
+TABLE_NAME = "accessions"
+
+SRA_DB_FILE_NAME = "sra_accessions.duckdb"
+TMP_SRA_DB_FILE_NAME = "sra_accessions.tmp.duckdb"
+
+DRA_DB_FILE_NAME = "dra_accessions.duckdb"
+TMP_DRA_DB_FILE_NAME = "dra_accessions.tmp.duckdb"
 
 
-def find_latest_sra_accessions_tab_file(config: Config) -> Path:
-    """\
-    - スパコン上の SRA_Accessions.tab file の位置として、/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions 以下に存在する
-    - `{year}/{month}/SRA_Accessions.tab.{yyyymmdd}` という path で保存されている
-    - Today から遡って、最初に見つかったファイルを返す
+# =============================================================================
+# DB path helpers
+# =============================================================================
+
+
+def _tmp_sra_db_path(config: Config) -> Path:
+    return config.const_dir.joinpath("sra", TMP_SRA_DB_FILE_NAME)
+
+
+def _final_sra_db_path(config: Config) -> Path:
+    return config.const_dir.joinpath("sra", SRA_DB_FILE_NAME)
+
+
+def _tmp_dra_db_path(config: Config) -> Path:
+    return config.const_dir.joinpath("sra", TMP_DRA_DB_FILE_NAME)
+
+
+def _final_dra_db_path(config: Config) -> Path:
+    return config.const_dir.joinpath("sra", DRA_DB_FILE_NAME)
+
+
+# =============================================================================
+# Locate latest accession files
+# =============================================================================
+
+
+def find_latest_sra_accessions_tab_file() -> Path:
     """
-    today = datetime.date.today()
-    for days in range(180):  # Search for the last 180 days
-        check_date = today - datetime.timedelta(days=days)
-        year, month, yyyymmdd = check_date.strftime("%Y"), check_date.strftime("%m"), check_date.strftime("%Y%m%d")
-        sra_accessions_tab_file_path = config.sra_accessions_tab_base_path.joinpath(f"{year}/{month}/SRA_Accessions.tab.{yyyymmdd}")  # type: ignore
-        if sra_accessions_tab_file_path.exists():
-            return sra_accessions_tab_file_path
+    Search backward from TODAY to find the latest SRA_Accessions.tab.YYYYMMDD.
+    """
+    for days in range(180):
+        check_date = TODAY - datetime.timedelta(days=days)
+        year = check_date.strftime("%Y")
+        month = check_date.strftime("%m")
+        yyyymmdd = check_date.strftime("%Y%m%d")
 
-    raise FileNotFoundError("SRA_Accessions.tab file not found in the last 180 days")
+        path = SRA_ACCESSIONS_BASE_PATH.joinpath(
+            f"{year}/{month}/SRA_Accessions.tab.{yyyymmdd}"
+        )
+        if path.exists():
+            return path
 
-
-SRA_ACCESSIONS_TAB_FILE_PATH = Path(
-    "/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions/2025/11/SRA_Accessions.tab.20251125"
-)
-
-TABLE_NAME = "sra_accessions"
-
-
-SRA_SCHEMA_SQL = """
-    Accession     VARCHAR,
-    Submission    VARCHAR,
-    Status        VARCHAR,
-    Updated       TIMESTAMP,
-    Published     TIMESTAMP,
-    Received      TIMESTAMP,
-    Type          VARCHAR,
-    Center        VARCHAR,
-    Visibility    VARCHAR,
-    Alias         VARCHAR,
-    Experiment    VARCHAR,
-    Sample        VARCHAR,
-    Study         VARCHAR,
-    Loaded        VARCHAR,
-    Spots         BIGINT,
-    Bases         BIGINT,
-    Md5sum        VARCHAR,
-    BioSample     VARCHAR,
-    BioProject    VARCHAR,
-    ReplacedBy    VARCHAR
-"""
+    raise FileNotFoundError("SRA_Accessions.tab not found in last 180 days")
 
 
-def tsv_to_parquet(
+def find_latest_dra_accessions_tab_file() -> Path:
+    """
+    Search backward from TODAY to find the latest DRA_Accessions.tab.
+    """
+    for days in range(180):
+        check_date = TODAY - datetime.timedelta(days=days)
+        yyyymmdd = check_date.strftime("%Y%m%d")
+
+        path = DRA_ACCESSIONS_BASE_PATH.joinpath(
+            f"{yyyymmdd}.DRA_Accessions.tab"
+        )
+        if path.exists():
+            return path
+
+    raise FileNotFoundError("DRA_Accessions.tab not found in last 180 days")
+
+
+# =============================================================================
+# DB initialization and loading
+# =============================================================================
+
+
+def init_accession_db(tmp_db_path: Path) -> None:
+    """
+    Initialize an empty tmp accession DB.
+    """
+    if tmp_db_path.exists():
+        tmp_db_path.unlink()
+
+    with duckdb.connect(tmp_db_path) as conn:
+        conn.execute(
+            """
+            CREATE TABLE accessions (
+                Accession   TEXT,
+                BioSample   TEXT,
+                BioProject  TEXT,
+                Study       TEXT,
+                Experiment  TEXT,
+                Type        TEXT,
+                Status      TEXT,
+                Visibility  TEXT,
+                Updated     TIMESTAMP,
+                Published   TIMESTAMP,
+                Received    TIMESTAMP
+            )
+            """
+        )
+
+        conn.execute("CREATE INDEX idx_bp ON accessions(BioProject)")
+        conn.execute("CREATE INDEX idx_bs ON accessions(BioSample)")
+        conn.execute("CREATE INDEX idx_acc ON accessions(Accession)")
+
+
+def load_tsv_to_tmp_db(
     tsv_path: Path,
-    parquet_path: Path,
-    overwrite: bool = True,
+    tmp_db_path: Path,
 ) -> None:
-    if parquet_path.exists():
-        if overwrite:
-            parquet_path.unlink()
-        else:
-            raise FileExistsError(parquet_path)
-
-    con = duckdb.connect()
-
-    con.execute(
-        f"""
-        COPY (
-            SELECT *
+    """
+    Load TSV directly into DuckDB using read_csv.
+    """
+    with duckdb.connect(tmp_db_path) as conn:
+        conn.execute(
+            f"""
+            INSERT INTO accessions
+            SELECT
+                Accession,
+                BioSample,
+                BioProject,
+                Study,
+                Experiment,
+                Type,
+                Status,
+                Visibility,
+                CAST(Updated AS TIMESTAMP),
+                CAST(Published AS TIMESTAMP),
+                CAST(Received AS TIMESTAMP)
             FROM read_csv(
                 '{tsv_path}',
                 delim='\\t',
@@ -89,71 +153,124 @@ def tsv_to_parquet(
                 nullstr='-',
                 all_varchar=true
             )
+            """
         )
-        TO '{parquet_path}'
-        (FORMAT PARQUET)
-        """
+
+
+def finalize_db(tmp_path: Path, final_path: Path) -> None:
+    """
+    Atomically replace final DB with tmp DB.
+    """
+    if final_path.exists():
+        final_path.unlink()
+    shutil.move(str(tmp_path), str(final_path))
+
+
+# =============================================================================
+# Public builders
+# =============================================================================
+
+
+def build_sra_accessions_db(config: Config) -> Path:
+    """
+    Build sra_accessions.duckdb from the latest SRA_Accessions.tab.
+    """
+    tsv_path = find_latest_sra_accessions_tab_file()
+    tmp_db = _tmp_sra_db_path(config)
+    final_db = _final_sra_db_path(config)
+
+    init_accession_db(tmp_db)
+    load_tsv_to_tmp_db(tsv_path, tmp_db)
+    finalize_db(tmp_db, final_db)
+
+    return final_db
+
+
+def build_dra_accessions_db(config: Config) -> Path:
+    """
+    Build dra_accessions.duckdb from the latest DRA_Accessions.tab.
+    """
+    tsv_path = find_latest_dra_accessions_tab_file()
+    tmp_db = _tmp_dra_db_path(config)
+    final_db = _final_dra_db_path(config)
+
+    init_accession_db(tmp_db)
+    load_tsv_to_tmp_db(tsv_path, tmp_db)
+    finalize_db(tmp_db, final_db)
+
+    return final_db
+
+
+# =============================================================================
+# Relation extraction
+# =============================================================================
+
+
+SourceKind = Literal["sra", "dra"]
+
+
+def iter_bp_bs_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Iterate BioProject <-> BioSample relations.
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
     )
 
-    con.close()
-    print(f"TSV → Parquet: {parquet_path}")
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioProject,
+                BioSample
+            FROM accessions
+            WHERE
+                BioProject IS NOT NULL
+                AND BioSample IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
 
 
-def load_parquet_to_duckdb(
-    parquet_path: Path,
-    db_path: Path,
-    table_name: str = TABLE_NAME,
-    overwrite: bool = True,
-) -> None:
-    con = duckdb.connect(db_path)
+# =============================================================================
+# main
+# =============================================================================
 
-    if overwrite:
-        con.execute(f"DROP TABLE IF EXISTS {table_name}")
 
-    con.execute(
-        f"""
-        CREATE TABLE {table_name} (
-            {SRA_SCHEMA_SQL}
-        )
-        """
+def main() -> None:
+    config = get_config()
+    init_logger(
+        run_name="build_sra_dra_accessions_db",
+        config=config,
+    )
+    log(
+        event="start",
+        message="building SRA and DRA accessions databases",
+        extra={"config": config.model_dump()}
     )
 
-    con.execute(
-        f"""
-        INSERT INTO {table_name}
-        SELECT *
-        FROM parquet_scan('{parquet_path}')
-        """
-    )
+    try:
+        log(event="progress", message="building SRA accessions database")
 
-    con.close()
-    print(f"Parquet → DuckDB: {db_path}:{table_name}")
+        sra_final_db = build_sra_accessions_db(config)
+        log(event="progress", message=f"SRA accessions database built at {sra_final_db}", target=Target(file=str(sra_final_db)))
+
+        log(event="progress", message="building DRA accessions database")
+        dra_final_db = build_dra_accessions_db(config)
+        log(event="progress", message=f"DRA accessions database built at {dra_final_db}", target=Target(file=str(dra_final_db)))
+
+        log(event="end", message="SRA and DRA accessions databases built successfully")
+    except Exception as e:
+        log(event="failed", error=e)
+        raise e
 
 
-def tsv_to_duckdb_direct(
-    tsv_path: Path,
-    db_path: Path,
-    table_name: str = TABLE_NAME,
-    overwrite: bool = True,
-) -> None:
-    con = duckdb.connect(db_path)
-
-    if overwrite:
-        con.execute(f"DROP TABLE IF EXISTS {table_name}")
-
-    con.execute(
-        f"""
-        CREATE TABLE {table_name} AS
-        SELECT *
-        FROM read_csv(
-            '{tsv_path}',
-            delim='\\t',
-            header=true,
-            nullstr='-',
-            all_varchar=true
-        )
-        """
-    )
-
-    con.close()
-    print(f"TSV → DuckDB (direct): {db_path}:{table_name}")
+if __name__ == "__main__":
+    main()

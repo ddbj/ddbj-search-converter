@@ -13,7 +13,6 @@ dependencies = [
     "duckdb",
     "elasticsearch>=8,<9",
     "httpx",
-    "pandas",
     "pydantic",
     "xmltodict",
 ]
@@ -37,6 +36,7 @@ tests = [
 [project.scripts]
 init_dblink_db = "ddbj_search_converter.cli.init_dblink_db:main"
 create_dblink_assembly_and_master_relations = "ddbj_search_converter.dblink.assembly_and_master:main"
+build_sra_and_dra_accessions_db = "ddbj_search_converter.sra_accessions_tab:main"
 # create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 # create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 # create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
