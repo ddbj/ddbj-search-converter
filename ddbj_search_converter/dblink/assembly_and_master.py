@@ -25,8 +25,7 @@ import httpx
 
 from ddbj_search_converter.config import TRAD_BASE_PATH, Config, get_config
 from ddbj_search_converter.dblink.db import (AccessionType, Relation,
-                                             bulk_insert_relations,
-                                             create_connection)
+                                             bulk_insert_relations)
 from ddbj_search_converter.logging.logger import init_logger, log
 
 ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt"
@@ -137,8 +136,7 @@ def load_to_db(
         for src_id, dst_id in lines:
             yield (type_src, src_id, type_dst, dst_id)
 
-    with create_connection(config) as conn:
-        bulk_insert_relations(conn, line_generator())
+    bulk_insert_relations(config, line_generator())
 
 
 def main() -> None:

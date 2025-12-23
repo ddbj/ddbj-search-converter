@@ -18,6 +18,7 @@ SRA_JSONL_DIR_NAME = "sra_jsonl"
 JGA_JSONL_DIR_NAME = "jga_jsonl"
 LOG_DIR_NAME = "logs"
 
+
 TRAD_BASE_PATH = Path("/lustre9/open/shared_data/trad")
 # DBLINK_BASE_PATH = Path("/lustre9/open/shared_data/dblink")
 DBLINK_BASE_PATH = RESULT_DIR.joinpath("dblink")  # TODO: for test

@@ -9,15 +9,21 @@ services:
       - ${PWD}:/app:rw
       - ${PWD}/ddbj_search_converter_results:/app/ddbj_search_converter_results:rw
       - /home/w3ddbjld/const:/home/w3ddbjld/const:rw
-      # # 遺伝研スパコン内の resource
-      # - /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:/lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:ro
-      # - /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:/lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:ro
+      # 遺伝研スパコン内の resource
+      # SRA / DRA Accessions tab file
+      - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
+      - /lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:ro
+      # for DBLink files generation
+      - /lustre9/open/shared_data/gea/experiment:/lustre9/open/shared_data/gea/experiment:ro
+      - /lustre9/open/shared_data/metabobank/study:/lustre9/open/shared_data/metabobank/study:ro
       - /lustre9/open/shared_data/trad:/lustre9/open/shared_data/trad:ro
       # - /lustre9/open/shared_data/dblink:/lustre9/open/shared_data/dblink:rw
-      - /lustre9/open/shared_data/metabobank/study:/lustre9/open/shared_data/metabobank/study:ro
-      - /lustre9/open/shared_data/gea/experiment:/lustre9/open/shared_data/gea/experiment:ro
-      - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
+      # BP / BS resource
+      # - /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:/lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:ro
+      # - /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:/lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:ro
+      # SRA / DRA resource
       # - /lustre9/open/shared_data/dra:/lustre9/open/shared_data/dra:ro
+      # JGA resource
       # - /lustre9/open/shared_data/jga/metadata-history/metadata:/lustre9/open/shared_data/jga/metadata-history/metadata:ro
     environment:
       DDBJ_SEARCH_CONVERTER_RESULT_DIR: "/app/ddbj_search_converter_results"
