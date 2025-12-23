@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 RunName = Literal[
     # DBLink 関連
     "init_dblink_db",
+    "create_dblink_assembly_and_master_relations",
 
     # "create_dblink_assembly_and_master_relations",
 

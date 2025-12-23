@@ -44,6 +44,17 @@ def normalize_edge(
     return b_type, b_id, a_type, a_id
 
 
+def create_connection(
+    config: Config,
+) -> DuckDBPyConnection:
+    """
+    Create a connection to the dblink relation database.
+    """
+    db_path = config.const_dir.joinpath(DB_FILE_NAME)
+    conn = duckdb.connect(str(db_path))
+    return conn
+
+
 def init_dblink_db(config: Config) -> DuckDBPyConnection:
     """
     Initialize a new dblink relation database.
