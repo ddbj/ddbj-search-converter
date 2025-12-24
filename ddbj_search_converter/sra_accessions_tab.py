@@ -96,6 +96,7 @@ def init_accession_db(tmp_db_path: Path) -> None:
     """
     Initialize an empty tmp accession DB.
     """
+    tmp_dir_path.parent.mkdir(parents=True, exist_ok=True)
     if tmp_db_path.exists():
         tmp_db_path.unlink()
 
@@ -117,10 +118,6 @@ def init_accession_db(tmp_db_path: Path) -> None:
             )
             """
         )
-
-        conn.execute("CREATE INDEX idx_bp ON accessions(BioProject)")
-        conn.execute("CREATE INDEX idx_bs ON accessions(BioSample)")
-        conn.execute("CREATE INDEX idx_acc ON accessions(Accession)")
 
 
 def load_tsv_to_tmp_db(
@@ -161,8 +158,14 @@ def finalize_db(tmp_path: Path, final_path: Path) -> None:
     """
     Atomically replace final DB with tmp DB.
     """
+    with duckdb.connect(tmp_path) as conn:
+        conn.execute("CREATE INDEX idx_bp ON accessions(BioProject)")
+        conn.execute("CREATE INDEX idx_bs ON accessions(BioSample)")
+        conn.execute("CREATE INDEX idx_acc ON accessions(Accession)")
+
     if final_path.exists():
         final_path.unlink()
+
     shutil.move(str(tmp_path), str(final_path))
 
 

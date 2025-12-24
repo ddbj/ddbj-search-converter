@@ -68,22 +68,15 @@ def init_dblink_db(config: Config) -> None:
                 dst_accession TEXT
             )
         """)
-        conn.execute("""
-            CREATE UNIQUE INDEX idx_relation_unique
-            ON relation (src_type, src_accession, dst_type, dst_accession)
-        """)
-        conn.execute(
-            "CREATE INDEX idx_relation_src ON relation (src_type, src_accession);"
-        )
-        conn.execute(
-            "CREATE INDEX idx_relation_dst ON relation (dst_type, dst_accession);"
-        )
 
 
 def finalize_relation_db(config: Config) -> None:
     """
     Atomically replace final DB with tmp DB.
     """
+    deduplicate_relations(config)
+    create_relation_indexes(config)
+
     tmp_path = _tmp_db_path(config)
     final_path = _final_db_path(config)
 
@@ -112,10 +105,7 @@ def insert_relation(
     )
     with duckdb.connect(str(db_path)) as conn:
         conn.execute(
-            """
-            INSERT OR IGNORE INTO relation
-            VALUES (?, ?, ?, ?)
-            """,
+            "INSERT relationVALUES (?, ?, ?, ?)",
             (s_type, s_id, d_type, d_id),
         )
 
@@ -136,10 +126,7 @@ def bulk_insert_relations(
         def flush() -> None:
             if buffer:
                 conn.executemany(
-                    """
-                    INSERT OR IGNORE INTO relation
-                    VALUES (?, ?, ?, ?)
-                    """,
+                    "INSERT INTO relationVALUES (?, ?, ?, ?)",
                     buffer,
                 )
                 buffer.clear()
@@ -149,6 +136,36 @@ def bulk_insert_relations(
             if len(buffer) >= chunk_size:
                 flush()
         flush()
+
+
+def deduplicate_relations(config: Config) -> None:
+    db_path = _tmp_db_path(config)
+    with duckdb.connect(str(db_path)) as conn:
+        conn.execute("""
+            CREATE TABLE relation_dedup AS
+            SELECT DISTINCT
+                src_type, src_accession, dst_type, dst_accession
+            FROM relation
+        """)
+        conn.execute("DROP TABLE relation")
+        conn.execute("ALTER TABLE relation_dedup RENAME TO relation")
+
+
+def create_relation_indexes(config: Config) -> None:
+    db_path = _tmp_db_path(config)
+    with duckdb.connect(str(db_path)) as conn:
+        conn.execute("""
+            CREATE UNIQUE INDEX idx_relation_unique
+            ON relation (src_type, src_accession, dst_type, dst_accession)
+        """)
+        conn.execute("""
+            CREATE INDEX idx_relation_src
+            ON relation (src_type, src_accession)
+        """)
+        conn.execute("""
+            CREATE INDEX idx_relation_dst
+            ON relation (dst_type, dst_accession)
+        """)
 
 
 # === Read operations ===
