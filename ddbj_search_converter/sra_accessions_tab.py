@@ -127,7 +127,7 @@ def load_tsv_to_tmp_db(
     TSV ファイルを DuckDB に直接ロードする。
 
     DuckDB の read_csv() を使用して効率的にロードする。
-    '-' は NULL として扱われる。
+    '-' と空文字列は NULL として扱われる。
 
     Args:
         tsv_path: 入力 TSV ファイルパス
@@ -146,9 +146,9 @@ def load_tsv_to_tmp_db(
                 Type,
                 Status,
                 Visibility,
-                CAST(Updated AS TIMESTAMP),
-                CAST(Published AS TIMESTAMP),
-                CAST(Received AS TIMESTAMP)
+                CAST(NULLIF(Updated, '') AS TIMESTAMP),
+                CAST(NULLIF(Published, '') AS TIMESTAMP),
+                CAST(NULLIF(Received, '') AS TIMESTAMP)
             FROM read_csv(
                 '{tsv_path}',
                 delim='\\t',

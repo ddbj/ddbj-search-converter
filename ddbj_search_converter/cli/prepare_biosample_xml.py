@@ -11,23 +11,16 @@ gzip 圧縮された BioSample XML を展開し、batch 単位で分割する。
 出力:
 - {result_dir}/biosample/tmp_xml/{YYYYMMDD}/ncbi_{n}.xml
 - {result_dir}/biosample/tmp_xml/{YYYYMMDD}/ddbj_{n}.xml
-
-使用方法:
-    prepare_biosample_xml
-    prepare_biosample_xml --batch-size 5000
 """
-import argparse
 from pathlib import Path
 from typing import List
 
-from ddbj_search_converter.config import (
-    DDBJ_BIOSAMPLE_XML,
-    NCBI_BIOSAMPLE_XML,
-    Config,
-    get_config,
-)
+from ddbj_search_converter.config import (DDBJ_BIOSAMPLE_XML,
+                                          NCBI_BIOSAMPLE_XML, Config,
+                                          get_config)
 from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
-from ddbj_search_converter.xml_utils import extract_gzip, get_tmp_xml_dir, split_xml
+from ddbj_search_converter.xml_utils import (extract_gzip, get_tmp_xml_dir,
+                                             split_xml)
 
 DEFAULT_BATCH_SIZE = 10000
 
@@ -72,31 +65,18 @@ def process_biosample_xml(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Prepare BioSample XML files for parallel processing"
-    )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=DEFAULT_BATCH_SIZE,
-        help=f"Number of elements per file (default: {DEFAULT_BATCH_SIZE})",
-    )
-
-    args = parser.parse_args()
     config = get_config()
 
     with run_logger(config=config):
-        log_info(f"batch_size={args.batch_size}")
-
         # Process NCBI BioSample XML
         ncbi_files = process_biosample_xml(
-            config, NCBI_BIOSAMPLE_XML, "ncbi", args.batch_size
+            config, NCBI_BIOSAMPLE_XML, "ncbi", DEFAULT_BATCH_SIZE,
         )
         log_info(f"created {len(ncbi_files)} NCBI BioSample XML files")
 
         # Process DDBJ BioSample XML
         ddbj_files = process_biosample_xml(
-            config, DDBJ_BIOSAMPLE_XML, "ddbj", args.batch_size
+            config, DDBJ_BIOSAMPLE_XML, "ddbj", DEFAULT_BATCH_SIZE,
         )
         log_info(f"created {len(ddbj_files)} DDBJ BioSample XML files")
 
