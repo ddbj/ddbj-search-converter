@@ -34,6 +34,9 @@ import httpx
 from ddbj_search_converter.config import (ASSEMBLY_SUMMARY_URL, TRAD_BASE_PATH,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
+                                                filter_pairs_by_blacklist,
+                                                load_blacklist)
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 TRAD_FILES = [
@@ -139,6 +142,8 @@ def process_trad_files(
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
+        bp_blacklist, bs_blacklist = load_blacklist(config)
+
         assembly_to_bp: IdPairs = set()
         assembly_to_bs: IdPairs = set()
         assembly_to_insdc: IdPairs = set()
@@ -155,6 +160,13 @@ def main() -> None:
             bs_to_bp,
         )
         process_trad_files(master_to_bp, master_to_bs)
+
+        # Apply blacklist filters
+        assembly_to_bp = filter_pairs_by_blacklist(assembly_to_bp, bp_blacklist, "right")
+        assembly_to_bs = filter_pairs_by_blacklist(assembly_to_bs, bs_blacklist, "right")
+        master_to_bp = filter_pairs_by_blacklist(master_to_bp, bp_blacklist, "right")
+        master_to_bs = filter_pairs_by_blacklist(master_to_bs, bs_blacklist, "right")
+        bs_to_bp = filter_by_blacklist(bs_to_bp, bp_blacklist, bs_blacklist)
 
         log_info("loading relations into dblink database")
 

@@ -15,6 +15,7 @@ from typing import Iterator, Optional, Set, Tuple
 
 from ddbj_search_converter.config import GEA_BASE_PATH, get_config
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.idf_sdrf import parse_idf_file, parse_sdrf_file
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 
@@ -32,43 +33,6 @@ def iterate_gea_dirs(base_path: Path) -> Iterator[Path]:
         for gea_dir in sorted(prefix_dir.iterdir()):
             if gea_dir.is_dir() and gea_dir.name.startswith("E-GEAD-"):
                 yield gea_dir
-
-
-def parse_idf_file(idf_path: Path) -> Optional[str]:
-    """IDF ファイルから BioProject ID を抽出する。"""
-    with idf_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("Comment[BioProject]"):
-                parts = line.split("\t")
-                if len(parts) >= 2 and parts[1]:
-                    return parts[1].strip()
-    return None
-
-
-def parse_sdrf_file(sdrf_path: Path) -> Set[str]:
-    """SDRF ファイルから BioSample ID を抽出する。"""
-    result: Set[str] = set()
-
-    with sdrf_path.open("r", encoding="utf-8") as f:
-        header = f.readline().strip().split("\t")
-
-        # Comment[BioSample] カラムのインデックスを取得
-        bs_index = -1
-        for i, col in enumerate(header):
-            if col == "Comment[BioSample]":
-                bs_index = i
-                break
-
-        if bs_index < 0:
-            return result
-
-        for line in f:
-            cols = line.strip().split("\t")
-            if bs_index < len(cols) and cols[bs_index]:
-                result.add(cols[bs_index].strip())
-
-    return result
 
 
 def process_gea_dir(gea_dir: Path) -> Tuple[str, Optional[str], Set[str]]:

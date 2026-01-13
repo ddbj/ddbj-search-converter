@@ -37,66 +37,20 @@ dump_dblink_files CLI コマンドで出力する。
 import xml.etree.ElementTree as ET
 from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
-from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
-                                          BPBS_PRESERVED_REL_PATH,
-                                          BS_BLACKLIST_REL_PATH,
+from ddbj_search_converter.config import (BPBS_PRESERVED_REL_PATH,
                                           DRA_DB_FILE_NAME, SRA_DB_FILE_NAME,
                                           Config, get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
+                                                load_blacklist)
 from ddbj_search_converter.logging.logger import (log_error, log_info,
                                                   log_warn, run_logger)
 from ddbj_search_converter.sra_accessions_tab import iter_bp_bs_relations
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir
 
 DEFAULT_PARALLEL_NUM = 32
-
-
-def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
-    bp_blacklist_path = config.const_dir.joinpath(BP_BLACKLIST_REL_PATH)
-    bs_blacklist_path = config.const_dir.joinpath(BS_BLACKLIST_REL_PATH)
-
-    bp_blacklist: Set[str] = set()
-    bs_blacklist: Set[str] = set()
-
-    if bp_blacklist_path.exists():
-        bp_blacklist = set(bp_blacklist_path.read_text(encoding="utf-8").strip().split("\n"))
-        bp_blacklist.discard("")  # Remove empty strings
-        log_info(f"loaded {len(bp_blacklist)} BioProject blacklist entries",
-                 file=str(bp_blacklist_path))
-    else:
-        log_warn(f"BioProject blacklist not found, skipping: {bp_blacklist_path}",
-                 file=str(bp_blacklist_path))
-
-    if bs_blacklist_path.exists():
-        bs_blacklist = set(bs_blacklist_path.read_text(encoding="utf-8").strip().split("\n"))
-        bs_blacklist.discard("")  # Remove empty strings
-        log_info(f"loaded {len(bs_blacklist)} BioSample blacklist entries",
-                 file=str(bs_blacklist_path))
-    else:
-        log_warn(f"BioSample blacklist not found, skipping: {bs_blacklist_path}",
-                 file=str(bs_blacklist_path))
-
-    return bp_blacklist, bs_blacklist
-
-
-def filter_by_blacklist(
-    bs_to_bp: IdPairs,
-    bp_blacklist: Set[str],
-    bs_blacklist: Set[str],
-) -> IdPairs:
-    original_count = len(bs_to_bp)
-    filtered = {
-        (bs, bp) for bs, bp in bs_to_bp
-        if bs not in bs_blacklist and bp not in bp_blacklist
-    }
-    removed_count = original_count - len(filtered)
-
-    if removed_count > 0:
-        log_info(f"removed {removed_count} relations by blacklist")
-
-    return filtered
 
 
 # === XML processing functions ===

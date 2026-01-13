@@ -22,6 +22,10 @@ Outputs:
     - Mapping: GEA ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv
     - Mapping: GEA ID -> BioSample ID
+- /lustre9/open/shared_data/dblink/metabobank-bioproject/metabobank2bioproject.tsv
+    - Mapping: MetaboBank ID -> BioProject ID
+- /lustre9/open/shared_data/dblink/metabobank-biosample/metabobank2biosample.tsv
+    - Mapping: MetaboBank ID -> BioSample ID
 """
 from typing import List, Tuple
 
@@ -41,6 +45,8 @@ EXPORT_RELATIONS: List[Tuple[AccessionType, AccessionType, str]] = [
     ("bioproject", "umbrella-bioproject", "bioproject-umbrella/bioproject2umbrella.tsv"),
     ("gea", "bioproject", "gea-bioproject/gea2bioproject.tsv"),
     ("gea", "biosample", "gea-biosample/gea2biosample.tsv"),
+    ("metabobank", "bioproject", "metabobank-bioproject/metabobank2bioproject.tsv"),
+    ("metabobank", "biosample", "metabobank-biosample/metabobank2biosample.tsv"),
 ]
 
 
