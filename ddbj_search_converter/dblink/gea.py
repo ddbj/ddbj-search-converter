@@ -15,7 +15,10 @@ from typing import Iterator, Optional, Set, Tuple
 
 from ddbj_search_converter.config import GEA_BASE_PATH, get_config
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.idf_sdrf import parse_idf_file, parse_sdrf_file
+from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
+                                                   parse_sdrf_file)
+from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
+                                                load_blacklist)
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 
@@ -60,6 +63,8 @@ def process_gea_dir(gea_dir: Path) -> Tuple[str, Optional[str], Set[str]]:
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
+        bp_blacklist, bs_blacklist = load_blacklist(config)
+
         gea_to_bp: IdPairs = set()
         gea_to_bs: IdPairs = set()
 
@@ -77,6 +82,10 @@ def main() -> None:
         log_info(f"processed {dir_count} GEA directories")
         log_info(f"extracted {len(gea_to_bp)} GEA -> BioProject relations")
         log_info(f"extracted {len(gea_to_bs)} GEA -> BioSample relations")
+
+        # Blacklist 適用
+        gea_to_bp = filter_pairs_by_blacklist(gea_to_bp, bp_blacklist, "right")
+        gea_to_bs = filter_pairs_by_blacklist(gea_to_bs, bs_blacklist, "right")
 
         if gea_to_bp:
             load_to_db(config, gea_to_bp, "gea", "bioproject")

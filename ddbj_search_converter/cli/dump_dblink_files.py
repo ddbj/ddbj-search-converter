@@ -16,16 +16,22 @@ Outputs:
     - Mapping: BioSample ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/bioproject-biosample/bioproject2biosample.tsv
     - Mapping: BioProject ID -> BioSample ID
-- /lustre9/open/shared_data/dblink/bioproject-umbrella/bioproject2umbrella.tsv
+- /lustre9/open/shared_data/dblink/bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv
     - Mapping: BioProject ID (primary) -> BioProject ID (umbrella)
 - /lustre9/open/shared_data/dblink/gea-bioproject/gea2bioproject.tsv
     - Mapping: GEA ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv
     - Mapping: GEA ID -> BioSample ID
-- /lustre9/open/shared_data/dblink/metabobank-bioproject/metabobank2bioproject.tsv
+- /lustre9/open/shared_data/dblink/mtb2bp/mtb_id_bioproject.tsv
     - Mapping: MetaboBank ID -> BioProject ID
-- /lustre9/open/shared_data/dblink/metabobank-biosample/metabobank2biosample.tsv
+- /lustre9/open/shared_data/dblink/mtb2bs/mtb_id_biosample.tsv
     - Mapping: MetaboBank ID -> BioSample ID
+- /lustre9/open/shared_data/dblink/jga_study-humID/jga_study2humID.tsv
+    - Mapping: JGA Study ID -> NBDC hum ID
+- /lustre9/open/shared_data/dblink/jga_study-pubmed_id/jga_study2pubmed_id.tsv
+    - Mapping: JGA Study ID -> PubMed ID
+- /lustre9/open/shared_data/dblink/jga_study-jga_dataset/jga_study2jga_dataset.tsv
+    - Mapping: JGA Study ID -> JGA Dataset ID
 """
 from typing import List, Tuple
 
@@ -42,11 +48,14 @@ EXPORT_RELATIONS: List[Tuple[AccessionType, AccessionType, str]] = [
     ("insdc-master", "biosample", "insdc_master-biosample/insdc_master2biosample.tsv"),
     ("biosample", "bioproject", "biosample-bioproject/biosample2bioproject.tsv"),
     ("bioproject", "biosample", "bioproject-biosample/bioproject2biosample.tsv"),
-    ("bioproject", "umbrella-bioproject", "bioproject-umbrella/bioproject2umbrella.tsv"),
+    ("bioproject", "umbrella-bioproject", "bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv"),
     ("gea", "bioproject", "gea-bioproject/gea2bioproject.tsv"),
     ("gea", "biosample", "gea-biosample/gea2biosample.tsv"),
-    ("metabobank", "bioproject", "metabobank-bioproject/metabobank2bioproject.tsv"),
-    ("metabobank", "biosample", "metabobank-biosample/metabobank2biosample.tsv"),
+    ("metabobank", "bioproject", "mtb2bp/mtb_id_bioproject.tsv"),
+    ("metabobank", "biosample", "mtb2bs/mtb_id_biosample.tsv"),
+    ("jga-study", "hum-id", "jga_study-humID/jga_study2humID.tsv"),
+    ("jga-study", "pubmed-id", "jga_study-pubmed_id/jga_study2pubmed_id.tsv"),
+    ("jga-study", "jga-dataset", "jga_study-jga_dataset/jga_study2jga_dataset.tsv"),
 ]
 
 

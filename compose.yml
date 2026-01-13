@@ -10,18 +10,19 @@ services:
       - ${PWD}/ddbj_search_converter_results:/app/ddbj_search_converter_results:rw
       - /home/w3ddbjld/const:/home/w3ddbjld/const:rw
       # === 遺伝研スパコン内の resource ===
+      # SRA / DRA Accessions
       - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
       - /lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:ro
       # DBLink 生成物
       - /usr/local/shared_data/dblink:/usr/local/shared_data/dblink:rw
-      # for DBLink files generation
-      - /usr/local/resources/gea/experiment:/usr/local/resources/gea/experiment:ro
-      - /usr/local/shared_data/metabobank/study:/usr/local/shared_data/metabobank/study:ro
-      - /usr/local/resources/trad:/usr/local/resources/trad:ro
-      - /usr/local/resources/biosample:/usr/local/resources/biosample:ro
+      # 各種リソース
       - /usr/local/resources/bioproject:/usr/local/resources/bioproject:ro
+      - /usr/local/resources/biosample:/usr/local/resources/biosample:ro
       - /usr/local/resources/dra:/usr/local/resources/dra:ro
       - /usr/local/shared_data/jga/metadata-history/metadata:/usr/local/shared_data/jga/metadata-history/metadata:ro
+      - /usr/local/resources/trad:/usr/local/resources/trad:ro
+      - /usr/local/resources/gea/experiment:/usr/local/resources/gea/experiment:ro
+      - /usr/local/shared_data/metabobank/study:/usr/local/shared_data/metabobank/study:ro
 
     environment:
       DDBJ_SEARCH_CONVERTER_RESULT_DIR: "/app/ddbj_search_converter_results"

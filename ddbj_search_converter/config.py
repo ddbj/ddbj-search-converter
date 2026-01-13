@@ -42,6 +42,8 @@ TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
 BPBS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"
 BP_BLACKLIST_REL_PATH = "bp/blacklist.txt"
 BS_BLACKLIST_REL_PATH = "bs/blacklist.txt"
+MTB_BP_PRESERVED_REL_PATH = "metabobank/mtb_id_bioproject_preserve.tsv"
+MTB_BS_PRESERVED_REL_PATH = "metabobank/mtb_id_biosample_preserve.tsv"
 
 # Accessions base paths
 SRA_ACCESSIONS_BASE_PATH = Path(
@@ -58,6 +60,14 @@ DDBJ_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("ddbj_biosample_set.xml.gz")
 # BioProject XML paths
 NCBI_BIOPROJECT_XML = BIOPROJECT_BASE_PATH.joinpath("bioproject.xml")
 DDBJ_BIOPROJECT_XML = BIOPROJECT_BASE_PATH.joinpath("ddbj_core_bioproject.xml")
+
+# JGA XML/CSV paths
+JGA_STUDY_XML = JGA_BASE_PATH.joinpath("jga-study.xml")
+JGA_DATASET_ANALYSIS_CSV = JGA_BASE_PATH.joinpath("dataset-analysis-relation.csv")
+JGA_ANALYSIS_STUDY_CSV = JGA_BASE_PATH.joinpath("analysis-study-relation.csv")
+JGA_DATASET_DATA_CSV = JGA_BASE_PATH.joinpath("dataset-data-relation.csv")
+JGA_DATA_EXPERIMENT_CSV = JGA_BASE_PATH.joinpath("data-experiment-relation.csv")
+JGA_EXPERIMENT_STUDY_CSV = JGA_BASE_PATH.joinpath("experiment-study-relation.csv")
 
 # XML split wrappers
 BIOSAMPLE_WRAPPER_START = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'

@@ -1,10 +1,14 @@
 """Tests for ddbj_search_converter.dblink.metabobank module."""
+import pytest
 from pathlib import Path
 
+from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.metabobank import (
     iterate_metabobank_dirs,
+    load_preserve_file,
     process_metabobank_dir,
 )
+from ddbj_search_converter.logging.logger import run_logger
 
 
 class TestIterateMetabobankDirs:
@@ -109,3 +113,50 @@ S1\tSAMD00001
         assert mtb_id == "MTBKS100"
         assert bp_id is None
         assert bs_ids == set()
+
+
+class TestLoadPreserveFile:
+    """Tests for load_preserve_file function."""
+
+    @pytest.fixture
+    def config(self, tmp_path: Path) -> Config:
+        """テスト用 Config を作成。"""
+        return Config(result_dir=tmp_path, const_dir=tmp_path)
+
+    def test_loads_both_preserve_files(self, config: Config) -> None:
+        """両方の preserve ファイルを読み込む。"""
+        mtb_dir = config.const_dir / "metabobank"
+        mtb_dir.mkdir(parents=True)
+
+        bp_content = "MTBKS1\tPRJDB1111\nMTBKS2\tPRJDB2222\n"
+        (mtb_dir / "mtb_id_bioproject_preserve.tsv").write_text(bp_content, encoding="utf-8")
+
+        bs_content = "MTBKS1\tSAMD00001\nMTBKS1\tSAMD00002\nMTBKS3\tSAMD00003\n"
+        (mtb_dir / "mtb_id_biosample_preserve.tsv").write_text(bs_content, encoding="utf-8")
+
+        with run_logger(config=config):
+            mtb_to_bp, mtb_to_bs = load_preserve_file(config)
+
+        assert mtb_to_bp == {("MTBKS1", "PRJDB1111"), ("MTBKS2", "PRJDB2222")}
+        assert mtb_to_bs == {("MTBKS1", "SAMD00001"), ("MTBKS1", "SAMD00002"), ("MTBKS3", "SAMD00003")}
+
+    def test_handles_missing_files(self, config: Config) -> None:
+        """ファイルが存在しない場合は空を返す。"""
+        with run_logger(config=config):
+            mtb_to_bp, mtb_to_bs = load_preserve_file(config)
+
+        assert mtb_to_bp == set()
+        assert mtb_to_bs == set()
+
+    def test_handles_empty_lines(self, config: Config) -> None:
+        """空行をスキップする。"""
+        mtb_dir = config.const_dir / "metabobank"
+        mtb_dir.mkdir(parents=True)
+
+        bp_content = "MTBKS1\tPRJDB1111\n\nMTBKS2\tPRJDB2222\n"
+        (mtb_dir / "mtb_id_bioproject_preserve.tsv").write_text(bp_content, encoding="utf-8")
+
+        with run_logger(config=config):
+            mtb_to_bp, _ = load_preserve_file(config)
+
+        assert mtb_to_bp == {("MTBKS1", "PRJDB1111"), ("MTBKS2", "PRJDB2222")}

@@ -5,19 +5,27 @@ MetaboBank の IDF/SDRF ファイルから関連を抽出し、DBLink DB に挿�
 - METABOBANK_BASE_PATH 配下の MTBKS* ディレクトリ
     - {MTBKS{N}}/{MTBKS{N}}.idf.txt (BioProject ID)
     - {MTBKS{N}}/{MTBKS{N}}.sdrf.txt (BioSample IDs)
+- Preserve ファイル (const_dir/metabobank/)
+    - mtb_id_bioproject_preserve.tsv
+    - mtb_id_biosample_preserve.tsv
 
 出力:
-- metabobank -> bioproject (IDF の Comment[BioProject] から)
-- metabobank -> biosample (SDRF の Comment[BioSample] カラムから)
+- metabobank -> bioproject (IDF の Comment[BioProject] + preserve から)
+- metabobank -> biosample (SDRF の Comment[BioSample] + preserve から)
 """
 from pathlib import Path
 from typing import Iterator, Optional, Set, Tuple
 
-from ddbj_search_converter.config import METABOBANK_BASE_PATH, get_config
+from ddbj_search_converter.config import (METABOBANK_BASE_PATH,
+                                          MTB_BP_PRESERVED_REL_PATH,
+                                          MTB_BS_PRESERVED_REL_PATH, Config,
+                                          get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
                                                    parse_sdrf_file)
-from ddbj_search_converter.logging.logger import log_info, run_logger
+from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
+                                                load_blacklist)
+from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 
 
 def iterate_metabobank_dirs(base_path: Path) -> Iterator[Path]:
@@ -31,6 +39,47 @@ def iterate_metabobank_dirs(base_path: Path) -> Iterator[Path]:
     for mtb_dir in sorted(base_path.iterdir()):
         if mtb_dir.is_dir() and mtb_dir.name.startswith("MTBKS"):
             yield mtb_dir
+
+
+def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
+    """Preserve ファイルから MetaboBank -> BP/BS 関連を読み込む。"""
+    mtb_to_bp: IdPairs = set()
+    mtb_to_bs: IdPairs = set()
+
+    bp_preserve_path = config.const_dir.joinpath(MTB_BP_PRESERVED_REL_PATH)
+    bs_preserve_path = config.const_dir.joinpath(MTB_BS_PRESERVED_REL_PATH)
+
+    if bp_preserve_path.exists():
+        with open(bp_preserve_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    mtb_to_bp.add((parts[0], parts[1]))
+        log_info(f"loaded {len(mtb_to_bp)} MetaboBank -> BioProject from preserve",
+                 file=str(bp_preserve_path))
+    else:
+        log_warn(f"MetaboBank BP preserve file not found: {bp_preserve_path}",
+                 file=str(bp_preserve_path))
+
+    if bs_preserve_path.exists():
+        with open(bs_preserve_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    mtb_to_bs.add((parts[0], parts[1]))
+        log_info(f"loaded {len(mtb_to_bs)} MetaboBank -> BioSample from preserve",
+                 file=str(bs_preserve_path))
+    else:
+        log_warn(f"MetaboBank BS preserve file not found: {bs_preserve_path}",
+                 file=str(bs_preserve_path))
+
+    return mtb_to_bp, mtb_to_bs
 
 
 def process_metabobank_dir(mtb_dir: Path) -> Tuple[str, Optional[str], Set[str]]:
@@ -58,9 +107,12 @@ def process_metabobank_dir(mtb_dir: Path) -> Tuple[str, Optional[str], Set[str]]
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
+        bp_blacklist, bs_blacklist = load_blacklist(config)
+
         mtb_to_bp: IdPairs = set()
         mtb_to_bs: IdPairs = set()
 
+        # IDF/SDRF ファイルから抽出
         dir_count = 0
         for mtb_dir in iterate_metabobank_dirs(METABOBANK_BASE_PATH):
             mtb_id, bp_id, bs_ids = process_metabobank_dir(mtb_dir)
@@ -73,8 +125,20 @@ def main() -> None:
                 mtb_to_bs.add((mtb_id, bs_id))
 
         log_info(f"processed {dir_count} MetaboBank directories")
-        log_info(f"extracted {len(mtb_to_bp)} MetaboBank -> BioProject relations")
-        log_info(f"extracted {len(mtb_to_bs)} MetaboBank -> BioSample relations")
+        log_info(f"extracted {len(mtb_to_bp)} MetaboBank -> BioProject from IDF")
+        log_info(f"extracted {len(mtb_to_bs)} MetaboBank -> BioSample from SDRF")
+
+        # Preserve ファイルから追加
+        preserve_bp, preserve_bs = load_preserve_file(config)
+        mtb_to_bp.update(preserve_bp)
+        mtb_to_bs.update(preserve_bs)
+
+        log_info(f"total {len(mtb_to_bp)} MetaboBank -> BioProject relations (after preserve)")
+        log_info(f"total {len(mtb_to_bs)} MetaboBank -> BioSample relations (after preserve)")
+
+        # Blacklist 適用
+        mtb_to_bp = filter_pairs_by_blacklist(mtb_to_bp, bp_blacklist, "right")
+        mtb_to_bs = filter_pairs_by_blacklist(mtb_to_bs, bs_blacklist, "right")
 
         if mtb_to_bp:
             load_to_db(config, mtb_to_bp, "metabobank", "bioproject")
