@@ -6,9 +6,7 @@ from typing import Optional
 
 import duckdb
 
-from ddbj_search_converter.config import Config
-
-LOG_DB_FILE_NAME = "log.duckdb"
+from ddbj_search_converter.config import LOG_DB_FILE_NAME, Config
 
 
 def _get_db_path(config: Config) -> Path:

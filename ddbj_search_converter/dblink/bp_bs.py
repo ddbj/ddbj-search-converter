@@ -125,8 +125,6 @@ def main() -> None:
             {f"{bp}\t{bs}" for bs, bp in (line.split("\t") for line in bs_to_bp)},
         )
 
-        log_info("biosample-bioproject relation generation completed")
-
 
 if __name__ == "__main__":
     main()

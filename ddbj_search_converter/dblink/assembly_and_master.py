@@ -179,8 +179,6 @@ def main() -> None:
         load_to_db(config, master_to_bp, "insdc-master", "bioproject")
         load_to_db(config, master_to_bs, "insdc-master", "biosample")
 
-        log_info("finished relation generation successfully")
-
 
 if __name__ == "__main__":
     main()

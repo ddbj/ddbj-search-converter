@@ -9,19 +9,20 @@ from typing import Iterator, Literal, Tuple
 
 import duckdb
 
-from ddbj_search_converter.config import TODAY, Config, get_config
+from ddbj_search_converter.config import (
+    DRA_ACCESSIONS_BASE_PATH,
+    DRA_DB_FILE_NAME,
+    SRA_ACCESSIONS_BASE_PATH,
+    SRA_DB_FILE_NAME,
+    TMP_DRA_DB_FILE_NAME,
+    TMP_SRA_DB_FILE_NAME,
+    TODAY,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 
-DRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public")
-SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions")
-
 TABLE_NAME = "accessions"
-
-SRA_DB_FILE_NAME = "sra_accessions.duckdb"
-TMP_SRA_DB_FILE_NAME = "sra_accessions.tmp.duckdb"
-
-DRA_DB_FILE_NAME = "dra_accessions.duckdb"
-TMP_DRA_DB_FILE_NAME = "dra_accessions.tmp.duckdb"
 
 
 # =============================================================================
@@ -253,13 +254,11 @@ def main() -> None:
 
         log_info("building SRA accessions database")
         sra_final_db = build_sra_accessions_db(config)
-        log_info(f"SRA accessions database built at {sra_final_db}", file=sra_final_db)
+        log_info("SRA accessions database built", file=sra_final_db)
 
         log_info("building DRA accessions database")
         dra_final_db = build_dra_accessions_db(config)
-        log_info(f"DRA accessions database built at {dra_final_db}", file=dra_final_db)
-
-        log_info("SRA and DRA accessions databases built successfully")
+        log_info("DRA accessions database built", file=dra_final_db)
 
 
 if __name__ == "__main__":

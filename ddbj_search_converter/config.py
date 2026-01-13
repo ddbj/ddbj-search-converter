@@ -23,6 +23,21 @@ TRAD_BASE_PATH = Path("/lustre9/open/shared_data/trad")
 # DBLINK_BASE_PATH = Path("/lustre9/open/shared_data/dblink")
 DBLINK_BASE_PATH = RESULT_DIR.joinpath("dblink")  # TODO: for test
 
+# DB file names
+LOG_DB_FILE_NAME = "log.duckdb"
+SRA_DB_FILE_NAME = "sra_accessions.duckdb"
+TMP_SRA_DB_FILE_NAME = "sra_accessions.tmp.duckdb"
+DRA_DB_FILE_NAME = "dra_accessions.duckdb"
+TMP_DRA_DB_FILE_NAME = "dra_accessions.tmp.duckdb"
+
+# Accessions base paths
+DRA_ACCESSIONS_BASE_PATH = Path(
+    "/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
+)
+SRA_ACCESSIONS_BASE_PATH = Path(
+    "/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
+)
+
 
 class Config(BaseModel):
     debug: bool = False
