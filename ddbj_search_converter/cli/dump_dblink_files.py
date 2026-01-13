@@ -16,6 +16,8 @@ Outputs:
     - Mapping: BioSample ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/bioproject-biosample/bioproject2biosample.tsv
     - Mapping: BioProject ID -> BioSample ID
+- /lustre9/open/shared_data/dblink/bioproject-umbrella/bioproject2umbrella.tsv
+    - Mapping: BioProject ID (primary) -> BioProject ID (umbrella)
 """
 from typing import List, Tuple
 
@@ -32,6 +34,7 @@ EXPORT_RELATIONS: List[Tuple[AccessionType, AccessionType, str]] = [
     ("insdc-master", "biosample", "insdc_master-biosample/insdc_master2biosample.tsv"),
     ("biosample", "bioproject", "biosample-bioproject/biosample2bioproject.tsv"),
     ("bioproject", "biosample", "bioproject-biosample/bioproject2biosample.tsv"),
+    ("bioproject", "umbrella-bioproject", "bioproject-umbrella/bioproject2umbrella.tsv"),
 ]
 
 

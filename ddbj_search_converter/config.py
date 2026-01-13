@@ -55,6 +55,16 @@ DRA_ACCESSIONS_BASE_PATH = Path(
 NCBI_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("biosample_set.xml.gz")
 DDBJ_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("ddbj_biosample_set.xml.gz")
 
+# BioProject XML paths
+NCBI_BIOPROJECT_XML = BIOPROJECT_BASE_PATH.joinpath("bioproject.xml")
+DDBJ_BIOPROJECT_XML = BIOPROJECT_BASE_PATH.joinpath("ddbj_core_bioproject.xml")
+
+# XML split wrappers
+BIOSAMPLE_WRAPPER_START = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
+BIOSAMPLE_WRAPPER_END = b'</BioSampleSet>'
+BIOPROJECT_WRAPPER_START = b'<?xml version="1.0" encoding="UTF-8"?>\n<PackageSet>\n'
+BIOPROJECT_WRAPPER_END = b'</PackageSet>'
+
 # NCBI Assembly summary URL
 ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt"
 
