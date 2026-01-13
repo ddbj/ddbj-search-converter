@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
-                                          BPBS_PRESERVED_REL_PATH,
+                                          BP_BS_PRESERVED_REL_PATH,
                                           BS_BLACKLIST_REL_PATH,
                                           DDBJ_BIOPROJECT_XML,
                                           DDBJ_BIOSAMPLE_XML,
@@ -10,8 +10,9 @@ from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
                                           JGA_DATA_EXPERIMENT_CSV,
                                           JGA_DATASET_ANALYSIS_CSV,
                                           JGA_DATASET_DATA_CSV,
+                                          JGA_DATASET_POLICY_CSV,
                                           JGA_EXPERIMENT_STUDY_CSV,
-                                          JGA_STUDY_XML,
+                                          JGA_POLICY_DAC_CSV, JGA_STUDY_XML,
                                           MTB_BP_PRESERVED_REL_PATH,
                                           MTB_BS_PRESERVED_REL_PATH,
                                           NCBI_BIOPROJECT_XML,
@@ -29,7 +30,7 @@ def get_required_files(const_dir: Path) -> List[Tuple[str, Optional[Path]]]:
         ("BS Blacklist", const_dir.joinpath(BS_BLACKLIST_REL_PATH)),
 
         # Preserved relations
-        ("BP-BS Preserved", const_dir.joinpath(BPBS_PRESERVED_REL_PATH)),
+        ("BP-BS Preserved", const_dir.joinpath(BP_BS_PRESERVED_REL_PATH)),
         ("MetaboBank-BP Preserved", const_dir.joinpath(MTB_BP_PRESERVED_REL_PATH)),
         ("MetaboBank-BS Preserved", const_dir.joinpath(MTB_BS_PRESERVED_REL_PATH)),
 
@@ -48,6 +49,8 @@ def get_required_files(const_dir: Path) -> List[Tuple[str, Optional[Path]]]:
         ("JGA Dataset-Data CSV", JGA_DATASET_DATA_CSV),
         ("JGA Data-Experiment CSV", JGA_DATA_EXPERIMENT_CSV),
         ("JGA Experiment-Study CSV", JGA_EXPERIMENT_STUDY_CSV),
+        ("JGA Dataset-Policy CSV", JGA_DATASET_POLICY_CSV),
+        ("JGA Policy-DAC CSV", JGA_POLICY_DAC_CSV),
 
         # TRAD files
         ("TRAD WGS", TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt")),

@@ -9,6 +9,7 @@ from ddbj_search_converter.dblink.jga import (
     extract_pubmed_ids,
     join_relations,
     read_relation_csv,
+    reverse_relation,
 )
 
 
@@ -90,6 +91,26 @@ class TestJoinRelations:
         bc: Set[Tuple[str, str]] = {("B1", "C1")}
 
         result = join_relations(ab, bc)
+
+        assert result == set()
+
+
+class TestReverseRelation:
+    """Tests for reverse_relation function."""
+
+    def test_reverse(self) -> None:
+        """関連を逆転する。"""
+        relation: Set[Tuple[str, str]] = {("A1", "B1"), ("A2", "B2")}
+
+        result = reverse_relation(relation)
+
+        assert result == {("B1", "A1"), ("B2", "A2")}
+
+    def test_empty(self) -> None:
+        """空の入力。"""
+        relation: Set[Tuple[str, str]] = set()
+
+        result = reverse_relation(relation)
 
         assert result == set()
 

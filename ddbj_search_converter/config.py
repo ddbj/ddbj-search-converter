@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
@@ -27,7 +28,8 @@ DRA_BASE_PATH = Path("/usr/local/resources/dra")
 GEA_BASE_PATH = Path("/usr/local/resources/gea/experiment")
 METABOBANK_BASE_PATH = Path("/usr/local/shared_data/metabobank/study")
 JGA_BASE_PATH = Path("/usr/local/shared_data/jga/metadata-history/metadata")
-DBLINK_OUTPUT_PATH = Path("/usr/local/shared_data/dblink")
+# DBLINK_OUTPUT_PATH = Path("/usr/local/shared_data/dblink")
+DBLINK_OUTPUT_PATH = Path("/app/ddbj_search_converter_results/dblink")
 
 # DB file names
 LOG_DB_FILE_NAME = "log.duckdb"
@@ -39,7 +41,7 @@ DBLINK_DB_FILE_NAME = "dblink.duckdb"
 TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
 
 # External resource paths (relative to const_dir)
-BPBS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"
+BP_BS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"
 BP_BLACKLIST_REL_PATH = "bp/blacklist.txt"
 BS_BLACKLIST_REL_PATH = "bs/blacklist.txt"
 MTB_BP_PRESERVED_REL_PATH = "metabobank/mtb_id_bioproject_preserve.tsv"
@@ -68,6 +70,8 @@ JGA_ANALYSIS_STUDY_CSV = JGA_BASE_PATH.joinpath("analysis-study-relation.csv")
 JGA_DATASET_DATA_CSV = JGA_BASE_PATH.joinpath("dataset-data-relation.csv")
 JGA_DATA_EXPERIMENT_CSV = JGA_BASE_PATH.joinpath("data-experiment-relation.csv")
 JGA_EXPERIMENT_STUDY_CSV = JGA_BASE_PATH.joinpath("experiment-study-relation.csv")
+JGA_DATASET_POLICY_CSV = JGA_BASE_PATH.joinpath("dataset-policy-relation.csv")
+JGA_POLICY_DAC_CSV = JGA_BASE_PATH.joinpath("policy-dac-relation.csv")
 
 # XML split wrappers
 BIOSAMPLE_WRAPPER_START = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
@@ -77,6 +81,17 @@ BIOPROJECT_WRAPPER_END = b'</PackageSet>'
 
 # NCBI Assembly summary URL
 ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt"
+
+# === SRA/DRA tar configuration ===
+# NCBI SRA Metadata tar.gz URLs
+NCBI_SRA_METADATA_BASE_URL = "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata"
+
+# tar file names (stored in {const_dir}/sra/)
+SRA_TAR_DIR_NAME = "sra"
+NCBI_SRA_TAR_FILE_NAME = "NCBI_SRA_Metadata.tar"
+DRA_TAR_FILE_NAME = "DRA_Metadata.tar"
+NCBI_LAST_MERGED_FILE_NAME = "ncbi_last_merged.txt"
+DRA_LAST_UPDATED_FILE_NAME = "dra_last_updated.txt"
 
 
 class Config(BaseModel):

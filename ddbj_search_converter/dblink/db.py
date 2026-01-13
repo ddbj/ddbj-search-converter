@@ -15,12 +15,9 @@ from typing import Dict, Iterable, Iterator, List, Literal, Tuple
 
 import duckdb
 
-from ddbj_search_converter.config import (
-    DBLINK_DB_FILE_NAME,
-    TMP_DBLINK_DB_FILE_NAME,
-    TODAY_STR,
-    Config,
-)
+from ddbj_search_converter.config import (DBLINK_DB_FILE_NAME,
+                                          TMP_DBLINK_DB_FILE_NAME, TODAY_STR,
+                                          Config)
 from ddbj_search_converter.logging.logger import log_info
 
 AccessionType = Literal[
@@ -31,7 +28,9 @@ AccessionType = Literal[
     "hum-id",
     "insdc-assembly",
     "insdc-master",
+    "jga-dac",
     "jga-dataset",
+    "jga-policy",
     "jga-study",
     "metabobank",
     "pubmed-id",

@@ -39,7 +39,7 @@ from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
-from ddbj_search_converter.config import (BPBS_PRESERVED_REL_PATH,
+from ddbj_search_converter.config import (BP_BS_PRESERVED_REL_PATH,
                                           DRA_DB_FILE_NAME, SRA_DB_FILE_NAME,
                                           Config, get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
@@ -218,7 +218,7 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
 
 def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
     """TSV format: BioSample\tBioProject"""
-    preserved_path = config.const_dir.joinpath(BPBS_PRESERVED_REL_PATH)
+    preserved_path = config.const_dir.joinpath(BP_BS_PRESERVED_REL_PATH)
     if not preserved_path.exists():
         log_warn(f"preserved file not found, skipping: {preserved_path}",
                  file=str(preserved_path))
