@@ -58,12 +58,15 @@ def normalize_insdc_master_id(raw_master_id: str) -> str:
     """
     Normalize INSDC master ID.
 
-    Perl equivalent:
-      split('-', $set[3])[0]
-      s/[1-9]/0/g
+    Examples:
+        - "ABCD12345.1" -> "ABCD00000" (assembly_summary format)
+        - "XY6789-1" -> "XY0000" (TRAD format)
     """
-    base_id = raw_master_id.split("-", 1)[0]
-
+    # Remove version suffix (e.g., ".1")
+    base_id = raw_master_id.split(".", 1)[0]
+    # Remove any suffix after hyphen (e.g., "-1")
+    base_id = base_id.split("-", 1)[0]
+    # Replace all digits with 0
     return "".join("0" if char.isdigit() else char for char in base_id)
 
 
@@ -100,7 +103,7 @@ def process_assembly_summary_file(
                     "asm": cols[0].split(".", 1)[0],
                     "bp": cols[1],
                     "bs": cols[2],
-                    "master": cols[3].split(".", 1)[0],
+                    "master": normalize_insdc_master_id(cols[3]),
                 }
 
                 for left, right, target_set in relations:
