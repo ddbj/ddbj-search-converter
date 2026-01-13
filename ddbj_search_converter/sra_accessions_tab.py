@@ -10,8 +10,7 @@ from typing import Iterator, Literal, Tuple
 import duckdb
 
 from ddbj_search_converter.config import TODAY, Config, get_config
-from ddbj_search_converter.logging.logger import init_logger, log
-from ddbj_search_converter.logging.schema import Target
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 
 DRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public")
 SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions")
@@ -249,30 +248,18 @@ def iter_bp_bs_relations(
 
 def main() -> None:
     config = get_config()
-    init_logger(
-        run_name="build_sra_dra_accessions_db",
-        config=config,
-    )
-    log(
-        event="start",
-        message="building SRA and DRA accessions databases",
-        extra={"config": config.model_dump()}
-    )
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
 
-    try:
-        log(event="progress", message="building SRA accessions database")
-
+        log_info("building SRA accessions database")
         sra_final_db = build_sra_accessions_db(config)
-        log(event="progress", message=f"SRA accessions database built at {sra_final_db}", target=Target(file=str(sra_final_db)))
+        log_info(f"SRA accessions database built at {sra_final_db}", file=sra_final_db)
 
-        log(event="progress", message="building DRA accessions database")
+        log_info("building DRA accessions database")
         dra_final_db = build_dra_accessions_db(config)
-        log(event="progress", message=f"DRA accessions database built at {dra_final_db}", target=Target(file=str(dra_final_db)))
+        log_info(f"DRA accessions database built at {dra_final_db}", file=dra_final_db)
 
-        log(event="end", message="SRA and DRA accessions databases built successfully")
-    except Exception as e:
-        log(event="failed", error=e)
-        raise e
+        log_info("SRA and DRA accessions databases built successfully")
 
 
 if __name__ == "__main__":

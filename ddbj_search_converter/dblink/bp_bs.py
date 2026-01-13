@@ -9,18 +9,18 @@ Inputs:
     - accession tab の
     - Visibility
 - bpbs_asm
-    - Assembly-derived biosample ↔ bioproject relations.
+    - Assembly-derived biosample <-> bioproject relations.
 - bpbs_preserved.tsv
     - ~/const/dblink/bpbs_preserved.tsv
-    - Preserved biosample ↔ bioproject relations.
+    - Preserved biosample <-> bioproject relations.
 - blacklist
     - relation に乗っけないという判断をするか否か？
 
 Outputs:
 - /lustre9/open/shared_data/dblink/biosample-bioproject/biosample2bioproject.tsv
-    - Mapping: BioSample ID → BioProject ID
+    - Mapping: BioSample ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/bioproject-biosample/bioproject2biosample.tsv
-    - Mapping: BioProject ID → BioSample ID
+    - Mapping: BioProject ID -> BioSample ID
 """
 
 import gzip
@@ -28,8 +28,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterable, Set
 
-from ddbj_search_converter.config import DBLINK_BASE_PATH, Config, get_config
-from ddbj_search_converter.logging.logger import init_logger, log
+from ddbj_search_converter.config import DBLINK_BASE_PATH, get_config
+from ddbj_search_converter.logging.logger import log_info, run_logger
 
 BIOSAMPLE_XML = Path("/lustre9/open/shared_data/biosample/biosample_set.xml.gz")
 SRA_TAB = Path("SRA.accession.tab")
@@ -50,11 +50,11 @@ def write_sorted_lines(output_file: Path, lines: Iterable[str]) -> None:
         for line in sorted(lines):
             f.write(line + "\n")
 
-    log(event="progress", message=f"written {output_file}", target={"file": str(output_file)})
+    log_info(f"written {output_file}", file=output_file)
 
 
 def process_biosample_xml(bs_to_bp: Set[str]) -> None:
-    log(event="progress", message="processing biosample_set.xml.gz")
+    log_info("processing biosample_set.xml.gz")
 
     current_bs: str | None = None
 
@@ -84,7 +84,7 @@ def process_biosample_xml(bs_to_bp: Set[str]) -> None:
 
 
 def process_sra_tab(bs_to_bp: Set[str]) -> None:
-    log(event="progress", message="processing SRA.accession.tab")
+    log_info("processing SRA.accession.tab")
 
     with SRA_TAB.open("r", encoding="utf-8") as f:
         for line in f:
@@ -100,7 +100,7 @@ def process_sra_tab(bs_to_bp: Set[str]) -> None:
 
 
 def process_simple_bsbp_file(path: Path, bs_to_bp: Set[str]) -> None:
-    log(event="progress", message=f"processing {path}", target={"file": str(path)})
+    log_info(f"processing {path}", file=path)
 
     with path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -109,14 +109,7 @@ def process_simple_bsbp_file(path: Path, bs_to_bp: Set[str]) -> None:
 
 def main() -> None:
     config = get_config()
-    init_logger(
-        run_name="create_dblink_biosample_bioproject_relations",
-        config=config,
-    )
-
-    log(event="start", message="starting biosample-bioproject relation generation")
-
-    try:
+    with run_logger(config=config):
         bs_to_bp: Set[str] = set()
 
         process_biosample_xml(bs_to_bp)
@@ -124,7 +117,7 @@ def main() -> None:
         process_simple_bsbp_file(BSBP_PRESERVED, bs_to_bp)
         process_simple_bsbp_file(BSBP_ASM, bs_to_bp)
 
-        log(event="progress", message="writing output files")
+        log_info("writing output files")
 
         write_sorted_lines(OUT_BS_TO_BP, bs_to_bp)
         write_sorted_lines(
@@ -132,11 +125,7 @@ def main() -> None:
             {f"{bp}\t{bs}" for bs, bp in (line.split("\t") for line in bs_to_bp)},
         )
 
-        log(event="end", message="biosample-bioproject relation generation completed")
-
-    except Exception as e:
-        log(event="failed", error=e)
-        raise e
+        log_info("biosample-bioproject relation generation completed")
 
 
 if __name__ == "__main__":

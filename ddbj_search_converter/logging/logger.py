@@ -1,26 +1,64 @@
 import inspect
 import sys
 import traceback
+from contextlib import contextmanager
 from contextvars import ContextVar
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from secrets import token_hex
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
 from ddbj_search_converter.config import (LOCAL_TZ, LOG_DIR_NAME, TODAY,
                                           TODAY_STR, Config, default_config)
-from ddbj_search_converter.logging.schema import (ErrorInfo, Event, LogRecord,
-                                                  RunName, Target)
+from ddbj_search_converter.logging.schema import (ErrorInfo, Extra,
+                                                  LoggerContext, LogLevel,
+                                                  LogRecord)
 
-_run_name: ContextVar[Optional[RunName]] = ContextVar("_run_name", default=None)
-_run_id: ContextVar[Optional[str]] = ContextVar("_run_id", default=None)
-_run_date: ContextVar[Optional[date]] = ContextVar("_run_date", default=None)
-_log_file: ContextVar[Optional[Path]] = ContextVar("_log_file", default=None)
+_ctx: ContextVar[Optional[LoggerContext]] = ContextVar("_ctx", default=None)
+
+
+def _get_ctx() -> LoggerContext:
+    ctx = _ctx.get()
+    if ctx is None:
+        raise RuntimeError("logger is not initialized")
+    return ctx
+
+
+def _infer_run_name() -> str:
+    """
+    run_name を推測する。
+    1. sys.argv[0] から取得を試みる
+    2. ダメなら inspect でモジュール名から推測
+    3. それでもダメなら "adhoc"
+    """
+    # 1. sys.argv から
+    if sys.argv:
+        name = Path(sys.argv[0]).name
+        if name not in ("pytest", "python", "python3", "__main__", ""):
+            return name
+
+    # 2. inspect でモジュール名から
+    frame = inspect.currentframe()
+    try:
+        for _ in range(3):
+            if frame is not None:
+                frame = frame.f_back
+        if frame is not None:
+            module = inspect.getmodule(frame)
+            if module and module.__name__:
+                name = module.__name__.split(".")[-1]
+                if name != "__main__":
+                    return name
+    finally:
+        del frame
+
+    # 3. fallback
+    return "adhoc"
 
 
 def init_logger(
     *,
-    run_name: RunName,
+    run_name: str,
     config: Optional[Config] = None,
 ) -> None:
     if config is None:
@@ -28,34 +66,59 @@ def init_logger(
     run_id = f"{TODAY_STR}_{run_name}_{token_hex(2)}"
     log_file = config.result_dir.joinpath(LOG_DIR_NAME, f"{run_id}.log.jsonl")
 
-    _run_name.set(run_name)
-    _run_id.set(run_id)
-    _run_date.set(TODAY)
-    _log_file.set(log_file)
+    ctx = LoggerContext(
+        run_name=run_name,
+        run_id=run_id,
+        run_date=TODAY,
+        log_file=log_file,
+        config=config,
+    )
+    _ctx.set(ctx)
 
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
 
+@contextmanager
+def run_logger(
+    *,
+    run_name: Optional[str] = None,
+    config: Optional[Config] = None,
+) -> Iterator[None]:
+    """
+    Context manager for logging a run.
+    Automatically handles start/end/failed logging and finalization.
+
+    Args:
+        run_name: Run name. If omitted, inferred automatically.
+        config: Config. If omitted, default config is used.
+    """
+    if run_name is None:
+        run_name = _infer_run_name()
+
+    init_logger(run_name=run_name, config=config)
+    log_start()
+    try:
+        yield
+        log_end()
+    except Exception as e:
+        log_failed(e)
+        raise
+    finally:
+        finalize_logger()
+
+
 def log(
     *,
-    event: Event,
+    log_level: LogLevel,
     message: Optional[str] = None,
-    target: Optional[Dict[str, Any] | Target] = None,
     error: Optional[BaseException | ErrorInfo] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    extra: Optional[Dict[str, Any] | Extra] = None,
 ) -> None:
-    run_name = _run_name.get()
-    run_id = _run_id.get()
-    run_date = _run_date.get()
-    log_file = _log_file.get()
-
-    if not all([run_name, run_id, run_date, log_file]):
-        raise RuntimeError("logger is not initialized (init_run not called)")
-
+    ctx = _get_ctx()
     source = _detect_source()
 
-    if target is not None and not isinstance(target, Target):
-        target = Target(**target)
+    if extra is not None and not isinstance(extra, Extra):
+        extra = Extra(**extra)
 
     error_info: Optional[ErrorInfo] = None
     if error is not None:
@@ -70,18 +133,17 @@ def log(
 
     record = LogRecord(
         timestamp=datetime.now(LOCAL_TZ),
-        run_date=run_date,  # type: ignore
-        run_id=run_id,  # type: ignore
-        run_name=run_name,  # type: ignore
+        run_date=ctx.run_date,
+        run_id=ctx.run_id,
+        run_name=ctx.run_name,
         source=source,
-        event=event,
+        log_level=log_level,
         message=message,
-        target=target,
         error=error_info,
-        extra=extra or {},
+        extra=extra or Extra(),
     )
 
-    _append_jsonl(log_file, record)  # type: ignore
+    _append_jsonl(ctx.log_file, record)
     _emit_stderr(record)
 
 
@@ -92,23 +154,33 @@ def _append_jsonl(path: Path, record: LogRecord) -> None:
 
 
 def _emit_stderr(record: LogRecord) -> None:
+    """INFO 以上のログを stderr に出力する。DEBUG は出力しない。"""
     try:
-        event = record.event
-        if event not in ["start", "end", "failed", "progress"]:
+        if record.log_level == "DEBUG":
             return
 
         ts = record.timestamp.isoformat(timespec="seconds")
         run = record.run_name
+        level = record.log_level
         msg = record.message or ""
 
-        line = f"{ts} - {run} - {event}"
+        line = f"{ts} - {run} - {level}"
         if msg:
             line += f" - {msg}"
+
+        # extra から file, accession を抽出して追記
+        extras = []
+        if record.extra.file:
+            extras.append(f"file={record.extra.file}")
+        if record.extra.accession:
+            extras.append(f"accession={record.extra.accession}")
+        if extras:
+            line += f" [{', '.join(extras)}]"
 
         sys.stderr.write(line + "\n")
         sys.stderr.flush()
 
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         pass
 
 
@@ -125,3 +197,88 @@ def _detect_source() -> str:
         return "<unknown>"
     finally:
         del frame
+
+
+def _convert_path_to_str(kwargs: Dict[str, Any]) -> None:
+    """Convert Path objects in kwargs to strings."""
+    if "file" in kwargs and hasattr(kwargs["file"], "__fspath__"):
+        kwargs["file"] = str(kwargs["file"])
+
+
+def log_debug(message: str, **kwargs: Any) -> None:
+    """DEBUG level log. Pass file, accession, etc. via kwargs."""
+    _convert_path_to_str(kwargs)
+    extra = Extra(**kwargs) if kwargs else None
+    log(log_level="DEBUG", message=message, extra=extra)
+
+
+def log_info(message: str, **kwargs: Any) -> None:
+    """INFO level log. Pass file, accession, etc. via kwargs."""
+    _convert_path_to_str(kwargs)
+    extra = Extra(**kwargs) if kwargs else None
+    log(log_level="INFO", message=message, extra=extra)
+
+
+def log_warn(message: str, **kwargs: Any) -> None:
+    """WARNING level log. Pass file, accession, etc. via kwargs."""
+    _convert_path_to_str(kwargs)
+    extra = Extra(**kwargs) if kwargs else None
+    log(log_level="WARNING", message=message, extra=extra)
+
+
+def log_error(
+    message: str,
+    error: Optional[BaseException] = None,
+    **kwargs: Any,
+) -> None:
+    """ERROR level log. Pass file, accession, etc. via kwargs."""
+    _convert_path_to_str(kwargs)
+    extra = Extra(**kwargs) if kwargs else None
+    log(log_level="ERROR", message=message, error=error, extra=extra)
+
+
+def log_start(message: str = "") -> None:
+    """Log run start. Sets lifecycle=start in extra."""
+    ctx = _get_ctx()
+    log(
+        log_level="INFO",
+        message=message or f"{ctx.run_name} started",
+        extra=Extra(lifecycle="start"),
+    )
+
+
+def log_end(message: str = "") -> None:
+    """Log run success. Sets lifecycle=end in extra."""
+    ctx = _get_ctx()
+    log(
+        log_level="INFO",
+        message=message or f"{ctx.run_name} completed",
+        extra=Extra(lifecycle="end"),
+    )
+
+
+def log_failed(error: BaseException, message: str = "") -> None:
+    """Log run failure. Sets lifecycle=failed in extra."""
+    ctx = _get_ctx()
+    log(
+        log_level="CRITICAL",
+        message=message or f"{ctx.run_name} failed",
+        error=error,
+        extra=Extra(lifecycle="failed"),
+    )
+
+
+def finalize_logger() -> None:
+    """
+    Bulk insert JSONL file to DuckDB.
+    Call at run end.
+    """
+    from ddbj_search_converter.logging.db import \
+        insert_log_records  # pylint: disable=import-outside-toplevel
+
+    ctx = _ctx.get()
+    if ctx is None:
+        raise RuntimeError("logger is not initialized")
+
+    if ctx.log_file.exists():
+        insert_log_records(ctx.config, ctx.log_file)

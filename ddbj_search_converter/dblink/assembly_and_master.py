@@ -3,11 +3,11 @@ Inputs:
 - assembly_summary_genbank.txt
     - Assembly summary file from GenBank.
     - Used to derive:
-        - assembly ↔ BioProject
-        - assembly ↔ BioSample
-        - assembly ↔ INSDC master
-        - INSDC master ↔ BioProject(assembly-derived)
-        - INSDC master ↔ BioSample(assembly-derived)
+        - assembly <-> BioProject
+        - assembly <-> BioSample
+        - assembly <-> INSDC master
+        - INSDC master <-> BioProject(assembly-derived)
+        - INSDC master <-> BioSample(assembly-derived)
 - /lustre9/open/shared_data/trad/wgs/WGS_ORGANISM_LIST.txt
 - /lustre9/open/shared_data/trad/tls/TLS_ORGANISM_LIST.txt
 - /lustre9/open/shared_data/trad/tsa/TSA_ORGANISM_LIST.txt
@@ -16,19 +16,19 @@ Inputs:
 - /lustre9/open/shared_data/trad/tpa/tls/TPA_TLS_ORGANISM_LIST.txt
     - Bulk sequence organism list files.
     - Used to derive:
-        - INSDC master ↔ BioProject
-        - INSDC master ↔ BioSample
+        - INSDC master <-> BioProject
+        - INSDC master <-> BioSample
 Outputs:
 - /lustre9/open/shared_data/dblink/assembly_genome-insdc/assembly_genome2insdc.tsv
-    - Mapping: Assembly genome ID → INSDC master ID
+    - Mapping: Assembly genome ID -> INSDC master ID
 - /lustre9/open/shared_data/dblink/assembly_genome-bp/assembly_genome2bp.tsv
-    - Mapping: Assembly genome ID → BioProject ID
+    - Mapping: Assembly genome ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/assembly_genome-bs/assembly_genome2bs.tsv
-    - Mapping: Assembly genome ID → BioSample ID
+    - Mapping: Assembly genome ID -> BioSample ID
 - /lustre9/open/shared_data/dblink/insdc_master-bioproject/insdc_master2bioproject.tsv
-    - Mapping: INSDC master ID → BioProject ID
+    - Mapping: INSDC master ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/insdc_master-biosample/insdc_master2biosample.tsv
-    - Mapping: INSDC master ID → BioSample ID
+    - Mapping: INSDC master ID -> BioSample ID
 """
 from typing import Iterable, Set, Tuple
 
@@ -37,7 +37,8 @@ import httpx
 from ddbj_search_converter.config import TRAD_BASE_PATH, Config, get_config
 from ddbj_search_converter.dblink.db import (AccessionType, Relation,
                                              bulk_insert_relations)
-from ddbj_search_converter.logging.logger import init_logger, log
+from ddbj_search_converter.logging.logger import (log_debug, log_info,
+                                                   run_logger)
 
 ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt"
 
@@ -73,7 +74,7 @@ def process_assembly_summary_file(
     master_to_bp: IdPairs,
     master_to_bs: IdPairs,
 ) -> None:
-    log(event="progress", message="streaming assembly_summary_genbank.txt", extra={"url": ASSEMBLY_SUMMARY_URL})
+    log_info("streaming assembly_summary_genbank.txt", url=ASSEMBLY_SUMMARY_URL)
 
     relations = [
         ("asm", "bp", assembly_to_bp),
@@ -113,10 +114,10 @@ def process_trad_files(
     master_to_bp: IdPairs,
     master_to_bs: IdPairs,
 ) -> None:
-    log(event="progress", message="processing trad organism list files")
+    log_info("processing trad organism list files")
 
     for path in TRAD_FILES:
-        log(event="progress", message=f"processing file: {path}", extra={"file_path": str(path)})
+        log_info(f"processing file: {path}", file=path)
 
         with path.open("r", encoding="utf-8") as f:
             for line in f:
@@ -152,27 +153,25 @@ def load_to_db(
 
 def main() -> None:
     config = get_config()
-    init_logger(
-        run_name="create_dblink_assembly_and_master_relations",
-        config=config,
-    )
-    log(
-        event="start",
-        message="starting relation generation between assembly/genome and INSDC master, BioProject, BioSample",
-        extra={"config": config.model_dump()}
-    )
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
 
-    try:
         assembly_to_bp: IdPairs = set()
         assembly_to_bs: IdPairs = set()
         assembly_to_insdc: IdPairs = set()
         master_to_bp: IdPairs = set()
         master_to_bs: IdPairs = set()
 
-        process_assembly_summary_file(assembly_to_bp, assembly_to_bs, assembly_to_insdc, master_to_bp, master_to_bs,)
+        process_assembly_summary_file(
+            assembly_to_bp,
+            assembly_to_bs,
+            assembly_to_insdc,
+            master_to_bp,
+            master_to_bs,
+        )
         process_trad_files(master_to_bp, master_to_bs)
 
-        log(event="progress", message="loading relations into dblink database")
+        log_info("loading relations into dblink database")
 
         load_to_db(config, assembly_to_bp, "insdc-assembly", "bioproject")
         load_to_db(config, assembly_to_bs, "insdc-assembly", "biosample")
@@ -180,10 +179,7 @@ def main() -> None:
         load_to_db(config, master_to_bp, "insdc-master", "bioproject")
         load_to_db(config, master_to_bs, "insdc-master", "biosample")
 
-        log(event="end", message="finished relation generation successfully")
-    except Exception as e:
-        log(event="failed", error=e)
-        raise e
+        log_info("finished relation generation successfully")
 
 
 if __name__ == "__main__":
