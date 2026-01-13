@@ -105,7 +105,7 @@ def insert_relation(
     )
     with duckdb.connect(str(db_path)) as conn:
         conn.execute(
-            "INSERT relationVALUES (?, ?, ?, ?)",
+            "INSERT INTO relation VALUES (?, ?, ?, ?)",
             (s_type, s_id, d_type, d_id),
         )
 
@@ -126,7 +126,7 @@ def bulk_insert_relations(
         def flush() -> None:
             if buffer:
                 conn.executemany(
-                    "INSERT INTO relationVALUES (?, ?, ?, ?)",
+                    "INSERT INTO relation VALUES (?, ?, ?, ?)",
                     buffer,
                 )
                 buffer.clear()

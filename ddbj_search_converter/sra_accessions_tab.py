@@ -96,7 +96,7 @@ def init_accession_db(tmp_db_path: Path) -> None:
     """
     Initialize an empty tmp accession DB.
     """
-    tmp_dir_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_db_path.parent.mkdir(parents=True, exist_ok=True)
     if tmp_db_path.exists():
         tmp_db_path.unlink()
 

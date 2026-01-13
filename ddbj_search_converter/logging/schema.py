@@ -48,17 +48,25 @@ Event = Literal[
     # run / operation lifecycle
     "start",            # run / 処理開始
     "end",              # 正常終了
-    "failed",           # 致命的失敗で終了
+    "failed",           # 致命的失敗 (下流の処理に影響する) で終了
 
     # progress / info
     "progress",         # 途中経過・節目
-    "debug",            # 設定・内部状態ダンプ
+    # "debug",            # 設定・内部状態ダンプ
 
     # item-level results
-    "skipped",          # 意図的にスキップ（正常系）
-    "skipped_warning",  # 問題があったためスキップ
-    "error",            # 失敗したが処理は継続
+    "warning",          # 警告 (処理は継続)
+
+
+
+    # "skipped",          # 意図的にスキップ（正常系）
+    # "skipped_warning",  # 問題があったためスキップ
+    # "error",            # 失敗したが処理は継続
+    # "error",
 ]
+
+# error,
+# warning,
 
 
 class Target(BaseModel):
@@ -90,10 +98,17 @@ class LogRecord(BaseModel):
         description="e.g., ddbj_search_converter.bioproject.bp_xml_to_jsonl",
     )
 
-    event: Event
-    message: Optional[str] = None
-    target: Optional[Target] = None
-    error: Optional[ErrorInfo] = None
+    # event: Event
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    # ERROR の分別 (例えば)
+    # - accession が入ったか入らないか
+    # 致命的が CRITICAL (そこで止まった)
+    # 入らなかったものを ERROR とする
+    # WARNING はなんか問題があるが、index され入った
+
+    message: Optional[str] = None  # 人間が書く、log message
+    target: Optional[Target] = None  # dict or 構造体
+    error: Optional[ErrorInfo] = None  # python が吐く traceback
 
     # schema 化できない特別な情報
     extra: Dict[str, Any] = Field(default_factory=dict)
