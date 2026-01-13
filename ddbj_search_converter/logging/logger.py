@@ -149,7 +149,7 @@ def log(
 
 def _append_jsonl(path: Path, record: LogRecord) -> None:
     with path.open("a", encoding="utf-8") as f:
-        f.write(record.model_dump_json())
+        f.write(record.model_dump_json(exclude_none=True))
         f.write("\n")
 
 
@@ -191,7 +191,8 @@ def _detect_source() -> str:
             module = inspect.getmodule(frame)
             if module and module.__name__:
                 name = module.__name__
-                if not name.startswith("ddbj_search_converter.logging"):
+                # Skip logging module and stdlib contextlib
+                if not name.startswith("ddbj_search_converter.logging") and name != "contextlib":
                     return name
             frame = frame.f_back
         return "<unknown>"
