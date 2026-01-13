@@ -1,13 +1,27 @@
+"""
+DBLink 関連を格納する DuckDB データベースの操作モジュール。
+
+DBLink は各種 accession 間の関連を無向グラフとして管理する。
+relation テーブルには (src_type, src_accession, dst_type, dst_accession) の形式で
+正規化された関連が格納される。
+
+ファイルパス:
+    - 一時 DB: {const_dir}/dblink/dblink.tmp.duckdb
+    - 最終 DB: {const_dir}/dblink/dblink.duckdb
+"""
 import shutil
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Literal, Tuple
 
 import duckdb
 
-from ddbj_search_converter.config import Config
-
-DB_FILE_NAME = "dblink.duckdb"
-TMP_DB_FILE_NAME = "dblink.tmp.duckdb"
+from ddbj_search_converter.config import (
+    DBLINK_DB_FILE_NAME,
+    TMP_DBLINK_DB_FILE_NAME,
+    TODAY_STR,
+    Config,
+)
+from ddbj_search_converter.logging.logger import log_info
 
 AccessionType = Literal[
     "bioproject",
@@ -25,15 +39,15 @@ AccessionType = Literal[
 ]
 
 Relation = Tuple[AccessionType, str, AccessionType, str]
-# (src_type, src_accession, dst_type, dst_accession)
+IdPairs = set[tuple[str, str]]
 
 
 def _tmp_db_path(config: Config) -> Path:
-    return config.const_dir.joinpath(TMP_DB_FILE_NAME)
+    return config.const_dir.joinpath("dblink", TMP_DBLINK_DB_FILE_NAME)
 
 
 def _final_db_path(config: Config) -> Path:
-    return config.const_dir.joinpath(DB_FILE_NAME)
+    return config.const_dir.joinpath("dblink", DBLINK_DB_FILE_NAME)
 
 
 def normalize_edge(
@@ -42,20 +56,15 @@ def normalize_edge(
     b_type: AccessionType,
     b_id: str,
 ) -> Relation:
-    """
-    Normalize an undirected edge into a canonical (src, dst) order.
-    """
+    """無向グラフなので、同じ関連が (A,B) と (B,A) で重複しないよう正規化。"""
     if (a_type, a_id) <= (b_type, b_id):
         return a_type, a_id, b_type, b_id
     return b_type, b_id, a_type, a_id
 
 
 def init_dblink_db(config: Config) -> None:
-    """
-    Initialize a new dblink relation database.
-    Existing file is overwritten.
-    """
     db_path = _tmp_db_path(config)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()
 
@@ -71,9 +80,6 @@ def init_dblink_db(config: Config) -> None:
 
 
 def finalize_relation_db(config: Config) -> None:
-    """
-    Atomically replace final DB with tmp DB.
-    """
     deduplicate_relations(config)
     create_relation_indexes(config)
 
@@ -89,53 +95,65 @@ def finalize_relation_db(config: Config) -> None:
 # === Write operations ===
 
 
-def insert_relation(
-    config: Config,
-    src_type: AccessionType,
-    src_accession: str,
-    dst_type: AccessionType,
-    dst_accession: str,
-) -> None:
-    """
-    Insert a single relation (normalized).
-    """
-    db_path = _tmp_db_path(config)
-    s_type, s_id, d_type, d_id = normalize_edge(
-        src_type, src_accession, dst_type, dst_accession
-    )
-    with duckdb.connect(str(db_path)) as conn:
-        conn.execute(
-            "INSERT INTO relation VALUES (?, ?, ?, ?)",
-            (s_type, s_id, d_type, d_id),
-        )
+def get_tmp_dir(config: Config) -> Path:
+    tmp_dir = config.result_dir.joinpath("dblink", "tmp", TODAY_STR)
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    return tmp_dir
 
 
-def bulk_insert_relations(
-    config: Config,
+def write_relations_to_tsv(
+    output_path: Path,
     relations: Iterable[Relation],
     *,
-    chunk_size: int = 100000,
+    append: bool = False,
 ) -> None:
-    """
-    Bulk insert relations efficiently.
-    """
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    mode = "a" if append else "w"
+    with output_path.open(mode, encoding="utf-8") as f:
+        for r in relations:
+            normalized = normalize_edge(*r)
+            f.write("\t".join(normalized) + "\n")
+
+
+def load_relations_from_tsv(config: Config, tsv_path: Path) -> None:
     db_path = _tmp_db_path(config)
     with duckdb.connect(str(db_path)) as conn:
-        buffer: List[Tuple[str, str, str, str]] = []
+        conn.execute(f"""
+            INSERT INTO relation
+            SELECT * FROM read_csv(
+                '{tsv_path}',
+                header=false,
+                columns={{
+                    'src_type': 'TEXT',
+                    'src_accession': 'TEXT',
+                    'dst_type': 'TEXT',
+                    'dst_accession': 'TEXT'
+                }},
+                delim='\t'
+            )
+        """)
 
-        def flush() -> None:
-            if buffer:
-                conn.executemany(
-                    "INSERT INTO relation VALUES (?, ?, ?, ?)",
-                    buffer,
-                )
-                buffer.clear()
 
-        for r in relations:
-            buffer.append(normalize_edge(*r))
-            if len(buffer) >= chunk_size:
-                flush()
-        flush()
+def load_to_db(
+    config: Config,
+    lines: IdPairs,
+    type_src: AccessionType,
+    type_dst: AccessionType,
+) -> None:
+    def line_generator() -> Iterable[Relation]:
+        for src_id, dst_id in lines:
+            yield (type_src, src_id, type_dst, dst_id)
+
+    tsv_name = f"{type_src}_to_{type_dst}.tsv"
+    tmp_dir = get_tmp_dir(config)
+    tsv_path = tmp_dir.joinpath(tsv_name)
+
+    log_info(f"writing {len(lines)} relations to {tsv_path}", file=str(tsv_path))
+    write_relations_to_tsv(tsv_path, line_generator(), append=True)
+
+    log_info(f"loading relations from {tsv_path}", file=str(tsv_path))
+    load_relations_from_tsv(config, tsv_path)
 
 
 def deduplicate_relations(config: Config) -> None:
@@ -177,6 +195,7 @@ def get_related_entities(
     entity_type: AccessionType,
     accession: str,
 ) -> Iterator[tuple[str, str]]:
+    """無向グラフなので src/dst 両方向を検索。"""
     db_path = _final_db_path(config)
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -214,14 +233,12 @@ def get_related_entities_bulk(
     entity_type: AccessionType,
     accessions: list[str],
 ) -> Dict[str, List[Tuple[AccessionType, str]]]:
-
     if not accessions:
         return {}
 
     db_path = _final_db_path(config)
 
     with duckdb.connect(db_path) as conn:
-        # DuckDB では list を UNNEST できる
         rows = conn.execute(
             """
             WITH input(accession) AS (
@@ -267,10 +284,6 @@ def export_relations(
     type_a: AccessionType,
     type_b: AccessionType,
 ) -> None:
-    """
-    Export relations to TSV as:
-      accession_of_type_a \t accession_of_type_b
-    """
     with duckdb.connect(str(_final_db_path(config))) as conn:
         rows = conn.execute(
             """

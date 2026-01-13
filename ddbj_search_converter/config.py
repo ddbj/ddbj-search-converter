@@ -19,9 +19,15 @@ JGA_JSONL_DIR_NAME = "jga_jsonl"
 LOG_DIR_NAME = "logs"
 
 
-TRAD_BASE_PATH = Path("/lustre9/open/shared_data/trad")
-# DBLINK_BASE_PATH = Path("/lustre9/open/shared_data/dblink")
-DBLINK_BASE_PATH = RESULT_DIR.joinpath("dblink")  # TODO: for test
+# === Base paths (container mount points) ===
+TRAD_BASE_PATH = Path("/usr/local/resources/trad")
+BIOPROJECT_BASE_PATH = Path("/usr/local/resources/bioproject")
+BIOSAMPLE_BASE_PATH = Path("/usr/local/resources/biosample")
+DRA_BASE_PATH = Path("/usr/local/resources/dra")
+GEA_BASE_PATH = Path("/usr/local/resources/gea/experiment")
+METABOBANK_BASE_PATH = Path("/usr/local/shared_data/metabobank/study")
+JGA_BASE_PATH = Path("/usr/local/shared_data/jga/metadata-history/metadata")
+DBLINK_OUTPUT_PATH = Path("/usr/local/shared_data/dblink")
 
 # DB file names
 LOG_DB_FILE_NAME = "log.duckdb"
@@ -29,14 +35,28 @@ SRA_DB_FILE_NAME = "sra_accessions.duckdb"
 TMP_SRA_DB_FILE_NAME = "sra_accessions.tmp.duckdb"
 DRA_DB_FILE_NAME = "dra_accessions.duckdb"
 TMP_DRA_DB_FILE_NAME = "dra_accessions.tmp.duckdb"
+DBLINK_DB_FILE_NAME = "dblink.duckdb"
+TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
+
+# External resource paths (relative to const_dir)
+BPBS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"
+BP_BLACKLIST_REL_PATH = "bp/blacklist.txt"
+BS_BLACKLIST_REL_PATH = "bs/blacklist.txt"
 
 # Accessions base paths
-DRA_ACCESSIONS_BASE_PATH = Path(
-    "/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
-)
 SRA_ACCESSIONS_BASE_PATH = Path(
     "/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
 )
+DRA_ACCESSIONS_BASE_PATH = Path(
+    "/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
+)
+
+# BioSample XML paths (/usr/local/resources is a mount point to /lustre9)
+NCBI_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("biosample_set.xml.gz")
+DDBJ_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("ddbj_biosample_set.xml.gz")
+
+# NCBI Assembly summary URL
+ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt"
 
 
 class Config(BaseModel):

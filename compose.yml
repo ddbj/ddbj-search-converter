@@ -9,24 +9,20 @@ services:
       - ${PWD}:/app:rw
       - ${PWD}/ddbj_search_converter_results:/app/ddbj_search_converter_results:rw
       - /home/w3ddbjld/const:/home/w3ddbjld/const:rw
-      # 遺伝研スパコン内の resource
-      # SRA / DRA Accessions tab file
+      # === 遺伝研スパコン内の resource ===
       - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
       - /lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:ro
+      # DBLink 生成物
+      - /usr/local/shared_data/dblink:/usr/local/shared_data/dblink:rw
       # for DBLink files generation
-      - /lustre9/open/shared_data/gea/experiment:/lustre9/open/shared_data/gea/experiment:ro
-      - /lustre9/open/shared_data/metabobank/study:/lustre9/open/shared_data/metabobank/study:ro
-      - /lustre9/open/shared_data/trad:/lustre9/open/shared_data/trad:ro
-      - /lustre9/open/shared_data/dblink:/lustre9/open/shared_data/dblink:rw
-      # BioSample XML (for DBLink bp_bs)
-      - /lustre9/open/shared_data/biosample:/lustre9/open/shared_data/biosample:ro
-      # BP / BS resource
-      - /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:/lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject:ro
-      - /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:/lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample:ro
-      # SRA / DRA resource
-      - /lustre9/open/shared_data/dra:/lustre9/open/shared_data/dra:ro
-      # JGA resource
-      - /lustre9/open/shared_data/jga/metadata-history/metadata:/lustre9/open/shared_data/jga/metadata-history/metadata:ro
+      - /usr/local/resources/gea/experiment:/usr/local/resources/gea/experiment:ro
+      - /usr/local/shared_data/metabobank/study:/usr/local/shared_data/metabobank/study:ro
+      - /usr/local/resources/trad:/usr/local/resources/trad:ro
+      - /usr/local/resources/biosample:/usr/local/resources/biosample:ro
+      - /usr/local/resources/bioproject:/usr/local/resources/bioproject:ro
+      - /usr/local/resources/dra:/usr/local/resources/dra:ro
+      - /usr/local/shared_data/jga/metadata-history/metadata:/usr/local/shared_data/jga/metadata-history/metadata:ro
+
     environment:
       DDBJ_SEARCH_CONVERTER_RESULT_DIR: "/app/ddbj_search_converter_results"
       DDBJ_SEARCH_CONVERTER_CONST_DIR: "/home/w3ddbjld/const"

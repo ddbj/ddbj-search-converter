@@ -1,35 +1,64 @@
 from ddbj_search_converter.dblink.assembly_and_master import (
-    normalize_insdc_master_id,
+    normalize_master_id,
+    strip_version_suffix,
 )
 
 
-class TestNormalizeInsdcMasterId:
-    def test_assembly_summary_format(self) -> None:
-        # assembly_summary format: version suffix with dot
-        assert normalize_insdc_master_id("ABCD12345.1") == "ABCD00000"
-        assert normalize_insdc_master_id("XY678910.2") == "XY000000"
+class TestStripVersionSuffix:
 
-    def test_trad_format(self) -> None:
-        # TRAD format: suffix with hyphen
-        assert normalize_insdc_master_id("ABC123-1") == "ABC000"
-        assert normalize_insdc_master_id("WXYZ9876-2") == "WXYZ0000"
+    def test_with_version_suffix(self) -> None:
+        # Standard version suffix
+        assert strip_version_suffix("GCA_000001215.4") == "GCA_000001215"
+        assert strip_version_suffix("GCF_000001405.40") == "GCF_000001405"
 
-    def test_mixed_format(self) -> None:
-        # Both dot and hyphen
-        assert normalize_insdc_master_id("ABC123.1-1") == "ABC000"
+    def test_multiple_dots(self) -> None:
+        # Only first dot is used
+        assert strip_version_suffix("ABC.1.2") == "ABC"
 
     def test_no_suffix(self) -> None:
-        # No suffix
-        assert normalize_insdc_master_id("ABCD12345") == "ABCD00000"
+        # No suffix should return as-is
+        assert strip_version_suffix("GCA_000001215") == "GCA_000001215"
+        assert strip_version_suffix("na") == "na"
 
-    def test_all_zeros(self) -> None:
+
+class TestNormalizeMasterId:
+
+    def test_assembly_summary_format(self) -> None:
+        # assembly_summary format: version suffix, digits normalized
+        assert normalize_master_id("AABU00000000.1") == "AABU00000000"
+        assert normalize_master_id("CP035466.1") == "CP000000"
+
+    def test_trad_format(self) -> None:
+        # TRAD format: hyphen suffix, digits normalized
+        assert normalize_master_id("BAAA01000001-1") == "BAAA00000000"
+        assert normalize_master_id("ABCD12345-2") == "ABCD00000"
+
+    def test_no_suffix(self) -> None:
+        # No suffix, but digits still normalized
+        assert normalize_master_id("ABC12345") == "ABC00000"
+
+    def test_already_zeros(self) -> None:
         # Already all zeros
-        assert normalize_insdc_master_id("ABC00000") == "ABC00000"
+        assert normalize_master_id("ABC00000-1") == "ABC00000"
+        assert normalize_master_id("ABC00000.1") == "ABC00000"
+        assert normalize_master_id("ABC00000") == "ABC00000"
 
     def test_single_letter_prefix(self) -> None:
-        # Single letter prefix (e.g., A12345)
-        assert normalize_insdc_master_id("A12345") == "A00000"
+        # Single letter prefix
+        assert normalize_master_id("A12345-1") == "A00000"
+        assert normalize_master_id("A12345.1") == "A00000"
 
     def test_long_prefix(self) -> None:
-        # Long prefix (e.g., ABCDEF12345678)
-        assert normalize_insdc_master_id("ABCDEF12345678") == "ABCDEF00000000"
+        # Long prefix
+        assert normalize_master_id("ABCDEF12345678-1") == "ABCDEF00000000"
+        assert normalize_master_id("ABCDEF12345678.1") == "ABCDEF00000000"
+
+    def test_na_value(self) -> None:
+        # "na" value from assembly_summary
+        assert normalize_master_id("na") == "na"
+
+    def test_multiple_suffixes(self) -> None:
+        # Both dot and hyphen (dot first)
+        assert normalize_master_id("ABC123.1-2") == "ABC000"
+        # Hyphen first, then dot
+        assert normalize_master_id("ABC123-1.2") == "ABC000"
