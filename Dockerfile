@@ -1,4 +1,4 @@
-FROM 3.12.12-bookworm
+FROM python:3.12-bookworm
 
 RUN apt update && \
     apt install -y --no-install-recommends \
