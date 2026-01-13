@@ -25,9 +25,7 @@ from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 TABLE_NAME = "accessions"
 
 
-# =============================================================================
-# DB path helpers
-# =============================================================================
+# === DB path helpers ===
 
 
 def _tmp_sra_db_path(config: Config) -> Path:
@@ -46,9 +44,7 @@ def _final_dra_db_path(config: Config) -> Path:
     return config.const_dir.joinpath("sra", DRA_DB_FILE_NAME)
 
 
-# =============================================================================
-# Locate latest accession files
-# =============================================================================
+# === Locate latest accession files ===
 
 
 def find_latest_sra_accessions_tab_file() -> Path:
@@ -87,9 +83,7 @@ def find_latest_dra_accessions_tab_file() -> Path:
     raise FileNotFoundError("DRA_Accessions.tab not found in last 180 days")
 
 
-# =============================================================================
-# DB initialization and loading
-# =============================================================================
+# === DB initialization and loading ===
 
 
 def init_accession_db(tmp_db_path: Path) -> None:
@@ -169,9 +163,7 @@ def finalize_db(tmp_path: Path, final_path: Path) -> None:
     shutil.move(str(tmp_path), str(final_path))
 
 
-# =============================================================================
-# Public builders
-# =============================================================================
+# === Public builders ===
 
 
 def build_sra_accessions_db(config: Config) -> Path:
@@ -204,9 +196,7 @@ def build_dra_accessions_db(config: Config) -> Path:
     return final_db
 
 
-# =============================================================================
-# Relation extraction
-# =============================================================================
+# === Relation extraction ===
 
 
 SourceKind = Literal["sra", "dra"]
@@ -242,9 +232,7 @@ def iter_bp_bs_relations(
     yield from rows
 
 
-# =============================================================================
-# main
-# =============================================================================
+# === main ===
 
 
 def main() -> None:
