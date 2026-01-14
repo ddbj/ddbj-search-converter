@@ -190,3 +190,30 @@ class TestProcessDdbjXmlFile:
 
         # Should be empty because BioSample ID doesn't start with "SAM"
         assert len(results) == 0
+
+    def test_extract_biosample_bioproject_from_bioproject_id(self, tmp_path: Path) -> None:
+        """Test extracting from bioproject_id attribute (actual DDBJ XML format)."""
+        # This is the actual format used in DDBJ BioSample XML
+        xml_content = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<BioSampleSet>
+<BioSample last_update="2022-04-05T17:24:38.000+09:00" publication_date="2014-04-07T00:00:00.000+09:00" access="public">
+    <Ids>
+        <Id namespace="BioSample" is_primary="1">SAMD00000001</Id>
+    </Ids>
+    <Attributes>
+        <Attribute attribute_name="sample_name">Bradyrhizobium sp. DOA9</Attribute>
+        <Attribute attribute_name="strain">DOA9</Attribute>
+        <Attribute attribute_name="bioproject_id">PRJDB1640</Attribute>
+        <Attribute attribute_name="locus_tag_prefix">BDOA9</Attribute>
+    </Attributes>
+</BioSample>
+</BioSampleSet>
+"""
+        xml_file = tmp_path / "test.xml"
+        xml_file.write_text(xml_content)
+
+        results = process_ddbj_xml_file(xml_file)
+
+        assert len(results) == 1
+        assert results[0] == ("SAMD00000001", "PRJDB1640")

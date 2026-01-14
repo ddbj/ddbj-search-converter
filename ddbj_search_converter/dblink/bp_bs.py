@@ -95,7 +95,8 @@ def process_ncbi_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
 def process_ddbj_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
     """
     DDBJ: accession は <Ids><Id namespace="BioSample"> から取得 (NCBI と異なる)。
-    BP は <Attribute bioproject_accession> から。
+    BP は <Attribute attribute_name="bioproject_id"> から。
+    (NCBI は bioproject_accession だが、DDBJ は bioproject_id を使用)
     """
     results: List[Tuple[str, str]] = []
     current_bs: str | None = None
@@ -125,7 +126,9 @@ def process_ddbj_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
                 elem.clear()
 
             elif current_bs and current_bs.startswith("SAM") and event == "end":
-                if tag == "Attribute" and elem.attrib.get("attribute_name") == "bioproject_accession":
+                attr_name = elem.attrib.get("attribute_name")
+                # DDBJ uses "bioproject_id", NCBI uses "bioproject_accession"
+                if tag == "Attribute" and attr_name in ("bioproject_id", "bioproject_accession"):
                     bp = (elem.text or "").strip()
                     if bp.startswith("PRJ"):
                         results.append((current_bs, bp))
