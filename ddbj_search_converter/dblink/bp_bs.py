@@ -74,7 +74,7 @@ def process_ncbi_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
                 current_bs = None
                 elem.clear()
 
-            elif current_bs and event == "end":
+            elif current_bs and current_bs.startswith("SAM") and event == "end":
                 if tag == "Link" and elem.attrib.get("target") == "bioproject":
                     bp = elem.attrib.get("label") or (elem.text or "").strip()
                     if bp and not bp.startswith("PRJ"):
@@ -124,7 +124,7 @@ def process_ddbj_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
                 current_bs = None
                 elem.clear()
 
-            elif current_bs and event == "end":
+            elif current_bs and current_bs.startswith("SAM") and event == "end":
                 if tag == "Attribute" and elem.attrib.get("attribute_name") == "bioproject_accession":
                     bp = (elem.text or "").strip()
                     if bp.startswith("PRJ"):

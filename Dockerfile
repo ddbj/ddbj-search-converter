@@ -3,7 +3,8 @@ FROM python:3.12-bookworm
 RUN apt update && \
     apt install -y --no-install-recommends \
     curl \
-    jq && \
+    jq \
+    pigz && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 

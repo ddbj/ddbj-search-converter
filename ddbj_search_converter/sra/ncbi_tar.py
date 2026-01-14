@@ -5,14 +5,12 @@ Downloads and processes NCBI SRA Metadata tar.gz files:
 - Full tar.gz: Creates new tar file from scratch
 - Daily tar.gz: Appends entries to existing tar file
 
-All operations are streamed to avoid storing the full tar.gz on disk.
+Uses curl + pigz for fast download and decompression.
 """
-import gzip
-import tarfile
+import subprocess
 from datetime import date, timedelta
-from io import BytesIO
 from pathlib import Path
-from typing import IO, Iterator, Optional, cast
+from typing import Iterator, Optional
 
 import httpx
 
@@ -100,31 +98,10 @@ def find_ncbi_daily_dates_to_sync(
         current += timedelta(days=1)
 
 
-def _iter_bytes_from_response(response: httpx.Response, chunk_size: int = 65536) -> Iterator[bytes]:
-    """Iterate over response bytes in chunks."""
-    yield from response.iter_bytes(chunk_size)
-
-
-class StreamingGzipReader:
-    """A file-like object that streams HTTP response through gzip decompression."""
-
-    def __init__(self, response: httpx.Response):
-        self._response = response
-        self._decompressor = gzip.GzipFile(
-            fileobj=BytesIO(b"".join(_iter_bytes_from_response(response)))
-        )
-
-    def read(self, size: int = -1) -> bytes:
-        return self._decompressor.read(size)
-
-    def close(self) -> None:
-        self._decompressor.close()
-
-
 def download_full_tar_gz(config: Config, date_str: str) -> None:
     """Download NCBI Full tar.gz and create new tar file.
 
-    Streams the download and gzip decompression to avoid storing tar.gz on disk.
+    Uses curl + pigz for fast download and decompression.
     """
     url = get_ncbi_full_tar_gz_url(date_str)
     tar_path = get_ncbi_tar_path(config)
@@ -132,32 +109,10 @@ def download_full_tar_gz(config: Config, date_str: str) -> None:
     tar_dir.mkdir(parents=True, exist_ok=True)
 
     log_info(f"Downloading NCBI Full tar.gz: {url}")
+    log_info(f"Output: {tar_path}")
 
-    with httpx.stream("GET", url, timeout=None, follow_redirects=True) as response:
-        response.raise_for_status()
-
-        # Read the entire response into memory for gzip decompression
-        # (gzip needs seekable input for proper decompression)
-        log_info("Downloading and decompressing...")
-        compressed_data = BytesIO()
-        total_size = 0
-        for chunk in response.iter_bytes(65536):
-            compressed_data.write(chunk)
-            total_size += len(chunk)
-            if total_size % (1024 * 1024 * 100) == 0:
-                log_info(f"Downloaded {total_size / 1024 / 1024:.0f} MB")
-
-        compressed_data.seek(0)
-        log_info(f"Total download: {total_size / 1024 / 1024:.0f} MB")
-
-        log_info(f"Writing tar file: {tar_path}")
-        with gzip.GzipFile(fileobj=compressed_data) as gz:
-            with open(tar_path, "wb") as f:
-                while True:
-                    chunk = gz.read(65536)
-                    if not chunk:
-                        break
-                    f.write(chunk)
+    cmd = f'curl -L -s "{url}" | pigz -d > "{tar_path}"'
+    subprocess.run(cmd, shell=True, check=True)
 
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)
@@ -190,26 +145,19 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
 
     log_info(f"Appending daily tar.gz: {url}")
 
-    with httpx.stream("GET", url, timeout=None, follow_redirects=True) as response:
-        response.raise_for_status()
+    # Download, decompress, and concatenate to existing tar
+    tmp_tar_path = tar_path.parent.joinpath(f"daily_{date_str}.tar")
+    try:
+        # Download and decompress to temp file
+        cmd = f'curl -L -s "{url}" | pigz -d > "{tmp_tar_path}"'
+        subprocess.run(cmd, shell=True, check=True)
 
-        # Read into memory for gzip decompression
-        compressed_data = BytesIO()
-        for chunk in response.iter_bytes(65536):
-            compressed_data.write(chunk)
-        compressed_data.seek(0)
-
-        # Open existing tar in append mode
-        with tarfile.open(tar_path, "a") as existing_tar:
-            with gzip.GzipFile(fileobj=compressed_data) as gz:
-                # Cast GzipFile to IO[bytes] for tarfile.open
-                gz_io = cast(IO[bytes], gz)
-                with tarfile.open(name=None, fileobj=gz_io, mode="r|") as daily_tar:
-                    for member in daily_tar:
-                        # Extract file data and add to existing tar
-                        file_data = daily_tar.extractfile(member)
-                        if file_data is not None:
-                            existing_tar.addfile(member, file_data)
+        # Concatenate temp tar to existing tar
+        cmd = f'tar -Af "{tar_path}" "{tmp_tar_path}"'
+        subprocess.run(cmd, shell=True, check=True)
+    finally:
+        # Clean up temp file
+        tmp_tar_path.unlink(missing_ok=True)
 
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)

@@ -8,12 +8,14 @@ DRA XML files are located at:
 
 The tar structure is flattened to match NCBI format:
     {submission}/{submission}.{type}.xml
+
+Uses tar command with file list for fast bulk operations.
 """
 import os
-import tarfile
+import subprocess
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Iterator, Optional, Set
+from typing import Iterator, List
 
 import duckdb
 
@@ -49,18 +51,6 @@ def get_dra_xml_dir_path(submission: str) -> Path:
         submission[:6],
         submission
     )
-
-
-def get_dra_xml_file_path(submission: str, xml_type: str) -> Path:
-    """Get the path to a specific DRA XML file."""
-    return get_dra_xml_dir_path(submission).joinpath(
-        f"{submission}.{xml_type}.xml"
-    )
-
-
-def get_tar_member_name(submission: str, xml_type: str) -> str:
-    """Get the tar member name for a DRA XML file (flattened NCBI format)."""
-    return f"{submission}/{submission}.{xml_type}.xml"
 
 
 def iter_all_dra_submissions(config: Config) -> Iterator[str]:
@@ -123,46 +113,30 @@ def iter_updated_dra_submissions(
         yield row[0]
 
 
-def add_submission_to_tar(
-    tar: tarfile.TarFile,
-    submission: str,
-    added_members: Optional[Set[str]] = None
-) -> int:
-    """Add all XML files for a submission to the tar.
+def collect_xml_files_for_submission(submission: str) -> List[str]:
+    """Collect existing XML file paths for a submission.
 
-    Uses os.listdir() once per submission instead of exists() per file
-    to minimize Lustre inode access.
+    Uses os.listdir() once to minimize Lustre inode access.
     """
-    if added_members is None:
-        added_members = set()
-
     xml_dir = get_dra_xml_dir_path(submission)
     try:
         existing_files = set(os.listdir(xml_dir))
     except FileNotFoundError:
-        return 0
+        return []
 
-    count = 0
+    result = []
     for xml_type in XML_TYPES:
         filename = f"{submission}.{xml_type}.xml"
-        if filename not in existing_files:
-            continue
+        if filename in existing_files:
+            result.append(str(xml_dir.joinpath(filename)))
 
-        tar_name = get_tar_member_name(submission, xml_type)
-        if tar_name in added_members:
-            continue
-
-        tar.add(xml_dir.joinpath(filename), arcname=tar_name)
-        added_members.add(tar_name)
-        count += 1
-
-    return count
+    return result
 
 
 def build_dra_tar(config: Config) -> None:
-    """Build DRA Metadata tar from scratch.
+    """Build DRA Metadata tar from scratch using tar command.
 
-    Iterates over all DRA submissions and adds their XML files.
+    Creates a file list and uses tar with --transform for fast bulk operation.
     """
     tar_path = get_dra_tar_path(config)
     tar_dir = tar_path.parent
@@ -174,18 +148,40 @@ def build_dra_tar(config: Config) -> None:
     if tar_path.exists():
         tar_path.unlink()
 
-    added_members: Set[str] = set()
+    # Collect all files and generate file list
+    file_list_path = tar_dir.joinpath("dra_files.txt")
     total_files = 0
     submission_count = 0
 
-    with tarfile.open(tar_path, "w") as tar:
+    log_info("Collecting DRA XML files...")
+    with open(file_list_path, "w", encoding="utf-8") as f:
         for submission in iter_all_dra_submissions(config):
-            count = add_submission_to_tar(tar, submission, added_members)
-            if count > 0:
+            files = collect_xml_files_for_submission(submission)
+            if files:
                 submission_count += 1
-                total_files += count
-                if submission_count % 1000 == 0:
-                    log_info(f"Added {submission_count} submissions ({total_files} files)")
+                total_files += len(files)
+                for src_path in files:
+                    f.write(f"{src_path}\n")
+                if submission_count % 10000 == 0:
+                    log_info(f"Collected {submission_count} submissions ({total_files} files)")
+
+    log_info(f"Collected {submission_count} submissions ({total_files} files)")
+
+    if total_files == 0:
+        log_warn("No DRA XML files found")
+        file_list_path.unlink(missing_ok=True)
+        return
+
+    # Build tar using tar command with --transform
+    # Transform: /usr/local/resources/dra/fastq/DRA000/DRA000001/DRA000001.submission.xml
+    #         -> DRA000001/DRA000001.submission.xml
+    log_info("Creating tar archive...")
+    transform_pattern = r"s|.*/fastq/[^/]*/\([^/]*\)/|\1/|"
+    cmd = f'tar -cf "{tar_path}" --transform "{transform_pattern}" -T "{file_list_path}"'
+    subprocess.run(cmd, shell=True, check=True)
+
+    # Cleanup
+    file_list_path.unlink(missing_ok=True)
 
     log_info(f"DRA tar built: {submission_count} submissions, {total_files} files")
 
@@ -199,7 +195,7 @@ def sync_dra_tar(config: Config) -> None:
     """Sync DRA Metadata tar with latest data.
 
     If tar doesn't exist, builds from scratch.
-    Otherwise, appends XML files for submissions updated since last sync.
+    Otherwise, creates temp tar for updated submissions and concatenates.
     """
     tar_path = get_dra_tar_path(config)
     last_updated_path = get_dra_last_updated_path(config)
@@ -225,15 +221,43 @@ def sync_dra_tar(config: Config) -> None:
 
     log_info(f"Syncing DRA tar since: {last_updated}")
 
+    # Collect updated files
+    tar_dir = tar_path.parent
+    file_list_path = tar_dir.joinpath("dra_update_files.txt")
     total_files = 0
     submission_count = 0
 
-    with tarfile.open(tar_path, "a") as tar:
+    with open(file_list_path, "w", encoding="utf-8") as f:
         for submission in iter_updated_dra_submissions(config, last_updated):
-            count = add_submission_to_tar(tar, submission)
-            if count > 0:
+            files = collect_xml_files_for_submission(submission)
+            if files:
                 submission_count += 1
-                total_files += count
+                total_files += len(files)
+                for src_path in files:
+                    f.write(f"{src_path}\n")
+
+    if total_files == 0:
+        log_info("No updated DRA submissions found")
+        file_list_path.unlink(missing_ok=True)
+        # Update last_updated file
+        last_updated_path.write_text(TODAY.strftime("%Y%m%d"))
+        return
+
+    log_info(f"Found {submission_count} updated submissions ({total_files} files)")
+
+    # Create temp tar with updated files
+    tmp_tar_path = tar_dir.joinpath("dra_update.tar")
+    transform_pattern = r"s|.*/fastq/[^/]*/\([^/]*\)/|\1/|"
+    cmd = f'tar -cf "{tmp_tar_path}" --transform "{transform_pattern}" -T "{file_list_path}"'
+    subprocess.run(cmd, shell=True, check=True)
+
+    # Concatenate temp tar to main tar
+    cmd = f'tar -Af "{tar_path}" "{tmp_tar_path}"'
+    subprocess.run(cmd, shell=True, check=True)
+
+    # Cleanup
+    file_list_path.unlink(missing_ok=True)
+    tmp_tar_path.unlink(missing_ok=True)
 
     log_info(f"DRA tar synced: {submission_count} submissions, {total_files} files")
 
