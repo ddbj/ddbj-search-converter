@@ -206,13 +206,14 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
     sra_db_path = config.const_dir.joinpath("sra", SRA_DB_FILE_NAME)
     log_info("processing SRA accessions database", file=str(sra_db_path))
     for bp, bs in iter_bp_bs_relations(config, source="sra"):
-        if bs and bp:
+        # SRA_Accessions.tab contains invalid BioSample IDs (numeric internal IDs)
+        if bs and bs.startswith("SAM") and bp and bp.startswith("PRJ"):
             bs_to_bp.add((bs, bp))
 
     dra_db_path = config.const_dir.joinpath("sra", DRA_DB_FILE_NAME)
     log_info("processing DRA accessions database", file=str(dra_db_path))
     for bp, bs in iter_bp_bs_relations(config, source="dra"):
-        if bs and bp:
+        if bs and bs.startswith("SAM") and bp and bp.startswith("PRJ"):
             bs_to_bp.add((bs, bp))
 
 
