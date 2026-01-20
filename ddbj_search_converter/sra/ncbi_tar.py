@@ -5,7 +5,10 @@ Downloads and processes NCBI SRA Metadata tar.gz files:
 - Full tar.gz: Creates new tar file from scratch
 - Daily tar.gz: Appends entries to existing tar file
 
-Uses curl + pigz for fast download and decompression.
+Uses aria2c for fast, reliable downloads with:
+- Multi-connection parallel download (-x 16)
+- Automatic retry (--max-tries=10)
+- Resume capability (-c)
 """
 import subprocess
 from datetime import date, timedelta
@@ -98,21 +101,58 @@ def find_ncbi_daily_dates_to_sync(
         current += timedelta(days=1)
 
 
+def _download_with_aria2c(url: str, output_path: Path) -> None:
+    """Download a file using aria2c with optimized settings.
+
+    Args:
+        url: URL to download
+        output_path: Path to save the downloaded file
+    """
+    output_dir = output_path.parent
+    output_name = output_path.name
+
+    cmd = [
+        "aria2c",
+        "-x", "16",           # 16 connections for parallel download
+        "-s", "16",           # 16 splits
+        "--max-tries=10",     # Retry up to 10 times
+        "--retry-wait=5",     # Wait 5 seconds between retries
+        "--timeout=600",      # 10 minute timeout
+        "--connect-timeout=60",  # 60 second connection timeout
+        "-c",                 # Enable resume
+        "-d", str(output_dir),
+        "-o", output_name,
+        url,
+    ]
+    subprocess.run(cmd, check=True)
+
+
 def download_full_tar_gz(config: Config, date_str: str) -> None:
     """Download NCBI Full tar.gz and create new tar file.
 
-    Uses curl + pigz for fast download and decompression.
+    Uses aria2c for fast, reliable download, then pigz for decompression.
     """
     url = get_ncbi_full_tar_gz_url(date_str)
     tar_path = get_ncbi_tar_path(config)
     tar_dir = get_sra_tar_dir(config)
     tar_dir.mkdir(parents=True, exist_ok=True)
 
+    tar_gz_path = tar_dir.joinpath(f"ncbi_full_{date_str}.tar.gz")
+
     log_info(f"Downloading NCBI Full tar.gz: {url}")
     log_info(f"Output: {tar_path}")
 
-    cmd = f'curl -L -s "{url}" | pigz -d > "{tar_path}"'
-    subprocess.run(cmd, shell=True, check=True)
+    try:
+        # Download with aria2c
+        _download_with_aria2c(url, tar_gz_path)
+
+        # Decompress with pigz
+        log_info("Decompressing with pigz...")
+        cmd = f'pigz -d -c "{tar_gz_path}" > "{tar_path}"'
+        subprocess.run(cmd, shell=True, check=True)
+    finally:
+        # Clean up .tar.gz file
+        tar_gz_path.unlink(missing_ok=True)
 
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)
@@ -145,18 +185,23 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
 
     log_info(f"Appending daily tar.gz: {url}")
 
-    # Download, decompress, and concatenate to existing tar
+    tar_gz_path = tar_path.parent.joinpath(f"daily_{date_str}.tar.gz")
     tmp_tar_path = tar_path.parent.joinpath(f"daily_{date_str}.tar")
+
     try:
-        # Download and decompress to temp file
-        cmd = f'curl -L -s "{url}" | pigz -d > "{tmp_tar_path}"'
+        # Download with aria2c
+        _download_with_aria2c(url, tar_gz_path)
+
+        # Decompress with pigz
+        cmd = f'pigz -d -c "{tar_gz_path}" > "{tmp_tar_path}"'
         subprocess.run(cmd, shell=True, check=True)
 
         # Concatenate temp tar to existing tar
         cmd = f'tar -Af "{tar_path}" "{tmp_tar_path}"'
         subprocess.run(cmd, shell=True, check=True)
     finally:
-        # Clean up temp file
+        # Clean up temp files
+        tar_gz_path.unlink(missing_ok=True)
         tmp_tar_path.unlink(missing_ok=True)
 
     # Update last_merged file

@@ -18,6 +18,8 @@ Outputs:
     - Mapping: BioProject ID -> BioSample ID
 - /lustre9/open/shared_data/dblink/bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv
     - Mapping: BioProject ID (primary) -> BioProject ID (umbrella)
+- /lustre9/open/shared_data/dblink/bioproject-humID/bioproject2humID.tsv
+    - Mapping: BioProject ID -> NBDC hum ID
 - /lustre9/open/shared_data/dblink/gea-bioproject/gea2bioproject.tsv
     - Mapping: GEA ID -> BioProject ID
 - /lustre9/open/shared_data/dblink/gea-biosample/gea2biosample.tsv
@@ -49,6 +51,7 @@ EXPORT_RELATIONS: List[Tuple[AccessionType, AccessionType, str]] = [
     ("biosample", "bioproject", "biosample-bioproject/biosample2bioproject.tsv"),
     ("bioproject", "biosample", "bioproject-biosample/bioproject2biosample.tsv"),
     ("bioproject", "umbrella-bioproject", "bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv"),
+    ("bioproject", "hum-id", "bioproject-humID/bioproject2humID.tsv"),
     ("gea", "bioproject", "gea-bioproject/gea2bioproject.tsv"),
     ("gea", "biosample", "gea-biosample/gea2biosample.tsv"),
     ("metabobank", "bioproject", "mtb2bp/mtb_id_bioproject.tsv"),
