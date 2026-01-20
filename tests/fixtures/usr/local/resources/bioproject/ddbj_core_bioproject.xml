@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PackageSet>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB503" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Genome projects for evolutional studies of the family Acetobacteraceae</Title>
+					<Description>We are pursuing a research project to comprehend the evolutional status of the family Acetobacteraceae based on genome analyses.  First 18 bacterial genomes were projected to read the genome DNA sequences.  We will provide data of more bacterial genome and moreover transcriptome by mRNA sequencing.</Description>
+					<Grant GrantId="">
+						<Title>Industrial utilization and molecular comprehension of the thermo-tolerance of thermostable fermentation microbes</Title>
+						<Agency abbr="PROBRAIN">he Program for Promotion of Basic Research Activities for Innovative Biosciences</Agency>
+					</Grant>
+					<Grant GrantId="2251022">
+						<Title>Applied studies for biomass utilization based on genome analyses of acetic acid bacteria exhibiting specific metabolic traits.</Title>
+						<Agency abbr="KAKEN-HI">Scientific Research from the Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Grant GrantId="">
+						<Title>Fermentational approaches for low CO2 exhausting from genome engineering and evolutional adaptation of thermo-tolerant microbes.</Title>
+						<Agency abbr="ALCA">Advanced Low Carbon Technology Research and Development Program  Abbreviation :   ALCA</Agency>
+					</Grant>
+					<ProjectReleaseDate>2012-09-10T18:17:52.600+09:00</ProjectReleaseDate>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="433">
+							<OrganismName>Acetobacteraceae</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB547" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>NBRP : Genome information of microbial organism related human and environment</Title>
+					<Description>For the promotion of various studies, we perform genome sequencing of the important 300 microbial organisms to humans and the environment.</Description>
+					<Grant GrantId="12101536">
+						<Title>National BioResource Project, Genome Information Upgrading Program</Title>
+						<Agency abbr="MEXT">The Ministry of Education, Culture, Sports, Science, and Technology, Japan</Agency>
+					</Grant>
+					<ProjectReleaseDate>2012-09-21T11:00:16.497+09:00</ProjectReleaseDate>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="2">
+							<OrganismName>Bacteria</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1141" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>WGS of P. aeruginosa</Title>
+					<Description>Pseudomonas aeruginosa is one of the most common nosocomial pathogens. Emergence of multidrug-resistant (MDR) P. aeruginosa is a critical problem in medical practice. The key events in the emergence and spread of MDR P. aeruginosa remain unknown. Here, we applied whole-genome sequence (WGS) analyses to define the population structure of 145 MDR P. aeruginosa strains mainly isolated from Japan in addition to Thailand, Vietnam, and Nepal</Description>
+					<ProjectReleaseDate>2013-06-17T11:20:49.611+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Medical>yes</Medical>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="287">
+							<OrganismName>Pseudomonas aeruginosa</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1384" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Turtle EvoDevo Project</Title>
+					<Description>This is the project including genome sequencing of green sea turtle (C. mydas) and Chinese soft shell turtle (P. sinensis), together with RNAseq data during P. sinensis and chicken embryonic development.</Description>
+					<ExternalLink label="Achievements already published on Nature Genetics">
+						<URL>http://www.nature.com/ng/journal/v45/n6/full/ng.2615.html</URL>
+					</ExternalLink>
+					<Publication id="23624526">
+						<Reference />
+						<DbType>ePubmed</DbType>
+					</Publication>
+					<ProjectReleaseDate>2013-07-08T11:12:50.957+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Evolution>yes</Evolution>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="34908">
+							<OrganismName>Pelodiscus sinensis japonicus</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1445" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Strawberry whole-genome sequencing</Title>
+					<Description>With the aim of investigating of genome structure in Fragaria species, de novo whole genome sequencing was performed in F. × ananassa by using Illumina and Roche 454 sequencing platforms. In parallel, four wild Fragaria species, F. iinumae, F. nipponica, F. nubicola, and F. orientalis, were subjected to whole genome sequences by using an&#xD;
+Illumina plat form.</Description>
+					<ExternalLink label="Strawberry GARDEN">
+						<URL>http://strawberry-garden.kazusa.or.jp/</URL>
+					</ExternalLink>
+					<Publication id="24282021">
+						<Reference />
+						<DbType>ePubmed</DbType>
+					</Publication>
+					<ProjectReleaseDate>2013-11-26T09:39:47.232+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Agricultural>yes</Agricultural>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eComparativeGenomics">
+						<Organism taxID="3746">
+							<OrganismName>Fragaria</OrganismName>
+							<Strain />
+							<Organization>eMulticellular</Organization>
+							<Reproduction>eSexual</Reproduction>
+							<RepliconSet>
+								<Ploidy type="ePolyploid" />
+							</RepliconSet>
+							<GenomeSize units="Mb">200</GenomeSize>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1472" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Cryptomeria japonica sequencing</Title>
+					<Description>Cryptomeria japonica is the most important forestry tree species in Japan, adapting to diverse environmental conditions that promoted evolution of the species. This project aims to elucidate the environmental adaptation of the species and to utilize genomic information in breeding programs, producing transcriptome and genome sequences</Description>
+					<Publication id="22507374">
+						<Reference />
+						<DbType>ePubmed</DbType>
+					</Publication>
+					<Publication id="22424262">
+						<Reference />
+						<DbType>ePubmed</DbType>
+					</Publication>
+					<ProjectReleaseDate>2013-10-01T14:06:36.347+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Evolution>yes</Evolution>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="3369">
+							<OrganismName>Cryptomeria japonica</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1539" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Fungal diversity in natural environment</Title>
+					<Description>The goal of this project is to elucidate the diversity and composition of fungal community under various natural environments. Our project includes various samples from terrestrial environments such as soil, leaf, and roots. Soil, leaves and roots samples are from forests and agricultural fields.</Description>
+					<ProjectReleaseDate>2014-06-05T14:47:36.592+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Environmental>yes</Environmental>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="1348798">
+							<OrganismName>terrestrial metagenome</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1554" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Construction of expressed genes set in common wheat</Title>
+					<Description>Transcriptome resource of common wheat was constructed from expressed sequence tags (ESTs) including comprehensive full-length cDNAs and EST clones to annotate wheat genomes.</Description>
+					<ExternalLink label="NBRP-wheat">
+						<URL>http://www.shigen.nig.ac.jp/wheat/komugi/</URL>
+					</ExternalLink>
+					<ExternalLink label="KomugiGSP">
+						<URL>http://komugigsp.dna.affrc.go.jp/</URL>
+					</ExternalLink>
+					<ExternalLink label="Triticeae full-length CDS database">
+						<URL>http://trifldb.psc.riken.jp/</URL>
+					</ExternalLink>
+					<Grant GrantId="KGS1002">
+						<Title>Genomics for Agricultural Innovation KGS1002</Title>
+						<Agency abbr="MAFF">Ministry of Agriculture, Forestry, and Fisheries of Japan</Agency>
+					</Grant>
+					<Grant GrantId="18017021">
+						<Title>Comparative genomics of common wheat</Title>
+						<Agency abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Grant GrantId="09601015">
+						<Title>National Bioresource Project</Title>
+						<Agency abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Grant GrantId="07135012">
+						<Title>National Bioresource Project</Title>
+						<Agency abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Grant GrantId="14011242">
+						<Title>Comparative genomics of common wheat</Title>
+						<Agency abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Grant GrantId="13202055">
+						<Title>Comparative genomics of common wheat</Title>
+						<Agency abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Grant GrantId="13356001">
+						<Title>Basic research</Title>
+						<Agency abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology of Japan</Agency>
+					</Grant>
+					<Publication id="10.1046/j.1365-313X.2003.01687.x">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id=".doi.org/10.1266/ggs.79.227">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1007/s00438-003-0939-7">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1104/pp.105.070722">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1007/s10142-005-0010-3">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1007/s00438-006-0120-1">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1007/s10142-008-0076-9">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1186/1471-2164-10-271">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1104/pp.109.138214">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1093/dnares/dsq009">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1007/s10142-012-0269-0">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<Publication id="10.1093/dnares/dss001">
+						<Reference />
+						<DbType>eDOI</DbType>
+					</Publication>
+					<ProjectReleaseDate>2016-01-06T17:05:58.822+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Agricultural>yes</Agricultural>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="4565">
+							<OrganismName>Triticum aestivum</OrganismName>
+							<Cultivar>Chinese Spring</Cultivar>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB1893" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>metatranscriptome of grass carp intestinal content</Title>
+					<Description>we sequenced 11 metatranscriptomes of grass carp intestinal contents to explore how the structure and function of the intestinal bacterial communities change driven by different food with various cellulose content</Description>
+					<ExternalLink>
+						<dbXREF db="SRA">
+							<ID>DRP001166</ID>
+						</dbXREF>
+					</ExternalLink>
+					<ProjectReleaseDate>2014-06-03T14:51:48.976+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Other />
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="496924">
+							<OrganismName>fish metagenome</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+	<Package>
+		<Project>
+			<Project>
+				<ProjectID>
+					<ArchiveID accession="PRJDB3441" archive="DDBJ" />
+				</ProjectID>
+				<ProjectDescr>
+					<Title>Wasmannia genome</Title>
+					<Description>Little fire ant, Wasmannia auropunctata is invasive species that native to Central and South America. This species successfully invade to new habitat and spread all over the world. In native habitats, W. auropunctata employ a typical Hymenopteran system of reproduction. In introduced areas however, reproduction system is drastically changed, -- queens and males are produced with only maternal and paternal genomes, respectively, whereas sterile workers are produced sexually. Goal of our research is to understand what kind of selections or genomic change are significant for transition of these different tyeps of reproduction systems using samples collected in native and invased area.</Description>
+					<ProjectReleaseDate>2015-01-13T14:15:07.758+09:00</ProjectReleaseDate>
+					<Relevance>
+						<Evolution>yes</Evolution>
+					</Relevance>
+				</ProjectDescr>
+				<ProjectType>
+					<ProjectTypeTopAdmin subtype="eOther">
+						<Organism taxID="64793">
+							<OrganismName>Wasmannia auropunctata</OrganismName>
+						</Organism>
+					</ProjectTypeTopAdmin>
+				</ProjectType>
+			</Project>
+		</Project>
+	</Package>
+</PackageSet>

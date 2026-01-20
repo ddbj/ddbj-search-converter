@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000002" center_name="KEIO" alias="DRS000002">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00002791</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>DRS000002</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>224308</TAXON_ID>
+            <SCIENTIFIC_NAME>Bacillus subtilis subsp. subtilis str. 168</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Genomic DNA from Bacillus subtilis subsp. subtilis 168.</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>strain</TAG>
+                <VALUE>str. 168</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

@@ -1,0 +1,24 @@
+Comment[GEAAccession]	E-GEAD-1005
+MAGE-TAB Version	1.1
+Investigation Title	RT2ProfilerTM PCR Array-Human common cytokines (CBX140)
+Experiment Description	MoDC were stimulated with Ts-rSeV/dF (test sample) or none (control sample) for 1hour and subsequently cultured for 40 hours. After cultivation, the cells were harvested and high quality total RNAs were extracted as described in Materials and Methods. First strand cDNAs were synthesized from each 1??g of RNA and applied to RT2ProfilerTMPCR Array system in according to manufacturer instrument. Ct values of each genes were obtained.
+Experimental Design	stimulus or stress design
+Experimental Factor Name	sample_name
+Experimental Factor Type	sample_name
+Person Last Name	Shinji
+Person First Name	Okano
+Person Affiliation	Kyushu University
+Person Roles	submitter
+Public Release Date	2025-01-31
+PubMed ID	21187441
+Protocol Name	P-GEAD-4330	P-GEAD-4331	P-GEAD-4332	P-GEAD-4333	P-GEAD-4334	P-GEAD-4335	P-GEAD-4336	P-GEAD-4337
+Protocol Type	sample collection protocol	nucleic acid extraction protocol	nucleic acid labeling protocol	nucleic acid hybridization to array protocol	array scanning and feature extraction protocol	normalization data transformation protocol	growth protocol	treatment protocol
+Protocol Description	Preparation of human monocyte-derived dendritic cells. blood was obtained from healthy donors with informed consent and the monocytes were negatively enriched using the RosetteSepTM human monocyte enrichment kit (Stemcell Technologies Inc., Vancouver, Canada) according to the manufacturer?fs instructions. In brief, the blood was incubated with a cocktail of monoclonal antibodies (mAbs) including anti-CD2, CD3, CD8, CD19, CD56, and CD66 and separated with Ficoll Paque? Plus (Pharmacia biotech Inc., Wikstroms, Sweden). Enriched cells were centrifuged at 1200x g for 20 minutes and washed 3 times in order to remove as many platelets as possible. The obtained mononuclear cells were 70-80% CD14+ cells and &lt;1% CD3+ or CD19+ cells. The cells were then cultivated for 6 or 7 days at 5x105/ml in x-vivo 15 medium (Cambrex bio Science Walkersvile, Inc., East Rutherford, NJ) supplemented with 2% heat inactivated autologous serum, 500 U/ml of human GM-CSF and 250 U/ml of human IL-4 (Peprotech EC Ltd., London, UK). Half of the medium was replaced on day 3 or 4. Over 90% of cells were CD11c+ and essentially negative for CD3, CD56, CD19, and CD14 (all &lt; 1%). The MoDC exhibited an almost immature phenotype (CD80+/-,CD86low, HLA-DRlow, and CD83-) and morphologically had short dendrites. Viable nucleated cells were counted using a standard trypan blue dye exclusion system., Infection to MoDC. Human MoDC (5x105/ml to 2 x106/ml) were cultured with rSeVs or Ts-rSeV/dFs in 24 well flat bottom plates for indicated periods at a MOI 50., Real-time PCR was performed using RT2 qPCR Primer Assay (SuperArray bioscience Corporation) and RT2ProfilerTM PCR Array-Human common cytokines (SuperArray bioscience Corporation) with SuperArrays RT2 SYbR Green/ROx qPCR Master Mix (SuperArray bioscience Corporation) according to the manufacturer?fs instructions. Real-time PCR amplifications were performed in a total volume of 25??l using an AbI PRISM? 7000 (Applied biosystems Inc, Foster City, CA) with a two-step cycling program (1 cycle, 10 minutes at 95?C and 40 cycles of 15 seconds at 95?C and 1 minute at 60?C) according to the manufacturer?fs instructions. Templates of cDNA derived from 1 ??g RNA per array (96-well format) for the RT2ProfilerTM PCR Array and templates of cDNA derived from 10 ng RNA in a total volume of 25 ??l per well (96-well format) for each RT2 qPCR Primer Assay were used.	High-quality total RNA was extracted from MoDC using an RNeasy? mini kit (QIAGEN K.K., Tokyo, Japan) including homogenization with a QIAshredder homogenizer (QIAGEN K.K.) and DNase digestion with the RNase-free DNase Set (QIAGEN K.K.) according to the manufacturer?fs instructions. The integrity of the RNA was determined by formaldehyde agarose gel electrophoresis using the ElementaryTM RNA Gel Kit (Solon Industrial Pkwy, OH). The A260/A280 of the mRNA solutions were &gt; 1.9 and the sharp bands of 28S and 18S ribosomal RNA were confirmed. First strand cDNAs were synthesized from 500 ng of mRNA in a total volume of 20 ??l by reverse transcription using the ReactionReadyTM First Strand cDNA Synthesis Kit (SuperArray bioscience Corporation, Frederick, MD).	none	none	none	none	none	none
+SDRF File	E-GEAD-1005.sdrf.txt
+Comment[Number of channel]	single-channel
+Comment[Array Design REF]	A-GEAD-210
+Comment[AEExperimentType]	transcription profiling by array
+Comment[SecondaryAccession]	CBX140
+Comment[BioProject]	PRJDB20107
+Comment[CIBEX Accept Date]	2010-01-01
+Comment[Last Update Date]	2025-01-31

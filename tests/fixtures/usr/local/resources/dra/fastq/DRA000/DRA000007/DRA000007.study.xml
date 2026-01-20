@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000007" center_name="UT-MGS" alias="DRP000007">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDA34559</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Comprehensive identification and characterization of the binding sites of
+            polymerase II</STUDY_TITLE>
+            <STUDY_TYPE new_study_type="" existing_study_type="Transcriptome Analysis"/>
+            <STUDY_ABSTRACT>Comprehensive identification and characterization of the binding sites of
+            polymerase II in mammalian genes were attempted. We used ChIP-Seq method, in which next
+            gene sequencing technology and chromatin-immunoprecipitation assay were
+            combined.</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>Integrative Transcriptome Analysis</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJDA34559</ID>
+                        <LABEL>PRJDA34559</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>34559</ID>
+                        <LABEL>34559</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>Although recent studies have revealed that the majority of human genes
+            are subjected to regulation of alternative promoters (APs), the biological relevance of
+            this phenomenon remains unclear. In order to understand biological significance of the
+            presence of divergent transcription initiation events in the respective cell types, it
+            is indispensable to obtain bird-view of the transcriptome figures at every step of the
+            gene expression; namely, i) how the genomic structure change to transcriptionally active
+            form, ii) where the transcription initiation complex is recruited, iii) to what extent
+            the transcription is activated, iv) what transcripts formed and sorted to what
+            subcellular fractions. We have recently started multi-faceted use of the Illumina GA to
+            answer these questions. Integrative analysis produced for respective aspects of the gene
+            expression regulations revealed the comprehensive figures of the complex human gene
+            transcriptome for the first time.</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <XREF_LINK>
+                    <DB>pubmed</DB>
+                    <ID>20400770</ID>
+                </XREF_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+    </STUDY>
+</STUDY_SET>

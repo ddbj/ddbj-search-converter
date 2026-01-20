@@ -1,0 +1,42 @@
+MAGE-TAB Version	1.1
+Comment[MetaboBank accession]	MTBKS208
+Study Title	Identification of lipid components of royal food and midgut content of various castes in a termite
+Study Description	To reveal lipid components of king food, queen food, and midgut contents of kings, queens, soldiers and workers, they were collected directly from each other, and then we analyzed lipid profiles of them by using  LC-MS/MS analysis.
+
+Experimental Design	organism part comparison design
+Experimental Factor Name	tissue
+Experimental Factor Type	tissue
+
+Person Last Name	Mitaka	Tasaki	Takahashi	Kahyo
+Person First Name	Yuki	Eisuke	Yutaka	Tomoaki
+Person Mid Initials
+Person Affiliation	Kyoto University	Niigata University	Hamamatsu University School of Medicine	Hamamatsu University School of Medicine
+Person Roles	submitter	submitter	submitter	submitter
+
+PubMed ID
+Publication DOI	10.1093/pnasnexus/pgad222
+
+Protocol Name	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Type	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Description	"Royal food collection: we opened the window of the glass cell at the moment the worker started feeding the king or queen, pinched the feeding worker between the head and thorax with forceps, and immediately collected the food directly from between the feeding worker's mandibles, labrum, and labium using a picker.
+Midgut content collection: The digestive tract of the termite individual was removed under a microscope into phosphate-buffered saline and the midgut and hindgut were separated using forceps. During separation, the midgut side of the resection surface was held between the forceps to prevent the release of midgut contents into the PBS. Next, the resection surface of the midgut was dipped into the buffer for chemical analyses, and the contents were collected by gently pressing the midgut with forceps."	Samples were directly injected into a column in LC-MS/MS	Liquid chromatography was performed on an UltiMate 3000 (Thermofisher Scientific). An Acclaim 120 C18 column (2.1 mm i.d. × 150 mm, 3 µm, Thermofisher Scientific) was used for the chromatographic separation of a termite extract. The analysis conditions were follows; a mobile phase flow rate was 0.3 mL/min, a column temperature was 50 °C, the mobile phase was composed of A (water/acetonitrile/methanol=2/1/1, 5 mM ammonium formate,   0.1% formic acid) and B (acetonitrile/2-propanol=1/9, 5 mM ammonium formate, 0.1% formic acid) with a linear gradient elution: B=20% (0 min) - 100% (50 min) - 100% (60 min). The sample injection volume was 1 µL.	Mass spectrometry was perfomed on a Q-Exactive (quadrupole-Orbitrap MS, Thermofisher Scientific) equipped with a heated ESI source after liquid chromatography. A Q-Exactive was operated in mass resolution of 70,000 (FWHM) for mass spectra and 17,500 (FWHM) for product ion spectra with a spray voltage of 3.5 kV(+)/2.5 kV(-), and a S-lens RF level was set to 50. The sheath gas and the auxiliary gas flow rate were set to 50 and 15 L/h, respectively. The capillary temperature and the heater temperature were set to 250 °C and 350 °C, respectively. The mass spectra by MS/MS were recorded in a profile mode from m/z 220-2000. The MS/MS was carried out by a data dependent acquisition mode with an intensity threshold of 5.0e4. The collision energy for MS/MS was set to 30 eV.	We used QualBrowser software contained in Xcalibur 4.4 software, UNIX commands, mzMine ver. 2.53 software, and R software 4.0 software to discover the lipids that unevenly distributed in king food or queen food, or among midgut contents of king, queen, soldiers and workers.	Data not submitted.
+Protocol Parameters		Post extraction;Derivatization	Chromatography instrument;Autosampler model;Column model;Column type;Guard column	Scan polarity;Scan m/z range;Instrument;Ion source;Mass analyzer
+Protocol Hardware
+Protocol Software
+
+Public Release Date	2023-07-06
+
+Term Source Name
+Term Source File
+Term Source Version
+
+SDRF File	MTBKS208.sdrf.txt
+
+Comment[Study type]	targeted metabolite profiling
+Comment[Experiment type]	liquid chromatography-mass spectrometry
+Comment[Submission type]	LC-MS
+Comment[BioProject]	PRJDB14286
+Comment[Related study]
+Comment[Contributor]	Yuki Mitaka, Eisuke Tasaki, Yutaka Takahashi, Takumi Sakamoto, and Tomoaki Kahyo
+Comment[Submission Date]	2022-10-01
+Comment[Last Update Date]	2023-07-06

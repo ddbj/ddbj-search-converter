@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000002" center_name="KEIO" alias="DRP000002">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDA39275</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Whole genome resequencing of Bacillus subtilis subsp. subtilis str.
+            168</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+            <STUDY_ABSTRACT>Whole genome resequencing of B. subtilis subtilis 168 with Solexa
+            GAII</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>Whole genome resequencing of B. subtilis subtilis 168 with Solexa
+            GAII</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJDA39275</ID>
+                        <LABEL>PRJDA39275</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>39275</ID>
+                        <LABEL>39275</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>Whole genome resequencing of B. subtilis subtilis 168, as a reference
+            sequence in B. subtilis natto BEST195 genome sequencing.</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <XREF_LINK>
+                    <DB>pubmed</DB>
+                    <ID>20398357</ID>
+                </XREF_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+    </STUDY>
+</STUDY_SET>

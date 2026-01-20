@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000009" center_name="JAMSTEC" alias="DRS000009">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00010984</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>DRS000009</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>527640</TAXON_ID>
+            <SCIENTIFIC_NAME>microbial mat metagenome</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION></DESCRIPTION>
+    </SAMPLE>
+</SAMPLE_SET>

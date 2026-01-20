@@ -1,0 +1,70 @@
+MAGE-TAB Version	1.1
+Comment[MetaboBank accession]	MTBKS264
+Study Title	Low dietary fiber intake fuels gut bacterial mucolytic activity in healthy humans
+Study Description	Fiber-deprived diets promote gut microbiome-driven degradation of the colonic mucus barrier in mice, but translation into humans remains unclear. To address this, we conducted a 2×2 controlled-diet crossover study in healthy adults consuming high-fiber (HF) or low-fiber (LF) diets to better understand the drivers of gut barrier impairment. Despite individualized microbiome responses, the LF diet led to subtle host immune changes and increased abundances of LF biomarkers with limited ability to degrade fiber polysaccharides, including mucin-degrading bacteria and elevated activities of their mucin-targeting enzymes. Notably, expression of the mucin-degrading enzyme GH101 identified Mediterraneibacter torques as a consistently enriched mucin degrader in most participants after LF intervention. Culturing and cross-feeding experiments revealed that multiple LF biomarkers, including non-mucin degraders, synergize to metabolize mucin sugars. Finally, in a mouse model of inflammatory bowel disease, M. torques accelerated lethal colitis in fiber-deprived conditions, underscoring the potential long-term harm of LF-associated microbes in humans. These biomarkers could be targeted through diet, postbiotics, or employed as early-warning indicators in diagnostic tests.
+
+Experimental Design	stimulus or stress design	time series design
+Experimental Factor Name	dietary intervention	diet
+Experimental Factor Type	dietary intervention	diet
+
+Person Last Name	Fukuda	Komatsu
+Person First Name	Shinji	Mitsuko
+Person Mid Initials
+Person Affiliation	Institute for Advanced Biosciences, Keio University	Institute for Advanced Biosciences, Keio University
+Person Roles	submitter	submitter
+
+PubMed ID
+Publication DOI
+
+Protocol Name	Sample collection	Extraction	Capillary Electrophoresis 1	Capillary Electrophoresis 2	Mass spectrometry 1	Mass spectrometry 2	Data processing	Metabolite identification
+Protocol Type	Sample collection	Extraction	Capillary Electrophoresis	Capillary Electrophoresis	Mass spectrometry	Mass spectrometry	Data processing	Metabolite identification
+Protocol Description	"Volunteers were recruited through posters displayed at the Luxembourg Institute of Health (LIH) and the University of Luxembourg in Belval, as well as via email announcements, posts on the UL study forum, local Facebook groups, periodic paid advertisements on Facebook, and LIH social media channels. Recruitment was also supported by postings on the Science.lu study recruitment webpage.
+Interested individuals (n = 286) were invited to complete an online pre-screening survey via REDCap (Research Electronic Data Capture), a secure, web-based platform hosted by LIH. Those who met the eligibility criteria based on the online screening were invited to an in-person visit, during which a study nurse confirmed eligibility using anthropometric measurements. Eligible participants were then randomly assigned to one of the study arms, which determined the sequence of the high- and low-fiber dietary interventions.
+
+Stool samples were collected anaerobically using a specialized stool collection kit, which included the following components: Fe-Col Faeces Collection Kit (Alpha Laboratories, ImTec Diagnostics NV, Cat # FC2040), 30 mL sample tube with spoon (Alpha Laboratories, ImTec Diagnostics NV, Cat # RC2145), airtight aluminum foil bag, Anaerotest strip (Millipore, Cat # 1323710001) in a 5 mL polypropylene tube, and Oxoid AnaeroGen 2.5L Sachets (Thermo Scientific, Cat # AN0025A). Participants were instructed to freeze the samples at home and transport them using ice packs in an isothermal bag (Greiner Bio-One, Cat # 472020), provided by the nursing team to maintain the cold chain. For downstream analyses, stool samples were transferred to an anaerobic chamber (Coy Laboratories) and thawed in batches per participant for aliquoting."	"Between 2 and 10 mg of freeze-dried fecal samples were mixed with 500 μL of methanol. Samples were homogenized using a Shake Master NEO (Bio Medical Science Inc.) with 100 mg of 0.1 mm zirconia/silica beads and four 3 mm zirconia beads (Tomy Seiko Co., Ltd.). Subsequently, 200 μL of Milli-Q water containing 200 μM methionine sulfone and 200 μM D-camphor-10-sulfonic acid, along with 500 μL of chloroform, were added to the mixture, followed by a second round of shaking.
+The samples were then centrifuged at 20,000 × g for 10 minutes at 4 °C. The resulting supernatant was transferred to a filter column with a 5 kDa molecular weight cut-off (Ultrafree MC-PLHCC, 250/pk, Human Metabolome Technologies) for metabolite extraction. The flow-through was dried using a centrifugal concentrator (Labconco Corp.) at 40 °C for 3 hours. Finally, the dried residue was reconstituted in 100 μL of Milli-Q water containing internal standards (200 μM 3-aminopyrrolidine and 200 μM trimesic acid); for samples with limited material, 50 μL was used instead.
+For capillary electrophoresis, the reconstituted solution was further diluted with Milli-Q water: a 4-fold dilution was performed for anion mode, and a 2-fold dilution was used for cation mode."	"Extracted metabolites were separated using an Agilent 7100 capillary electrophoresis system (Agilent Technologies, Inc.) operated in negative mode.
+A COSMO(+)-type capillary (Nacalai Tesque, Inc.) was employed for separation.
+A 50 mM ammonium acetate solution (pH 8.5) served as the electrolyte for CE separation.
+Approximately 30 nL of sample solution was injected at 50 mbar for 30 seconds, and a voltage of -30 kV was applied.
+The capillary temperature was maintained at 20 °C, and the sample tray was cooled to below 5 °C."	"Extracted metabolites were separated using an Agilent 7100 capillary electrophoresis system (Agilent Technologies, Inc.) operated in positive mode.
+A fused silica capillary (Molex Inc.) was employed for separation.
+A 1 M formic acid solution served as the electrolyte for CE separation.
+Approximately 5 nL of sample solution was injected at 50 mbar for 5 seconds, and a voltage of 30 kV was applied.
+The capillary temperature was maintained at 20 °C, and the sample tray was cooled to below 5 °C."	"The levels of extracted metabolites were measured using an Agilent 6210 time-of-flight mass spectrometer (Agilent Technologies, Inc.) operated in negative ion mode.
+A sheath liquid consisting of 5 mM ammonium acetate in 50% methanol-water (v/v), containing 0.1 μM Hexakis(2,2-difluoroethoxy)phosphazene, was delivered at a flow rate of 10 μL/min.
+ESI-TOFMS analysis was performed in negative ion mode with a capillary voltage of 3,500 V.
+Heated dry nitrogen gas was supplied at a flow pressure of 7 psig, with the heater temperature maintained at 300 °C.
+For TOFMS, the fragmentor, skimmer, and Oct RFV voltages were set to 100 V, 50 V, and 200 V, respectively.
+Automatic recalibration of each acquired spectrum was conducted using reference masses of internal standards.
+The ^13C-labeled acetic acid (m/z 120.038339) and Hexakis(2,2-difluoroethoxy)phosphazene + CH3COOH (m/z 680.035541) were used as lock masses for exact mass measurements.
+Exact mass data were acquired at a rate of 10 spectra per second over an m/z range of 50 to 1,000."	"The levels of extracted metabolites were measured using an Agilent 6230 time-of-flight mass spectrometer (Agilent Technologies, Inc.) operated in positive ion mode.
+A sheath liquid consisting of 50% methanol-water (v/v) containing 0.01 μM Hexakis(2,2-difluoroethoxy)phosphazene was delivered at a flow rate of 10 μL/min.
+ESI-TOFMS was operated in positive ion mode with a capillary voltage of 4,000 V.
+Heated dry nitrogen gas was supplied at a flow pressure of 7 psig, with the heater temperature maintained at 300 °C.
+In TOFMS, the fragmentor, skimmer, and Oct RFV voltages were set to 75 V, 50 V, and 500 V, respectively.
+Automatic recalibration of each acquired spectrum was performed using reference masses of internal standards.
+The methanol adduct ion (m/z 66.063061) and Hexakis(2,2-difluoroethoxy)phosphazene (m/z 622.028963) were used as lock masses for exact mass measurements.
+Exact mass data were acquired at a rate of 10 spectra per second over an m/z range of 50 to 1,000."	The raw data were processed using MasterHands (ver. 2.20.0.3), an in-house software developed for metabolomic analysis.	"The peaks were identified using the in-house software MasterHands, based on matched m/z values and normalized migration times of corresponding standard compounds, when available.
+For peaks that did not match any standard compounds, concomitant signals - such as isotopic and fragment peaks - were excluded by comparing the m/z values and normalized migration times of paired peaks, applying an error tolerance of 20 ppm and 0.01 min. This filtering step yielded a set of peaks, hereafter referred to as components, that were presumed to originate from metabolites.
+Candidate compounds were selected from the Kyoto Encyclopedia of Genes and Genomes (KEGG) and the Human Metabolome Database (HMDB). The composition formulae of these candidates were validated by comparing their theoretical isotope distribution patterns with those obtained from the measured mass spectrometry data."
+Protocol Parameters		Post extraction;Derivatization	CE instrument;Autosampler model;Column model;Column type	CE instrument;Autosampler model;Column model;Column type	Scan polarity;Scan m/z range;Instrument;Ion source;Mass analyzer	Scan polarity;Scan m/z range;Instrument;Ion source;Mass analyzer
+Protocol Hardware
+Protocol Software
+
+Public Release Date	2025-08-29
+
+Term Source Name
+Term Source File
+Term Source Version
+
+SDRF File	MTBKS264.sdrf.txt
+
+Comment[Study type]	metabolite profiling
+Comment[Experiment type]	capillary electrophoresis-mass spectrometry
+Comment[Submission type]	CE-MS
+Comment[BioProject]	PRJDB35861
+Comment[Related study]
+Comment[Contributor]
+Comment[Submission Date]	2025-08-12
+Comment[Last Update Date]	2025-08-29

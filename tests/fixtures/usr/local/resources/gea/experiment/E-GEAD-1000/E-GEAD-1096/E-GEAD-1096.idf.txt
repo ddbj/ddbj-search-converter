@@ -1,0 +1,19 @@
+Comment[GEAAccession]	E-GEAD-1096
+MAGE-TAB Version	1.1
+Investigation Title	ATAC-seq of in vitro primary neurons with or without Bach2 overexpression
+Experiment Description	ATAC-seq of dissociated hippocampal neurons introduced with Control or Bach2-overexpression AAV at 6 days and cultured additional 8 days.
+Experimental Design	genetic modification design
+Experimental Factor Name	treatment
+Experimental Factor Type	treatment
+Person Last Name	Kishi
+Person First Name	Yusuke
+Person Affiliation	Laboratory of Molecular Neurobiology  Institute for Quantitative Biosciences, The University of Tokyo
+Person Roles	submitter
+Public Release Date	2025-10-03
+Protocol Name	P-GEAD-4904	P-GEAD-4905	P-GEAD-4906	P-GEAD-4907	P-GEAD-4908
+Protocol Type	sample collection protocol	nucleic acid extraction protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol	normalization data transformation protocol
+Protocol Description	ATAC-seq of dissociated hippocampal neurons introduced with Control or Bach2-overexpression AAV at 6 days and cultured additional 8 days.	Tn5 tagmentation	PCR	Nextseq2000	CPM
+SDRF File	E-GEAD-1096.sdrf.txt
+Comment[AEExperimentType]	ATAC-seq
+Comment[BioProject]	PRJDB18626
+Comment[Last Update Date]	2025-10-03

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000010" center_name="NIAS" alias="DRS000010">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00009497</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>DRS000010</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>39947</TAXON_ID>
+            <SCIENTIFIC_NAME>Oryza sativa Japonica Group</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION></DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>cultivar</TAG>
+                <VALUE>Koshihikari</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

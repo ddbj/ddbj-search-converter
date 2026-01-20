@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000009" center_name="JAMSTEC" alias="DRP000009">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJNA39577</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Subsurface mine microbial mat metagenome</STUDY_TITLE>
+            <STUDY_TYPE new_study_type="" existing_study_type="Metagenomics"/>
+            <STUDY_ABSTRACT>This is a metagenomic project to figure out the microbial community
+            flourished along with hot water stream in the Japanese subsurface mine.</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>Subsurface mine microbial mat metagenome</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJNA39577</ID>
+                        <LABEL>PRJNA39577</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>39577</ID>
+                        <LABEL>39577</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>This is a metagenomic project to figure out the microbial community
+            flourished along with hot water stream in the Japanese subsurface mine. As a first step
+            of this project, we constructed a fosmid library from the DNA directly isolated from the
+            microbial mat without cultivation. Since we could get about 3,500 fosmid clones, we
+            determined the paired-end sequence of all fosmid clones. Next, we classified all clones
+            in phylum level based on the information for the origin of the genes identified in the
+            paired-end sequence and then we selected 179 clones evenly according to the ratio of
+            each classified phylum to cover whole microbial community. These selected clones were
+            sequenced by shotgun sequencing method (Sanger). Moreover, we selected 158 fosmid clones
+            to increase the genomic information in the microbial mat and sequenced all the selected
+            clones at once by 454 sequencer.</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <XREF_LINK>
+                    <DB>pubmed</DB>
+                    <ID>22303444</ID>
+                </XREF_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+    </STUDY>
+</STUDY_SET>

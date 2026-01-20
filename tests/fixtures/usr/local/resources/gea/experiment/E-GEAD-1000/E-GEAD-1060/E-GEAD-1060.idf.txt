@@ -1,0 +1,22 @@
+Comment[GEAAccession]	E-GEAD-1060
+MAGE-TAB Version	1.1
+Investigation Title	Methylation analysis of PBMCs from healthy individuals
+Experiment Description	Methylation analysis was performed on blood samples collected from healthy volunteers aged 18 years or older who lived or worked in the Kashiwa-no-ha area.
+Experimental Design	observational design	population based design	sex design
+Experimental Factor Name	isolate	collection_date
+Experimental Factor Type	isolate	collection_date
+Person Last Name	Suzuki	Kashima	Sequence
+Person First Name	Yutaka	Yukie	Kashiwa
+Person Affiliation	Suzuki Lab  Department of Computational Biology and Medical Sciences Graduate School of Frontier Sciences, The University of Tokyo		
+Person Roles	submitter	submitter	submitter
+Public Release Date	2025-05-19
+Protocol Name	P-GEAD-4715	P-GEAD-4716	P-GEAD-4717	P-GEAD-4718	P-GEAD-4719	P-GEAD-4720
+Protocol Type	sample collection protocol	nucleic acid extraction protocol	nucleic acid labeling protocol	nucleic acid hybridization to array protocol	array scanning and feature extraction protocol	normalization data transformation protocol
+Protocol Description	To acquire blood samples for the study, we recruited donors from 20s. to 80s.	MagAttract HWW DNA Kit (Qiagen)	accoding to Standard Illumina Protocol	Bisulphite converted DNA was amplified, fragmented and hybridized to Illumina Infinium Human MethylationEPIC Beadchip using standard Illumina protocol	Standard Illumina Protocol using iSCAN	Standard protocol by GenomeStudio
+SDRF File	E-GEAD-1060.sdrf.txt
+Comment[Number of channel]	dual-channel
+Comment[DBCLS]	The Data Access Committee of the Database Center for Life Science (DBCLS) approved that this personal data was made published according to the NBDC Guidelines for Human Data Sharing (https://humandbs.dbcls.jp/en/guidelines/data-sharing-guidelines) as the NBDC Research ID hum0290 and the application ID J-DS000458-006.
+Comment[Array Design REF]	A-GEOD-21145
+Comment[AEExperimentType]	methylation profiling by array
+Comment[BioProject]	PRJDB20334
+Comment[Last Update Date]	2025-05-19

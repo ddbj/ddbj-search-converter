@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET xmlns:ns2="SRA.annotation">
+    <RUN accession="DRR000011" center_name="UT-MGS" alias="DRR000011" run_center="UT-MGS" run_date="2009-06-12T17:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000005" refcenter="UT-MGS" refname="DRX000005"/>
+        <RUN_ATTRIBUTES>
+            <RUN_ATTRIBUTE>
+                <TAG>notes</TAG>
+                <VALUE>repackaged qseq int nse</VALUE>
+                <UNITS></UNITS>
+            </RUN_ATTRIBUTE>
+        </RUN_ATTRIBUTES>
+    </RUN>
+    <RUN accession="DRR000012" center_name="UT-MGS" alias="DRR000012" run_center="UT-MGS" run_date="2009-06-15T17:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000005" refcenter="UT-MGS" refname="DRX000005"/>
+        <RUN_ATTRIBUTES>
+            <RUN_ATTRIBUTE>
+                <TAG>notes</TAG>
+                <VALUE>repackaged qseq</VALUE>
+                <UNITS></UNITS>
+            </RUN_ATTRIBUTE>
+        </RUN_ATTRIBUTES>
+    </RUN>
+    <RUN accession="DRR000013" center_name="UT-MGS" alias="DRR000013" run_center="UT-MGS" run_date="2009-06-15T17:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000005" refcenter="UT-MGS" refname="DRX000005"/>
+        <RUN_ATTRIBUTES>
+            <RUN_ATTRIBUTE>
+                <TAG>notes</TAG>
+                <VALUE>repackaged qseq int nse</VALUE>
+                <UNITS></UNITS>
+            </RUN_ATTRIBUTE>
+        </RUN_ATTRIBUTES>
+    </RUN>
+</RUN_SET>

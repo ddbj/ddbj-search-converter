@@ -1,0 +1,41 @@
+MAGE-TAB Version	1.1
+Comment[MetaboBank accession]	MTBKS71
+Study Title	Effect of agricultural films for spinach leaf metabolites 2
+Study Description	Investigation of Spinacia oleracea leaf metabolites. 3 growth conditions (covered with normal or UV cut agricultural film or no agricultural film), 4 cultivers (Kanaji, Kurohaminstarland, Nihon and ,Wasesaradaakari) and 3 replicates data are examined.
+
+Experimental Design	strain or line design	growth condition design
+Experimental Factor Name	cultivar	treatment
+Experimental Factor Type	cultivar	treatment
+
+Person Last Name	Ara
+Person First Name	Takeshi
+Person Mid Initials
+Person Affiliation	Kazusa DNA Research Institute
+Person Roles	submitter
+
+PubMed ID
+Publication DOI
+
+Protocol Name	Sample collection 1	Sample collection 2	Sample collection 3	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Type	Sample collection	Sample collection	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Description	Spinacia oleracea are grown at agricultural field in natural conditions.	Spinacia oleracea are grown at agricultural field in natural conditions under normal film.	Spinacia oleracea are grown at agricultural field in natural conditions under UV cut film.	Harvested sample is frozen by liquid N2 and resulting powder (100mg) are solved in 300 microL 80% methanol solution. 20 microL sample is injected into HPLC after 0.2 micrometre membrane filter treatment.	Instrument: Agilent 1100 HPLC (Agilent Technologies) HPLC equipped with photodiode array detector; Comment: Elute monitoring by PDA equipped with Agilent1100 HPLC in 2 nm step.; Max wave length for elute monitering: 650.0 nm; Min wave length for elute monitering: 200.0 nm; Column name: TSKgel ODS-100V (4.6 x 250 mm, 5 micrometre; TOSOH); Column temperature: 40.0 degree C; Elute monitor: photodiode array detector; Flow gradient: Gradient: (B);3 to 97% (0.0 to 45.0 min), 97% (45.1 to 50.0 min), 3% (50.1 to 57.0 min); Flow rate: 0.5 ml/min; Solvent: A; 0.1% formic acid aq. B; ACN (addition 0.1% formic acid fc.)	Instrument: LTQ-FT (Thermo Fisher Scientific) Fourier transform ion cyclotron resonance mass spectrometer (FT-ICR MS); MS scan setting: FT-ICR-MS conditions: Filter 1: FTMS + c norm !corona !pi res=100000 o(100.0-1500.0); 2: ITMS + c norm !corona !pi Dep MS/MS Most intense ion from (1); 3: ITMS + c norm !corona !pi Dep MS/MS 2nd most intense ion from (1); 4: ITMS + c norm !corona !pi Dep MS/MS 3rd most intense ion from (1); 5: ITMS + c norm !corona !pi Dep MS/MS 4th most intense ion from (1); 6: ITMS + c norm !corona !pi Dep MS/MS 5th most intense ion from (1)., Rejected mass=235.1800, 376.0400, 378.0400, 540.6000, 609.2800, 726.3600, 810.4200, 818.4200, 1118.7200, 1123.6800.; Data processing software: Xcalibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA); Fragmentation method: Collision Induced Dissociation (CID); Ion isolation: ESI; Ion mode: Positive; Mass analyser: FT-ICR; Resolution: 100000; Scan mass range: m/z 100.0-1500.0	Xcalibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA); PowerGet analysis for detection of all peaks : Raw data files are converted to text file by MSGet software without cut off value and peaks are extracted from the text files by PowerFT with parameters (intensity cut off=5000, peak selection filter is default, intensity cut off in peak assignment=1000).	In annotation process, KEGG, KNApSAcK and LipidMAPS are used for primary database search. Peaks with no hit to these databases are then selected to secondary search using exactMassDB and Pep1000 databases. After the database search processes, each database hits are manually checked to assign a compound name or compound category name. In case of no compound name or compound category name can assign, predicted molecular formulas are used for the annotation. Peaks without predicted molecular formula are assigned as "unidentified" peak.
+Protocol Parameters				Post extraction;Derivatization	Chromatography instrument;Autosampler model;Column model;Column type;Guard column;Detector;Signal range;Resolution	Scan polarity;Scan m/z range;Instrument;Ion source;Mass analyzer
+Protocol Hardware					Agilent 1100 HPLC (Agilent Technologies) HPLC equipped with photodiode array detector	LTQ-FT (Thermo Fisher Scientific) Fourier transform ion cyclotron resonance mass spectrometer (FT-ICR MS)
+Protocol Software						Xcalibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA)	Xcalibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA); PowerGet(Sakurai et al., BioMed Research International, 2014:194812)	PowerGet(Sakurai et al., BioMed Research International, 2014:194812)
+
+Public Release Date	2020-10-05
+
+Term Source Name	Metabolonote
+Term Source File	http://metabolonote.kazusa.or.jp
+Term Source Version
+
+SDRF File	MTBKS71.sdrf.txt
+
+Comment[Study type]	untargeted metabolite profiling
+Comment[Experiment type]	liquid chromatography-mass spectrometry	fourier transform ion cyclotron resonance mass spectrometry
+Comment[Submission type]	LC-DAD-MS
+Comment[BioProject]	PRJDB14164
+Comment[Related study]	Metabolonote:SE16
+Comment[Contributor]	Hideki Nagasaki 1, Sachiko Osawa 1, Hideki Hirakawa 1, Naoki Yamamoto 1, Yoshiki Nagashima 1, Kunihiro Suda 1, Mitsuo Enomoto 1, Nozomu Sakurai 1, Hideyuki Suzuki 1, Tatsuya Suzuki 2, Daisuke Shibata 1 (1: Kazusa DNA Research Institute, 2: Chiba Prefectural Agriculture Research Center)
+Comment[Submission Date]	2019-10-05
+Comment[Last Update Date]	2024-06-14

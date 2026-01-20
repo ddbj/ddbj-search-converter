@@ -1,0 +1,42 @@
+MAGE-TAB Version	1.1
+Comment[MetaboBank accession]	MTBKS238
+Study Title	A mass spectrometric method for quantifying amino acids and tyrosine metabolites upon tyrosine restriction with different total amino acid content
+Study Description	Female flies (Drosophila melanogaster) were fed with complete holidic medium or tyrosine restricted medium for 7 days. Then whole body metabolites were extracted to analyze how amino acids and tyrosine metabolites were affected.
+
+Experimental Design	case control design
+Experimental Factor Name	diet
+Experimental Factor Type	diet
+
+Person Last Name	Obata	Kosakamoto
+Person First Name	Fumiaki	Hina
+Person Mid Initials
+Person Affiliation	Lab for Nutritional Biology, Center for Biosystems Dynamics Research, RIKEN	Lab for Nutritional Biology, Center for Biosystems Dynamics Research, RIKEN
+Person Roles	submitter	submitter
+
+PubMed ID
+Publication DOI
+
+Protocol Name	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Type	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Description	"To allow for synchronized development with constant density, embryos of Canton-S flies were collected on agar plates (2.3% agar, 1% sucrose, and 0.35% acetic acid) with live yeast paste and directly added to the standard diet in a bottle with a fixed volume. Standard diet contained 4% cornmeal, 4% yeast, 6% glucose, and 0.8% agar with 0.3% propionic acid and 0.15% nipagin. Adult flies that eclosed within one day were collected and maintained for an additional two days for maturation and mating on the standard diet under conditions of 25 °C and 60-65% humidity with 12 h/12 h light/dark cycles. Normally, 150-200 adult flies/bottle were obtained. 
+The exome-matched version of a chemically defined diet, or holidic medium, was used for dietary manipulations. Tyrosine (Tyr) deprivation is achieved by completely depleting Tyr. To minimise the batch effect, the medium was prepared without Tyr and then split into two bottles, followed by the addition of Tyr powder to one bottle to make the control diet. Note that all the amino acid content of the control diet was 40% or 100% of the original concentration of the holidic medium. Flies were then sorted by sex and maintained at a fixed density (30 flies/large vial). Flies were transferred to fresh vials every four days. After 1week, body weight was measured by anaesthetization by CO2 and placed on a microbalance (METTLER TOLEDO, XPR2). Four whole bodies of female flies were homogenised in 160 μL of 80% methanol containing 10 μM internal standards (methionine sulfone and 2-morpholinoethanesulfonic acid)."	After the sample was centrifuged at 4 °C and 20,000 x g for 5 minutes, 150 μL of the supernatant was deproteinized by mixing it with 75 μL of acetonitrile. The supernatant was placed into a pre-washed 10 kDa centrifugal device (Pall, OD010C35), and the flow-through after centrifugation at 4 °C and 14,000 x g for 5 minutes was evaporated completely using a centrifugal concentrator (TOMY, CC-105). The dried and concentrated samples were resolubilised in 100 μL of ultrapure water.	LC-MS/MS analysis was performed with LC-2040C Plus (Shimadzu). Sample (3 μL) was injected using an autosampler, and molecules were separated using a PFPP column (Discovery HS F5 (2.1 mm × 150 mm, 3 μm), Sigma-Aldrich)  in a column oven at 40 °C. A gradient from solvent A (0.1% formic acid, water) to solvent B (0.1% formic acid, acetonitrile) was performed for 20 minutes.	Samples were analysed by LCMS-8050 (Shimadzu) using triple quadrupole mass spectrometer equipped with an electrospray source in both positive and negative ionisation mode. Multiple reaction monitoring method parameters were optimised by the injection and analysis of pure standards through peak integration and parameter optimisation with the use of software (Labsolutions Ver.5.109, Shimadzu). Other instrument parameters included: nebulizing gas flow: 3.0 L/min, drying gus flow: 10.0 L/min, heating gus flow: 10.0 L/min, interface temperature: 300°C, desolvation temperature: 526°C, desolvation line temperature: 250°C, heat block temperature: 400°C. Data acquisition and processing used software Labsolutions Ver.5.109.	Labsolutions (Simadzu, Ver.5.109) was used for data acquisition and processing. The sample concentration was divided by the corresponding methionine sulfone concentration and body weight fo flies for relative quantification.	Optimized multiple reaction monitoringmethods based on Primary Metabolites package ver.2 (Shimadzu) was used for the identification and quantification of each metabolite. Standard solutions of each metabolite was used as standard analytes to identify retention time.
+Protocol Parameters		Post extraction;Derivatization	Chromatography instrument;Autosampler model;Column model;Column type;Guard column	Scan polarity;Scan m/z range;Instrument;Ion source;Mass analyzer
+Protocol Hardware			LC-2040C Plus (Shimadzu)	LCMS-8050 (Shimadzu)
+Protocol Software					Labsolutions (Shimadzu)	Labsolutions (Shimadzu)
+
+Public Release Date	2024-05-24
+
+Term Source Name
+Term Source File
+Term Source Version
+
+SDRF File	MTBKS238.sdrf.txt
+
+Comment[Study type]	targeted metabolite profiling
+Comment[Experiment type]	liquid chromatography-mass spectrometry
+Comment[Submission type]	LC-MS
+Comment[BioProject]	PRJDB18093
+Comment[Related study]
+Comment[Contributor]
+Comment[Submission Date]	2024-05-21
+Comment[Last Update Date]	2024-05-24

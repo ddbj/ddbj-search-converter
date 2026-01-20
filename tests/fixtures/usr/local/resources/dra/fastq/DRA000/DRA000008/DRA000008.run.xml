@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET xmlns:ns2="SRA.annotation">
+    <RUN accession="DRR000018" center_name="UT-MGS" alias="DRR000018" run_center="UT-MGS" run_date="2009-06-12T17:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000008" refcenter="UT-MGS" refname="DRX000008"/>
+        <RUN_ATTRIBUTES>
+            <RUN_ATTRIBUTE>
+                <TAG>notes</TAG>
+                <VALUE>repackaged qseq</VALUE>
+                <UNITS></UNITS>
+            </RUN_ATTRIBUTE>
+        </RUN_ATTRIBUTES>
+    </RUN>
+    <RUN accession="DRR000533" center_name="UT-MGS" alias="DRR000533" run_center="UT-MGS" run_date="2010-06-16T17:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000299" refcenter="UT-MGS" refname="DRX000299"/>
+        <RUN_ATTRIBUTES>
+            <RUN_ATTRIBUTE>
+                <TAG>notes</TAG>
+                <VALUE>repackaged qseq</VALUE>
+                <UNITS></UNITS>
+            </RUN_ATTRIBUTE>
+        </RUN_ATTRIBUTES>
+    </RUN>
+</RUN_SET>

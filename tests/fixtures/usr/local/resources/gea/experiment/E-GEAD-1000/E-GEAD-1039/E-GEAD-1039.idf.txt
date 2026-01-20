@@ -1,0 +1,19 @@
+Comment[GEAAccession]	E-GEAD-1039
+MAGE-TAB Version	1.1
+Investigation Title	Aberrant Wnt signaling causes dysregulation of the colonic epithelial differentiation in Gpr164-/- mice
+Experiment Description	Total RNA was extracted from the colon of WT and GPR164-/- mice.
+Experimental Design	cell cycle design	development or differentiation design	strain or line design	genotyping design	validation by real time PCR design
+Experimental Factor Name	genotype
+Experimental Factor Type	genotype
+Person Last Name	Kimura
+Person First Name	Ikuo
+Person Affiliation	Graduate School of Biostudies, Kyoto University
+Person Roles	submitter
+Public Release Date	2025-08-12
+Protocol Name	P-GEAD-4602	P-GEAD-4603	P-GEAD-4604	P-GEAD-4605	P-GEAD-4606
+Protocol Type	sample collection protocol	nucleic acid extraction protocol	nucleic acid library construction protocol	nucleic acid sequencing protocol	normalization data transformation protocol
+Protocol Description	collected from mouse colon	using RNAiso plus and RNeasy mini kit	NEBNext ultra directional RNA library prep kit and NEBNext multipleps oligos for illumina	Novaseq 6000	The data obtained from RNA sequencing were trimmed with trimmomatic (v0.39) software to eliminate adapters and inadequate quality bases35, and FastQC (v0.11.8.-2) software was used for quality control of the trimmed sequence. The reads were aligned to the mouse reference genome (NCBI GRCm39) using STAR software (v2.7.10a). To obtain differentially expressed genes (DEGs) across all comparisons, the raw read counts were subjected to relative log expression normalization.
+SDRF File	E-GEAD-1039.sdrf.txt
+Comment[AEExperimentType]	RNA-seq of coding RNA
+Comment[BioProject]	PRJDB20149
+Comment[Last Update Date]	2025-08-12

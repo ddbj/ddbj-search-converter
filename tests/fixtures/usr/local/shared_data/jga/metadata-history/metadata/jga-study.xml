@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET>
+<STUDY alias="JSUB000002_Study_0001" center_name="Individual" accession="JGAS000001">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000001</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Identification and Characterization of Cancer Mutations in Japanese LungAdenocarcinoma without Sequencing of Normal Tissue Counterparts</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Exome Sequencing"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>We analyzed whole-exome sequencing data from 97 Japanese lung adenocarcinomapatients and identified several putative cancer-related genes and pathways. Particularly, we observed that cancer-related mutation patterns were significantly different between different ethnic groups. As previously reported, mutations in the EGFR gene were characteristic to Japanese, while those in the KRAS gene were more frequent in Caucasians. Furthermore, during the course of this analysis, we found that cancer-specific somatic mutations can be detected without sequencing normal tissue counterparts. 64% of the germline variants could be excluded using a total of 217 external Japanese exome datasets. We also show that a similar approach may beused for other three ethnic groups, although the discriminative power depends on the ethnic group. We demonstrate that the ATM gene and the PAPPA2 gene could be identified as cancer prognosis related genes. By bypassing the sequencing of normaltissue counterparts, this approach provides a useful means of not only reducing the time and cost of sequencing but also analyzing archive samples, for which normal tissue counterparts are not available.     </STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0004</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000003_Study_0001" center_name="Individual" accession="JGAS000006">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000006</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>DNA methylation dynamics during early human development</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Other" new_study_type="Whole genome bisulfite sequencing"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>DNA methylation is globally reprogrammed during mammalian preimplantation development, which has been well characterized in the mouse but not in other mammals. Here we report on the single base-resolution DNA methylome of human gametes and blastocysts. Near complete demethylation of the paternal genome was apparent, except for tandem repeat-containing CpG-rich regions, whereas the maternal genome was essentially resistant to replication-dependent global demethylation. The human oocyte methylome was characterized by a unique bimodal distribution of gene body methylation, a particular promoter methylation profile and a high proportion of hypomethylated transposable elements. Methylome and transcriptome comparisons between the human and mouse suggested species-specific regulation of many genes including the important DNA methylation regulators. Our findings are essential to understand the unique gene regulatory mechanisms during early human development and will facilitate preimplantation epigenetic diagnosis of human embryos.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+</STUDY>
+<STUDY alias="JSUB000007_Study_0001" center_name="Individual" accession="JGAS000004">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000004</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Genomic and Genetic Analysis of Brain Tumors and Analysis of Their Clinicopathological Significance</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Tumor vs. Matched-Normal"/>
+      <STUDY_TYPE existing_study_type="Exome Sequencing"/>
+      <STUDY_TYPE existing_study_type="Transcriptome Sequencing"/>
+      <STUDY_TYPE existing_study_type="Other" new_study_type="DNA methylation array"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>The treatment outcome of glioma patients remains disappointing, and more studies are needed to improve therapeutic strategies. In particular, it is crucial to understand the mechanisms underlying resistance to treatment and malignant transformation, as well as the intratumoral heterogeneity and interaction of tumor cells and host immunity. Recent advances in omics analysis techniques, such as next-generation sequencing (NGS), have enabled us to obtain omics data more easily and accelerated our ability to integrate this information and precisely characterize cases. In our project, we have already collected more than 100 pairs of human glioma/normal tissue samples, of which some are multiple specimens collected from initial and recurrent tumors, and some include multiple specimens collected from different regions within a single tumor. We used our in-house algorithms, composed of alignment and variant calling programs, to analyze omics data from multiple platforms, such as whole-exome sequencing (WES), RNA sequencing (RNA-seq), and methylation array, with our original cohort of glioma patients. Using several informatics tools, the information about genetic and epigenetic status and expression signatures were analyzed. Those data are expected to provide key information for investigating the mechanisms discussed above. Through this project, we hope to improve strategies for personalized therapy based on comprehensive omics data.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <GRANTS>
+    <GRANT grant_id="">
+      <TITLE>P-DIRECT: Project for Development of Innovative Research on Cancer Therapeutics</TITLE>
+      <AGENCY abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology</AGENCY>
+    </GRANT>
+  </GRANTS>
+  <PUBLICATIONS>
+    <PUBLICATION id="24336570" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+    <PUBLICATION id="28270234" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+  </PUBLICATIONS>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0006</VALUE>
+    </STUDY_ATTRIBUTE>
+    <STUDY_ATTRIBUTE>
+      <TAG>Submitting organization</TAG>
+      <VALUE>Department of Neurosurgery, The University of Tokyo</VALUE>
+    </STUDY_ATTRIBUTE>
+    <STUDY_ATTRIBUTE>
+      <TAG>Principal Investigator</TAG>
+      <VALUE>Nobuhito Saito</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000008_Study_0001" center_name="Individual" accession="JGAS000005">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000005</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Gene expression of human Th17 cells before and after activation</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Other" new_study_type="Transcriptome Analysis"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>Although gene expression of human Th17 clones has been studies, to date, molecular mechanisms for human Th17 development remain unclear. We have analyzed gene expression of human Th17 cells before and after activation. Th17-cell clones from peripheral blood CD4 T cells cultured with LPS-stimulated dendritic cells derived from monocytes stimulated by TNF were established by a limited dilution method. One of the Th17 clones was proliferated significantly, and high percentages (&gt;70%) of Th17 cells in the cultured cells were maintained by addition of monocytes, IL-1b, and IL-15. CD161+CXCR3- cells (CD161+Th17) in the cultures were sorted and purified up to approximately 97% of IL-17-producing cells after treatment with PMA/ionomycin. Furthermore, these cells were treated with TCR-stimuli, IL-1b, and IL-23 for 2 days, and IL-17-producing Th17 cells (active-Th17) detected by IL-17-catch-up antibodies were sorted. Total RNA sampled from 1x 106 CD161+Th17, active-Th17, na?ve CD4 T cells, or CXCR3+ Th1 cells from combined CD4 T and dendritic cell cultures was used for SAGE. SAGE was performed by using SOLID TM SAGETM kit with barcoding adaptor molecules (Applied Biosystems). DNA sequence was analyzed by using AB5500 Genetic Analyzer (Applied Biosystems), and gene expression was analyzed by using SOLID? SAGETM software (Applied Biosystems). Our data shows high levels of IL-17A-mRNA expression by active-Th17; however, but only slight expression by CD161+Th17. Therefore, the data could provide alteration of gene expression by Th17 cells before and after stimulation. </STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0007</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000009_Study_0001" center_name="Individual" accession="JGAS000007">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000007</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Research for genetic causes and mechanisms of Hirschsprung's or Hirschsprung's related diseases</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Exome Sequencing"/>
+      <STUDY_TYPE existing_study_type="Case-Control"/>
+      <STUDY_TYPE existing_study_type="Family"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>Hirschsprung's disease (HD) is an abdomen disorder which is caused by absence of enteric neurons. HD is a complex genetic disorder and several causing gene mutations have been identified including the receptor tyrosine kinase gene. However, the whole mechanism of HD remains unknown and additional genetic causalities are implicated. To further investigate the genetic causalities of HD, we conducted whole-exome sequencing of patients with HD and unaffected patient's families.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <PUBLICATIONS>
+    <PUBLICATION id="28799054" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+  </PUBLICATIONS>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0008</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000010_Study_0001" center_name="Individual" accession="JGAS000008">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000008</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Research for candidate genes of splenic epidermoid cyst</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Exome Sequencing"/>
+      <STUDY_TYPE existing_study_type="Family"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>Splenic epidermoid cyst is a very rare benign tumor-like lesion filled with fluid or semi-fluid material. It occurs mostly in 2nd or 3rd decades of life with some female dominance. Most cases are asymptomatic and the clinical symptoms are dependent on the size of the cyst. Exome re-sequencing is an efficient strategy to selectively sequence the protein-coding regions of the genome, and has increasingly been used to identify novel genetic variants underlying Mendelian diseases. In this study, exome re-sequencing of 8 Japanese patients with splenic epidermoid cyst were conducted.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0010</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000012_Study_0001" center_name="Individual" accession="JGAS000002">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000002</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Rapid detection of expanded short tandem repeats in personal genomics using hybrid sequencing.</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_TYPE existing_study_type="Case Set"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>Long expansions of short tandem repeats (STRs); i.e., DNA repeats of 2-6 nucleotides, are associated with some genetic diseases. Cost-efficient high throughput sequencing can quickly produce billions of short reads that would be useful for uncovering disease-associated STRs. However, enumerating STRs in short reads remains largely unexplored because of the difficulty in elucidating STRs much longer than 100 bp, the typical length of short reads. We propose ab initio procedures for sensing and locating long STRs promptly by utilizing the frequency distribution of all STRs and paired-end read information. We validated the reproducibility of this method using biological replicates and used it to locate an STR associated with a brain disease (SCA31). Subsequently, we sequenced this STR site in eleven SCA31 samples using SMRT? sequencing (Pacific Biosciences), determined 2.3-3.1 kb sequences at nucleotide resolution, and revealed that (TGGAA)- and (TAAAATAGAA)-repeat expansions determined the instability of the repeat expansions associated with SCA31. Our method could also identify common STRs, (AAAG)- and (AAAAG)-repeat expansions, which are remarkably expanded at four positions in an SCA31 sample. This is the first proposed method for rapidly finding disease-associated long STRs in personal genomes using hybrid sequencing of short and long reads.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <GRANTS>
+    <GRANT grant_id="22129008">
+      <TITLE>Grant-in-Aid for Scientific Research on Innovative Areas</TITLE>
+      <AGENCY abbr="MEXT">Ministry of Education, Culture, Sports, Science and Technology</AGENCY>
+    </GRANT>
+  </GRANTS>
+  <PUBLICATIONS>
+    <PUBLICATION id="24215022" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+  </PUBLICATIONS>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0001</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000015_Study_0001" center_name="Individual" accession="JGAS000015">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000015</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>DNA methylation at HBV integrants and flanking host genomes</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Tumor vs. Matched-Normal"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>Integration of DNA viruses into the human genome plays an important role in various types of tumors, including hepatitis B virus (HBV)-related hepatocellular carcinoma. However, the molecular details and clinical impact of HBV integration on either the human or HBV epigenomes are unknown. Here, we show that methylation of the integrated HBV DNA is related to the methylation status of the flanking human genome. We developed a next-generation sequencing-based method for structural methylation analysis of integrated viral genomes (denoted G-NaVI). This method is a novel approach that enables enrichment of viral fragments for sequencing using unique baits based on the sequence of the HBV genome. We detected integrated HBV sequences in the genome of the PLC/PRF/5 cell line and found variable levels of methylation within the integrated HBV genomes. Allele-specific methylation analysis revealed that the HBV genome often became significantly methylated when integrated into highly methylated host sites. After integration into unmethylated human genome regions such as promoters, however, the HBV DNA remains unmethylated and may eventually play an important role in tumorigenesis. The observed dynamic changes in DNA methylation of the host and viral genomes may functionally affect the biological behavior of HBV. These findings may impact public health given that millions of people worldwide are carriers of HBV. We also believe our assay will be a powerful tool to increase our understanding of the various types of DNA virus-associated tumorigenesis.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <GRANTS>
+    <GRANT grant_id="23590964">
+      <TITLE>Sequence analysis at HBV integrants and flanking host genomes</TITLE>
+      <AGENCY abbr="JSPS KAKEN">Grants-in-Aid for Scientific Research</AGENCY>
+    </GRANT>
+  </GRANTS>
+  <PUBLICATIONS>
+    <PUBLICATION id="2034275" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+    <PUBLICATION id="8138251" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+    <PUBLICATION id="8666388" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+  </PUBLICATIONS>
+  <STUDY_LINKS>
+    <STUDY_LINK>
+      <URL_LINK>
+        <LABEL>http://www.marianna-u.ac.jp/univ_en/index.html</LABEL>
+        <URL>http://www.marianna-u.ac.jp/univ_en/index.html</URL>
+      </URL_LINK>
+    </STUDY_LINK>
+  </STUDY_LINKS>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0011</VALUE>
+    </STUDY_ATTRIBUTE>
+    <STUDY_ATTRIBUTE>
+      <TAG>Registration date</TAG>
+      <VALUE>2015-01-13</VALUE>
+    </STUDY_ATTRIBUTE>
+    <STUDY_ATTRIBUTE>
+      <TAG>Submitting organization</TAG>
+      <VALUE>St.Marianna University, School of Medicine</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000016_Study_0001" center_name="Individual" accession="JGAS000012">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000012</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Genotype data from Nagahama cohort project</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Cohort"/>
+      <STUDY_TYPE existing_study_type="Population"/>
+      <STUDY_TYPE existing_study_type="GWAS"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>Genotype data with basic phenotypes (age and gender) for 3693 samples from Nagahama Cohort project are provided. Genotyping are performed by A)Human610-Quad?B)HumanOmni2.5-4?C)HumanOmni2.5-8?D)HumanOmni2.5S?E)HumanCoreExome?F)HumanExome BeadChip from Illumina Inc. 1708, 1017, 185, 112, 479 and 192 samples are genotyped by A only, B only, C only, A+B+E, B+D+F and C+D+F respectively.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <PUBLICATIONS>
+    <PUBLICATION id="24919509" status="published">
+      <DB_TYPE>PUBMED</DB_TYPE>
+    </PUBLICATION>
+  </PUBLICATIONS>
+  <STUDY_LINKS>
+    <STUDY_LINK>
+      <URL_LINK>
+        <LABEL>http://www.city.nagahama.shiga.jp/index.cfm/11,3709,96,558,html</LABEL>
+        <URL>http://www.city.nagahama.shiga.jp/index.cfm/11,3709,96,558,html</URL>
+      </URL_LINK>
+    </STUDY_LINK>
+    <STUDY_LINK>
+      <URL_LINK>
+        <LABEL>http://zeroji-club.com/0ji_kohot.html</LABEL>
+        <URL>http://zeroji-club.com/0ji_kohot.html</URL>
+      </URL_LINK>
+    </STUDY_LINK>
+  </STUDY_LINKS>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0012</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+<STUDY alias="JSUB000017_Study_0001" center_name="Individual" accession="JGAS000009">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAS00000000009</SECONDARY_ID>
+  </IDENTIFIERS>
+  <DESCRIPTOR>
+    <STUDY_TITLE>Whole exome sequence analysis in multiple system atrophy</STUDY_TITLE>
+    <STUDY_TYPES>
+      <STUDY_TYPE existing_study_type="Case-Control"/>
+    </STUDY_TYPES>
+    <STUDY_ABSTRACT>To identify a susceptible gene for multiple system atrophy, exome sequence analysis was conducted in 14 patients and 7 controls.</STUDY_ABSTRACT>
+  </DESCRIPTOR>
+  <STUDY_ATTRIBUTES>
+    <STUDY_ATTRIBUTE>
+      <TAG>NBDC Number</TAG>
+      <VALUE>hum0018</VALUE>
+    </STUDY_ATTRIBUTE>
+  </STUDY_ATTRIBUTES>
+</STUDY>
+</STUDY_SET>

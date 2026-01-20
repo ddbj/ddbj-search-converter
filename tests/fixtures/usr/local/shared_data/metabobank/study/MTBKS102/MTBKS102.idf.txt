@@ -1,0 +1,41 @@
+MAGE-TAB Version	1.1
+Comment[MetaboBank accession]	MTBKS102
+Study Title	Arabidopsis thaliana leaf metabolite analysis
+Study Description	Investigation of Arabidopsis thaliana leaf metabolites. 6 replicates data are examined for each sample.
+
+Experimental Design	species design
+Experimental Factor Name
+Experimental Factor Type
+
+Person Last Name	Ara
+Person First Name	Takeshi
+Person Mid Initials
+Person Affiliation	Kazusa DNA Research Institute
+Person Roles	submitter
+
+PubMed ID
+Publication DOI
+
+Protocol Name	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Type	Sample collection	Extraction	Chromatography	Mass spectrometry	Data processing	Metabolite identification
+Protocol Description	Arabidopsis thaliana Col-0 seeds are sown on pots filled by vemiculite and are grown in an incubator with 18h Light/6h Dark and 22 degree C condition. After 2 months later, all leaves are harvested. Methanol [for HPLC Solvent] solution was used for blank sample.	Harvested sample is frozen by liquid N2 and resulting powder (100mg) are solved in 300 microL 80% methanol solution. 20 microL sample is injected into HPLC after 0.2 micrometre membrane filter treatment.	Instrument: Agilent 1100 HPLC (Agilent Technologies) HPLC equipped with photodiode array detector; Comment: Elute monitoring by PDA equipped with Agilent1100 HPLC in 2 nm step. total separation time 60 min.; Max wave length for elute monitering: 650.0 nm; Min wave length for elute monitering: 200.0 nm; Column name: TSKgel ODS-100V (4.6 x 250 mm, 5 micrometer; TOSOH); Column temperature: 30.0 degree C; Elute monitor: photodiode array detector; Flow gradient: Gradient: (B);3 to 30% (0.0 to 25.0 min), 30 to 90% (25.0 to 40.0 min), 90% (40.0 to 45.0 min), 95% (45.1 to 50.0 min), 3% (50.1 to 57.0 min) [total separation time] 60 min; Flow rate: 0.5 ml/min; Solvent: Solvent: A; 0.1% formic acid aq. B; ACN (addition 0.1% formic acid fc.)	Instrument: LTQ-FT (Thermo Fisher Scientific) Fourier transform ion cyclotron resonance mass spectrometer (FT-ICR MS); MS scan setting: Xculibur scan setting: Filter 1: FTMS + c norm !corona !pi res=100000 o(200.0-1500.0); 2: ITMS + c norm !corona !pi Dep MS/MS Most intense ion from (1)., Rejected mass=256.2000;266.0000;284.2000;300.2000;328.2000;344.2000;372.2000;388.2000;416.3000;432.3000;460.0000.; Data processing software: Xculibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA); Fragmentation method: Collision Induced Dissociation (CID); Ion isolation: ESI; Ion mode: Positive; Mass analyser: FT-ICR; Resolution: 100000; Scan mass range: m/z 200.0-1500.0	Xculibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA); PowerGet analysis for detection of all peaks : Raw data files are converted to text file by MSGet software without cut off value and peaks are extracted from the text files by PowerFT with parameters (intensity cut off=5000, peak selection filter is default, peak shape is manually checked for peaks with intensity < 1000). The replicates data are aligned by PowerMatch with blank data. The alignment is manually edited. Assigned peaks observed in multiple replicate samples are selected for annotation process.	In annotation process, KEGG, KNApSAcK and LipidMAPS are used for primary database search. Peaks with no hit to these databases are then selected to secondary search using exactMassDB and Pep1000 databases. After the database search processes, each database hits are manually checked to assign a compound name or compound category name. In case of no compound name or compound category name can assign, predicted molecular formulas are used for the annotation. Peaks without predicted molecular formula are assigned as "unidentified" peak.
+Protocol Parameters		Post extraction;Derivatization	Chromatography instrument;Autosampler model;Column model;Column type;Guard column;Detector;Signal range;Resolution	Scan polarity;Scan m/z range;Instrument;Ion source;Mass analyzer
+Protocol Hardware			Agilent 1100 HPLC (Agilent Technologies) HPLC equipped with photodiode array detector	LTQ-FT (Thermo Fisher Scientific) Fourier transform ion cyclotron resonance mass spectrometer (FT-ICR MS)
+Protocol Software				Xculibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA)	Xculibur 2.0 (Thermo Fisher Scientific, Waltham, MA, USA); PowerGet(Sakurai et al., BioMed Research International, 2014:194812)	PowerGet(Sakurai et al., BioMed Research International, 2014:194812)
+
+Public Release Date	2024-06-14
+
+Term Source Name	Metabolonote
+Term Source File	http://metabolonote.kazusa.or.jp
+Term Source Version
+
+SDRF File	MTBKS102.sdrf.txt
+
+Comment[Study type]	untargeted metabolite profiling
+Comment[Experiment type]	liquid chromatography-mass spectrometry	fourier transform ion cyclotron resonance mass spectrometry
+Comment[Submission type]	LC-DAD-MS
+Comment[BioProject]	PRJDB14181
+Comment[Related study]	Metabolonote:SE1
+Comment[Contributor]	Hideki Nagasaki, Sachiko Osawa, Hideki Hirakawa, Ryosuke Sasaki, Mitsuo Enomoto, Nozomu Sakurai, Hideyuki Suzuki, Daisuke Shibata (Kazusa DNA Research Institute)
+Comment[Submission Date]	2022-05-22
+Comment[Last Update Date]	2024-06-14

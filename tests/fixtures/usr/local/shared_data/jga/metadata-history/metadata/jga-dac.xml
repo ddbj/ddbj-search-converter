@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAC_SET>
+<DAC alias="JGAC000001" center_name="dbcls" accession="JGAC000001">
+  <IDENTIFIERS>
+    <SECONDARY_ID>JGAC00000000001</SECONDARY_ID>
+  </IDENTIFIERS>
+  <CONTACTS>
+    <CONTACT name="DBCLS" email="humandbs@dbcls.jp" organisation="DBCLS"/>
+  </CONTACTS>
+    <DAC_LINKS>
+        <DAC_LINK>
+            <URL_LINK>
+                <LABEL>Change in the operation and URL of NBDC Human Database</LABEL>
+                <URL>https://biosciencedbc.jp/en/news/20240401-03.html</URL>
+            </URL_LINK>
+        </DAC_LINK>
+    </DAC_LINKS>
+</DAC>
+</DAC_SET>
