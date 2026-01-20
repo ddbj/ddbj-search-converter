@@ -82,6 +82,7 @@ packages = [
 [tool.pytest.ini_options]
 addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"
 testpaths = ["tests/py_tests"]
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 files = ["./ddbj_search_converter/**/*.py"]

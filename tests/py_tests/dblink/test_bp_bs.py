@@ -2,10 +2,8 @@
 import tempfile
 from pathlib import Path
 
-from ddbj_search_converter.dblink.bp_bs import (
-    process_ddbj_xml_file,
-    process_ncbi_xml_file,
-)
+from ddbj_search_converter.dblink.bp_bs import (process_ddbj_xml_file,
+                                                process_ncbi_xml_file)
 
 
 class TestProcessNcbiXmlFile:

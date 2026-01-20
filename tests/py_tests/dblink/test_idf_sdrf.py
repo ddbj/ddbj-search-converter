@@ -1,7 +1,8 @@
 """Tests for ddbj_search_converter.dblink.idf_sdrf module."""
 from pathlib import Path
 
-from ddbj_search_converter.dblink.idf_sdrf import parse_idf_file, parse_sdrf_file
+from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
+                                                   parse_sdrf_file)
 
 
 class TestParseIdfFile:

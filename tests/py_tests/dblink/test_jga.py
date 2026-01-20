@@ -4,13 +4,11 @@ from typing import Set, Tuple
 
 import pytest
 
-from ddbj_search_converter.dblink.jga import (
-    extract_hum_id,
-    extract_pubmed_ids,
-    join_relations,
-    read_relation_csv,
-    reverse_relation,
-)
+from ddbj_search_converter.dblink.jga import (extract_hum_id,
+                                              extract_pubmed_ids,
+                                              join_relations,
+                                              read_relation_csv,
+                                              reverse_relation)
 
 
 class TestReadRelationCsv:

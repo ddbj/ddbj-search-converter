@@ -8,12 +8,9 @@ import duckdb
 import pytest
 
 from ddbj_search_converter.config import LOG_DB_FILE_NAME, Config
-from ddbj_search_converter.logging.db import (
-    _get_db_path,
-    get_last_successful_run_date,
-    init_log_db,
-    insert_log_records,
-)
+from ddbj_search_converter.logging.db import (_get_db_path,
+                                              get_last_successful_run_date,
+                                              init_log_db, insert_log_records)
 from ddbj_search_converter.logging.logger import _ctx, run_logger
 
 

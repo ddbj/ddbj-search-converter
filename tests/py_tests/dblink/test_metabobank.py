@@ -1,14 +1,25 @@
 """Tests for ddbj_search_converter.dblink.metabobank module."""
-import pytest
+import os
 from pathlib import Path
+from typing import Generator
+from unittest.mock import patch
+
+import duckdb
+import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.metabobank import (
-    iterate_metabobank_dirs,
-    load_preserve_file,
-    process_metabobank_dir,
-)
-from ddbj_search_converter.logging.logger import run_logger
+from ddbj_search_converter.dblink.db import init_dblink_db
+from ddbj_search_converter.dblink.metabobank import (iterate_metabobank_dirs,
+                                                     load_preserve_file, main,
+                                                     process_metabobank_dir)
+from ddbj_search_converter.logging.logger import _ctx, run_logger
+
+
+@pytest.fixture
+def clean_ctx() -> Generator[None, None, None]:
+    """Clean up logger context after each test."""
+    yield
+    _ctx.set(None)
 
 
 class TestIterateMetabobankDirs:
@@ -160,3 +171,59 @@ class TestLoadPreserveFile:
             mtb_to_bp, _ = load_preserve_file(config)
 
         assert mtb_to_bp == {("MTBKS1", "PRJDB1111"), ("MTBKS2", "PRJDB2222")}
+
+
+class TestMetabobankMain:
+    """Integration tests for metabobank main function."""
+
+    def test_main_processes_metabobank_and_saves_to_db(
+        self, tmp_path: Path, clean_ctx: None
+    ) -> None:
+        """main() が MetaboBank データを処理して DB に保存する。"""
+        result_dir = tmp_path / "result"
+        const_dir = tmp_path / "const"
+        mtb_base_dir = tmp_path / "metabobank"
+
+        (const_dir / "bp").mkdir(parents=True)
+        (const_dir / "bs").mkdir(parents=True)
+        (const_dir / "metabobank").mkdir(parents=True)
+        (const_dir / "bp" / "blacklist.txt").write_text("", encoding="utf-8")
+        (const_dir / "bs" / "blacklist.txt").write_text("", encoding="utf-8")
+
+        mtb_dir = mtb_base_dir / "MTBKS100"
+        mtb_dir.mkdir(parents=True)
+        idf = """Comment[BioProject]\tPRJDB1234
+"""
+        sdrf = """Source Name\tComment[BioSample]
+Sample1\tSAMD00001
+"""
+        (mtb_dir / "MTBKS100.idf.txt").write_text(idf, encoding="utf-8")
+        (mtb_dir / "MTBKS100.sdrf.txt").write_text(sdrf, encoding="utf-8")
+
+        config = Config(result_dir=result_dir, const_dir=const_dir)
+        init_dblink_db(config)
+
+        env = {
+            "DDBJ_SEARCH_CONVERTER_RESULT_DIR": str(result_dir),
+            "DDBJ_SEARCH_CONVERTER_CONST_DIR": str(const_dir),
+        }
+
+        original_env = os.environ.copy()
+        try:
+            os.environ.update(env)
+
+            with patch(
+                "ddbj_search_converter.dblink.metabobank.METABOBANK_BASE_PATH",
+                mtb_base_dir,
+            ):
+                main()
+
+            db_path = const_dir / "dblink" / "dblink.tmp.duckdb"
+            with duckdb.connect(str(db_path)) as conn:
+                count = conn.execute("SELECT COUNT(*) FROM relation").fetchone()
+                assert count is not None
+                assert count[0] == 2
+
+        finally:
+            os.environ.clear()
+            os.environ.update(original_env)

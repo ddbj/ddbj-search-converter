@@ -1,7 +1,5 @@
 from ddbj_search_converter.dblink.assembly_and_master import (
-    normalize_master_id,
-    strip_version_suffix,
-)
+    normalize_master_id, strip_version_suffix)
 
 
 class TestStripVersionSuffix:

@@ -4,7 +4,8 @@ from typing import Set
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.bp_umbrella import filter_by_blacklist, process_xml_file
+from ddbj_search_converter.dblink.bp_umbrella import (filter_by_blacklist,
+                                                      process_xml_file)
 from ddbj_search_converter.logging.logger import run_logger
 
 

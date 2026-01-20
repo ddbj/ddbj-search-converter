@@ -8,15 +8,9 @@ from typing import Generator
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.logging.logger import (
-    _ctx,
-    init_logger,
-    log_debug,
-    log_error,
-    log_info,
-    log_warn,
-    run_logger,
-)
+from ddbj_search_converter.logging.logger import (_ctx, init_logger, log_debug,
+                                                  log_error, log_info,
+                                                  log_warn, run_logger)
 
 
 @pytest.fixture

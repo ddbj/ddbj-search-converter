@@ -5,11 +5,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from pydantic import ValidationError
 
-from ddbj_search_converter.logging.schema import (
-    ErrorInfo,
-    Extra,
-    LogRecord,
-)
+from ddbj_search_converter.logging.schema import ErrorInfo, Extra, LogRecord
 
 
 class TestLogRecord:
