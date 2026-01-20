@@ -1,167 +1,107 @@
 # ddbj-search-converter
 
-- [DDBJ-Search](https://ddbj.nig.ac.jp) のデータ投入用 script 群。
-- `biosample_set.xml` や `bioproject.xml` といった XML file を JSON-Lines (ES bulk data file) に変換し、Elasticsearch に投入する。
+[DDBJ-Search](https://ddbj.nig.ac.jp) のデータ投入用パイプラインツール。BioProject、BioSample、SRA/DRA、JGA、GEA、MetaboBank などの生命科学データベース間の関連情報 (DBLink) を構築する。
 
-## Usage
+## 環境構成
 
-- まず、基本的に遺伝研スパコン上の resource と密結合した実装となっている
-- かつ、docker (or podman) での実行を前提としている
-- 依存している遺伝研スパコン上の resource としては、下記の通りである
-  - [`./compose.yml`](./compose.yml) も参照してください
+- `compose.yml`: 本番環境（遺伝研スパコン）
+- `compose.dev.yml`: 開発環境（fixtures 使用）
+- `compose.elasticsearch.yml`: Elasticsearch 単体起動用
 
-```yaml
-- /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject
-- /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample
-- /lustre9/open/shared_data/dblink
-- /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions
-```
+## DBLink 作成
 
-### 環境変数
-
-- それぞれの処理は、cli script として実装されている
-  - [`./pyproject.toml`](./pyproject.toml) も参照してください
-- cli script 一覧としては、下記の通りである
-
-```toml
-[project.scripts]
-create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
-create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
-create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
-bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
-bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
-bp_relation_ids_bulk_update = "ddbj_search_converter.bioproject.bp_relation_ids_bulk_update:main"
-bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
-bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
-bs_relation_ids_bulk_update = "ddbj_search_converter.biosample.bs_relation_ids_bulk_update:main"
-```
-
-- それぞれの script は、`--help` で特有の argument が存在する
-- しかし、同時に、全体的な挙動を制御するための環境変数が存在する
-  - `DDBJ_SEARCH_CONVERTER_DEBUG`
-    - `true` or `false`
-    - 基本的に logger の出力
-    - debug mode で実行しておく方が、インシデント対応が楽だと思われる
-  - `DDBJ_SEARCH_CONVERTER_WORK_DIR`
-    - 出力される諸々の file の base path
-  - `DDBJ_SEARCH_CONVERTER_POSTGRES_URL`
-    - date 情報を取得する元となる PostgreSQL DB の URL
-    - `postgresql://{username}:{password}@{host}:{port}` のような形式
-  - `DDBJ_SEARCH_CONVERTER_ES_URL`
-    - data 格納先の Elasticsearch URL
-  - `DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_BASE_PATH`
-    - 最新の `SRA_Accessions.tab` file を find する際の base path
-  - `DDBJ_SEARCH_CONVERTER_SRA_ACCESSIONS_TAB_FILE_PATH`
-    - 上の `BASE_PATH` と排他制御
-    - この環境変数が設定されている場合、その file path を用いる
-  - `DDBJ_SEARCH_CONVERTER_DBLINK_BASE_PATH`
-    - `dblink` 情報を取得するもととなる file の base path
-  - `DDBJ_SEARCH_CONVERTER_DBLINK_BASE_PATH`
-    - `dra`  情報を取得するもととなる file の base path
-- これらの環境変数は、[`./compose.yml`](./compose.yml) などに設定する
-- `コマンドライン引数 > 環境変数 > デフォルト値 (config.py)` の優先度で処理される
-
-### ともかく投入する
+### 本番環境での実行
 
 ```bash
-# Create docker network
-$ docker network create ddbj-search-network
+# Docker network 作成 & Elasticsearch 起動
+docker network create ddbj-search-network
+mkdir -p ./elasticsearch/{data,logs,backup}
+chmod 777 ./elasticsearch/{data,logs,backup}
+docker compose -f compose.elasticsearch.yml up -d
 
-# Up Elasticsearch Container
-$ mkdir -p ./elasticsearch/data
-$ mkdir -p ./elasticsearch/logs
-$ mkdir -p ./elasticsearch/backup
-$ chmod 777 ./elasticsearch/data
-$ chmod 777 ./elasticsearch/logs
-$ chmod 777 ./elasticsearch/backup
-$ docker compose -f compose.elasticsearch.yml up -d
+# Converter container 起動
+docker compose up -d --build
+docker compose exec app bash
 
-# ES 動作確認
-$ curl localhost:19200/_cluster/health?pretty
+# === ここから container 内 ===
 
-# Up Converter container
-$ docker compose -f compose.dev.yml up -d --build
-$ docker compose -f compose.dev.yml exec app bash
+# 外部リソースの存在確認
+check_external_resources
 
-# Inside container
-# Elasticsearch の index を作成する
-$ create_es_index --index bioproject
-$ create_es_index --index biosample
-$ create_es_index --index sra
-$ create_es_index --index jga
+# XML 準備 (batch 分割)
+prepare_bioproject_xml
+prepare_biosample_xml
 
-# Cache 用 sqlite db を作成する
-$ create_bp_date_db
-$ create_bs_date_db
-$ create_dra_date_db
-$ create_bp_relation_ids
-$ create_bs_relation_ids
-$ create_dra_relation_ids
-$ create_jga_relation_ids
+# SRA/DRA Accessions DB 構築
+build_sra_and_dra_accessions_db
 
-# XML to JSON-Lines
-$ bp_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject/bioproject.xml
-$ bp_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bp-public/bioproject/ddbj_core_bioproject.xml --is-ddbj
+# DBLink DB 作成
+init_dblink_db
+create_dblink_bp_bs_relations
+create_dblink_bioproject_relations
+create_dblink_assembly_and_master_relations
+create_dblink_gea_relations
+create_dblink_metabobank_relations
+create_dblink_jga_relations
+create_dblink_sra_internal_relations
+finalize_dblink_db
 
-$ bs_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample/biosample_set.xml.gz
-$ bs_xml_to_jsonl --xml-file /lustre9/open/archive/tape/ddbj-dbt/bs-public/biosample/ddbj_biosample_set.xml.gz --is-ddbj --use-existing-tmp-dir
-
-$ jga_delete_indexes
-
-# Bulk insert
-$ bp_bulk_insert
-$ bs_bulk_insert
-$ dra_bulk_insert
-$ jga_bulk_insert
+# TSV 出力
+dump_dblink_files
 ```
 
-### 時間メモ
-
-- `create_bp_date_db`: 一瞬
-- `create_bs_date_db`: 14m
-- `create_es_index --index bioproject`: 一瞬
-- `create_es_index --index biosample`: 一瞬
-- `bp_xml_to_jsonl`: 2m
-- `bp_xml_to_jsonl --is-ddbj`: 1m
-- `bs_xml_to_jsonl`: 40m
-- `bs_xml_to_jsonl --is-ddbj`: 2m
-- `bp_bulk_insert`: 30m
-- `bs_bulk_insert`: 9h
-
-## Development
-
-開発用環境として、`./ddbj_search_converter` が mount され、pip の development mode で install されている環境が存在する。
+### 開発環境での実行
 
 ```bash
-$ docker network create ddbj-search-network-dev
-$ docker compose -f docker-compose.dev.yml up -d
-$ docker compose -f docker-compose.dev.yml exec app bash
-# inside the container
-$ create_bp_date_db --help
-...
+# 開発環境起動 (fixtures 使用)
+docker compose -f compose.dev.yml up -d --build
+docker compose -f compose.dev.yml exec app bash
+
+# 以降のコマンドは本番環境と同じ
 ```
 
-### 環境の使い分け
+## CLI コマンド一覧
 
-基本的に `-dev` 系は、local などで開発するための設定であるとする。(そのため、app dir とか mount されている)
+| コマンド | 説明 |
+|---------|------|
+| `check_external_resources` | 必要な外部リソースの存在確認 |
+| `prepare_bioproject_xml` | BioProject XML を batch 分割 |
+| `prepare_biosample_xml` | BioSample XML を展開・batch 分割 |
+| `build_sra_and_dra_accessions_db` | SRA/DRA Accessions.tab を DuckDB にロード |
+| `init_dblink_db` | DBLink DB を初期化 |
+| `create_dblink_bp_bs_relations` | BioProject-BioSample 関連を抽出 |
+| `create_dblink_bioproject_relations` | BioProject 内部関連 (umbrella, hum-id) を抽出 |
+| `create_dblink_assembly_and_master_relations` | Assembly/INSDC Master 関連を抽出 |
+| `create_dblink_gea_relations` | GEA 関連を抽出 |
+| `create_dblink_metabobank_relations` | MetaboBank 関連を抽出 |
+| `create_dblink_jga_relations` | JGA 関連を抽出 |
+| `create_dblink_sra_internal_relations` | SRA 内部関連 (Study-Experiment-Run-Sample) を抽出 |
+| `finalize_dblink_db` | DBLink DB を確定 |
+| `dump_dblink_files` | DBLink DB から TSV ファイルを出力 |
+| `sync_ncbi_tar` | NCBI SRA Metadata tar を同期 |
+| `sync_dra_tar` | DRA Metadata tar を同期 |
 
-例えば、`a011` は本番環境、`a012` は Staging (dev) 環境であるが、これらの環境は、同じ prod 用の設定を用いる。
+全てのコマンドは引数を取らず、環境変数から設定を読み込む。
 
-### Linting, Formatting and Testing
+## 環境変数
 
-lint, format, test は以下のコマンドで実行できる。
+| 環境変数 | 説明 | デフォルト |
+|---------|------|-----------|
+| `DDBJ_SEARCH_CONVERTER_RESULT_DIR` | 結果出力先ディレクトリ | `./ddbj_search_converter_results` |
+| `DDBJ_SEARCH_CONVERTER_CONST_DIR` | 定数/共有リソースディレクトリ | `/home/w3ddbjld/const` |
+| `DDBJ_SEARCH_CONVERTER_POSTGRES_URL` | PostgreSQL URL | `postgresql://const:const@at098:54301` |
+| `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL | `http://ddbj-search-elasticsearch:9200` |
+
+## 開発
+
+### テスト・リント
 
 ```bash
-# Lint and Format
-$ pylint ./ddbj_search_converter
-$ mypy ./ddbj_search_converter
-$ isort ./ddbj_search_converter
-
-# Test
-$ pytest
+pytest
+pylint ./ddbj_search_converter
+mypy ./ddbj_search_converter
+isort ./ddbj_search_converter
 ```
-
-また、CI / CD は GitHub Actions により実行される。See [`.github/workflows`](./.github/workflows) for more details.
 
 ## License
 
