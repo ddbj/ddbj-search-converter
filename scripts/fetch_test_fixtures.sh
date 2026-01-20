@@ -72,7 +72,7 @@ extract_xml_entries() {
             'BEGIN { print wrapper_start }
              $0 ~ start_tag { start=1; buf="" }
              start { buf=buf $0 "\n" }
-             $0 ~ end_tag { if (start && ++n <= max_count) printf "%s", buf; start=0 }
+             $0 ~ end_tag { if (start && ++n <= max_count) printf "%s", buf; start=0; if (n >= max_count) exit }
              END { print wrapper_end }' \
             "$src" > "$dst"
         echo "  $label: OK ($count entries)"
@@ -95,13 +95,13 @@ extract_xml_entries_gz() {
 
     mkdir -p "$(dirname "$dst")"
     if [ -f "$src" ]; then
-        zcat "$src" | awk -v start_tag="$start_tag" -v end_tag="$end_tag" \
+        zcat "$src" 2>/dev/null | awk -v start_tag="$start_tag" -v end_tag="$end_tag" \
             -v wrapper_start="$wrapper_start" -v wrapper_end="$wrapper_end" \
             -v max_count="$count" \
             'BEGIN { print wrapper_start }
              $0 ~ start_tag { start=1; buf="" }
              start { buf=buf $0 "\n" }
-             $0 ~ end_tag { if (start && ++n <= max_count) printf "%s", buf; start=0 }
+             $0 ~ end_tag { if (start && ++n <= max_count) printf "%s", buf; start=0; if (n >= max_count) exit }
              END { print wrapper_end }' \
             | gzip > "$dst"
         echo "  $label: OK ($count entries, gzipped)"
