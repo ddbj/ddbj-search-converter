@@ -40,10 +40,12 @@ TMP_DRA_DB_FILE_NAME = "dra_accessions.tmp.duckdb"
 DBLINK_DB_FILE_NAME = "dblink.duckdb"
 TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
 
-# External resource paths (relative to const_dir)
+# const_dir relative paths (blacklist, preserved)
+# These are relative to config.const_dir, which can be overridden by env var
 BP_BS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"
 BP_BLACKLIST_REL_PATH = "bp/blacklist.txt"
 BS_BLACKLIST_REL_PATH = "bs/blacklist.txt"
+SRA_BLACKLIST_REL_PATH = "sra/blacklist.txt"
 MTB_BP_PRESERVED_REL_PATH = "metabobank/mtb_id_bioproject_preserve.tsv"
 MTB_BS_PRESERVED_REL_PATH = "metabobank/mtb_id_biosample_preserve.tsv"
 
@@ -55,13 +57,21 @@ DRA_ACCESSIONS_BASE_PATH = Path(
     "/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
 )
 
-# BioSample XML paths (/usr/local/resources is a mount point to /lustre9)
-NCBI_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("biosample_set.xml.gz")
-DDBJ_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("ddbj_biosample_set.xml.gz")
+# TRAD ORGANISM_LIST paths
+TRAD_WGS_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt")
+TRAD_TLS_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("tls/TLS_ORGANISM_LIST.txt")
+TRAD_TSA_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("tsa/TSA_ORGANISM_LIST.txt")
+TRAD_TPA_WGS_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("tpa/wgs/TPA_WGS_ORGANISM_LIST.txt")
+TRAD_TPA_TSA_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("tpa/tsa/TPA_TSA_ORGANISM_LIST.txt")
+TRAD_TPA_TLS_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("tpa/tls/TPA_TLS_ORGANISM_LIST.txt")
 
 # BioProject XML paths
 NCBI_BIOPROJECT_XML = BIOPROJECT_BASE_PATH.joinpath("bioproject.xml")
 DDBJ_BIOPROJECT_XML = BIOPROJECT_BASE_PATH.joinpath("ddbj_core_bioproject.xml")
+
+# BioSample XML paths
+NCBI_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("biosample_set.xml.gz")
+DDBJ_BIOSAMPLE_XML = BIOSAMPLE_BASE_PATH.joinpath("ddbj_biosample_set.xml.gz")
 
 # JGA XML/CSV paths
 JGA_STUDY_XML = JGA_BASE_PATH.joinpath("jga-study.xml")

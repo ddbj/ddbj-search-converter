@@ -16,8 +16,13 @@ from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
                                           MTB_BP_PRESERVED_REL_PATH,
                                           MTB_BS_PRESERVED_REL_PATH,
                                           NCBI_BIOPROJECT_XML,
-                                          NCBI_BIOSAMPLE_XML, TRAD_BASE_PATH,
-                                          get_config)
+                                          NCBI_BIOSAMPLE_XML,
+                                          TRAD_TLS_ORGANISM_LIST,
+                                          TRAD_TPA_TLS_ORGANISM_LIST,
+                                          TRAD_TPA_TSA_ORGANISM_LIST,
+                                          TRAD_TPA_WGS_ORGANISM_LIST,
+                                          TRAD_TSA_ORGANISM_LIST,
+                                          TRAD_WGS_ORGANISM_LIST, get_config)
 from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 from ddbj_search_converter.sra_accessions_tab import (
     find_latest_dra_accessions_tab_file, find_latest_sra_accessions_tab_file)
@@ -53,12 +58,12 @@ def get_required_files(const_dir: Path) -> List[Tuple[str, Optional[Path]]]:
         ("JGA Policy-DAC CSV", JGA_POLICY_DAC_CSV),
 
         # TRAD files
-        ("TRAD WGS", TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt")),
-        ("TRAD TLS", TRAD_BASE_PATH.joinpath("tls/TLS_ORGANISM_LIST.txt")),
-        ("TRAD TSA", TRAD_BASE_PATH.joinpath("tsa/TSA_ORGANISM_LIST.txt")),
-        ("TRAD TPA-WGS", TRAD_BASE_PATH.joinpath("tpa/wgs/TPA_WGS_ORGANISM_LIST.txt")),
-        ("TRAD TPA-TSA", TRAD_BASE_PATH.joinpath("tpa/tsa/TPA_TSA_ORGANISM_LIST.txt")),
-        ("TRAD TPA-TLS", TRAD_BASE_PATH.joinpath("tpa/tls/TPA_TLS_ORGANISM_LIST.txt")),
+        ("TRAD WGS", TRAD_WGS_ORGANISM_LIST),
+        ("TRAD TLS", TRAD_TLS_ORGANISM_LIST),
+        ("TRAD TSA", TRAD_TSA_ORGANISM_LIST),
+        ("TRAD TPA-WGS", TRAD_TPA_WGS_ORGANISM_LIST),
+        ("TRAD TPA-TSA", TRAD_TPA_TSA_ORGANISM_LIST),
+        ("TRAD TPA-TLS", TRAD_TPA_TLS_ORGANISM_LIST),
     ]
 
     # SRA/DRA Accessions.tab files
