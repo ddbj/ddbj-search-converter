@@ -37,7 +37,7 @@ from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 filter_pairs_by_blacklist,
                                                 load_blacklist)
-from ddbj_search_converter.logging.logger import log_info, run_logger
+from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 
 TRAD_FILES = [
     TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt"),
@@ -106,8 +106,27 @@ def process_assembly_summary_file(
                 for left, right, target_set in relations:
                     left_val = values[left]
                     right_val = values[right]
-                    if left_val != "na" and right_val != "na":
-                        target_set.add((left_val, right_val))
+                    if left_val == "na" or right_val == "na":
+                        continue
+
+                    # bs_to_bp の場合は SAM/PRJ チェック
+                    if target_set is bs_to_bp:
+                        if not left_val.startswith("SAM"):
+                            log_warn(
+                                f"skipping invalid biosample: {left_val}",
+                                accession=left_val,
+                                file="assembly_summary_genbank.txt",
+                            )
+                            continue
+                        if not right_val.startswith("PRJ"):
+                            log_warn(
+                                f"skipping invalid bioproject: {right_val}",
+                                accession=right_val,
+                                file="assembly_summary_genbank.txt",
+                            )
+                            continue
+
+                    target_set.add((left_val, right_val))
 
 
 def process_trad_files(

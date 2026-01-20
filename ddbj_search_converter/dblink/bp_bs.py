@@ -55,13 +55,21 @@ DEFAULT_PARALLEL_NUM = 32
 
 # === XML processing functions ===
 
-def process_ncbi_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
+XmlProcessResult = Tuple[List[Tuple[str, str]], List[str]]
+
+
+def process_ncbi_xml_file(xml_path: Path) -> XmlProcessResult:
     """
     NCBI: accession は <BioSample accession="..."> から取得。
     BP は <Link target="bioproject"> または <Attribute bioproject_accession> から。
+
+    Returns:
+        (relations, skipped_accessions)
     """
     results: List[Tuple[str, str]] = []
+    skipped: List[str] = []
     current_bs: Optional[str] = None
+    current_bs_is_valid = False
 
     with xml_path.open("r", encoding="utf-8") as f:
         for event, elem in ET.iterparse(f, events=("start", "end")):
@@ -69,37 +77,46 @@ def process_ncbi_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
 
             if event == "start" and tag == "BioSample":
                 current_bs = elem.attrib.get("accession")
+                current_bs_is_valid = bool(current_bs and current_bs.startswith("SAM"))
+                if current_bs and not current_bs_is_valid:
+                    skipped.append(current_bs)
 
             elif event == "end" and tag == "BioSample":
                 current_bs = None
+                current_bs_is_valid = False
                 elem.clear()
 
-            elif current_bs and current_bs.startswith("SAM") and event == "end":
+            elif current_bs_is_valid and event == "end":
                 if tag == "Link" and elem.attrib.get("target") == "bioproject":
                     bp = elem.attrib.get("label") or (elem.text or "").strip()
                     if bp and not bp.startswith("PRJ"):
                         bp = f"PRJNA{bp}"
                     if bp.startswith("PRJ"):
-                        results.append((current_bs, bp))
+                        results.append((current_bs, bp))  # type: ignore
 
                 elif tag == "Attribute" and elem.attrib.get("attribute_name") == "bioproject_accession":
                     bp = (elem.text or "").strip()
                     if bp.startswith("PRJ"):
-                        results.append((current_bs, bp))
+                        results.append((current_bs, bp))  # type: ignore
 
                 elem.clear()
 
-    return results
+    return results, skipped
 
 
-def process_ddbj_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
+def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
     """
     DDBJ: accession は <Ids><Id namespace="BioSample"> から取得 (NCBI と異なる)。
     BP は <Attribute attribute_name="bioproject_id"> から。
     (NCBI は bioproject_accession だが、DDBJ は bioproject_id を使用)
+
+    Returns:
+        (relations, skipped_accessions)
     """
     results: List[Tuple[str, str]] = []
+    skipped: List[str] = []
     current_bs: str | None = None
+    current_bs_is_valid = False
     in_ids = False
 
     with xml_path.open("r", encoding="utf-8") as f:
@@ -108,6 +125,7 @@ def process_ddbj_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
 
             if event == "start" and tag == "BioSample":
                 current_bs = None
+                current_bs_is_valid = False
                 in_ids = False
 
             elif event == "start" and tag == "Ids":
@@ -119,27 +137,31 @@ def process_ddbj_xml_file(xml_path: Path) -> List[Tuple[str, str]]:
             elif event == "end" and tag == "Id" and in_ids:
                 if elem.attrib.get("namespace") == "BioSample":
                     current_bs = (elem.text or "").strip()
+                    current_bs_is_valid = bool(current_bs and current_bs.startswith("SAM"))
+                    if current_bs and not current_bs_is_valid:
+                        skipped.append(current_bs)
                 elem.clear()
 
             elif event == "end" and tag == "BioSample":
                 current_bs = None
+                current_bs_is_valid = False
                 elem.clear()
 
-            elif current_bs and current_bs.startswith("SAM") and event == "end":
+            elif current_bs_is_valid and event == "end":
                 attr_name = elem.attrib.get("attribute_name")
                 # DDBJ uses "bioproject_id", NCBI uses "bioproject_accession"
                 if tag == "Attribute" and attr_name in ("bioproject_id", "bioproject_accession"):
                     bp = (elem.text or "").strip()
                     if bp.startswith("PRJ"):
-                        results.append((current_bs, bp))
+                        results.append((current_bs, bp))  # type: ignore
                 elem.clear()
 
-    return results
+    return results, skipped
 
 
 def process_xml_files_parallel(
     xml_files: List[Path],
-    worker_func: Callable[[Path], List[Tuple[str, str]]],
+    worker_func: Callable[[Path], XmlProcessResult],
     parallel_num: int = DEFAULT_PARALLEL_NUM,
 ) -> IdPairs:
     results: IdPairs = set()
@@ -150,7 +172,7 @@ def process_xml_files_parallel(
     log_info(f"processing {len(xml_files)} XML files with {parallel_num} workers")
 
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
-        futures: Dict[Future[List[Tuple[str, str]]], Path] = {
+        futures: Dict[Future[XmlProcessResult], Path] = {
             executor.submit(worker_func, xml_path): xml_path
             for xml_path in xml_files
         }
@@ -158,10 +180,12 @@ def process_xml_files_parallel(
         for future in as_completed(futures):
             xml_path = futures[future]
             try:
-                file_results = future.result()
+                file_results, skipped = future.result()
                 results.update(file_results)
                 log_info(f"processed {xml_path.name}: {len(file_results)} relations",
                          file=str(xml_path))
+                for acc in skipped:
+                    log_warn(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path))
             except Exception as e:  # pylint: disable=broad-exception-caught
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
@@ -210,14 +234,28 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
     log_info("processing SRA accessions database", file=str(sra_db_path))
     for bp, bs in iter_bp_bs_relations(config, source="sra"):
         # SRA_Accessions.tab contains invalid BioSample IDs (numeric internal IDs)
-        if bs and bs.startswith("SAM") and bp and bp.startswith("PRJ"):
-            bs_to_bp.add((bs, bp))
+        if not bs or not bp:
+            continue
+        if not bs.startswith("SAM"):
+            log_warn(f"skipping invalid biosample: {bs}", accession=bs, file=str(sra_db_path))
+            continue
+        if not bp.startswith("PRJ"):
+            log_warn(f"skipping invalid bioproject: {bp}", accession=bp, file=str(sra_db_path))
+            continue
+        bs_to_bp.add((bs, bp))
 
     dra_db_path = config.const_dir.joinpath("sra", DRA_DB_FILE_NAME)
     log_info("processing DRA accessions database", file=str(dra_db_path))
     for bp, bs in iter_bp_bs_relations(config, source="dra"):
-        if bs and bs.startswith("SAM") and bp and bp.startswith("PRJ"):
-            bs_to_bp.add((bs, bp))
+        if not bs or not bp:
+            continue
+        if not bs.startswith("SAM"):
+            log_warn(f"skipping invalid biosample: {bs}", accession=bs, file=str(dra_db_path))
+            continue
+        if not bp.startswith("PRJ"):
+            log_warn(f"skipping invalid bioproject: {bp}", accession=bp, file=str(dra_db_path))
+            continue
+        bs_to_bp.add((bs, bp))
 
 
 def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
@@ -239,8 +277,13 @@ def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
             parts = line.split("\t")
             if len(parts) >= 2:
                 bs, bp = parts[0], parts[1]
-                if bs.startswith("SAM") and bp.startswith("PRJ"):
-                    bs_to_bp.add((bs, bp))
+                if not bs.startswith("SAM"):
+                    log_warn(f"skipping invalid biosample: {bs}", accession=bs, file=str(preserved_path))
+                    continue
+                if not bp.startswith("PRJ"):
+                    log_warn(f"skipping invalid bioproject: {bp}", accession=bp, file=str(preserved_path))
+                    continue
+                bs_to_bp.add((bs, bp))
 
 
 def main() -> None:

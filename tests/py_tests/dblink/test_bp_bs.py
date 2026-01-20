@@ -27,10 +27,11 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ncbi_xml_file(xml_file)
+        results, skipped = process_ncbi_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMN00000001", "PRJNA12345")
+        assert len(skipped) == 0
 
     def test_extract_biosample_bioproject_from_attribute(self, tmp_path: Path) -> None:
         """Test extracting BioSample -> BioProject relation from Attribute element."""
@@ -50,10 +51,11 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ncbi_xml_file(xml_file)
+        results, skipped = process_ncbi_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMN00000002", "PRJNA67890")
+        assert len(skipped) == 0
 
     def test_numeric_accession_is_skipped(self, tmp_path: Path) -> None:
         """Test that numeric accession (internal ID) is skipped."""
@@ -74,10 +76,12 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ncbi_xml_file(xml_file)
+        results, skipped = process_ncbi_xml_file(xml_file)
 
         # Should be empty because accession="31458136" doesn't start with "SAM"
         assert len(results) == 0
+        assert len(skipped) == 1
+        assert skipped[0] == "31458136"
 
     def test_real_entry_samea11488912(self, tmp_path: Path) -> None:
         """Test with the actual problematic entry from biosample_set.xml.gz."""
@@ -111,10 +115,11 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ncbi_xml_file(xml_file)
+        results, skipped = process_ncbi_xml_file(xml_file)
 
         # This entry has no bioproject_accession attribute, so should return empty
         assert len(results) == 0
+        assert len(skipped) == 0
 
     def test_link_with_numeric_text_converts_to_prjna(self, tmp_path: Path) -> None:
         """Test that Link with numeric text is converted to PRJNA prefix."""
@@ -134,10 +139,11 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ncbi_xml_file(xml_file)
+        results, skipped = process_ncbi_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMN00000003", "PRJNA12345")
+        assert len(skipped) == 0
 
 
 class TestProcessDdbjXmlFile:
@@ -161,10 +167,11 @@ class TestProcessDdbjXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ddbj_xml_file(xml_file)
+        results, skipped = process_ddbj_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMD00000001", "PRJDB12345")
+        assert len(skipped) == 0
 
     def test_numeric_biosample_id_is_skipped(self, tmp_path: Path) -> None:
         """Test that numeric BioSample ID is skipped."""
@@ -184,10 +191,12 @@ class TestProcessDdbjXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ddbj_xml_file(xml_file)
+        results, skipped = process_ddbj_xml_file(xml_file)
 
         # Should be empty because BioSample ID doesn't start with "SAM"
         assert len(results) == 0
+        assert len(skipped) == 1
+        assert skipped[0] == "12345678"
 
     def test_extract_biosample_bioproject_from_bioproject_id(self, tmp_path: Path) -> None:
         """Test extracting from bioproject_id attribute (actual DDBJ XML format)."""
@@ -211,7 +220,8 @@ class TestProcessDdbjXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results = process_ddbj_xml_file(xml_file)
+        results, skipped = process_ddbj_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMD00000001", "PRJDB1640")
+        assert len(skipped) == 0
