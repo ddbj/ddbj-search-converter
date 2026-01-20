@@ -95,6 +95,8 @@ extract_xml_entries_gz() {
 
     mkdir -p "$(dirname "$dst")"
     if [ -f "$src" ]; then
+        # pipefail を一時無効化 (awk exit で zcat が SIGPIPE を受けるため)
+        set +o pipefail
         zcat "$src" 2>/dev/null | awk -v start_tag="$start_tag" -v end_tag="$end_tag" \
             -v wrapper_start="$wrapper_start" -v wrapper_end="$wrapper_end" \
             -v max_count="$count" \
@@ -104,6 +106,7 @@ extract_xml_entries_gz() {
              $0 ~ end_tag { if (start && ++n <= max_count) printf "%s", buf; start=0; if (n >= max_count) exit }
              END { print wrapper_end }' \
             | gzip > "$dst"
+        set -o pipefail
         echo "  $label: OK ($count entries, gzipped)"
     else
         echo "  $label: スキップ (ファイルなし)"
