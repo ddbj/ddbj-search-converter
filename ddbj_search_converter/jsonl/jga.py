@@ -192,7 +192,7 @@ def get_dbxref_map(
     for accession, related_list in relations.items():
         xrefs: List[Xref] = []
         for related_type, related_id in related_list:
-            xref = to_xref(related_id, type_hint=related_type)  # type: ignore
+            xref = to_xref(related_id, type_hint=related_type)
             xrefs.append(xref)
         # identifier でソート
         xrefs.sort(key=lambda x: x.identifier)

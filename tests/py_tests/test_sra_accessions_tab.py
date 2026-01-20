@@ -70,9 +70,10 @@ class TestLoadTsvToTmpDb:
     def test_loads_tsv(self, tmp_path: Path) -> None:
         """TSVファイルをDBにロードする。"""
         tsv_path = tmp_path / "accessions.tsv"
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRA000001\tSAMD00016353\tPRJDA38027\tDRP000001\tDRX000001\tDRS000001\tRUN\tlive\tpublic\t2022-09-23\t2010-03-24\t2009-06-20
-DRA000002\tSAMD00016354\tPRJDA38028\tDRP000002\tDRX000002\tDRS000002\tRUN\tlive\tpublic\t2022-09-24\t2010-03-25\t2009-06-21
+        # fixture と同じ形式: Accession, Submission, Status, Updated, Published, Received, Type, Center, Visibility, Alias, Experiment, Sample, Study, Loaded, Spots, Bases, Md5sum, BioSample, BioProject, ReplacedBy
+        tsv_content = """Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\tType\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\tLoaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy
+DRR000001\tDRA000001\tlive\t2022-09-23T10:09:59Z\t2010-03-24T03:10:22Z\t2009-06-20T02:48:04Z\tRUN\tKEIO\tpublic\t2008-09-12.BEST195-Lane7\tDRX000001\tDRS000001\tDRP000001\t1\t10148174\t730668528\t252bccb8e87c5a3010bead90ce5f5614\tSAMD00016353\tPRJDA38027\t-
+DRR000002\tDRA000002\tlive\t2022-09-24T10:09:59Z\t2010-03-25T03:10:22Z\t2009-06-21T02:48:04Z\tRUN\tKEIO\tpublic\talias2\tDRX000002\tDRS000002\tDRP000002\t1\t10148174\t730668528\tmd5hash\tSAMD00016354\tPRJDA38028\t-
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -81,17 +82,19 @@ DRA000002\tSAMD00016354\tPRJDA38028\tDRP000002\tDRX000002\tDRS000002\tRUN\tlive\
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
-            rows = conn.execute("SELECT * FROM accessions ORDER BY Accession").fetchall()
+            rows = conn.execute("SELECT Accession, Submission, BioSample, BioProject FROM accessions ORDER BY Accession").fetchall()
             assert len(rows) == 2
-            assert rows[0][0] == "DRA000001"  # Accession
-            assert rows[0][1] == "SAMD00016353"  # BioSample
-            assert rows[0][2] == "PRJDA38027"  # BioProject
+            assert rows[0][0] == "DRR000001"  # Accession
+            assert rows[0][1] == "DRA000001"  # Submission
+            assert rows[0][2] == "SAMD00016353"  # BioSample
+            assert rows[0][3] == "PRJDA38027"  # BioProject
 
     def test_handles_null_values(self, tmp_path: Path) -> None:
         """'-' は NULL として扱われる。"""
         tsv_path = tmp_path / "accessions.tsv"
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRA000001\t-\tPRJDA38027\t-\tDRX000001\t-\tRUN\tlive\tpublic\t2022-09-23\t2010-03-24\t2009-06-20
+        # fixture と同じ形式
+        tsv_content = """Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\tType\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\tLoaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy
+DRR000001\tDRA000001\tlive\t2022-09-23T10:09:59Z\t2010-03-24T03:10:22Z\t2009-06-20T02:48:04Z\tRUN\tKEIO\tpublic\talias\tDRX000001\t-\t-\t1\t10148174\t730668528\tmd5hash\t-\tPRJDA38027\t-
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -312,8 +315,9 @@ class TestBuildSraAccessionsDb:
 
         tsv_path = tmp_path / "sra" / year / month / f"SRA_Accessions.tab.{date_str}"
         tsv_path.parent.mkdir(parents=True, exist_ok=True)
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRA000001\tSAMD001\tPRJDB001\tDRP001\tDRX001\tDRS001\tRUN\tlive\tpublic\t2022-01-01\t2022-01-01\t2022-01-01
+        # fixture と同じ形式
+        tsv_content = """Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\tType\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\tLoaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy
+DRR000001\tDRA000001\tlive\t2022-01-01T00:00:00Z\t2022-01-01T00:00:00Z\t2022-01-01T00:00:00Z\tRUN\tKEIO\tpublic\talias\tDRX001\tDRS001\tDRP001\t1\t100\t1000\tmd5\tSAMD001\tPRJDB001\t-
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -350,8 +354,9 @@ class TestBuildDraAccessionsDb:
 
         tsv_path = tmp_path / "dra" / f"{date_str}.DRA_Accessions.tab"
         tsv_path.parent.mkdir(parents=True, exist_ok=True)
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRR000001\tSAMD100\tPRJDB100\tDRP100\tDRX100\tDRS100\tRUN\tlive\tpublic\t2022-01-01\t2022-01-01\t2022-01-01
+        # fixture と同じ形式
+        tsv_content = """Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\tType\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\tLoaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy
+DRR000001\tDRA000001\tlive\t2022-01-01T00:00:00Z\t2022-01-01T00:00:00Z\t2022-01-01T00:00:00Z\tRUN\tKEIO\tpublic\talias\tDRX100\tDRS100\tDRP100\t1\t100\t1000\tmd5\tSAMD100\tPRJDB100\t-
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -382,7 +387,8 @@ class TestIterStudyExperimentRelations:
 
     def test_iterates_study_experiment_pairs(self, test_config: Config) -> None:
         """Study-Experimentペアをイテレートする。"""
-        from ddbj_search_converter.sra_accessions_tab import iter_study_experiment_relations
+        from ddbj_search_converter.sra_accessions_tab import \
+            iter_study_experiment_relations
 
         sra_dir = test_config.const_dir / "sra"
         sra_dir.mkdir(parents=True, exist_ok=True)
@@ -406,7 +412,8 @@ class TestIterStudyExperimentRelations:
 
     def test_excludes_null_values(self, test_config: Config) -> None:
         """NULL値は除外される。"""
-        from ddbj_search_converter.sra_accessions_tab import iter_study_experiment_relations
+        from ddbj_search_converter.sra_accessions_tab import \
+            iter_study_experiment_relations
 
         sra_dir = test_config.const_dir / "sra"
         sra_dir.mkdir(parents=True, exist_ok=True)
@@ -431,7 +438,8 @@ class TestIterExperimentRunRelations:
 
     def test_iterates_experiment_run_pairs(self, test_config: Config) -> None:
         """Experiment-Runペアをイテレートする。"""
-        from ddbj_search_converter.sra_accessions_tab import iter_experiment_run_relations
+        from ddbj_search_converter.sra_accessions_tab import \
+            iter_experiment_run_relations
 
         sra_dir = test_config.const_dir / "sra"
         sra_dir.mkdir(parents=True, exist_ok=True)
@@ -459,7 +467,8 @@ class TestIterExperimentSampleRelations:
 
     def test_iterates_experiment_sample_pairs(self, test_config: Config) -> None:
         """Experiment-Sampleペアをイテレートする。"""
-        from ddbj_search_converter.sra_accessions_tab import iter_experiment_sample_relations
+        from ddbj_search_converter.sra_accessions_tab import \
+            iter_experiment_sample_relations
 
         sra_dir = test_config.const_dir / "sra"
         sra_dir.mkdir(parents=True, exist_ok=True)
@@ -485,7 +494,8 @@ class TestIterRunSampleRelations:
 
     def test_iterates_run_sample_pairs(self, test_config: Config) -> None:
         """Run-Sampleペアをイテレートする。"""
-        from ddbj_search_converter.sra_accessions_tab import iter_run_sample_relations
+        from ddbj_search_converter.sra_accessions_tab import \
+            iter_run_sample_relations
 
         sra_dir = test_config.const_dir / "sra"
         sra_dir.mkdir(parents=True, exist_ok=True)

@@ -13,6 +13,7 @@ dependencies = [
     "duckdb",
     "elasticsearch>=8,<9",
     "httpx",
+    "psycopg2-binary",
     "pydantic",
     "xmltodict",
 ]
@@ -51,6 +52,7 @@ dump_dblink_files = "ddbj_search_converter.cli.dump_dblink_files:main"
 sync_ncbi_tar = "ddbj_search_converter.cli.sync_ncbi_tar:main"
 sync_dra_tar = "ddbj_search_converter.cli.sync_dra_tar:main"
 generate_jga_jsonl = "ddbj_search_converter.jsonl.jga:main"
+generate_bioproject_jsonl = "ddbj_search_converter.jsonl.bp:main"
 # create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 # create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 # create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
@@ -76,6 +78,7 @@ packages = [
     "ddbj_search_converter.dblink",
     "ddbj_search_converter.jsonl",
     "ddbj_search_converter.logging",
+    "ddbj_search_converter.postgres",
     "ddbj_search_converter.sra",
 ]
 

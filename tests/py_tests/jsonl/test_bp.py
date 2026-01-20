@@ -1,0 +1,575 @@
+"""Tests for ddbj_search_converter.jsonl.bp module."""
+from pathlib import Path
+from typing import Any, Dict
+
+import pytest
+
+from ddbj_search_converter.jsonl.bp import (iterate_xml_packages,
+                                            normalize_properties,
+                                            parse_description,
+                                            parse_external_link, parse_grant,
+                                            parse_object_type, parse_organism,
+                                            parse_organization,
+                                            parse_publication, parse_same_as,
+                                            parse_status, parse_title,
+                                            write_jsonl,
+                                            xml_entry_to_bp_instance)
+from ddbj_search_converter.schema import BioProject
+
+
+class TestParseObjectType:
+    """Tests for parse_object_type function."""
+
+    def test_returns_bioproject_for_normal(self) -> None:
+        """通常の BioProject を判定する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectType": {
+                    "ProjectTypeSubmission": {}
+                }
+            }
+        }
+        assert parse_object_type(project) == "BioProject"
+
+    def test_returns_umbrella_for_top_admin(self) -> None:
+        """Umbrella BioProject を判定する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectType": {
+                    "ProjectTypeTopAdmin": {"Organism": {}}
+                }
+            }
+        }
+        assert parse_object_type(project) == "UmbrellaBioProject"
+
+
+class TestParseOrganism:
+    """Tests for parse_organism function."""
+
+    def test_parses_ncbi_organism(self) -> None:
+        """NCBI 形式の Organism を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectType": {
+                    "ProjectTypeSubmission": {
+                        "Target": {
+                            "Organism": {
+                                "taxID": "9606",
+                                "OrganismName": "Homo sapiens"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        result = parse_organism(project, is_ddbj=False)
+        assert result is not None
+        assert result.identifier == "9606"
+        assert result.name == "Homo sapiens"
+
+    def test_parses_ddbj_organism(self) -> None:
+        """DDBJ 形式の Organism を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectType": {
+                    "ProjectTypeTopAdmin": {
+                        "Organism": {
+                            "taxID": "9606",
+                            "OrganismName": "Homo sapiens"
+                        }
+                    }
+                }
+            }
+        }
+        result = parse_organism(project, is_ddbj=True)
+        assert result is not None
+        assert result.identifier == "9606"
+        assert result.name == "Homo sapiens"
+
+    def test_returns_none_when_missing(self) -> None:
+        """Organism がない場合は None を返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectType": {}}}
+        result = parse_organism(project, is_ddbj=False)
+        assert result is None
+
+
+class TestParseTitle:
+    """Tests for parse_title function."""
+
+    def test_parses_title(self) -> None:
+        """タイトルを抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Title": "Test BioProject Title"
+                }
+            }
+        }
+        assert parse_title(project) == "Test BioProject Title"
+
+    def test_returns_none_when_missing(self) -> None:
+        """タイトルがない場合は None を返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectDescr": {}}}
+        assert parse_title(project) is None
+
+
+class TestParseDescription:
+    """Tests for parse_description function."""
+
+    def test_parses_description(self) -> None:
+        """説明を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Description": "Test description"
+                }
+            }
+        }
+        assert parse_description(project) == "Test description"
+
+    def test_returns_none_when_missing(self) -> None:
+        """説明がない場合は None を返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectDescr": {}}}
+        assert parse_description(project) is None
+
+
+class TestParseOrganization:
+    """Tests for parse_organization function."""
+
+    def test_parses_ncbi_organization(self) -> None:
+        """NCBI 形式の Organization を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Organization": {
+                        "Name": "Test Organization",
+                        "type": "center",
+                        "role": "owner"
+                    }
+                }
+            }
+        }
+        result = parse_organization(project, is_ddbj=False)
+        assert len(result) == 1
+        assert result[0].name == "Test Organization"
+        assert result[0].organizationType == "center"
+        assert result[0].role == "owner"
+
+    def test_parses_ddbj_organization(self) -> None:
+        """DDBJ 形式の Organization を抽出する。"""
+        project: Dict[str, Any] = {
+            "Submission": {
+                "Submission": {
+                    "Description": {
+                        "Organization": {
+                            "Name": "DDBJ Organization",
+                            "type": "center"
+                        }
+                    }
+                }
+            }
+        }
+        result = parse_organization(project, is_ddbj=True)
+        assert len(result) == 1
+        assert result[0].name == "DDBJ Organization"
+
+    def test_parses_organization_with_abbr(self) -> None:
+        """abbreviation 付きの Organization を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Organization": {
+                        "Name": {"content": "Full Name", "abbr": "FN"},
+                        "type": "center"
+                    }
+                }
+            }
+        }
+        result = parse_organization(project, is_ddbj=False)
+        assert len(result) == 1
+        assert result[0].name == "Full Name"
+        assert result[0].abbreviation == "FN"
+
+    def test_parses_multiple_organizations(self) -> None:
+        """複数の Organization を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Organization": [
+                        {"Name": "Org1"},
+                        {"Name": "Org2"}
+                    ]
+                }
+            }
+        }
+        result = parse_organization(project, is_ddbj=False)
+        assert len(result) == 2
+
+
+class TestParsePublication:
+    """Tests for parse_publication function."""
+
+    def test_parses_pubmed_publication(self) -> None:
+        """PubMed Publication を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Publication": {
+                        "id": "12345",
+                        "DbType": "ePubmed",
+                        "StructuredCitation": {"Title": "Paper Title"},
+                        "status": "published"
+                    }
+                }
+            }
+        }
+        result = parse_publication(project)
+        assert len(result) == 1
+        assert result[0].id == "12345"
+        assert result[0].DbType == "ePubmed"
+        assert result[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
+        assert result[0].title == "Paper Title"
+
+    def test_parses_doi_publication(self) -> None:
+        """DOI Publication を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Publication": {
+                        "id": "10.1234/example",
+                        "DbType": "DOI"
+                    }
+                }
+            }
+        }
+        result = parse_publication(project)
+        assert len(result) == 1
+        assert result[0].url == "https://doi.org/10.1234/example"
+
+
+class TestParseGrant:
+    """Tests for parse_grant function."""
+
+    def test_parses_grant_with_string_agency(self) -> None:
+        """文字列 Agency の Grant を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Grant": {
+                        "GrantId": "GRANT001",
+                        "Title": "Grant Title",
+                        "Agency": "NIH"
+                    }
+                }
+            }
+        }
+        result = parse_grant(project)
+        assert len(result) == 1
+        assert result[0].id == "GRANT001"
+        assert result[0].title == "Grant Title"
+        assert len(result[0].agency) == 1
+        assert result[0].agency[0].name == "NIH"
+
+    def test_parses_grant_with_dict_agency(self) -> None:
+        """辞書 Agency の Grant を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Grant": {
+                        "GrantId": "GRANT002",
+                        "Agency": {"abbr": "NIH", "content": "National Institutes of Health"}
+                    }
+                }
+            }
+        }
+        result = parse_grant(project)
+        assert len(result) == 1
+        assert result[0].agency[0].name == "National Institutes of Health"
+        assert result[0].agency[0].abbreviation == "NIH"
+
+
+class TestParseExternalLink:
+    """Tests for parse_external_link function."""
+
+    def test_parses_url_link(self) -> None:
+        """URL 形式の ExternalLink を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "ExternalLink": {
+                        "URL": "https://example.com",
+                        "label": "Example Link"
+                    }
+                }
+            }
+        }
+        result = parse_external_link(project)
+        assert len(result) == 1
+        assert result[0].url == "https://example.com"
+        assert result[0].label == "Example Link"
+
+    def test_parses_geo_dbxref(self) -> None:
+        """GEO dbXREF を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "ExternalLink": {
+                        "dbXREF": {"db": "GEO", "ID": "GSE12345"}
+                    }
+                }
+            }
+        }
+        result = parse_external_link(project)
+        assert len(result) == 1
+        assert "GSE12345" in result[0].url
+
+
+class TestParseSameAs:
+    """Tests for parse_same_as function."""
+
+    def test_parses_geo_center_id(self) -> None:
+        """GEO CenterID を sameAs として抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectID": {
+                    "CenterID": {"center": "GEO", "content": "GSE12345"}
+                }
+            }
+        }
+        result = parse_same_as(project)
+        assert len(result) == 1
+        assert result[0].identifier == "GSE12345"
+        assert result[0].type_ == "geo"
+
+    def test_ignores_non_geo_center_id(self) -> None:
+        """GEO 以外の CenterID は無視する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectID": {
+                    "CenterID": {"center": "OTHER", "content": "ID123"}
+                }
+            }
+        }
+        result = parse_same_as(project)
+        assert len(result) == 0
+
+
+class TestParseStatus:
+    """Tests for parse_status function."""
+
+    def test_returns_public_for_ddbj(self) -> None:
+        """DDBJ は常に public を返す。"""
+        project: Dict[str, Any] = {}
+        assert parse_status(project, is_ddbj=True) == "public"
+
+    def test_parses_ncbi_status(self) -> None:
+        """NCBI の status を抽出する。"""
+        project: Dict[str, Any] = {
+            "Submission": {
+                "Description": {
+                    "Access": "controlled"
+                }
+            }
+        }
+        assert parse_status(project, is_ddbj=False) == "controlled"
+
+    def test_defaults_to_public_for_ncbi(self) -> None:
+        """NCBI で status がない場合は public を返す。"""
+        project: Dict[str, Any] = {}
+        assert parse_status(project, is_ddbj=False) == "public"
+
+
+class TestNormalizeProperties:
+    """Tests for normalize_properties function."""
+
+    def test_normalizes_local_id_string(self) -> None:
+        """LocalID の文字列を正規化する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectID": {
+                    "LocalID": "local123"
+                }
+            }
+        }
+        normalize_properties(project)
+        assert project["Project"]["ProjectID"]["LocalID"] == {"content": "local123"}
+
+    def test_normalizes_locus_tag_prefix(self) -> None:
+        """LocusTagPrefix を正規化する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "LocusTagPrefix": "ABC"
+                }
+            }
+        }
+        normalize_properties(project)
+        assert project["Project"]["ProjectDescr"]["LocusTagPrefix"] == {"content": "ABC"}
+
+
+class TestIterateXmlPackages:
+    """Tests for iterate_xml_packages function."""
+
+    def test_extracts_packages(self, tmp_path: Path) -> None:
+        """<Package> 要素を抽出する。"""
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<PackageSet>
+<Package>
+  <Project>
+    <Project>
+      <ProjectID><ArchiveID accession="PRJNA1"/></ProjectID>
+    </Project>
+  </Project>
+</Package>
+<Package>
+  <Project>
+    <Project>
+      <ProjectID><ArchiveID accession="PRJNA2"/></ProjectID>
+    </Project>
+  </Project>
+</Package>
+</PackageSet>
+"""
+        xml_path = tmp_path / "test.xml"
+        xml_path.write_bytes(xml_content.encode("utf-8"))
+
+        packages = list(iterate_xml_packages(xml_path))
+        assert len(packages) == 2
+        assert b"PRJNA1" in packages[0]
+        assert b"PRJNA2" in packages[1]
+
+
+class TestXmlEntryToBpInstance:
+    """Tests for xml_entry_to_bp_instance function."""
+
+    def test_converts_entry(self) -> None:
+        """XML エントリを BioProject インスタンスに変換する。"""
+        entry: Dict[str, Any] = {
+            "Project": {
+                "Project": {
+                    "ProjectID": {
+                        "ArchiveID": {"accession": "PRJNA12345"}
+                    },
+                    "ProjectDescr": {
+                        "Title": "Test Project",
+                        "Description": "Test Description"
+                    },
+                    "ProjectType": {
+                        "ProjectTypeSubmission": {
+                            "Target": {
+                                "Organism": {
+                                    "taxID": "9606",
+                                    "OrganismName": "Homo sapiens"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        result = xml_entry_to_bp_instance(entry, is_ddbj=False)
+
+        assert result.identifier == "PRJNA12345"
+        assert result.title == "Test Project"
+        assert result.description == "Test Description"
+        assert result.objectType == "BioProject"
+        assert result.visibility == "unrestricted-access"
+
+
+class TestWriteJsonl:
+    """Tests for write_jsonl function."""
+
+    def test_writes_jsonl(self, tmp_path: Path) -> None:
+        """JSONL ファイルを書き込む。"""
+        bp = BioProject(
+            identifier="PRJNA12345",
+            properties={"Project": {}},
+            distribution=[],
+            isPartOf="BioProject",
+            type="bioproject",
+            objectType="BioProject",
+            name=None,
+            url="https://example.com",
+            organism=None,
+            title="Test",
+            description=None,
+            organization=[],
+            publication=[],
+            grant=[],
+            externalLink=[],
+            dbXref=[],
+            sameAs=[],
+            status="public",
+            visibility="unrestricted-access",
+            dateCreated=None,
+            dateModified=None,
+            datePublished=None,
+        )
+
+        output_path = tmp_path / "test.jsonl"
+        write_jsonl(output_path, [bp])
+
+        assert output_path.exists()
+        content = output_path.read_text(encoding="utf-8")
+        assert "PRJNA12345" in content
+        assert '"type":"bioproject"' in content
+
+    def test_writes_multiple_entries(self, tmp_path: Path) -> None:
+        """複数エントリを書き込む。"""
+        bp1 = BioProject(
+            identifier="PRJNA1",
+            properties={},
+            distribution=[],
+            isPartOf="BioProject",
+            type="bioproject",
+            objectType="BioProject",
+            name=None,
+            url="https://example.com/1",
+            organism=None,
+            title=None,
+            description=None,
+            organization=[],
+            publication=[],
+            grant=[],
+            externalLink=[],
+            dbXref=[],
+            sameAs=[],
+            status="public",
+            visibility="unrestricted-access",
+            dateCreated=None,
+            dateModified=None,
+            datePublished=None,
+        )
+        bp2 = BioProject(
+            identifier="PRJNA2",
+            properties={},
+            distribution=[],
+            isPartOf="BioProject",
+            type="bioproject",
+            objectType="BioProject",
+            name=None,
+            url="https://example.com/2",
+            organism=None,
+            title=None,
+            description=None,
+            organization=[],
+            publication=[],
+            grant=[],
+            externalLink=[],
+            dbXref=[],
+            sameAs=[],
+            status="public",
+            visibility="unrestricted-access",
+            dateCreated=None,
+            dateModified=None,
+            datePublished=None,
+        )
+
+        output_path = tmp_path / "test.jsonl"
+        write_jsonl(output_path, [bp1, bp2])
+
+        lines = output_path.read_text(encoding="utf-8").strip().split("\n")
+        assert len(lines) == 2
+        assert "PRJNA1" in lines[0]
+        assert "PRJNA2" in lines[1]

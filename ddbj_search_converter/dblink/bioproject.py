@@ -18,6 +18,10 @@ BioProject XML から各種関連を抽出し、DBLink データベースに挿�
    - <LocalID submission_id="hum0XXX"> から抽出
    - バージョン情報 (例: hum0001.v2) は除去して hum0001 に正規化
 
+3. geo 関連 (bioproject -> geo)
+   - <CenterID center="GEO"> から抽出
+   - GEO accession (GSExxxx) を取得
+
 出力:
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
@@ -64,6 +68,7 @@ class BioProjectRelations:
     """BioProject XML から抽出した関連を格納するデータクラス。"""
     umbrella: List[Tuple[str, str]] = field(default_factory=list)  # (primary, umbrella)
     hum_id: List[Tuple[str, str]] = field(default_factory=list)    # (bioproject, hum_id)
+    geo: List[Tuple[str, str]] = field(default_factory=list)       # (bioproject, geo_id)
     skipped_accessions: List[str] = field(default_factory=list)
 
 
@@ -74,6 +79,7 @@ def process_bioproject_xml_file(xml_path: Path) -> BioProjectRelations:
     1回のパースで以下を抽出:
     - umbrella 関連: <Link><Hierarchical type="TopAdmin">
     - hum-id 関連: <LocalID submission_id="hum...">
+    - geo 関連: <CenterID center="GEO">
 
     Args:
         xml_path: 入力 XML ファイルパス
@@ -86,6 +92,7 @@ def process_bioproject_xml_file(xml_path: Path) -> BioProjectRelations:
     # Package 単位の状態
     current_accession: Optional[str] = None
     current_hum_ids: List[str] = []
+    current_geo_ids: List[str] = []
     in_project_id = False
 
     # Link 単位の状態
@@ -100,6 +107,7 @@ def process_bioproject_xml_file(xml_path: Path) -> BioProjectRelations:
             if event == "start" and tag == "Package":
                 current_accession = None
                 current_hum_ids = []
+                current_geo_ids = []
 
             elif event == "start" and tag == "ProjectID":
                 in_project_id = True
@@ -123,13 +131,24 @@ def process_bioproject_xml_file(xml_path: Path) -> BioProjectRelations:
                         current_hum_ids.append(normalized)
                     elem.clear()
 
+                elif tag == "CenterID":
+                    center = elem.attrib.get("center", "")
+                    if center == "GEO" and elem.text:
+                        geo_id = elem.text.strip()
+                        if geo_id:
+                            current_geo_ids.append(geo_id)
+                    elem.clear()
+
             elif event == "end" and tag == "Package":
-                # Package 終了時に hum-id 関連を追加
-                if current_accession and current_hum_ids:
+                # Package 終了時に hum-id, geo 関連を追加
+                if current_accession:
                     for hum_id in current_hum_ids:
                         result.hum_id.append((current_accession, hum_id))
+                    for geo_id in current_geo_ids:
+                        result.geo.append((current_accession, geo_id))
                 current_accession = None
                 current_hum_ids = []
+                current_geo_ids = []
                 elem.clear()
 
             # === Link 処理 (umbrella) ===
@@ -162,7 +181,7 @@ def process_bioproject_xml_file(xml_path: Path) -> BioProjectRelations:
 def process_xml_files_parallel(
     xml_files: List[Path],
     parallel_num: int = DEFAULT_PARALLEL_NUM,
-) -> Tuple[IdPairs, IdPairs]:
+) -> Tuple[IdPairs, IdPairs, IdPairs]:
     """
     XML ファイルを並列処理する。
 
@@ -171,13 +190,14 @@ def process_xml_files_parallel(
         parallel_num: 並列処理数
 
     Returns:
-        (umbrella_relations, hum_id_relations)
+        (umbrella_relations, hum_id_relations, geo_relations)
     """
     umbrella_results: IdPairs = set()
     hum_id_results: IdPairs = set()
+    geo_results: IdPairs = set()
 
     if not xml_files:
-        return umbrella_results, hum_id_results
+        return umbrella_results, hum_id_results, geo_results
 
     log_info(f"processing {len(xml_files)} XML files with {parallel_num} workers")
 
@@ -193,12 +213,15 @@ def process_xml_files_parallel(
                 file_result = future.result()
                 umbrella_results.update(file_result.umbrella)
                 hum_id_results.update(file_result.hum_id)
+                geo_results.update(file_result.geo)
 
                 counts = []
                 if file_result.umbrella:
                     counts.append(f"{len(file_result.umbrella)} umbrella")
                 if file_result.hum_id:
                     counts.append(f"{len(file_result.hum_id)} hum-id")
+                if file_result.geo:
+                    counts.append(f"{len(file_result.geo)} geo")
                 if counts:
                     log_info(f"processed {xml_path.name}: {', '.join(counts)}",
                              file=str(xml_path))
@@ -211,7 +234,7 @@ def process_xml_files_parallel(
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
 
-    return umbrella_results, hum_id_results
+    return umbrella_results, hum_id_results, geo_results
 
 
 def load_bp_blacklist(config: Config) -> Set[str]:
@@ -265,29 +288,48 @@ def filter_hum_id_by_blacklist(
     return filtered
 
 
+def filter_geo_by_blacklist(
+    bp_to_geo: IdPairs,
+    bp_blacklist: Set[str],
+) -> IdPairs:
+    """bioproject を blacklist でフィルタリング。"""
+    original_count = len(bp_to_geo)
+    filtered = {
+        (bp, geo_id)
+        for bp, geo_id in bp_to_geo
+        if bp not in bp_blacklist
+    }
+    removed_count = original_count - len(filtered)
+    if removed_count > 0:
+        log_info(f"removed {removed_count} geo relations by blacklist")
+    return filtered
+
+
 def process_bioproject_xml(
     config: Config,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
-) -> Tuple[IdPairs, IdPairs]:
+) -> Tuple[IdPairs, IdPairs, IdPairs]:
     """
     BioProject XML から関連を抽出する。
 
     Returns:
-        (umbrella_relations, hum_id_relations)
+        (umbrella_relations, hum_id_relations, geo_relations)
     """
     tmp_xml_dir = get_tmp_xml_dir(config, "bioproject")
 
     umbrella_all: IdPairs = set()
     hum_id_all: IdPairs = set()
+    geo_all: IdPairs = set()
 
     # NCBI files
     ncbi_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
     if ncbi_files:
         log_info(f"found {len(ncbi_files)} NCBI XML files")
-        umbrella, hum_id = process_xml_files_parallel(ncbi_files, parallel_num)
+        umbrella, hum_id, geo = process_xml_files_parallel(ncbi_files, parallel_num)
         umbrella_all.update(umbrella)
         hum_id_all.update(hum_id)
-        log_info(f"NCBI: {len(umbrella)} umbrella, {len(hum_id)} hum-id relations")
+        geo_all.update(geo)
+        log_info(f"NCBI: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
     else:
         log_warn(f"no NCBI XML files found in {tmp_xml_dir}")
 
@@ -295,14 +337,15 @@ def process_bioproject_xml(
     ddbj_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
     if ddbj_files:
         log_info(f"found {len(ddbj_files)} DDBJ XML files")
-        umbrella, hum_id = process_xml_files_parallel(ddbj_files, parallel_num)
+        umbrella, hum_id, geo = process_xml_files_parallel(ddbj_files, parallel_num)
         umbrella_all.update(umbrella)
         hum_id_all.update(hum_id)
-        log_info(f"DDBJ: {len(umbrella)} umbrella, {len(hum_id)} hum-id relations")
+        geo_all.update(geo)
+        log_info(f"DDBJ: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
     else:
         log_warn(f"no DDBJ XML files found in {tmp_xml_dir}")
 
-    return umbrella_all, hum_id_all
+    return umbrella_all, hum_id_all, geo_all
 
 
 def main() -> None:
@@ -311,17 +354,20 @@ def main() -> None:
         bp_blacklist = load_bp_blacklist(config)
 
         # Extract relations from XML
-        umbrella_relations, hum_id_relations = process_bioproject_xml(config)
+        umbrella_relations, hum_id_relations, geo_relations = process_bioproject_xml(config)
 
         log_info(f"total {len(umbrella_relations)} umbrella relations (before filter)")
         log_info(f"total {len(hum_id_relations)} hum-id relations (before filter)")
+        log_info(f"total {len(geo_relations)} geo relations (before filter)")
 
         # Filter by blacklist
         umbrella_relations = filter_umbrella_by_blacklist(umbrella_relations, bp_blacklist)
         hum_id_relations = filter_hum_id_by_blacklist(hum_id_relations, bp_blacklist)
+        geo_relations = filter_geo_by_blacklist(geo_relations, bp_blacklist)
 
         log_info(f"total {len(umbrella_relations)} umbrella relations (after filter)")
         log_info(f"total {len(hum_id_relations)} hum-id relations (after filter)")
+        log_info(f"total {len(geo_relations)} geo relations (after filter)")
 
         # Load to DB
         if umbrella_relations:
@@ -329,6 +375,9 @@ def main() -> None:
 
         if hum_id_relations:
             load_to_db(config, hum_id_relations, "bioproject", "hum-id")
+
+        if geo_relations:
+            load_to_db(config, geo_relations, "bioproject", "geo")
 
 
 if __name__ == "__main__":

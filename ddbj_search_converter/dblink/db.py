@@ -22,9 +22,9 @@ from ddbj_search_converter.logging.logger import log_info
 
 AccessionType = Literal[
     "bioproject",
-    "umbrella-bioproject",
     "biosample",
     "gea",
+    "geo",
     "hum-id",
     "insdc-assembly",
     "insdc-master",
@@ -34,11 +34,14 @@ AccessionType = Literal[
     "jga-study",
     "metabobank",
     "pubmed-id",
+    "sra-analysis",
     "sra-experiment",
     "sra-run",
     "sra-sample",
     "sra-study",
+    "sra-submission",
     "taxonomy",
+    "umbrella-bioproject",
 ]
 
 Relation = Tuple[AccessionType, str, AccessionType, str]

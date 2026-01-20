@@ -16,7 +16,7 @@ TODAY_STR = TODAY.strftime(DATE_FORMAT)
 BP_JSONL_DIR_NAME = "bioproject_jsonl"
 BS_JSONL_DIR_NAME = "biosample_jsonl"
 SRA_JSONL_DIR_NAME = "sra_jsonl"
-JGA_JSONL_DIR_NAME = "jga_jsonl"
+JGA_JSONL_DIR_NAME = "jga"
 LOG_DIR_NAME = "logs"
 
 

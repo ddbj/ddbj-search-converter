@@ -104,6 +104,7 @@ def init_accession_db(tmp_db_path: Path) -> None:
             """
             CREATE TABLE accessions (
                 Accession   TEXT,
+                Submission  TEXT,
                 BioSample   TEXT,
                 BioProject  TEXT,
                 Study       TEXT,
@@ -140,6 +141,7 @@ def load_tsv_to_tmp_db(
             INSERT INTO accessions
             SELECT
                 Accession,
+                Submission,
                 BioSample,
                 BioProject,
                 Study,
@@ -384,6 +386,80 @@ def iter_run_sample_relations(
                 Type = 'RUN'
                 AND Accession IS NOT NULL
                 AND Sample IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_submission_study_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Submission <-> Study 関連をイテレートする。
+
+    STUDY 行から Submission と Accession (Study) の関連を抽出する。
+    NULL 値は除外される。
+
+    Returns:
+        (submission_accession, study_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Submission,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'STUDY'
+                AND Submission IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_study_analysis_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Study <-> Analysis 関連をイテレートする。
+
+    ANALYSIS 行から Study と Accession (Analysis) の関連を抽出する。
+    NULL 値は除外される。
+
+    Returns:
+        (study_accession, analysis_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Study,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'ANALYSIS'
+                AND Study IS NOT NULL
+                AND Accession IS NOT NULL
             """
         ).fetchall()
 

@@ -6,7 +6,9 @@ SRA 内部関連を抽出し、DBLink データベースに挿入する。
     - sra_accessions_tab モジュールで事前に構築する
 
 SRA/DRA accessions DB から以下の内部関連を抽出する:
+- Submission <-> Study
 - Study <-> Experiment
+- Study <-> Analysis
 - Experiment <-> Run
 - Experiment <-> Sample
 - Run <-> Sample
@@ -24,7 +26,8 @@ from ddbj_search_converter.logging.logger import log_info, run_logger
 from ddbj_search_converter.sra_accessions_tab import (
     SourceKind, iter_experiment_run_relations,
     iter_experiment_sample_relations, iter_run_sample_relations,
-    iter_study_experiment_relations)
+    iter_study_analysis_relations, iter_study_experiment_relations,
+    iter_submission_study_relations)
 
 
 def process_sra_internal_relations(
@@ -39,9 +42,19 @@ def process_sra_internal_relations(
     Args:
         config: 設定
         source: "sra" または "dra"
-        sra_blacklist: SRA blacklist (Study, Experiment, Run, Sample の accession)
+        sra_blacklist: SRA blacklist (Submission, Study, Experiment, Run, Sample, Analysis の accession)
     """
     source_label = source.upper()
+
+    # Submission <-> Study
+    submission_study: IdPairs = set()
+    for submission, study in iter_submission_study_relations(config, source=source):
+        if submission and study:
+            submission_study.add((submission, study))
+    log_info(f"extracted {len(submission_study)} {source_label} Submission <-> Study relations")
+    submission_study = filter_sra_pairs_by_blacklist(submission_study, sra_blacklist)
+    if submission_study:
+        load_to_db(config, submission_study, "sra-submission", "sra-study")
 
     # Study <-> Experiment
     study_experiment: IdPairs = set()
@@ -52,6 +65,16 @@ def process_sra_internal_relations(
     study_experiment = filter_sra_pairs_by_blacklist(study_experiment, sra_blacklist)
     if study_experiment:
         load_to_db(config, study_experiment, "sra-study", "sra-experiment")
+
+    # Study <-> Analysis
+    study_analysis: IdPairs = set()
+    for study, analysis in iter_study_analysis_relations(config, source=source):
+        if study and analysis:
+            study_analysis.add((study, analysis))
+    log_info(f"extracted {len(study_analysis)} {source_label} Study <-> Analysis relations")
+    study_analysis = filter_sra_pairs_by_blacklist(study_analysis, sra_blacklist)
+    if study_analysis:
+        load_to_db(config, study_analysis, "sra-study", "sra-analysis")
 
     # Experiment <-> Run
     experiment_run: IdPairs = set()

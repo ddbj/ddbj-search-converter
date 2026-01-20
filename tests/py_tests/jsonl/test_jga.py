@@ -5,15 +5,12 @@ from typing import Any, Dict
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.jsonl.jga import (
-    _format_date_from_csv,
-    extract_description,
-    extract_title,
-    jga_entry_to_jga_instance,
-    load_date_map,
-    load_jga_xml,
-    write_jsonl,
-)
+from ddbj_search_converter.jsonl.jga import (_format_date_from_csv,
+                                             extract_description,
+                                             extract_title,
+                                             jga_entry_to_jga_instance,
+                                             load_date_map, load_jga_xml,
+                                             write_jsonl)
 from ddbj_search_converter.schema import JGA
 
 
