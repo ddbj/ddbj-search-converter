@@ -2,7 +2,8 @@
 from typing import Literal, Set, Tuple
 
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
-                                          BS_BLACKLIST_REL_PATH, Config)
+                                          BS_BLACKLIST_REL_PATH,
+                                          SRA_BLACKLIST_REL_PATH, Config)
 from ddbj_search_converter.dblink.db import IdPairs
 from ddbj_search_converter.logging.logger import log_info, log_warn
 
@@ -34,6 +35,27 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
                  file=str(bs_blacklist_path))
 
     return bp_blacklist, bs_blacklist
+
+
+def load_sra_blacklist(config: Config) -> Set[str]:
+    """SRA の blacklist ファイルを読み込む。
+
+    SRA blacklist には Study, Experiment, Run, Sample の accession が含まれる。
+    """
+    sra_blacklist_path = config.const_dir.joinpath(SRA_BLACKLIST_REL_PATH)
+
+    sra_blacklist: Set[str] = set()
+
+    if sra_blacklist_path.exists():
+        sra_blacklist = set(sra_blacklist_path.read_text(encoding="utf-8").strip().split("\n"))
+        sra_blacklist.discard("")
+        log_info(f"loaded {len(sra_blacklist)} SRA blacklist entries",
+                 file=str(sra_blacklist_path))
+    else:
+        log_warn(f"SRA blacklist not found, skipping: {sra_blacklist_path}",
+                 file=str(sra_blacklist_path))
+
+    return sra_blacklist
 
 
 def filter_by_blacklist(
@@ -71,5 +93,23 @@ def filter_pairs_by_blacklist(
     removed_count = original_count - len(filtered)
     if removed_count > 0:
         log_info(f"removed {removed_count} relations by blacklist ({position})")
+
+    return filtered
+
+
+def filter_sra_pairs_by_blacklist(
+    pairs: IdPairs,
+    blacklist: Set[str],
+) -> IdPairs:
+    """SRA 関連を blacklist でフィルタ。片側でも含まれていたら除外。"""
+    if not blacklist:
+        return pairs
+
+    original_count = len(pairs)
+    filtered = {(a, b) for a, b in pairs if a not in blacklist and b not in blacklist}
+    removed_count = original_count - len(filtered)
+
+    if removed_count > 0:
+        log_info(f"removed {removed_count} SRA relations by blacklist")
 
     return filtered
