@@ -305,7 +305,10 @@ GEA_DST="$FIXTURES_DIR/usr/local/resources/gea/experiment"
 if [ -d "$GEA_SRC" ]; then
     # IDF を 10 個コピー
     echo "GEA IDF を取得中..."
-    find "$GEA_SRC" -type f -name "*.idf.txt" 2>/dev/null | head -10 | while read f; do
+    set +o pipefail
+    mapfile -t gea_idf_files < <(find "$GEA_SRC" -type f -name "*.idf.txt" 2>/dev/null | head -10)
+    set -o pipefail
+    for f in "${gea_idf_files[@]}"; do
         entry_dir=$(dirname "$f")
         entry_name=$(basename "$entry_dir")
         parent_name=$(basename "$(dirname "$entry_dir")")
@@ -317,7 +320,10 @@ if [ -d "$GEA_SRC" ]; then
 
     # SDRF を 10 個コピー
     echo "GEA SDRF を取得中..."
-    find "$GEA_SRC" -type f -name "*.sdrf.txt" 2>/dev/null | head -10 | while read f; do
+    set +o pipefail
+    mapfile -t gea_sdrf_files < <(find "$GEA_SRC" -type f -name "*.sdrf.txt" 2>/dev/null | head -10)
+    set -o pipefail
+    for f in "${gea_sdrf_files[@]}"; do
         entry_dir=$(dirname "$f")
         entry_name=$(basename "$entry_dir")
         parent_name=$(basename "$(dirname "$entry_dir")")
@@ -340,7 +346,10 @@ MB_DST="$FIXTURES_DIR/usr/local/shared_data/metabobank/study"
 if [ -d "$MB_SRC" ]; then
     # IDF を 10 個コピー
     echo "MetaboBank IDF を取得中..."
-    find "$MB_SRC" -type f -name "*.idf.txt" 2>/dev/null | head -10 | while read f; do
+    set +o pipefail
+    mapfile -t mb_idf_files < <(find "$MB_SRC" -type f -name "*.idf.txt" 2>/dev/null | head -10)
+    set -o pipefail
+    for f in "${mb_idf_files[@]}"; do
         # ディレクトリ構造を保持してコピー
         rel_path="${f#$MB_SRC/}"
         dst_file="$MB_DST/$rel_path"
@@ -351,7 +360,10 @@ if [ -d "$MB_SRC" ]; then
 
     # SDRF を 10 個コピー
     echo "MetaboBank SDRF を取得中..."
-    find "$MB_SRC" -type f -name "*.sdrf.txt" 2>/dev/null | head -10 | while read f; do
+    set +o pipefail
+    mapfile -t mb_sdrf_files < <(find "$MB_SRC" -type f -name "*.sdrf.txt" 2>/dev/null | head -10)
+    set -o pipefail
+    for f in "${mb_sdrf_files[@]}"; do
         rel_path="${f#$MB_SRC/}"
         dst_file="$MB_DST/$rel_path"
         mkdir -p "$(dirname "$dst_file")"
@@ -377,7 +389,10 @@ DRA_ACC_TAB=$(find "$DRA_ACC_FILE" -name "*.DRA_Accessions.tab" 2>/dev/null | he
 if [ -n "$DRA_ACC_TAB" ] && [ -f "$DRA_ACC_TAB" ] && [ -d "$DRA_XML_SRC" ]; then
     echo "DRA XML を取得中..."
     # Accessions.tab から Submission (DRA で始まる) accession を抽出 (ヘッダスキップ、重複除去、10個)
-    tail -n +2 "$DRA_ACC_TAB" | cut -f2 | grep "^DRA" | sort -u | head -10 | while read acc; do
+    set +o pipefail
+    mapfile -t dra_accs < <(tail -n +2 "$DRA_ACC_TAB" | cut -f2 | grep "^DRA" | sort -u | head -10)
+    set -o pipefail
+    for acc in "${dra_accs[@]}"; do
         # DRA000001 -> DRA000/DRA000001
         prefix="${acc:0:6}"  # DRA000
         src_dir="$DRA_XML_SRC/$prefix/$acc"
