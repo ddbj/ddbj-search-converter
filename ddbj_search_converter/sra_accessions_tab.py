@@ -108,6 +108,7 @@ def init_accession_db(tmp_db_path: Path) -> None:
                 BioProject  TEXT,
                 Study       TEXT,
                 Experiment  TEXT,
+                Sample      TEXT,
                 Type        TEXT,
                 Status      TEXT,
                 Visibility  TEXT,
@@ -143,6 +144,7 @@ def load_tsv_to_tmp_db(
                 BioProject,
                 Study,
                 Experiment,
+                Sample,
                 Type,
                 Status,
                 Visibility,
@@ -234,6 +236,154 @@ def iter_bp_bs_relations(
             WHERE
                 BioProject IS NOT NULL
                 AND BioSample IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_study_experiment_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Study <-> Experiment 関連をイテレートする。
+
+    EXPERIMENT 行から Accession (Experiment) と Study の関連を抽出する。
+    NULL 値は除外される。
+
+    Returns:
+        (study_accession, experiment_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Study,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'EXPERIMENT'
+                AND Study IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_experiment_run_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Experiment <-> Run 関連をイテレートする。
+
+    RUN 行から Experiment と Accession (Run) の関連を抽出する。
+    NULL 値は除外される。
+
+    Returns:
+        (experiment_accession, run_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Experiment,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'RUN'
+                AND Experiment IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_experiment_sample_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Experiment <-> Sample 関連をイテレートする。
+
+    EXPERIMENT 行から Accession (Experiment) と Sample の関連を抽出する。
+    NULL 値は除外される。
+
+    Returns:
+        (experiment_accession, sample_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Accession,
+                Sample
+            FROM accessions
+            WHERE
+                Type = 'EXPERIMENT'
+                AND Accession IS NOT NULL
+                AND Sample IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_run_sample_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Run <-> Sample 関連をイテレートする。
+
+    RUN 行から Accession (Run) と Sample の関連を抽出する。
+    NULL 値は除外される。
+
+    Returns:
+        (run_accession, sample_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Accession,
+                Sample
+            FROM accessions
+            WHERE
+                Type = 'RUN'
+                AND Accession IS NOT NULL
+                AND Sample IS NOT NULL
             """
         ).fetchall()
 

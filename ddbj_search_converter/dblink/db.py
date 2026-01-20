@@ -34,6 +34,10 @@ AccessionType = Literal[
     "jga-study",
     "metabobank",
     "pubmed-id",
+    "sra-experiment",
+    "sra-run",
+    "sra-sample",
+    "sra-study",
     "taxonomy",
 ]
 

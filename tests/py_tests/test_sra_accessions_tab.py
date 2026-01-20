@@ -70,9 +70,9 @@ class TestLoadTsvToTmpDb:
     def test_loads_tsv(self, tmp_path: Path) -> None:
         """TSVファイルをDBにロードする。"""
         tsv_path = tmp_path / "accessions.tsv"
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRA000001\tSAMD00016353\tPRJDA38027\tDRP000001\tDRX000001\tRUN\tlive\tpublic\t2022-09-23\t2010-03-24\t2009-06-20
-DRA000002\tSAMD00016354\tPRJDA38028\tDRP000002\tDRX000002\tRUN\tlive\tpublic\t2022-09-24\t2010-03-25\t2009-06-21
+        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
+DRA000001\tSAMD00016353\tPRJDA38027\tDRP000001\tDRX000001\tDRS000001\tRUN\tlive\tpublic\t2022-09-23\t2010-03-24\t2009-06-20
+DRA000002\tSAMD00016354\tPRJDA38028\tDRP000002\tDRX000002\tDRS000002\tRUN\tlive\tpublic\t2022-09-24\t2010-03-25\t2009-06-21
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -90,8 +90,8 @@ DRA000002\tSAMD00016354\tPRJDA38028\tDRP000002\tDRX000002\tRUN\tlive\tpublic\t20
     def test_handles_null_values(self, tmp_path: Path) -> None:
         """'-' は NULL として扱われる。"""
         tsv_path = tmp_path / "accessions.tsv"
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRA000001\t-\tPRJDA38027\t-\tDRX000001\tRUN\tlive\tpublic\t2022-09-23\t2010-03-24\t2009-06-20
+        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
+DRA000001\t-\tPRJDA38027\t-\tDRX000001\t-\tRUN\tlive\tpublic\t2022-09-23\t2010-03-24\t2009-06-20
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -312,8 +312,8 @@ class TestBuildSraAccessionsDb:
 
         tsv_path = tmp_path / "sra" / year / month / f"SRA_Accessions.tab.{date_str}"
         tsv_path.parent.mkdir(parents=True, exist_ok=True)
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRA000001\tSAMD001\tPRJDB001\tDRP001\tDRX001\tRUN\tlive\tpublic\t2022-01-01\t2022-01-01\t2022-01-01
+        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
+DRA000001\tSAMD001\tPRJDB001\tDRP001\tDRX001\tDRS001\tRUN\tlive\tpublic\t2022-01-01\t2022-01-01\t2022-01-01
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -350,8 +350,8 @@ class TestBuildDraAccessionsDb:
 
         tsv_path = tmp_path / "dra" / f"{date_str}.DRA_Accessions.tab"
         tsv_path.parent.mkdir(parents=True, exist_ok=True)
-        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
-DRR000001\tSAMD100\tPRJDB100\tDRP100\tDRX100\tRUN\tlive\tpublic\t2022-01-01\t2022-01-01\t2022-01-01
+        tsv_content = """Accession\tBioSample\tBioProject\tStudy\tExperiment\tSample\tType\tStatus\tVisibility\tUpdated\tPublished\tReceived
+DRR000001\tSAMD100\tPRJDB100\tDRP100\tDRX100\tDRS100\tRUN\tlive\tpublic\t2022-01-01\t2022-01-01\t2022-01-01
 """
         tsv_path.write_text(tsv_content, encoding="utf-8")
 
@@ -375,3 +375,132 @@ DRR000001\tSAMD100\tPRJDB100\tDRP100\tDRX100\tRUN\tlive\tpublic\t2022-01-01\t202
         ):
             with pytest.raises(FileNotFoundError, match="DRA_Accessions.tab not found"):
                 build_dra_accessions_db(test_config)
+
+
+class TestIterStudyExperimentRelations:
+    """Tests for iter_study_experiment_relations function."""
+
+    def test_iterates_study_experiment_pairs(self, test_config: Config) -> None:
+        """Study-Experimentペアをイテレートする。"""
+        from ddbj_search_converter.sra_accessions_tab import iter_study_experiment_relations
+
+        sra_dir = test_config.const_dir / "sra"
+        sra_dir.mkdir(parents=True, exist_ok=True)
+        sra_db = sra_dir / "sra_accessions.duckdb"
+
+        init_accession_db(sra_db)
+        with duckdb.connect(sra_db) as conn:
+            conn.execute("""
+                INSERT INTO accessions (Accession, Study, Sample, Type)
+                VALUES
+                    ('DRX000001', 'DRP000001', 'DRS000001', 'EXPERIMENT'),
+                    ('DRX000002', 'DRP000001', 'DRS000002', 'EXPERIMENT'),
+                    ('DRX000003', 'DRP000002', 'DRS000003', 'EXPERIMENT')
+            """)
+
+        results = list(iter_study_experiment_relations(test_config, source="sra"))
+        assert len(results) == 3
+        assert ("DRP000001", "DRX000001") in results
+        assert ("DRP000001", "DRX000002") in results
+        assert ("DRP000002", "DRX000003") in results
+
+    def test_excludes_null_values(self, test_config: Config) -> None:
+        """NULL値は除外される。"""
+        from ddbj_search_converter.sra_accessions_tab import iter_study_experiment_relations
+
+        sra_dir = test_config.const_dir / "sra"
+        sra_dir.mkdir(parents=True, exist_ok=True)
+        sra_db = sra_dir / "sra_accessions.duckdb"
+
+        init_accession_db(sra_db)
+        with duckdb.connect(sra_db) as conn:
+            conn.execute("""
+                INSERT INTO accessions (Accession, Study, Sample, Type)
+                VALUES
+                    ('DRX000001', 'DRP000001', 'DRS000001', 'EXPERIMENT'),
+                    ('DRX000002', NULL, 'DRS000002', 'EXPERIMENT')
+            """)
+
+        results = list(iter_study_experiment_relations(test_config, source="sra"))
+        assert len(results) == 1
+        assert ("DRP000001", "DRX000001") in results
+
+
+class TestIterExperimentRunRelations:
+    """Tests for iter_experiment_run_relations function."""
+
+    def test_iterates_experiment_run_pairs(self, test_config: Config) -> None:
+        """Experiment-Runペアをイテレートする。"""
+        from ddbj_search_converter.sra_accessions_tab import iter_experiment_run_relations
+
+        sra_dir = test_config.const_dir / "sra"
+        sra_dir.mkdir(parents=True, exist_ok=True)
+        sra_db = sra_dir / "sra_accessions.duckdb"
+
+        init_accession_db(sra_db)
+        with duckdb.connect(sra_db) as conn:
+            conn.execute("""
+                INSERT INTO accessions (Accession, Experiment, Sample, Study, Type)
+                VALUES
+                    ('DRR000001', 'DRX000001', 'DRS000001', 'DRP000001', 'RUN'),
+                    ('DRR000002', 'DRX000001', 'DRS000001', 'DRP000001', 'RUN'),
+                    ('DRR000003', 'DRX000002', 'DRS000002', 'DRP000001', 'RUN')
+            """)
+
+        results = list(iter_experiment_run_relations(test_config, source="sra"))
+        assert len(results) == 3
+        assert ("DRX000001", "DRR000001") in results
+        assert ("DRX000001", "DRR000002") in results
+        assert ("DRX000002", "DRR000003") in results
+
+
+class TestIterExperimentSampleRelations:
+    """Tests for iter_experiment_sample_relations function."""
+
+    def test_iterates_experiment_sample_pairs(self, test_config: Config) -> None:
+        """Experiment-Sampleペアをイテレートする。"""
+        from ddbj_search_converter.sra_accessions_tab import iter_experiment_sample_relations
+
+        sra_dir = test_config.const_dir / "sra"
+        sra_dir.mkdir(parents=True, exist_ok=True)
+        sra_db = sra_dir / "sra_accessions.duckdb"
+
+        init_accession_db(sra_db)
+        with duckdb.connect(sra_db) as conn:
+            conn.execute("""
+                INSERT INTO accessions (Accession, Study, Sample, Type)
+                VALUES
+                    ('DRX000001', 'DRP000001', 'DRS000001', 'EXPERIMENT'),
+                    ('DRX000002', 'DRP000001', 'DRS000002', 'EXPERIMENT')
+            """)
+
+        results = list(iter_experiment_sample_relations(test_config, source="sra"))
+        assert len(results) == 2
+        assert ("DRX000001", "DRS000001") in results
+        assert ("DRX000002", "DRS000002") in results
+
+
+class TestIterRunSampleRelations:
+    """Tests for iter_run_sample_relations function."""
+
+    def test_iterates_run_sample_pairs(self, test_config: Config) -> None:
+        """Run-Sampleペアをイテレートする。"""
+        from ddbj_search_converter.sra_accessions_tab import iter_run_sample_relations
+
+        sra_dir = test_config.const_dir / "sra"
+        sra_dir.mkdir(parents=True, exist_ok=True)
+        sra_db = sra_dir / "sra_accessions.duckdb"
+
+        init_accession_db(sra_db)
+        with duckdb.connect(sra_db) as conn:
+            conn.execute("""
+                INSERT INTO accessions (Accession, Experiment, Sample, Study, Type)
+                VALUES
+                    ('DRR000001', 'DRX000001', 'DRS000001', 'DRP000001', 'RUN'),
+                    ('DRR000002', 'DRX000001', 'DRS000002', 'DRP000001', 'RUN')
+            """)
+
+        results = list(iter_run_sample_relations(test_config, source="sra"))
+        assert len(results) == 2
+        assert ("DRR000001", "DRS000001") in results
+        assert ("DRR000002", "DRS000002") in results
