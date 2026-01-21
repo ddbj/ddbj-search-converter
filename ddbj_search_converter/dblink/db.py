@@ -244,7 +244,7 @@ def get_related_entities_bulk(
 
     db_path = _final_db_path(config)
 
-    with duckdb.connect(db_path) as conn:
+    with duckdb.connect(db_path, read_only=True) as conn:
         rows = conn.execute(
             """
             WITH input(accession) AS (
