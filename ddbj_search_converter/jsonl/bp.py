@@ -11,8 +11,7 @@ from ddbj_search_converter.config import (BP_BASE_DIR_NAME, JSONL_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           get_config, read_last_run,
                                           write_last_run)
-from ddbj_search_converter.dblink.db import (AccessionType,
-                                             get_related_entities_bulk)
+from ddbj_search_converter.dblink.db import get_related_entities_bulk
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import to_xref
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
@@ -462,12 +461,6 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
 # === DBLink ===
 
 
-INDEX_TO_ACCESSION_TYPE: Dict[str, AccessionType] = {
-    "bioproject": "bioproject",
-    "umbrella-bioproject": "umbrella-bioproject",
-}
-
-
 def get_dbxref_map(config: Config, accessions: List[str]) -> Dict[str, List[Xref]]:
     """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
     if not accessions:
@@ -522,6 +515,39 @@ def iterate_xml_packages(xml_path: Path) -> Iterator[bytes]:
 
 
 # === Processing ===
+
+
+def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioProject]) -> None:
+    """DDBJ BioProject の日付を PostgreSQL から取得して設定する。"""
+    try:
+        from ddbj_search_converter.postgres.bp_date import \
+            fetch_bp_dates_bulk  # pylint: disable=import-outside-toplevel
+        date_map = fetch_bp_dates_bulk(config, docs.keys())
+        for accession, (date_created, date_modified, date_published) in date_map.items():
+            if accession in docs:
+                docs[accession].dateCreated = date_created
+                docs[accession].dateModified = date_modified
+                docs[accession].datePublished = date_published
+    except ImportError:
+        log_warn("psycopg2 not available, skipping date fetch for DDBJ BioProject")
+
+
+def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioProject]) -> None:
+    """NCBI BioProject の日付を XML から取得して設定する。"""
+    for xml_element in iterate_xml_packages(xml_path):
+        try:
+            metadata = xmltodict.parse(
+                xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
+            )
+            project = metadata["Package"]["Project"]
+            accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
+            if accession in docs:
+                date_created, date_modified, date_published = parse_date_from_xml(project)
+                docs[accession].dateCreated = date_created
+                docs[accession].dateModified = date_modified
+                docs[accession].datePublished = date_published
+        except Exception:
+            pass
 
 
 def _process_xml_file_worker(
@@ -583,34 +609,9 @@ def _process_xml_file_worker(
 
     # 日付を取得
     if is_ddbj:
-        # DDBJ は PostgreSQL から取得
-        try:
-            from ddbj_search_converter.postgres.bp_date import \
-                fetch_bp_dates_bulk  # pylint: disable=import-outside-toplevel
-            date_map = fetch_bp_dates_bulk(config, docs.keys())
-            for accession, (date_created, date_modified, date_published) in date_map.items():
-                if accession in docs:
-                    docs[accession].dateCreated = date_created
-                    docs[accession].dateModified = date_modified
-                    docs[accession].datePublished = date_published
-        except ImportError:
-            log_warn("psycopg2 not available, skipping date fetch for DDBJ BioProject")
+        _fetch_dates_ddbj(config, docs)
     else:
-        # NCBI は XML から取得
-        for xml_element in iterate_xml_packages(xml_path):
-            try:
-                metadata = xmltodict.parse(
-                    xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-                )
-                project = metadata["Package"]["Project"]
-                accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
-                if accession in docs:
-                    date_created, date_modified, date_published = parse_date_from_xml(project)
-                    docs[accession].dateCreated = date_created
-                    docs[accession].dateModified = date_modified
-                    docs[accession].datePublished = date_published
-            except Exception:
-                pass
+        _fetch_dates_ncbi(xml_path, docs)
 
     # NCBI 差分更新: since 以降に更新されたもののみ残す
     if not is_ddbj and since is not None:

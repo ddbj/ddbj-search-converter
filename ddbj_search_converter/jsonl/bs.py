@@ -23,7 +23,6 @@ from ddbj_search_converter.schema import (Attribute, BioSample,
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
-TMP_XML_DIR_NAME = "tmp_xml"
 
 
 # === Parse functions ===
@@ -43,11 +42,10 @@ def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
             if ids.get("namespace") == "BioSample":
                 return str(ids.get("content", ""))
         raise ValueError("No BioSample namespace ID found")
-    else:
-        accession = sample.get("accession")
-        if accession is None:
-            raise ValueError("No accession found in BioSample")
-        return str(accession)
+    accession = sample.get("accession")
+    if accession is None:
+        raise ValueError("No accession found in BioSample")
+    return str(accession)
 
 
 def parse_organism(sample: Dict[str, Any], is_ddbj: bool, accession: str = "") -> Optional[Organism]:
@@ -380,6 +378,39 @@ def iterate_xml_biosamples(xml_path: Path) -> Iterator[bytes]:
 # === Processing ===
 
 
+def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
+    """DDBJ BioSample の日付を PostgreSQL から取得して設定する。"""
+    try:
+        from ddbj_search_converter.postgres.bs_date import \
+            fetch_bs_dates_bulk  # pylint: disable=import-outside-toplevel
+        date_map = fetch_bs_dates_bulk(config, docs.keys())
+        for accession, (date_created, date_modified, date_published) in date_map.items():
+            if accession in docs:
+                docs[accession].dateCreated = date_created
+                docs[accession].dateModified = date_modified
+                docs[accession].datePublished = date_published
+    except ImportError:
+        log_warn("psycopg2 not available, skipping date fetch for DDBJ BioSample")
+
+
+def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool) -> None:
+    """NCBI BioSample の日付を XML から取得して設定する。"""
+    for xml_element in iterate_xml_biosamples(xml_path):
+        try:
+            metadata = xmltodict.parse(
+                xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
+            )
+            sample = metadata["BioSample"]
+            accession = parse_accession(sample, is_ddbj)
+            if accession in docs:
+                date_created, date_modified, date_published = parse_date_from_xml(sample)
+                docs[accession].dateCreated = date_created
+                docs[accession].dateModified = date_modified
+                docs[accession].datePublished = date_published
+        except Exception:
+            pass
+
+
 def _process_xml_file_worker(
     config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
     bs_blacklist: Set[str],
@@ -439,32 +470,9 @@ def _process_xml_file_worker(
 
     # 日付を取得
     if is_ddbj:
-        try:
-            from ddbj_search_converter.postgres.bs_date import \
-                fetch_bs_dates_bulk  # pylint: disable=import-outside-toplevel
-            date_map = fetch_bs_dates_bulk(config, docs.keys())
-            for accession, (date_created, date_modified, date_published) in date_map.items():
-                if accession in docs:
-                    docs[accession].dateCreated = date_created
-                    docs[accession].dateModified = date_modified
-                    docs[accession].datePublished = date_published
-        except ImportError:
-            log_warn("psycopg2 not available, skipping date fetch for DDBJ BioSample")
+        _fetch_dates_ddbj(config, docs)
     else:
-        for xml_element in iterate_xml_biosamples(xml_path):
-            try:
-                metadata = xmltodict.parse(
-                    xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-                )
-                sample = metadata["BioSample"]
-                accession = parse_accession(sample, is_ddbj)
-                if accession in docs:
-                    date_created, date_modified, date_published = parse_date_from_xml(sample)
-                    docs[accession].dateCreated = date_created
-                    docs[accession].dateModified = date_modified
-                    docs[accession].datePublished = date_published
-            except Exception:
-                pass
+        _fetch_dates_ncbi(xml_path, docs, is_ddbj)
 
     # NCBI 差分更新: since 以降に更新されたもののみ残す
     if not is_ddbj and since is not None:
