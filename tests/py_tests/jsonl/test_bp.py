@@ -246,6 +246,44 @@ class TestParsePublication:
         assert len(result) == 1
         assert result[0].url == "https://doi.org/10.1234/example"
 
+    def test_parses_multiple_publications(self) -> None:
+        """複数の Publication を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Publication": [
+                        {"id": "111", "DbType": "ePubmed"},
+                        {"id": "10.1234/test", "DbType": "DOI"},
+                    ]
+                }
+            }
+        }
+        result = parse_publication(project)
+        assert len(result) == 2
+
+    def test_handles_numeric_dbtype(self) -> None:
+        """数字の DbType を ePubmed として扱う。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Publication": {
+                        "id": "99999",
+                        "DbType": "12345"  # 数字の DbType
+                    }
+                }
+            }
+        }
+        result = parse_publication(project)
+        assert len(result) == 1
+        assert result[0].DbType == "ePubmed"
+        assert result[0].url == "https://pubmed.ncbi.nlm.nih.gov/99999/"
+
+    def test_returns_empty_for_missing(self) -> None:
+        """Publication がない場合は空リストを返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectDescr": {}}}
+        result = parse_publication(project)
+        assert result == []
+
 
 class TestParseGrant:
     """Tests for parse_grant function."""
@@ -287,6 +325,27 @@ class TestParseGrant:
         assert result[0].agency[0].name == "National Institutes of Health"
         assert result[0].agency[0].abbreviation == "NIH"
 
+    def test_parses_multiple_grants(self) -> None:
+        """複数の Grant を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Grant": [
+                        {"GrantId": "G1", "Agency": "NIH"},
+                        {"GrantId": "G2", "Agency": "NSF"},
+                    ]
+                }
+            }
+        }
+        result = parse_grant(project)
+        assert len(result) == 2
+
+    def test_returns_empty_for_missing(self) -> None:
+        """Grant がない場合は空リストを返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectDescr": {}}}
+        result = parse_grant(project)
+        assert result == []
+
 
 class TestParseExternalLink:
     """Tests for parse_external_link function."""
@@ -323,6 +382,43 @@ class TestParseExternalLink:
         assert len(result) == 1
         assert "GSE12345" in result[0].url
 
+    def test_parses_multiple_external_links(self) -> None:
+        """複数の ExternalLink を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "ExternalLink": [
+                        {"URL": "https://example1.com", "label": "Link 1"},
+                        {"dbXREF": {"db": "SRA", "ID": "SRA123"}},
+                        {"URL": "https://example2.com"},
+                    ]
+                }
+            }
+        }
+        result = parse_external_link(project)
+        assert len(result) == 3
+
+    def test_uses_url_as_label_when_missing(self) -> None:
+        """label がない場合は URL を label として使う。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "ExternalLink": {
+                        "URL": "https://example.com/path"
+                    }
+                }
+            }
+        }
+        result = parse_external_link(project)
+        assert len(result) == 1
+        assert result[0].label == "https://example.com/path"
+
+    def test_returns_empty_for_missing(self) -> None:
+        """ExternalLink がない場合は空リストを返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectDescr": {}}}
+        result = parse_external_link(project)
+        assert result == []
+
 
 class TestParseSameAs:
     """Tests for parse_same_as function."""
@@ -352,6 +448,31 @@ class TestParseSameAs:
         }
         result = parse_same_as(project)
         assert len(result) == 0
+
+    def test_parses_multiple_center_ids(self) -> None:
+        """複数の CenterID を処理する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectID": {
+                    "CenterID": [
+                        {"center": "GEO", "content": "GSE111"},
+                        {"center": "OTHER", "content": "ID999"},
+                        {"center": "GEO", "content": "GSE222"},
+                    ]
+                }
+            }
+        }
+        result = parse_same_as(project)
+        assert len(result) == 2
+        identifiers = [x.identifier for x in result]
+        assert "GSE111" in identifiers
+        assert "GSE222" in identifiers
+
+    def test_returns_empty_for_missing_center_id(self) -> None:
+        """CenterID がない場合は空リストを返す。"""
+        project: Dict[str, Any] = {"Project": {"ProjectID": {}}}
+        result = parse_same_as(project)
+        assert result == []
 
 
 class TestParseStatus:
@@ -394,6 +515,20 @@ class TestNormalizeProperties:
         normalize_properties(project)
         assert project["Project"]["ProjectID"]["LocalID"] == {"content": "local123"}
 
+    def test_normalizes_local_id_list(self) -> None:
+        """LocalID のリストを正規化する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectID": {
+                    "LocalID": ["local1", "local2", {"content": "local3"}]
+                }
+            }
+        }
+        normalize_properties(project)
+        assert project["Project"]["ProjectID"]["LocalID"][0] == {"content": "local1"}
+        assert project["Project"]["ProjectID"]["LocalID"][1] == {"content": "local2"}
+        assert project["Project"]["ProjectID"]["LocalID"][2] == {"content": "local3"}
+
     def test_normalizes_locus_tag_prefix(self) -> None:
         """LocusTagPrefix を正規化する。"""
         project: Dict[str, Any] = {
@@ -405,6 +540,55 @@ class TestNormalizeProperties:
         }
         normalize_properties(project)
         assert project["Project"]["ProjectDescr"]["LocusTagPrefix"] == {"content": "ABC"}
+
+    def test_normalizes_organization_name_ddbj(self) -> None:
+        """DDBJ 形式の Organization.Name を正規化する。"""
+        project: Dict[str, Any] = {
+            "Submission": {
+                "Submission": {
+                    "Description": {
+                        "Organization": {
+                            "Name": "Test Organization"
+                        }
+                    }
+                }
+            }
+        }
+        normalize_properties(project)
+        expected = {"content": "Test Organization"}
+        assert project["Submission"]["Submission"]["Description"]["Organization"]["Name"] == expected
+
+    def test_normalizes_organization_name_ncbi(self) -> None:
+        """NCBI 形式の Organization.Name を正規化する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Organization": {
+                        "Name": "NCBI Organization"
+                    }
+                }
+            }
+        }
+        normalize_properties(project)
+        expected = {"content": "NCBI Organization"}
+        assert project["Project"]["ProjectDescr"]["Organization"]["Name"] == expected
+
+    def test_normalizes_organization_name_list(self) -> None:
+        """複数の Organization.Name を正規化する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectDescr": {
+                    "Organization": [
+                        {"Name": "Org1"},
+                        {"Name": {"content": "Org2", "abbr": "O2"}},
+                    ]
+                }
+            }
+        }
+        normalize_properties(project)
+        assert project["Project"]["ProjectDescr"]["Organization"][0]["Name"] == {"content": "Org1"}
+        # 既に dict の場合は変更しない
+        assert project["Project"]["ProjectDescr"]["Organization"][1]["Name"] == {"content": "Org2", "abbr": "O2"}
 
 
 class TestIterateXmlPackages:

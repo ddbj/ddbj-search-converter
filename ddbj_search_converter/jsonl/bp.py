@@ -3,7 +3,7 @@ import argparse
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Literal, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Literal, Optional, Set, Tuple
 
 import xmltodict
 
@@ -11,6 +11,7 @@ from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, TODAY_STR, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import (AccessionType,
                                              get_related_entities_bulk)
+from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import to_xref
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
                                                   log_warn, run_logger)
@@ -45,7 +46,7 @@ def parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "Umbrell
     return "BioProject"
 
 
-def parse_organism(project: Dict[str, Any], is_ddbj: bool) -> Optional[Organism]:
+def parse_organism(project: Dict[str, Any], is_ddbj: bool, accession: str = "") -> Optional[Organism]:
     """BioProject から Organism を抽出する。"""
     try:
         if is_ddbj:
@@ -69,29 +70,32 @@ def parse_organism(project: Dict[str, Any], is_ddbj: bool) -> Optional[Organism]
             identifier=str(organism_obj.get("taxID", "")),
             name=organism_obj.get("OrganismName"),
         )
-    except Exception:
+    except Exception as e:
+        log_warn(f"Failed to parse organism: {e}", accession=accession)
         return None
 
 
-def parse_title(project: Dict[str, Any]) -> Optional[str]:
+def parse_title(project: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioProject から title を抽出する。"""
     try:
-        title = project["Project"]["ProjectDescr"]["Title"]
-        return str(title)
-    except Exception:
+        title = project.get("Project", {}).get("ProjectDescr", {}).get("Title")
+        return str(title) if title is not None else None
+    except Exception as e:
+        log_warn(f"Failed to parse title: {e}", accession=accession)
         return None
 
 
-def parse_description(project: Dict[str, Any]) -> Optional[str]:
+def parse_description(project: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioProject から description を抽出する。"""
     try:
         description = project.get("Project", {}).get("ProjectDescr", {}).get("Description")
         return str(description) if description is not None else None
-    except Exception:
+    except Exception as e:
+        log_warn(f"Failed to parse description: {e}", accession=accession)
         return None
 
 
-def parse_organization(project: Dict[str, Any], is_ddbj: bool) -> List[Organization]:
+def parse_organization(project: Dict[str, Any], is_ddbj: bool, accession: str = "") -> List[Organization]:
     """BioProject から Organization を抽出する。"""
     organizations: List[Organization] = []
     try:
@@ -135,12 +139,12 @@ def parse_organization(project: Dict[str, Any], is_ddbj: bool) -> List[Organizat
                         url=url,
                         abbreviation=name.get("abbr"),
                     ))
-    except Exception:
-        pass
+    except Exception as e:
+        log_warn(f"Failed to parse organization: {e}", accession=accession)
     return organizations
 
 
-def parse_publication(project: Dict[str, Any]) -> List[Publication]:
+def parse_publication(project: Dict[str, Any], accession: str = "") -> List[Publication]:
     """BioProject から Publication を抽出する。"""
     publications: List[Publication] = []
     try:
@@ -169,12 +173,12 @@ def parse_publication(project: Dict[str, Any]) -> List[Publication]:
                 DbType=dbtype,
                 status=item.get("status"),
             ))
-    except Exception:
-        pass
+    except Exception as e:
+        log_warn(f"Failed to parse publication: {e}", accession=accession)
     return publications
 
 
-def parse_grant(project: Dict[str, Any]) -> List[Grant]:
+def parse_grant(project: Dict[str, Any], accession: str = "") -> List[Grant]:
     """BioProject から Grant を抽出する。"""
     grants: List[Grant] = []
     try:
@@ -200,12 +204,12 @@ def parse_grant(project: Dict[str, Any]) -> List[Grant]:
                         name=agency.get("content"),
                     )]
                 ))
-    except Exception:
-        pass
+    except Exception as e:
+        log_warn(f"Failed to parse grant: {e}", accession=accession)
     return grants
 
 
-def parse_external_link(project: Dict[str, Any]) -> List[ExternalLink]:
+def parse_external_link(project: Dict[str, Any], accession: str = "") -> List[ExternalLink]:
     """BioProject から ExternalLink を抽出する。"""
     def _obj_to_external_link(obj: Dict[str, Any]) -> Optional[ExternalLink]:
         url = obj.get("URL")
@@ -217,10 +221,13 @@ def parse_external_link(project: Dict[str, Any]) -> List[ExternalLink]:
         if db_xref is not None:
             db = db_xref.get("db")
             id_ = db_xref.get("ID")
-            if db is not None and id_ is not None and db in EXTERNAL_LINK_MAP:
-                url = EXTERNAL_LINK_MAP[db] + id_
-                label = obj.get("label", id_)
-                return ExternalLink(url=url, label=label)
+            if db is not None and id_ is not None:
+                if db in EXTERNAL_LINK_MAP:
+                    url = EXTERNAL_LINK_MAP[db] + id_
+                    label = obj.get("label", id_)
+                    return ExternalLink(url=url, label=label)
+                else:
+                    log_warn(f"Unsupported ExternalLink db: {db}", accession=accession)
         return None
 
     links: List[ExternalLink] = []
@@ -238,12 +245,12 @@ def parse_external_link(project: Dict[str, Any]) -> List[ExternalLink]:
                 link = _obj_to_external_link(item)
                 if link is not None:
                     links.append(link)
-    except Exception:
-        pass
+    except Exception as e:
+        log_warn(f"Failed to parse external_link: {e}", accession=accession)
     return links
 
 
-def parse_same_as(project: Dict[str, Any]) -> List[Xref]:
+def parse_same_as(project: Dict[str, Any], accession: str = "") -> List[Xref]:
     """BioProject から sameAs (GEO) を抽出する。"""
     def _to_geo_xref(center_obj: Dict[str, Any]) -> Optional[Xref]:
         id_ = center_obj.get("content")
@@ -266,8 +273,8 @@ def parse_same_as(project: Dict[str, Any]) -> List[Xref]:
         elif isinstance(center_obj, dict):
             xref = _to_geo_xref(center_obj)
             return [xref] if xref is not None else []
-    except Exception:
-        pass
+    except Exception as e:
+        log_warn(f"Failed to parse same_as: {e}", accession=accession)
     return []
 
 
@@ -358,28 +365,33 @@ def _normalize_local_id(project: Dict[str, Any]) -> None:
 
 def _normalize_organization_name(project: Dict[str, Any]) -> None:
     """Organization.Name を正規化する。"""
-    try:
-        submission = project.get("Submission", {})
-        if "Submission" in submission:
-            org = submission.get("Submission", {}).get("Description", {}).get("Organization")
-        else:
-            org = submission.get("Description", {}).get("Organization")
+    def _normalize_single(organization: Dict[str, Any], parent: Any, key: Any) -> None:
+        name = organization.get("Name")
+        if isinstance(name, str):
+            if isinstance(key, int):
+                parent[key]["Name"] = {"content": name}
+            else:
+                parent["Name"] = {"content": name}
+
+    def _normalize_org(org: Any) -> None:
         if org is None:
             return
-
-        def _normalize_single(organization: Dict[str, Any], parent: Any, key: Any) -> None:
-            name = organization.get("Name")
-            if isinstance(name, str):
-                if isinstance(key, int):
-                    parent[key]["Name"] = {"content": name}
-                else:
-                    parent["Name"] = {"content": name}
-
         if isinstance(org, list):
             for i, item in enumerate(org):
                 _normalize_single(item, org, i)
         elif isinstance(org, dict):
             _normalize_single(org, org, None)
+
+    try:
+        # DDBJ case: project["Submission"]["Submission"]["Description"]["Organization"]
+        submission = project.get("Submission", {})
+        if "Submission" in submission:
+            org = submission.get("Submission", {}).get("Description", {}).get("Organization")
+            _normalize_org(org)
+
+        # NCBI case: project["Project"]["ProjectDescr"]["Organization"]
+        org = project.get("Project", {}).get("ProjectDescr", {}).get("Organization")
+        _normalize_org(org)
     except Exception:
         pass
 
@@ -429,15 +441,15 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
         objectType=parse_object_type(project),
         name=None,
         url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
-        organism=parse_organism(project, is_ddbj),
-        title=parse_title(project),
-        description=parse_description(project),
-        organization=parse_organization(project, is_ddbj),
-        publication=parse_publication(project),
-        grant=parse_grant(project),
-        externalLink=parse_external_link(project),
+        organism=parse_organism(project, is_ddbj, accession),
+        title=parse_title(project, accession),
+        description=parse_description(project, accession),
+        organization=parse_organization(project, is_ddbj, accession),
+        publication=parse_publication(project, accession),
+        grant=parse_grant(project, accession),
+        externalLink=parse_external_link(project, accession),
         dbXref=[],  # 後で更新
-        sameAs=parse_same_as(project),
+        sameAs=parse_same_as(project, accession),
         status=parse_status(project, is_ddbj),
         visibility="unrestricted-access",
         dateCreated=None,  # 後で更新
@@ -512,21 +524,29 @@ def iterate_xml_packages(xml_path: Path) -> Iterator[bytes]:
 
 
 def _process_xml_file_worker(
-    config: Config, xml_path: Path, output_path: Path, is_ddbj: bool
+    config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
+    bp_blacklist: Set[str],
 ) -> int:
     """XML ファイルを処理して JSONL を出力するワーカー関数。"""
     log_info(f"Processing {xml_path.name} -> {output_path.name}")
 
     docs: Dict[str, BioProject] = {}
+    skipped_count = 0
     for xml_element in iterate_xml_packages(xml_path):
         try:
             metadata = xmltodict.parse(
                 xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
             )
             bp_instance = xml_entry_to_bp_instance(metadata["Package"], is_ddbj)
+            if bp_instance.identifier in bp_blacklist:
+                skipped_count += 1
+                continue
             docs[bp_instance.identifier] = bp_instance
         except Exception as e:
             log_warn(f"Failed to parse XML element: {e}")
+
+    if skipped_count > 0:
+        log_info(f"Skipped {skipped_count} blacklisted entries")
 
     # dbXref を一括取得
     dbxref_map = get_dbxref_map(config, list(docs.keys()))
@@ -572,10 +592,13 @@ def _process_xml_file_worker(
 
 
 def process_xml_file(
-    config: Config, xml_path: Path, output_path: Path, is_ddbj: bool
+    config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
+    bp_blacklist: Optional[Set[str]] = None,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
-    return _process_xml_file_worker(config, xml_path, output_path, is_ddbj)
+    if bp_blacklist is None:
+        bp_blacklist, _ = load_blacklist(config)
+    return _process_xml_file_worker(config, xml_path, output_path, is_ddbj, bp_blacklist)
 
 
 def generate_bioproject_jsonl(
@@ -591,6 +614,9 @@ def generate_bioproject_jsonl(
     tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
     if not tmp_xml_dir.exists():
         raise FileNotFoundError(f"tmp_xml directory not found: {tmp_xml_dir}")
+
+    # blacklist を読み込む
+    bp_blacklist, _ = load_blacklist(config)
 
     # DDBJ XML と NCBI XML をそれぞれ処理
     ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_bioproject_*.xml"))
@@ -609,7 +635,9 @@ def generate_bioproject_jsonl(
     total_count = 0
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
         futures = {
-            executor.submit(_process_xml_file_worker, config, xml_path, output_path, is_ddbj): (xml_path, is_ddbj)
+            executor.submit(
+                _process_xml_file_worker, config, xml_path, output_path, is_ddbj, bp_blacklist
+            ): (xml_path, is_ddbj)
             for xml_path, output_path, is_ddbj in tasks
         }
         for future in as_completed(futures):
