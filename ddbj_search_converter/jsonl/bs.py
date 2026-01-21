@@ -7,7 +7,8 @@ from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 import xmltodict
 
-from ddbj_search_converter.config import (BS_JSONL_DIR_NAME, TODAY_STR, Config,
+from ddbj_search_converter.config import (BS_BASE_DIR_NAME, JSONL_DIR_NAME,
+                                          TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import get_related_entities_bulk
 from ddbj_search_converter.dblink.utils import load_blacklist
@@ -418,6 +419,7 @@ def process_xml_file(
 
 def generate_bs_jsonl(
     config: Config,
+    tmp_xml_dir: Path,
     output_dir: Path,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
 ) -> None:
@@ -425,8 +427,13 @@ def generate_bs_jsonl(
     BioSample JSONL ファイルを生成する。
 
     tmp_xml ディレクトリから分割済み XML を取得して並列処理する。
+
+    Args:
+        config: Config オブジェクト
+        tmp_xml_dir: 入力 tmp_xml ディレクトリ ({result_dir}/biosample/tmp_xml/{date}/)
+        output_dir: 出力ディレクトリ ({result_dir}/biosample/jsonl/{date}/)
+        parallel_num: 並列ワーカー数
     """
-    tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
     if not tmp_xml_dir.exists():
         raise FileNotFoundError(f"tmp_xml directory not found: {tmp_xml_dir}")
 
@@ -469,16 +476,22 @@ def generate_bs_jsonl(
 # === CLI ===
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, int]:
+def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(
         description="Generate BioSample JSONL files from split XML files."
     )
     parser.add_argument(
         "--result-dir",
-        help=f"Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        f"Output will be stored in {{result_dir}}/{BS_JSONL_DIR_NAME}/{{date}}/.",
+        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
+        "tmp_xml: {result_dir}/biosample/tmp_xml/{date}/, "
+        "jsonl: {result_dir}/biosample/jsonl/{date}/.",
         default=None,
+    )
+    parser.add_argument(
+        "--date",
+        help=f"Date string for tmp_xml and output directory. Default: {TODAY_STR}",
+        default=TODAY_STR,
     )
     parser.add_argument(
         "--parallel-num",
@@ -500,24 +513,28 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, int]:
     if parsed.debug:
         config.debug = True
 
-    output_dir = config.result_dir.joinpath(BS_JSONL_DIR_NAME, TODAY_STR)
+    date_str = parsed.date
+    bs_base_dir = config.result_dir / BS_BASE_DIR_NAME
+    tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / date_str
+    output_dir = bs_base_dir / JSONL_DIR_NAME / date_str
 
-    return config, output_dir, parsed.parallel_num
+    return config, tmp_xml_dir, output_dir, parsed.parallel_num
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, output_dir, parallel_num = parse_args(sys.argv[1:])
+    config, tmp_xml_dir, output_dir, parallel_num = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bs_jsonl", config=config):
         log_debug(f"Config: {config.model_dump_json(indent=2)}")
+        log_debug(f"tmp_xml directory: {tmp_xml_dir}")
         log_debug(f"Output directory: {output_dir}")
         log_debug(f"Parallel workers: {parallel_num}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"Output directory: {output_dir}")
 
-        generate_bs_jsonl(config, output_dir, parallel_num)
+        generate_bs_jsonl(config, tmp_xml_dir, output_dir, parallel_num)
 
 
 if __name__ == "__main__":

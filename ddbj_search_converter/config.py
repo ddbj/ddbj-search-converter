@@ -14,10 +14,12 @@ LOCAL_TZ = ZoneInfo("Asia/Tokyo")
 TODAY = datetime.now(LOCAL_TZ).date()
 TODAY_STR = TODAY.strftime(DATE_FORMAT)
 
-BP_JSONL_DIR_NAME = "bioproject_jsonl"
-BS_JSONL_DIR_NAME = "biosample_jsonl"
-SRA_JSONL_DIR_NAME = "sra_jsonl"
-JGA_JSONL_DIR_NAME = "jga"
+BP_BASE_DIR_NAME = "bioproject"
+BS_BASE_DIR_NAME = "biosample"
+SRA_BASE_DIR_NAME = "sra"
+JGA_BASE_DIR_NAME = "jga"
+TMP_XML_DIR_NAME = "tmp_xml"
+JSONL_DIR_NAME = "jsonl"
 LOG_DIR_NAME = "logs"
 
 

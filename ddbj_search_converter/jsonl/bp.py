@@ -7,7 +7,8 @@ from typing import Any, Dict, Iterator, List, Literal, Optional, Set, Tuple
 
 import xmltodict
 
-from ddbj_search_converter.config import (BP_JSONL_DIR_NAME, TODAY_STR, Config,
+from ddbj_search_converter.config import (BP_BASE_DIR_NAME, JSONL_DIR_NAME,
+                                          TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           get_config, read_last_run,
                                           write_last_run)
 from ddbj_search_converter.dblink.db import (AccessionType,
@@ -22,7 +23,6 @@ from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
-TMP_XML_DIR_NAME = "tmp_xml"
 
 EXTERNAL_LINK_MAP = {
     "GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
@@ -646,6 +646,7 @@ def process_xml_file(
 
 def generate_bp_jsonl(
     config: Config,
+    tmp_xml_dir: Path,
     output_dir: Path,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     full: bool = False,
@@ -657,11 +658,11 @@ def generate_bp_jsonl(
 
     Args:
         config: Config オブジェクト
-        output_dir: 出力ディレクトリ
+        tmp_xml_dir: 入力 tmp_xml ディレクトリ ({result_dir}/bioproject/tmp_xml/{date}/)
+        output_dir: 出力ディレクトリ ({result_dir}/bioproject/jsonl/{date}/)
         parallel_num: 並列ワーカー数
         full: True の場合は全件処理、False の場合は差分更新
     """
-    tmp_xml_dir = output_dir.joinpath(TMP_XML_DIR_NAME)
     if not tmp_xml_dir.exists():
         raise FileNotFoundError(f"tmp_xml directory not found: {tmp_xml_dir}")
 
@@ -733,16 +734,22 @@ def generate_bp_jsonl(
 # === CLI ===
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, int, bool]:
+def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(
         description="Generate BioProject JSONL files from split XML files."
     )
     parser.add_argument(
         "--result-dir",
-        help=f"Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        f"Output will be stored in {{result_dir}}/{BP_JSONL_DIR_NAME}/{{date}}/.",
+        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
+        "tmp_xml: {result_dir}/bioproject/tmp_xml/{date}/, "
+        "jsonl: {result_dir}/bioproject/jsonl/{date}/.",
         default=None,
+    )
+    parser.add_argument(
+        "--date",
+        help=f"Date string for tmp_xml and output directory. Default: {TODAY_STR}",
+        default=TODAY_STR,
     )
     parser.add_argument(
         "--parallel-num",
@@ -769,17 +776,21 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, int, bool]:
     if parsed.debug:
         config.debug = True
 
-    output_dir = config.result_dir.joinpath(BP_JSONL_DIR_NAME, TODAY_STR)
+    date_str = parsed.date
+    bp_base_dir = config.result_dir / BP_BASE_DIR_NAME
+    tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / date_str
+    output_dir = bp_base_dir / JSONL_DIR_NAME / date_str
 
-    return config, output_dir, parsed.parallel_num, parsed.full
+    return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, output_dir, parallel_num, full = parse_args(sys.argv[1:])
+    config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bp_jsonl", config=config):
         log_debug(f"Config: {config.model_dump_json(indent=2)}")
+        log_debug(f"tmp_xml directory: {tmp_xml_dir}")
         log_debug(f"Output directory: {output_dir}")
         log_debug(f"Parallel workers: {parallel_num}")
         log_debug(f"Full update: {full}")
@@ -787,7 +798,7 @@ def main() -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"Output directory: {output_dir}")
 
-        generate_bp_jsonl(config, output_dir, parallel_num, full)
+        generate_bp_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full)
 
 
 if __name__ == "__main__":

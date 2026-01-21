@@ -9,8 +9,9 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import xmltodict
 
-from ddbj_search_converter.config import (JGA_BASE_PATH, JGA_JSONL_DIR_NAME,
-                                          TODAY_STR, Config, get_config)
+from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
+                                          JSONL_DIR_NAME, TODAY_STR, Config,
+                                          get_config)
 from ddbj_search_converter.dblink.db import (AccessionType,
                                              get_related_entities_bulk)
 from ddbj_search_converter.jsonl.utils import to_xref
@@ -271,9 +272,14 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path]:
     )
     parser.add_argument(
         "--result-dir",
-        help=f"Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        f"Output will be stored in {{result_dir}}/{JGA_JSONL_DIR_NAME}/{{date}}/.",
+        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
+        "Output will be stored in {result_dir}/jga/jsonl/{date}/.",
         default=None,
+    )
+    parser.add_argument(
+        "--date",
+        help=f"Date string for output directory. Default: {TODAY_STR}",
+        default=TODAY_STR,
     )
     parser.add_argument(
         "--jga-base-path",
@@ -298,7 +304,8 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path]:
         Path(parsed.jga_base_path) if parsed.jga_base_path else JGA_BASE_PATH
     )
 
-    output_dir = config.result_dir.joinpath(JGA_JSONL_DIR_NAME, TODAY_STR)
+    date_str = parsed.date
+    output_dir = config.result_dir / JGA_BASE_DIR_NAME / JSONL_DIR_NAME / date_str
 
     return config, output_dir, jga_base_path
 
