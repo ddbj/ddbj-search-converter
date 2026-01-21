@@ -123,3 +123,42 @@ class BioProject(BaseModel):
     dateCreated: Optional[str]
     dateModified: Optional[str]
     datePublished: Optional[str]
+
+
+class Attribute(BaseModel):
+    attribute_name: Optional[str]
+    display_name: Optional[str]
+    harmonized_name: Optional[str]
+    content: Optional[str]
+
+
+class Model(BaseModel):
+    name: str
+
+
+class Package(BaseModel):
+    name: str
+    display_name: str
+
+
+class BioSample(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["BioSample"]
+    type_: Literal["biosample"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    organism: Optional[Organism]
+    title: Optional[str]
+    description: Optional[str]
+    attributes: List[Attribute]
+    model: List[Model]
+    package: Optional[Package]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: Literal["public"]
+    visibility: Literal["unrestricted-access"]
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]

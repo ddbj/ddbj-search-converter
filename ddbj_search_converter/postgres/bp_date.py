@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Dict, Iterable, Optional, Tuple
 from urllib.parse import urlparse
 
-import psycopg2  # type: ignore[import-untyped]
+import psycopg2  # type: ignore
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import log_debug, log_warn
@@ -99,4 +99,59 @@ def fetch_bp_dates_bulk(
         raise
 
     log_debug(f"Fetched {len(result)} dates from PostgreSQL for {len(accession_list)} accessions")
+    return result
+
+
+def fetch_bp_accessions_modified_since(
+    config: Config,
+    since: str,
+) -> set[str]:
+    """
+    PostgreSQL から指定日時以降に更新された BioProject の accession を取得する。
+
+    Args:
+        config: Config オブジェクト
+        since: ISO8601 形式のタイムスタンプ (例: "2026-01-19T00:00:00Z")
+
+    Returns:
+        modified_date >= since の accession の集合
+
+    SQL:
+        SELECT s.accession
+        FROM mass.bioproject_summary s
+        INNER JOIN mass.project p ON s.submission_id = p.submission_id
+        WHERE p.modified_date >= %s
+    """
+    host, port, user, password = _parse_postgres_url(config.postgres_url)
+    result: set[str] = set()
+
+    try:
+        conn = psycopg2.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            dbname=POSTGRES_DB_NAME,
+        )
+        try:
+            with conn.cursor() as cur:
+                query = """
+                    SELECT s.accession
+                    FROM mass.bioproject_summary s
+                    INNER JOIN mass.project p
+                    ON s.submission_id = p.submission_id
+                    WHERE p.modified_date >= %s
+                """
+                cur.execute(query, (since,))
+                rows = cur.fetchall()
+
+                for row in rows:
+                    result.add(row[0])
+        finally:
+            conn.close()
+    except Exception as e:
+        log_debug(f"Failed to fetch accessions from PostgreSQL: {e}")
+        raise
+
+    log_debug(f"Fetched {len(result)} accessions modified since {since}")
     return result

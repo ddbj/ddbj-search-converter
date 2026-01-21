@@ -1,7 +1,8 @@
+import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
@@ -123,3 +124,68 @@ def get_config() -> Config:
         postgres_url=os.environ.get(f"{ENV_PREFIX}_POSTGRES_URL", default_config.postgres_url),
         es_url=os.environ.get(f"{ENV_PREFIX}_ES_URL", default_config.es_url),
     )
+
+
+# === last_run.json utilities ===
+
+LAST_RUN_FILE_NAME = "last_run.json"
+
+DataType = Literal["bioproject", "biosample", "sra", "jga"]
+
+
+def get_last_run_path(config: Config) -> Path:
+    """last_run.json のパスを返す。"""
+    return config.result_dir / LAST_RUN_FILE_NAME
+
+
+def read_last_run(config: Config) -> dict[DataType, Optional[str]]:
+    """
+    last_run.json を読み込む。
+
+    Returns:
+        {data_type: ISO8601 datetime string or None}
+
+    Example:
+        {
+            "bioproject": "2026-01-19T00:00:00Z",
+            "biosample": "2026-01-19T00:00:00Z",
+            "sra": "2026-01-19T00:00:00Z",
+            "jga": null
+        }
+    """
+    path = get_last_run_path(config)
+    if not path.exists():
+        return {"bioproject": None, "biosample": None, "sra": None, "jga": None}
+
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    return {
+        "bioproject": data.get("bioproject"),
+        "biosample": data.get("biosample"),
+        "sra": data.get("sra"),
+        "jga": data.get("jga"),
+    }
+
+
+def write_last_run(config: Config, data_type: DataType, timestamp: Optional[str] = None) -> None:
+    """
+    last_run.json の指定したデータタイプのタイムスタンプを更新する。
+
+    Args:
+        config: Config オブジェクト
+        data_type: 更新するデータタイプ
+        timestamp: ISO8601 形式のタイムスタンプ。None の場合は現在時刻を使用。
+    """
+    if timestamp is None:
+        timestamp = datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    last_run = read_last_run(config)
+    last_run[data_type] = timestamp
+
+    path = get_last_run_path(config)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(last_run, f, indent=2)
+        f.write("\n")

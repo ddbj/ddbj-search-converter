@@ -5,7 +5,7 @@ from typing import Any, Dict
 import pytest
 
 from ddbj_search_converter.jsonl.bp import (iterate_xml_packages,
-                                            normalize_properties,
+                                            normalize_properties, parse_args,
                                             parse_description,
                                             parse_external_link, parse_grant,
                                             parse_object_type, parse_organism,
@@ -757,3 +757,33 @@ class TestWriteJsonl:
         assert len(lines) == 2
         assert "PRJNA1" in lines[0]
         assert "PRJNA2" in lines[1]
+
+
+class TestParseArgs:
+    """Tests for parse_args function."""
+
+    def test_default_args(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """デフォルト引数でパースする。"""
+        monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
+        config, output_dir, parallel_num, full = parse_args([])
+        assert config.result_dir == tmp_path
+        assert parallel_num == 64
+        assert full is False
+
+    def test_full_flag(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """--full フラグをパースする。"""
+        monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
+        config, output_dir, parallel_num, full = parse_args(["--full"])
+        assert full is True
+
+    def test_parallel_num(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """--parallel-num オプションをパースする。"""
+        monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
+        config, output_dir, parallel_num, full = parse_args(["--parallel-num", "32"])
+        assert parallel_num == 32
+
+    def test_result_dir(self, tmp_path: Path) -> None:
+        """--result-dir オプションをパースする。"""
+        result_dir = tmp_path / "custom_result"
+        config, output_dir, parallel_num, full = parse_args(["--result-dir", str(result_dir)])
+        assert config.result_dir == result_dir

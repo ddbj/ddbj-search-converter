@@ -38,7 +38,7 @@ build_sra_and_dra_accessions_db
 # DBLink DB 作成
 init_dblink_db
 create_dblink_bp_bs_relations
-create_dblink_bioproject_relations
+create_dblink_bp_relations
 create_dblink_assembly_and_master_relations
 create_dblink_gea_relations
 create_dblink_metabobank_relations
@@ -70,7 +70,7 @@ docker compose -f compose.dev.yml exec app bash
 | `build_sra_and_dra_accessions_db` | SRA/DRA Accessions.tab を DuckDB にロード |
 | `init_dblink_db` | DBLink DB を初期化 |
 | `create_dblink_bp_bs_relations` | BioProject-BioSample 関連を抽出 |
-| `create_dblink_bioproject_relations` | BioProject 内部関連 (umbrella, hum-id) を抽出 |
+| `create_dblink_bp_relations` | BioProject 内部関連 (umbrella, hum-id) を抽出 |
 | `create_dblink_assembly_and_master_relations` | Assembly/INSDC Master 関連を抽出 |
 | `create_dblink_gea_relations` | GEA 関連を抽出 |
 | `create_dblink_metabobank_relations` | MetaboBank 関連を抽出 |
