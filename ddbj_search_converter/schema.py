@@ -141,6 +141,17 @@ class Package(BaseModel):
     display_name: str
 
 
+# BioSample visibility: @access から取得
+# NCBI: public, controlled
+# DDBJ: public のみ
+BioSampleVisibility = Literal["public", "controlled"]
+
+# BioSample status: Status/@status から取得
+# NCBI: live, suppressed など
+# DDBJ: Status 要素なし → "live" とみなす
+BioSampleStatus = Literal["live", "suppressed"]
+
+
 class BioSample(BaseModel):
     identifier: str
     properties: Any
@@ -157,8 +168,8 @@ class BioSample(BaseModel):
     package: Optional[Package]
     dbXref: List[Xref]
     sameAs: List[Xref]
-    status: Literal["public"]
-    visibility: Literal["unrestricted-access"]
+    status: BioSampleStatus
+    visibility: BioSampleVisibility
     dateCreated: Optional[str]
     dateModified: Optional[str]
     datePublished: Optional[str]

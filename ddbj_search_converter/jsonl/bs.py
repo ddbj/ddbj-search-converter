@@ -9,14 +9,17 @@ import xmltodict
 
 from ddbj_search_converter.config import (BS_BASE_DIR_NAME, JSONL_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
-                                          get_config)
+                                          get_config, read_last_run,
+                                          write_last_run)
 from ddbj_search_converter.dblink.db import get_related_entities_bulk
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import to_xref
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
                                                   log_warn, run_logger)
-from ddbj_search_converter.schema import (Attribute, BioSample, Distribution,
-                                          Model, Organism, Package, Xref)
+from ddbj_search_converter.schema import (Attribute, BioSample,
+                                          BioSampleStatus, BioSampleVisibility,
+                                          Distribution, Model, Organism,
+                                          Package, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
@@ -200,6 +203,42 @@ def parse_date_from_xml(
     return date_created, date_modified, date_published
 
 
+def parse_status(sample: Dict[str, Any], accession: str = "") -> BioSampleStatus:
+    """
+    BioSample から status を抽出する。
+
+    NCBI: Status/@status (live, suppressed など)
+    DDBJ: Status 要素なし → "live" とみなす
+    """
+    try:
+        status_obj = sample.get("Status")
+        if status_obj is not None and isinstance(status_obj, dict):
+            status: str = status_obj.get("status", "live")
+            if status == "suppressed":
+                return "suppressed"
+            return "live"
+    except Exception as e:
+        log_warn(f"Failed to parse status: {e}", accession=accession)
+    return "live"
+
+
+def parse_visibility(sample: Dict[str, Any], accession: str = "") -> BioSampleVisibility:
+    """
+    BioSample から visibility (@access) を抽出する。
+
+    NCBI: @access (public, controlled)
+    DDBJ: @access (public のみ)
+    """
+    try:
+        access: str = sample.get("access", "public")
+        if access == "controlled":
+            return "controlled"
+        return "public"
+    except Exception as e:
+        log_warn(f"Failed to parse visibility: {e}", accession=accession)
+    return "public"
+
+
 # === Properties normalization ===
 
 
@@ -272,13 +311,13 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
         attributes=parse_attributes(sample, accession),
         model=model,
         package=parse_package(sample, model, is_ddbj, accession),
-        dbXref=[],
+        dbXref=[],  # 後で更新
         sameAs=parse_same_as(sample, accession),
-        status="public",
-        visibility="unrestricted-access",
-        dateCreated=None,
-        dateModified=None,
-        datePublished=None,
+        status=parse_status(sample, accession),
+        visibility=parse_visibility(sample, accession),
+        dateCreated=None,  # 後で更新
+        dateModified=None,  # 後で更新
+        datePublished=None,  # 後で更新
     )
 
 
@@ -344,27 +383,53 @@ def iterate_xml_biosamples(xml_path: Path) -> Iterator[bytes]:
 def _process_xml_file_worker(
     config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
     bs_blacklist: Set[str],
+    target_accessions: Optional[Set[str]] = None,
+    since: Optional[str] = None,
 ) -> int:
-    """XML ファイルを処理して JSONL を出力するワーカー関数。"""
+    """
+    XML ファイルを処理して JSONL を出力するワーカー関数。
+
+    Args:
+        config: Config オブジェクト
+        xml_path: 入力 XML ファイルのパス
+        output_path: 出力 JSONL ファイルのパス
+        is_ddbj: DDBJ データかどうか
+        bs_blacklist: 除外する accession の集合
+        target_accessions: 処理対象の accession の集合 (DDBJ 差分更新用)。None の場合は全件処理。
+        since: 差分更新の基準日時 (NCBI 用)。None の場合は全件処理。
+    """
     log_info(f"Processing {xml_path.name} -> {output_path.name}")
 
     docs: Dict[str, BioSample] = {}
     skipped_count = 0
+    filtered_count = 0
+
     for xml_element in iterate_xml_biosamples(xml_path):
         try:
             metadata = xmltodict.parse(
                 xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
             )
             bs_instance = xml_entry_to_bs_instance(metadata, is_ddbj)
+
+            # blacklist チェック
             if bs_instance.identifier in bs_blacklist:
                 skipped_count += 1
                 continue
+
+            # DDBJ 差分更新: target_accessions に含まれないものはスキップ
+            if is_ddbj and target_accessions is not None:
+                if bs_instance.identifier not in target_accessions:
+                    filtered_count += 1
+                    continue
+
             docs[bs_instance.identifier] = bs_instance
         except Exception as e:
             log_warn(f"Failed to parse XML element: {e}")
 
     if skipped_count > 0:
         log_info(f"Skipped {skipped_count} blacklisted entries")
+    if filtered_count > 0:
+        log_info(f"Filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXref を一括取得
     dbxref_map = get_dbxref_map(config, list(docs.keys()))
@@ -401,6 +466,17 @@ def _process_xml_file_worker(
             except Exception:
                 pass
 
+    # NCBI 差分更新: since 以降に更新されたもののみ残す
+    if not is_ddbj and since is not None:
+        original_count = len(docs)
+        docs = {
+            acc: doc for acc, doc in docs.items()
+            if doc.dateModified is not None and doc.dateModified >= since
+        }
+        ncbi_filtered = original_count - len(docs)
+        if ncbi_filtered > 0:
+            log_info(f"Filtered {ncbi_filtered} NCBI entries (dateModified < {since})")
+
     write_jsonl(output_path, list(docs.values()))
     log_info(f"Wrote {len(docs)} entries to {output_path}")
 
@@ -410,11 +486,16 @@ def _process_xml_file_worker(
 def process_xml_file(
     config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
     bs_blacklist: Optional[Set[str]] = None,
+    target_accessions: Optional[Set[str]] = None,
+    since: Optional[str] = None,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bs_blacklist is None:
         _, bs_blacklist = load_blacklist(config)
-    return _process_xml_file_worker(config, xml_path, output_path, is_ddbj, bs_blacklist)
+    return _process_xml_file_worker(
+        config, xml_path, output_path, is_ddbj, bs_blacklist,
+        target_accessions, since
+    )
 
 
 def generate_bs_jsonl(
@@ -422,6 +503,7 @@ def generate_bs_jsonl(
     tmp_xml_dir: Path,
     output_dir: Path,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
+    full: bool = False,
 ) -> None:
     """
     BioSample JSONL ファイルを生成する。
@@ -433,6 +515,7 @@ def generate_bs_jsonl(
         tmp_xml_dir: 入力 tmp_xml ディレクトリ ({result_dir}/biosample/tmp_xml/{date}/)
         output_dir: 出力ディレクトリ ({result_dir}/biosample/jsonl/{date}/)
         parallel_num: 並列ワーカー数
+        full: True の場合は全件処理、False の場合は差分更新
     """
     if not tmp_xml_dir.exists():
         raise FileNotFoundError(f"tmp_xml directory not found: {tmp_xml_dir}")
@@ -440,27 +523,52 @@ def generate_bs_jsonl(
     # blacklist を読み込む
     _, bs_blacklist = load_blacklist(config)
 
+    # 差分更新の基準日時を取得
+    since: Optional[str] = None
+    ddbj_target_accessions: Optional[Set[str]] = None
+
+    if not full:
+        last_run = read_last_run(config)
+        since = last_run.get("biosample")
+        if since is not None:
+            log_info(f"Incremental update mode: since={since}")
+            # DDBJ: PostgreSQL から対象 accession を取得
+            try:
+                from ddbj_search_converter.postgres.bs_date import \
+                    fetch_bs_accessions_modified_since  # pylint: disable=import-outside-toplevel
+                ddbj_target_accessions = fetch_bs_accessions_modified_since(config, since)
+                log_info(f"DDBJ target accessions: {len(ddbj_target_accessions)}")
+            except ImportError:
+                log_warn("psycopg2 not available, processing all DDBJ entries")
+            except Exception as e:
+                log_warn(f"Failed to fetch DDBJ target accessions: {e}")
+        else:
+            log_info("Full update mode: no previous run found")
+    else:
+        log_info("Full update mode: --full specified")
+
     # DDBJ XML と NCBI XML をそれぞれ処理
-    ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_biosample_*.xml"))
-    ncbi_xml_files = sorted(tmp_xml_dir.glob("biosample_*.xml"))
+    ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
+    ncbi_xml_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
 
     log_info(f"Found {len(ddbj_xml_files)} DDBJ XML files and {len(ncbi_xml_files)} NCBI XML files")
 
-    tasks: List[Tuple[Path, Path, bool]] = []
+    tasks: List[Tuple[Path, Path, bool, Optional[Set[str]], Optional[str]]] = []
     for xml_file in ddbj_xml_files:
         output_path = output_dir.joinpath(xml_file.stem + ".jsonl")
-        tasks.append((xml_file, output_path, True))
+        tasks.append((xml_file, output_path, True, ddbj_target_accessions, None))
     for xml_file in ncbi_xml_files:
         output_path = output_dir.joinpath(xml_file.stem + ".jsonl")
-        tasks.append((xml_file, output_path, False))
+        tasks.append((xml_file, output_path, False, None, since))
 
     total_count = 0
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
         futures = {
             executor.submit(
-                _process_xml_file_worker, config, xml_path, output_path, is_ddbj, bs_blacklist
+                _process_xml_file_worker, config, xml_path, output_path, is_ddbj,
+                bs_blacklist, target_accessions, since_param
             ): (xml_path, is_ddbj)
-            for xml_path, output_path, is_ddbj in tasks
+            for xml_path, output_path, is_ddbj, target_accessions, since_param in tasks
         }
         for future in as_completed(futures):
             xml_path, is_ddbj = futures[future]
@@ -472,11 +580,15 @@ def generate_bs_jsonl(
 
     log_info(f"Generated {total_count} BioSample entries in total")
 
+    # last_run.json を更新
+    write_last_run(config, "biosample")
+    log_info("Updated last_run.json for biosample")
+
 
 # === CLI ===
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int]:
+def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(
         description="Generate BioSample JSONL files from split XML files."
@@ -500,6 +612,11 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int]:
         default=DEFAULT_PARALLEL_NUM,
     )
     parser.add_argument(
+        "--full",
+        help="Process all entries instead of incremental update.",
+        action="store_true",
+    )
+    parser.add_argument(
         "--debug",
         help="Enable debug mode.",
         action="store_true",
@@ -518,23 +635,24 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int]:
     tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / date_str
     output_dir = bs_base_dir / JSONL_DIR_NAME / date_str
 
-    return config, tmp_xml_dir, output_dir, parsed.parallel_num
+    return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, tmp_xml_dir, output_dir, parallel_num = parse_args(sys.argv[1:])
+    config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bs_jsonl", config=config):
         log_debug(f"Config: {config.model_dump_json(indent=2)}")
         log_debug(f"tmp_xml directory: {tmp_xml_dir}")
         log_debug(f"Output directory: {output_dir}")
         log_debug(f"Parallel workers: {parallel_num}")
+        log_debug(f"Full update: {full}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"Output directory: {output_dir}")
 
-        generate_bs_jsonl(config, tmp_xml_dir, output_dir, parallel_num)
+        generate_bs_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full)
 
 
 if __name__ == "__main__":

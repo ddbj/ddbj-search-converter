@@ -6,10 +6,12 @@ import pytest
 
 from ddbj_search_converter.jsonl.bs import (iterate_xml_biosamples,
                                             normalize_properties,
-                                            parse_accession, parse_attributes,
+                                            parse_accession, parse_args,
+                                            parse_attributes,
                                             parse_description, parse_model,
                                             parse_organism, parse_package,
-                                            parse_same_as, parse_title,
+                                            parse_same_as, parse_status,
+                                            parse_title, parse_visibility,
                                             write_jsonl,
                                             xml_entry_to_bs_instance)
 from ddbj_search_converter.schema import BioSample
@@ -444,7 +446,8 @@ class TestXmlEntryToBsInstance:
         assert result.organism is not None
         assert result.organism.name == "Homo sapiens"
         assert len(result.attributes) == 1
-        assert result.visibility == "unrestricted-access"
+        assert result.status == "live"
+        assert result.visibility == "public"
 
     def test_converts_ddbj_entry(self) -> None:
         """DDBJ XML エントリを BioSample インスタンスに変換する。"""
@@ -498,8 +501,8 @@ class TestWriteJsonl:
             package=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="unrestricted-access",
+            status="live",
+            visibility="public",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -531,8 +534,8 @@ class TestWriteJsonl:
             package=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="unrestricted-access",
+            status="live",
+            visibility="public",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -553,8 +556,8 @@ class TestWriteJsonl:
             package=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="unrestricted-access",
+            status="live",
+            visibility="public",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -567,3 +570,136 @@ class TestWriteJsonl:
         assert len(lines) == 2
         assert "SAMN00000001" in lines[0]
         assert "SAMN00000002" in lines[1]
+
+
+class TestParseStatus:
+    """Tests for parse_status function."""
+
+    def test_parses_ncbi_status_live(self) -> None:
+        """NCBI の Status/@status (live) を抽出する。"""
+        sample: Dict[str, Any] = {
+            "Status": {"status": "live", "when": "2024-01-01"}
+        }
+        assert parse_status(sample) == "live"
+
+    def test_parses_ncbi_status_suppressed(self) -> None:
+        """NCBI の Status/@status (suppressed) を抽出する。"""
+        sample: Dict[str, Any] = {
+            "Status": {"status": "suppressed", "when": "2024-01-01"}
+        }
+        assert parse_status(sample) == "suppressed"
+
+    def test_returns_live_for_ddbj(self) -> None:
+        """DDBJ の場合 (Status 要素なし) は "live" を返す。"""
+        sample: Dict[str, Any] = {}
+        assert parse_status(sample) == "live"
+
+    def test_returns_live_when_status_missing_in_status_obj(self) -> None:
+        """Status オブジェクトに status 属性がない場合は "live" を返す。"""
+        sample: Dict[str, Any] = {
+            "Status": {"when": "2024-01-01"}
+        }
+        assert parse_status(sample) == "live"
+
+
+class TestParseVisibility:
+    """Tests for parse_visibility function."""
+
+    def test_parses_access_public(self) -> None:
+        """@access が public の場合を抽出する。"""
+        sample: Dict[str, Any] = {"access": "public"}
+        assert parse_visibility(sample) == "public"
+
+    def test_parses_access_controlled(self) -> None:
+        """@access が controlled の場合を抽出する。"""
+        sample: Dict[str, Any] = {"access": "controlled"}
+        assert parse_visibility(sample) == "controlled"
+
+    def test_returns_public_when_missing(self) -> None:
+        """@access がない場合は "public" を返す。"""
+        sample: Dict[str, Any] = {}
+        assert parse_visibility(sample) == "public"
+
+
+class TestParseArgsIncremental:
+    """Tests for parse_args function incremental update options."""
+
+    def test_parse_args_full_flag(self) -> None:
+        """--full フラグを指定した場合、full=True になる。"""
+        _, _, _, _, full = parse_args(["--full"])
+        assert full is True
+
+    def test_parse_args_default_incremental(self) -> None:
+        """デフォルトでは full=False (差分更新モード)。"""
+        _, _, _, _, full = parse_args([])
+        assert full is False
+
+    def test_parse_args_with_all_options(self) -> None:
+        """全オプションを指定した場合のテスト。"""
+        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args([
+            "--result-dir", "/tmp/test",
+            "--date", "20240101",
+            "--parallel-num", "8",
+            "--full",
+            "--debug",
+        ])
+        assert config.result_dir == Path("/tmp/test")
+        assert config.debug is True
+        assert "20240101" in str(tmp_xml_dir)
+        assert "20240101" in str(output_dir)
+        assert parallel_num == 8
+        assert full is True
+
+
+class TestXmlEntryStatusVisibility:
+    """Tests for status/visibility in xml_entry_to_bs_instance."""
+
+    def test_ncbi_entry_parses_status_and_visibility(self) -> None:
+        """NCBI XML エントリから status と visibility を正しく抽出する。"""
+        entry: Dict[str, Any] = {
+            "BioSample": {
+                "accession": "SAMN00000001",
+                "access": "public",
+                "Status": {"status": "live"},
+                "Description": {
+                    "Title": "Test Sample"
+                },
+                "Attributes": {},
+                "Models": {}
+            }
+        }
+        result = xml_entry_to_bs_instance(entry, is_ddbj=False)
+        assert result.status == "live"
+        assert result.visibility == "public"
+
+    def test_ncbi_entry_controlled_suppressed(self) -> None:
+        """NCBI XML エントリで controlled/suppressed の場合を確認する。"""
+        entry: Dict[str, Any] = {
+            "BioSample": {
+                "accession": "SAMN00000002",
+                "access": "controlled",
+                "Status": {"status": "suppressed"},
+                "Description": {},
+                "Attributes": {},
+                "Models": {}
+            }
+        }
+        result = xml_entry_to_bs_instance(entry, is_ddbj=False)
+        assert result.status == "suppressed"
+        assert result.visibility == "controlled"
+
+    def test_ddbj_entry_defaults(self) -> None:
+        """DDBJ XML エントリではデフォルト値が設定される。"""
+        entry: Dict[str, Any] = {
+            "BioSample": {
+                "Ids": {
+                    "Id": {"namespace": "BioSample", "content": "SAMD00000001"}
+                },
+                "Description": {},
+                "Attributes": {},
+                "Models": {}
+            }
+        }
+        result = xml_entry_to_bs_instance(entry, is_ddbj=True)
+        assert result.status == "live"
+        assert result.visibility == "public"
