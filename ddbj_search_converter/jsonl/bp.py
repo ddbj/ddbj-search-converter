@@ -694,8 +694,8 @@ def generate_bp_jsonl(
         log_info("Full update mode: --full specified")
 
     # DDBJ XML と NCBI XML をそれぞれ処理
-    ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_bioproject_*.xml"))
-    ncbi_xml_files = sorted(tmp_xml_dir.glob("bioproject_*.xml"))
+    ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
+    ncbi_xml_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
 
     log_info(f"Found {len(ddbj_xml_files)} DDBJ XML files and {len(ncbi_xml_files)} NCBI XML files")
 
