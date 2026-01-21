@@ -1,5 +1,5 @@
 """JSONL 出力用 Pydantic モデル定義。"""
-from typing import Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -173,3 +173,174 @@ class BioSample(BaseModel):
     dateCreated: Optional[str]
     dateModified: Optional[str]
     datePublished: Optional[str]
+
+
+# === SRA Types ===
+
+SraStatus = Literal["public", "suppressed", "replaced", "killed", "unpublished"]
+SraVisibility = Literal["public", "controlled-access"]
+
+SraType = Literal[
+    "sra-submission",
+    "sra-study",
+    "sra-experiment",
+    "sra-run",
+    "sra-sample",
+    "sra-analysis",
+]
+
+
+class SraOrganism(BaseModel):
+    identifier: Optional[str]
+    name: Optional[str]
+
+
+class SraSubmission(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["SRA"]
+    type_: Literal["sra-submission"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    title: Optional[str]
+    description: Optional[str]
+    centerName: Optional[str]
+    labName: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: SraStatus
+    visibility: SraVisibility
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+class SraStudy(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["SRA"]
+    type_: Literal["sra-study"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    organism: Optional[SraOrganism]
+    title: Optional[str]
+    description: Optional[str]
+    studyType: Optional[str]
+    centerName: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: SraStatus
+    visibility: SraVisibility
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+class SraExperiment(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["SRA"]
+    type_: Literal["sra-experiment"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    organism: Optional[SraOrganism]
+    title: Optional[str]
+    description: Optional[str]
+    instrumentModel: Optional[str]
+    libraryStrategy: Optional[str]
+    librarySource: Optional[str]
+    librarySelection: Optional[str]
+    libraryLayout: Optional[str]
+    centerName: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: SraStatus
+    visibility: SraVisibility
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+class SraRun(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["SRA"]
+    type_: Literal["sra-run"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    title: Optional[str]
+    description: Optional[str]
+    runDate: Optional[str]
+    runCenter: Optional[str]
+    centerName: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: SraStatus
+    visibility: SraVisibility
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+class SraSampleAttribute(BaseModel):
+    tag: Optional[str]
+    value: Optional[str]
+    units: Optional[str]
+
+
+class SraSample(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["SRA"]
+    type_: Literal["sra-sample"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    organism: Optional[SraOrganism]
+    title: Optional[str]
+    description: Optional[str]
+    attributes: List[SraSampleAttribute]
+    centerName: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: SraStatus
+    visibility: SraVisibility
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+class SraAnalysis(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: List[Distribution]
+    isPartOf: Literal["SRA"]
+    type_: Literal["sra-analysis"] = Field(alias="type")
+    name: Optional[str]
+    url: str
+    title: Optional[str]
+    description: Optional[str]
+    analysisType: Optional[str]
+    centerName: Optional[str]
+    dbXref: List[Xref]
+    sameAs: List[Xref]
+    status: SraStatus
+    visibility: SraVisibility
+    dateCreated: Optional[str]
+    dateModified: Optional[str]
+    datePublished: Optional[str]
+
+
+# SRA モデルの共用型
+SraEntry = Union[
+    SraSubmission,
+    SraStudy,
+    SraExperiment,
+    SraRun,
+    SraSample,
+    SraAnalysis,
+]

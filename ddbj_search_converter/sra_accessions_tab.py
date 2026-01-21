@@ -19,7 +19,7 @@ BioProject/BioSample と SRA Accession 間の関連を高速に取得できる�
 import datetime
 import shutil
 from pathlib import Path
-from typing import Iterator, Literal, Optional, Tuple
+from typing import Dict, Iterator, List, Literal, Optional, Set, Tuple
 
 import duckdb
 
@@ -464,6 +464,211 @@ def iter_study_analysis_relations(
         ).fetchall()
 
     yield from rows
+
+
+# === Query functions for JSONL generation ===
+
+
+AccessionInfo = Tuple[str, str, Optional[str], Optional[str], Optional[str], str]
+# (status, visibility, received, updated, published, type)
+
+
+def get_accession_info_bulk(
+    config: Config,
+    source: SourceKind,
+    accessions: List[str],
+) -> Dict[str, AccessionInfo]:
+    """
+    Accessions DB から status, visibility, 日付を一括取得する。
+
+    Args:
+        config: Config オブジェクト
+        source: "dra" or "sra"
+        accessions: 取得する accession のリスト
+
+    Returns:
+        {accession: (status, visibility, received, updated, published, type)}
+    """
+    if not accessions:
+        return {}
+
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    result: Dict[str, AccessionInfo] = {}
+
+    with duckdb.connect(db_path, read_only=True) as conn:
+        # バッチサイズを制限してクエリを実行
+        batch_size = 10000
+        for i in range(0, len(accessions), batch_size):
+            batch = accessions[i:i + batch_size]
+            placeholders = ", ".join(["?"] * len(batch))
+            rows = conn.execute(
+                f"""
+                SELECT
+                    Accession,
+                    Status,
+                    Visibility,
+                    CAST(Received AS VARCHAR),
+                    CAST(Updated AS VARCHAR),
+                    CAST(Published AS VARCHAR),
+                    Type
+                FROM accessions
+                WHERE Accession IN ({placeholders})
+                """,
+                batch,
+            ).fetchall()
+
+            for row in rows:
+                acc, status, visibility, received, updated, published, type_ = row
+                result[acc] = (
+                    status or "public",
+                    visibility or "public",
+                    received,
+                    updated,
+                    published,
+                    type_ or "",
+                )
+
+    return result
+
+
+def iter_all_submissions(
+    config: Config,
+    source: SourceKind,
+) -> Iterator[str]:
+    """
+    全 submission を取得する。
+
+    Args:
+        config: Config オブジェクト
+        source: "dra" or "sra"
+
+    Returns:
+        submission accession のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path, read_only=True) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT Accession
+            FROM accessions
+            WHERE Type = 'SUBMISSION'
+            ORDER BY Accession
+            """
+        ).fetchall()
+
+    for row in rows:
+        yield row[0]
+
+
+def iter_updated_submissions(
+    config: Config,
+    source: SourceKind,
+    since: str,
+    margin_days: int = 3,
+) -> Iterator[str]:
+    """
+    since 以降に更新された submission を取得する。
+
+    Updated カラムで since - margin_days 以降に更新されたエントリを持つ
+    submission を取得する。
+
+    Args:
+        config: Config オブジェクト
+        source: "dra" or "sra"
+        since: ISO8601 形式の日時文字列
+        margin_days: マージン日数 (デフォルト 3)
+
+    Returns:
+        submission accession のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    # since から margin_days を引いた日付を計算
+    # 形式: "2026-01-19T00:00:00Z" -> "2026-01-16"
+    since_date = since.split("T")[0]
+    since_dt = datetime.datetime.strptime(since_date, "%Y-%m-%d")
+    margin_dt = since_dt - datetime.timedelta(days=margin_days)
+    margin_date = margin_dt.strftime("%Y-%m-%d")
+
+    with duckdb.connect(db_path, read_only=True) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT Submission
+            FROM accessions
+            WHERE Updated >= ?
+            ORDER BY Submission
+            """,
+            [margin_date],
+        ).fetchall()
+
+    for row in rows:
+        if row[0] is not None:
+            yield row[0]
+
+
+def get_submission_accessions(
+    config: Config,
+    source: SourceKind,
+    submissions: Set[str],
+) -> Dict[str, List[str]]:
+    """
+    指定された submission に含まれる全 accession を取得する。
+
+    Args:
+        config: Config オブジェクト
+        source: "dra" or "sra"
+        submissions: submission accession の集合
+
+    Returns:
+        {submission: [accession1, accession2, ...]}
+    """
+    if not submissions:
+        return {}
+
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    result: Dict[str, List[str]] = {s: [] for s in submissions}
+
+    with duckdb.connect(db_path, read_only=True) as conn:
+        # バッチサイズを制限してクエリを実行
+        batch_size = 10000
+        submission_list = list(submissions)
+        for i in range(0, len(submission_list), batch_size):
+            batch = submission_list[i:i + batch_size]
+            placeholders = ", ".join(["?"] * len(batch))
+            rows = conn.execute(
+                f"""
+                SELECT Submission, Accession
+                FROM accessions
+                WHERE Submission IN ({placeholders})
+                ORDER BY Submission, Accession
+                """,
+                batch,
+            ).fetchall()
+
+            for submission, accession in rows:
+                if submission in result:
+                    result[submission].append(accession)
+
+    return result
 
 
 def main() -> None:
