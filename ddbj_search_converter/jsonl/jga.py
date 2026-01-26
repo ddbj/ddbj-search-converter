@@ -12,12 +12,11 @@ import xmltodict
 from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
                                           JSONL_DIR_NAME, TODAY_STR, Config,
                                           get_config)
-from ddbj_search_converter.dblink.db import (AccessionType,
-                                             get_related_entities_bulk)
-from ddbj_search_converter.jsonl.utils import to_xref
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
-from ddbj_search_converter.schema import JGA, Distribution, Organism, Xref
+from ddbj_search_converter.dblink.db import AccessionType
+from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, run_logger)
+from ddbj_search_converter.schema import JGA, Distribution, Organism
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 INDEX_NAMES: List[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -109,7 +108,7 @@ def load_date_map(
         next(reader)  # Skip header
         for row in reader:
             if len(row) != 4:
-                log_warn(f"Invalid row in date map CSV: {row}")
+                log_error(f"Invalid row in date map CSV: {row}")
                 continue
             accession, date_created, date_published, date_modified = row
             date_map[accession] = (
@@ -165,48 +164,12 @@ def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> J
         description=extract_description(entry, index_name),
         dbXref=[],  # 後で更新
         sameAs=[],
-        status="public",
-        visibility="controlled-access",
+        status="live",
+        accessibility="controlled-access",
         dateCreated=None,  # 後で更新
         dateModified=None,  # 後で更新
         datePublished=None,  # 後で更新
     )
-
-
-def get_dbxref_map(
-    config: Config, index_name: IndexName, accessions: List[str]
-) -> Dict[str, List[Xref]]:
-    """
-    dblink DB から関連エントリを取得し、Xref リストに変換する。
-
-    jga-study の場合は hum-id, pubmed-id も含める。
-    """
-    if not accessions:
-        return {}
-
-    entity_type = INDEX_TO_ACCESSION_TYPE[index_name]
-    relations = get_related_entities_bulk(
-        config, entity_type=entity_type, accessions=accessions
-    )
-
-    result: Dict[str, List[Xref]] = {}
-    for accession, related_list in relations.items():
-        xrefs: List[Xref] = []
-        for related_type, related_id in related_list:
-            xref = to_xref(related_id, type_hint=related_type)
-            xrefs.append(xref)
-        # identifier でソート
-        xrefs.sort(key=lambda x: x.identifier)
-        result[accession] = xrefs
-
-    return result
-
-
-def write_jsonl(output_path: Path, docs: List[JGA]) -> None:
-    """JGA インスタンスのリストを JSONL ファイルに書き込む。"""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as f:
-        f.write("\n".join(doc.model_dump_json(by_alias=True) for doc in docs))
 
 
 def generate_jga_jsonl(
@@ -245,7 +208,7 @@ def generate_jga_jsonl(
     accessions = list(jga_instances.keys())
 
     # dbXref を取得して更新
-    dbxref_map = get_dbxref_map(config, index_name, accessions)
+    dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
     for accession, xrefs in dbxref_map.items():
         jga_instance = jga_instances[accession]
         jga_instance.dbXref = xrefs

@@ -1,7 +1,11 @@
 """JSONL 生成用の共通ユーティリティ関数。"""
 import re
-from typing import Dict, Pattern
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Pattern
 
+from ddbj_search_converter.config import Config
+from ddbj_search_converter.dblink.db import (AccessionType,
+                                             get_related_entities_bulk)
 from ddbj_search_converter.schema import Xref, XrefType
 
 ID_PATTERN_MAP: Dict[XrefType, Pattern[str]] = {
@@ -55,7 +59,7 @@ URL_TEMPLATE: Dict[XrefType, str] = {
 }
 
 
-def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
+def to_xref(id_: str, *, type_hint: Optional[XrefType] = None) -> Xref:
     """
     ID パターンから Xref を自動生成する。
 
@@ -75,7 +79,7 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
 
     # pubmed-id と taxonomy は数字のみなので最後にチェックする
     # umbrella-bioproject は bioproject と同じパターンなのでパターンマッチでは判定できない
-    priority_types: list[XrefType] = [
+    priority_types: List[XrefType] = [
         "biosample",
         "bioproject",
         "sra-submission",
@@ -112,3 +116,37 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     return Xref(
         identifier=id_, type="taxonomy", url=URL_TEMPLATE["taxonomy"].format(id=id_)
     )
+
+
+def write_jsonl(output_path: Path, docs: List[Any]) -> None:
+    """Pydantic モデルインスタンスのリストを JSONL ファイルに書き込む。"""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as f:
+        for doc in docs:
+            f.write(doc.model_dump_json(by_alias=True))
+            f.write("\n")
+
+
+def get_dbxref_map(
+    config: Config,
+    entity_type: AccessionType,
+    accessions: List[str],
+) -> Dict[str, List[Xref]]:
+    """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
+    if not accessions:
+        return {}
+
+    relations = get_related_entities_bulk(
+        config, entity_type=entity_type, accessions=accessions
+    )
+
+    result: Dict[str, List[Xref]] = {}
+    for accession, related_list in relations.items():
+        xrefs: List[Xref] = []
+        for related_type, related_id in related_list:
+            xref = to_xref(related_id, type_hint=related_type)
+            xrefs.append(xref)
+        xrefs.sort(key=lambda x: x.identifier)
+        result[accession] = xrefs
+
+    return result

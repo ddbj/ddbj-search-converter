@@ -151,13 +151,11 @@ class TestLoadPreserveFile:
         assert mtb_to_bp == {("MTBKS1", "PRJDB1111"), ("MTBKS2", "PRJDB2222")}
         assert mtb_to_bs == {("MTBKS1", "SAMD00001"), ("MTBKS1", "SAMD00002"), ("MTBKS3", "SAMD00003")}
 
-    def test_handles_missing_files(self, config: Config) -> None:
-        """ファイルが存在しない場合は空を返す。"""
+    def test_raises_when_files_missing(self, config: Config) -> None:
+        """ファイルが存在しない場合は FileNotFoundError を発生する。"""
         with run_logger(config=config):
-            mtb_to_bp, mtb_to_bs = load_preserve_file(config)
-
-        assert mtb_to_bp == set()
-        assert mtb_to_bs == set()
+            with pytest.raises(FileNotFoundError):
+                load_preserve_file(config)
 
     def test_handles_empty_lines(self, config: Config) -> None:
         """空行をスキップする。"""
@@ -166,6 +164,9 @@ class TestLoadPreserveFile:
 
         bp_content = "MTBKS1\tPRJDB1111\n\nMTBKS2\tPRJDB2222\n"
         (mtb_dir / "mtb_id_bioproject_preserve.tsv").write_text(bp_content, encoding="utf-8")
+
+        bs_content = "MTBKS1\tSAMD00001\n"
+        (mtb_dir / "mtb_id_biosample_preserve.tsv").write_text(bs_content, encoding="utf-8")
 
         with run_logger(config=config):
             mtb_to_bp, _ = load_preserve_file(config)
@@ -189,6 +190,8 @@ class TestMetabobankMain:
         (const_dir / "metabobank").mkdir(parents=True)
         (const_dir / "bp" / "blacklist.txt").write_text("", encoding="utf-8")
         (const_dir / "bs" / "blacklist.txt").write_text("", encoding="utf-8")
+        (const_dir / "metabobank" / "mtb_id_bioproject_preserve.tsv").write_text("", encoding="utf-8")
+        (const_dir / "metabobank" / "mtb_id_biosample_preserve.tsv").write_text("", encoding="utf-8")
 
         mtb_dir = mtb_base_dir / "MTBKS100"
         mtb_dir.mkdir(parents=True)

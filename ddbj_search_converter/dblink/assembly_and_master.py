@@ -37,7 +37,9 @@ from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 filter_pairs_by_blacklist,
                                                 load_blacklist)
-from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
+from ddbj_search_converter.logging.logger import (log_debug, log_info,
+                                                  log_warn, run_logger)
+from ddbj_search_converter.logging.schema import DebugCategory
 
 TRAD_FILES = [
     TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt"),
@@ -112,17 +114,21 @@ def process_assembly_summary_file(
                     # bs_to_bp の場合は SAM/PRJ チェック
                     if target_set is bs_to_bp:
                         if not left_val.startswith("SAM"):
-                            log_warn(
+                            log_debug(
                                 f"skipping invalid biosample: {left_val}",
                                 accession=left_val,
                                 file="assembly_summary_genbank.txt",
+                                debug_category=DebugCategory.INVALID_BIOSAMPLE_ID,
+                                source="assembly",
                             )
                             continue
                         if not right_val.startswith("PRJ"):
-                            log_warn(
+                            log_debug(
                                 f"skipping invalid bioproject: {right_val}",
                                 accession=right_val,
                                 file="assembly_summary_genbank.txt",
+                                debug_category=DebugCategory.INVALID_BIOPROJECT_ID,
+                                source="assembly",
                             )
                             continue
 

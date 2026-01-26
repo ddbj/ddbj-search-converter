@@ -57,11 +57,13 @@ def iter_all_dra_submissions(config: Config) -> Iterator[str]:
     """Iterate over all DRA submission IDs from DRA_Accessions DB.
 
     Only returns submissions where Type is 'SUBMISSION'.
+
+    Raises:
+        FileNotFoundError: If DRA Accessions DB is not found.
     """
     db_path = get_dra_accessions_db_path(config)
     if not db_path.exists():
-        log_warn(f"DRA Accessions DB not found: {db_path}")
-        return
+        raise FileNotFoundError(f"DRA Accessions DB not found: {db_path}")
 
     with duckdb.connect(db_path, read_only=True) as conn:
         rows = conn.execute(
@@ -88,11 +90,13 @@ def iter_updated_dra_submissions(
         config: Config instance
         since_date: Date to check from (exclusive)
         margin_days: Safety margin in days to catch delayed updates
+
+    Raises:
+        FileNotFoundError: If DRA Accessions DB is not found.
     """
     db_path = get_dra_accessions_db_path(config)
     if not db_path.exists():
-        log_warn(f"DRA Accessions DB not found: {db_path}")
-        return
+        raise FileNotFoundError(f"DRA Accessions DB not found: {db_path}")
 
     # Apply safety margin
     check_date = since_date - timedelta(days=margin_days)
@@ -168,9 +172,8 @@ def build_dra_tar(config: Config) -> None:
     log_info(f"Collected {submission_count} submissions ({total_files} files)")
 
     if total_files == 0:
-        log_warn("No DRA XML files found")
         file_list_path.unlink(missing_ok=True)
-        return
+        raise FileNotFoundError("No DRA XML files found")
 
     # Build tar using tar command with --transform
     # Transform: /usr/local/resources/dra/fastq/DRA000/DRA000001/DRA000001.submission.xml
@@ -215,7 +218,7 @@ def sync_dra_tar(config: Config) -> None:
         )
     else:
         # If no last_updated file, rebuild from scratch
-        log_warn("No dra_last_updated file found, building from scratch")
+        log_info("No dra_last_updated file found, building from scratch")
         build_dra_tar(config)
         return
 

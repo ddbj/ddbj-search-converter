@@ -49,35 +49,35 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
     bp_preserve_path = config.const_dir.joinpath(MTB_BP_PRESERVED_REL_PATH)
     bs_preserve_path = config.const_dir.joinpath(MTB_BS_PRESERVED_REL_PATH)
 
-    if bp_preserve_path.exists():
-        with open(bp_preserve_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                parts = line.split("\t")
-                if len(parts) >= 2:
-                    mtb_to_bp.add((parts[0], parts[1]))
-        log_info(f"loaded {len(mtb_to_bp)} MetaboBank -> BioProject from preserve",
-                 file=str(bp_preserve_path))
-    else:
-        log_warn(f"MetaboBank BP preserve file not found: {bp_preserve_path}",
-                 file=str(bp_preserve_path))
+    if not bp_preserve_path.exists():
+        raise FileNotFoundError(
+            f"MetaboBank BP preserve file not found: {bp_preserve_path}"
+        )
+    with open(bp_preserve_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                mtb_to_bp.add((parts[0], parts[1]))
+    log_info(f"loaded {len(mtb_to_bp)} MetaboBank -> BioProject from preserve",
+             file=str(bp_preserve_path))
 
-    if bs_preserve_path.exists():
-        with open(bs_preserve_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                parts = line.split("\t")
-                if len(parts) >= 2:
-                    mtb_to_bs.add((parts[0], parts[1]))
-        log_info(f"loaded {len(mtb_to_bs)} MetaboBank -> BioSample from preserve",
-                 file=str(bs_preserve_path))
-    else:
-        log_warn(f"MetaboBank BS preserve file not found: {bs_preserve_path}",
-                 file=str(bs_preserve_path))
+    if not bs_preserve_path.exists():
+        raise FileNotFoundError(
+            f"MetaboBank BS preserve file not found: {bs_preserve_path}"
+        )
+    with open(bs_preserve_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                mtb_to_bs.add((parts[0], parts[1]))
+    log_info(f"loaded {len(mtb_to_bs)} MetaboBank -> BioSample from preserve",
+             file=str(bs_preserve_path))
 
     return mtb_to_bp, mtb_to_bs
 

@@ -41,16 +41,14 @@ class TestReadRelationCsv:
 
         assert result == {("JGAD001", "JGAP001"), ("JGAD003", "JGAP003")}
 
-    def test_returns_empty_when_file_not_exists(
+    def test_raises_when_file_not_exists(
         self, tmp_path: Path, test_config: pytest.fixture  # type: ignore
     ) -> None:
-        """ファイルが存在しない場合は空を返す。"""
-        # Logger is required because read_relation_csv calls log_warn
+        """ファイルが存在しない場合は FileNotFoundError を発生する。"""
         from ddbj_search_converter.logging.logger import run_logger
         with run_logger(config=test_config):
-            result = read_relation_csv(tmp_path / "nonexistent.csv")
-
-        assert result == set()
+            with pytest.raises(FileNotFoundError):
+                read_relation_csv(tmp_path / "nonexistent.csv")
 
 
 class TestJoinRelations:

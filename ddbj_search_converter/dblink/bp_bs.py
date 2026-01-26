@@ -45,8 +45,10 @@ from ddbj_search_converter.config import (BP_BS_PRESERVED_REL_PATH,
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 load_blacklist)
-from ddbj_search_converter.logging.logger import (log_error, log_info,
-                                                  log_warn, run_logger)
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, log_warn,
+                                                  run_logger)
+from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.sra_accessions_tab import iter_bp_bs_relations
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir
 
@@ -115,7 +117,7 @@ def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
     """
     results: List[Tuple[str, str]] = []
     skipped: List[str] = []
-    current_bs: str | None = None
+    current_bs: Optional[str] = None
     current_bs_is_valid = False
     in_ids = False
 
@@ -185,7 +187,8 @@ def process_xml_files_parallel(
                 log_info(f"processed {xml_path.name}: {len(file_results)} relations",
                          file=str(xml_path))
                 for acc in skipped:
-                    log_warn(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path))
+                    log_debug(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path),
+                              debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="ncbi")
             except Exception as e:  # pylint: disable=broad-exception-caught
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
@@ -202,8 +205,7 @@ def process_ncbi_biosample_xml(
     ncbi_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
 
     if not ncbi_files:
-        log_warn(f"no NCBI XML files found in {tmp_xml_dir}")
-        return
+        raise FileNotFoundError(f"no NCBI XML files found in {tmp_xml_dir}")
 
     log_info(f"found {len(ncbi_files)} NCBI XML files in {tmp_xml_dir}")
     results = process_xml_files_parallel(ncbi_files, process_ncbi_xml_file, parallel_num)
@@ -220,8 +222,7 @@ def process_ddbj_biosample_xml(
     ddbj_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
 
     if not ddbj_files:
-        log_warn(f"no DDBJ XML files found in {tmp_xml_dir}")
-        return
+        raise FileNotFoundError(f"no DDBJ XML files found in {tmp_xml_dir}")
 
     log_info(f"found {len(ddbj_files)} DDBJ XML files in {tmp_xml_dir}")
     results = process_xml_files_parallel(ddbj_files, process_ddbj_xml_file, parallel_num)
@@ -237,10 +238,12 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
         if not bs or not bp:
             continue
         if not bs.startswith("SAM"):
-            log_warn(f"skipping invalid biosample: {bs}", accession=bs, file=str(sra_db_path))
+            log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(sra_db_path),
+                      debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="sra")
             continue
         if not bp.startswith("PRJ"):
-            log_warn(f"skipping invalid bioproject: {bp}", accession=bp, file=str(sra_db_path))
+            log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(sra_db_path),
+                      debug_category=DebugCategory.INVALID_BIOPROJECT_ID, source="sra")
             continue
         bs_to_bp.add((bs, bp))
 
@@ -250,21 +253,27 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
         if not bs or not bp:
             continue
         if not bs.startswith("SAM"):
-            log_warn(f"skipping invalid biosample: {bs}", accession=bs, file=str(dra_db_path))
+            log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(dra_db_path),
+                      debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="dra")
             continue
         if not bp.startswith("PRJ"):
-            log_warn(f"skipping invalid bioproject: {bp}", accession=bp, file=str(dra_db_path))
+            log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(dra_db_path),
+                      debug_category=DebugCategory.INVALID_BIOPROJECT_ID, source="dra")
             continue
         bs_to_bp.add((bs, bp))
 
 
 def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
-    """TSV format: BioSample\tBioProject"""
+    """TSV format: BioSample\tBioProject
+
+    Raises:
+        FileNotFoundError: If preserved file is not found.
+    """
     preserved_path = config.const_dir.joinpath(BP_BS_PRESERVED_REL_PATH)
     if not preserved_path.exists():
-        log_warn(f"preserved file not found, skipping: {preserved_path}",
-                 file=str(preserved_path))
-        return
+        raise FileNotFoundError(
+            f"preserved file not found: {preserved_path}"
+        )
 
     log_info(f"processing preserved file: {preserved_path}",
              file=str(preserved_path))
@@ -278,10 +287,12 @@ def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
             if len(parts) >= 2:
                 bs, bp = parts[0], parts[1]
                 if not bs.startswith("SAM"):
-                    log_warn(f"skipping invalid biosample: {bs}", accession=bs, file=str(preserved_path))
+                    log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(preserved_path),
+                              debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="preserved")
                     continue
                 if not bp.startswith("PRJ"):
-                    log_warn(f"skipping invalid bioproject: {bp}", accession=bp, file=str(preserved_path))
+                    log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(preserved_path),
+                              debug_category=DebugCategory.INVALID_BIOPROJECT_ID, source="preserved")
                     continue
                 bs_to_bp.add((bs, bp))
 

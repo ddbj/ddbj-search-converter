@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from enum import Enum
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -7,11 +8,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from ddbj_search_converter.config import Config
 
 # log_level usage:
-# - DEBUG: Detailed debug info (variable values, internal state)
-# - INFO: Normal progress, successful completion
-# - WARNING: Problem occurred but processing succeeded
-# - ERROR: Failed but processing continues (e.g., single record conversion failure)
-# - CRITICAL: Fatal, processing stops
+# - DEBUG: Detailed info for debugging (skipped items, pattern mismatches). Not shown in stderr.
+# - INFO: Progress, completion, statistics. Shown in stderr.
+# - WARNING: Succeeded but incomplete (parsed with empty/default values). Shown in stderr.
+# - ERROR: Failed and skipped (single file/record failure). Shown in stderr.
+# - CRITICAL: Fatal, processing stops (raises exception). Shown in stderr.
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 # lifecycle is expressed in the extra field:
@@ -19,6 +20,28 @@ LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 # - lifecycle="end": run completed successfully
 # - lifecycle="failed": run failed
 Lifecycle = Literal["start", "end", "failed"]
+
+
+class DebugCategory(str, Enum):
+    """DEBUG log category for aggregation in log.duckdb."""
+    # Configuration
+    CONFIG = "config"
+
+    # ID pattern mismatch
+    INVALID_BIOSAMPLE_ID = "invalid_biosample_id"
+    INVALID_BIOPROJECT_ID = "invalid_bioproject_id"
+    INVALID_GCF_FORMAT = "invalid_gcf_format"
+    INVALID_WGS_RANGE = "invalid_wgs_range"
+
+    # File/resource related
+    FILE_NOT_FOUND = "file_not_found"
+    EMPTY_RESULT = "empty_result"
+
+    # Filter related
+    BLACKLIST_NO_MATCH = "blacklist_no_match"
+
+    # Parse related
+    PARSE_FALLBACK = "parse_fallback"
 
 
 class Extra(BaseModel):
@@ -57,6 +80,26 @@ class Extra(BaseModel):
     row: Optional[int] = Field(
         default=None,
         description="Row number in file or table",
+        ge=0,
+    )
+    debug_category: Optional[DebugCategory] = Field(
+        default=None,
+        description="DEBUG log category for aggregation",
+        examples=["invalid_biosample_id", "file_not_found"],
+    )
+    source: Optional[str] = Field(
+        default=None,
+        description="Data source identifier",
+        examples=["ncbi", "ddbj", "sra", "dra"],
+    )
+    relation_type: Optional[str] = Field(
+        default=None,
+        description="Type of relation being processed",
+        examples=["umbrella", "hum_id", "geo"],
+    )
+    count: Optional[int] = Field(
+        default=None,
+        description="Count of items (for summary logs)",
         ge=0,
     )
 

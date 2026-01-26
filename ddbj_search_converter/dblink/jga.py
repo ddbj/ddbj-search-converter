@@ -43,10 +43,12 @@ def read_relation_csv(csv_path: Path) -> Set[Tuple[str, str]]:
     """
     JGA relation CSV を読み込み、(from_id, to_id) の set を返す。
     CSV format: id, from_id, to_id (header あり、1 列目は無視)
+
+    Raises:
+        FileNotFoundError: If CSV file is not found.
     """
     if not csv_path.exists():
-        log_warn(f"CSV file not found: {csv_path}", file=str(csv_path))
-        return set()
+        raise FileNotFoundError(f"CSV file not found: {csv_path}")
 
     result: Set[Tuple[str, str]] = set()
     with csv_path.open("r", encoding="utf-8") as f:
@@ -130,11 +132,14 @@ def build_jga_internal_relations() -> Dict[str, IdPairs]:
 
 
 def load_jga_study_xml() -> List[Dict[str, Any]]:
-    """jga-study.xml を読み込み、STUDY エントリのリストを返す。"""
+    """jga-study.xml を読み込み、STUDY エントリのリストを返す。
+
+    Raises:
+        FileNotFoundError: If XML file is not found.
+    """
     xml_path = JGA_STUDY_XML
     if not xml_path.exists():
-        log_warn(f"XML file not found: {xml_path}", file=str(xml_path))
-        return []
+        raise FileNotFoundError(f"XML file not found: {xml_path}")
 
     with xml_path.open("rb") as f:
         xml_data = xmltodict.parse(

@@ -169,18 +169,17 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
     tar_path = get_ncbi_tar_path(config)
 
     if not tar_path.exists():
-        log_warn(f"NCBI tar file does not exist: {tar_path}")
-        return False
+        raise FileNotFoundError(f"NCBI tar file does not exist: {tar_path}")
 
     # Check if daily tar.gz exists
     try:
         with httpx.Client(timeout=10) as client:
             response = client.head(url)
             if response.status_code != 200:
-                log_warn(f"Daily tar.gz not found: {url}")
+                log_info(f"Daily tar.gz not found: {url}")
                 return False
     except httpx.RequestError as e:
-        log_warn(f"Failed to check daily tar.gz: {e}")
+        log_info(f"Failed to check daily tar.gz: {e}")
         return False
 
     log_info(f"Appending daily tar.gz: {url}")
@@ -263,8 +262,7 @@ def sync_ncbi_tar(config: Config, force_full: bool = False) -> None:
         # Find latest Full tar.gz
         full_date = find_latest_ncbi_full_date()
         if full_date is None:
-            log_warn("Could not find NCBI Full tar.gz")
-            return
+            raise FileNotFoundError("Could not find NCBI Full tar.gz")
         download_full_tar_gz(config, full_date)
         # Append dailies from Full date to today
         synced_count = _append_daily_updates(config)

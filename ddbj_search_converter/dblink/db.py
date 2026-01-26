@@ -11,7 +11,7 @@ relation テーブルには (src_type, src_accession, dst_type, dst_accession) �
 """
 import shutil
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Literal, Tuple
+from typing import Dict, Iterable, Iterator, List, Literal, Set, Tuple
 
 import duckdb
 
@@ -45,7 +45,7 @@ AccessionType = Literal[
 ]
 
 Relation = Tuple[AccessionType, str, AccessionType, str]
-IdPairs = set[tuple[str, str]]
+IdPairs = Set[Tuple[str, str]]
 
 
 def _tmp_db_path(config: Config) -> Path:

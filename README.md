@@ -62,6 +62,8 @@ docker compose -f compose.dev.yml exec app bash
 
 ## CLI コマンド一覧
 
+### DBLink 作成
+
 | コマンド | 説明 |
 |---------|------|
 | `check_external_resources` | 必要な外部リソースの存在確認 |
@@ -81,7 +83,33 @@ docker compose -f compose.dev.yml exec app bash
 | `sync_ncbi_tar` | NCBI SRA Metadata tar を同期 |
 | `sync_dra_tar` | DRA Metadata tar を同期 |
 
-全てのコマンドは引数を取らず、環境変数から設定を読み込む。
+### JSONL 生成
+
+| コマンド | 説明 |
+|---------|------|
+| `generate_bp_jsonl` | BioProject JSONL 生成 |
+| `generate_bs_jsonl` | BioSample JSONL 生成 |
+| `generate_sra_jsonl` | SRA JSONL 生成（submission/study/experiment/run/sample/analysis） |
+| `generate_jga_jsonl` | JGA JSONL 生成 |
+
+### Elasticsearch 操作
+
+| コマンド | 説明 |
+|---------|------|
+| `es_create_index` | Elasticsearch インデックス作成 |
+| `es_delete_index` | Elasticsearch インデックス削除 |
+| `es_bulk_insert` | JSONL を Elasticsearch に一括挿入 |
+| `es_list_indexes` | 登録済みインデックス一覧 |
+
+### ログ管理
+
+| コマンド | 説明 |
+|---------|------|
+| `log_summary` | CLI × debug_category の count 一覧を出力 |
+| `log_show_debug` | CLI と category を指定して DEBUG ログの詳細を表示 |
+
+DBLink 作成コマンドは引数を取らず、環境変数から設定を読み込む。
+JSONL 生成・Elasticsearch コマンドは `--help` で引数を確認可能。
 
 ## 環境変数
 
@@ -91,6 +119,34 @@ docker compose -f compose.dev.yml exec app bash
 | `DDBJ_SEARCH_CONVERTER_CONST_DIR` | 定数/共有リソースディレクトリ | `/home/w3ddbjld/const` |
 | `DDBJ_SEARCH_CONVERTER_POSTGRES_URL` | PostgreSQL URL | `postgresql://const:const@at098:54301` |
 | `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL | `http://ddbj-search-elasticsearch:9200` |
+
+## Logging
+
+### 出力先
+
+- **JSONL ファイル**: `{result_dir}/logs/{run_id}.log.jsonl` (全ログ)
+- **DuckDB**: `{result_dir}/log.duckdb` (集計用、JSONL から自動挿入)
+- **stderr**: INFO 以上のログのみ出力 (DEBUG は出力しない)
+
+### Log Level
+
+| Level | 用途 | stderr 出力 | 例 |
+|-------|------|-------------|-----|
+| `CRITICAL` | 処理が続行できない（例外で止まる） | ○ | リソース欠落、DB 接続不可 |
+| `ERROR` | 失敗してスキップ | ○ | ファイル処理失敗 → スキップ |
+| `WARNING` | 成功だが不完全（空/デフォルトで埋める） | ○ | パース失敗 → 空リストで続行 |
+| `INFO` | 進捗、完了、統計 | ○ | `Processing batch 1/10` |
+| `DEBUG` | 詳細情報（想定内のスキップなど） | × | ID パターン不一致 |
+
+### ログ集計
+
+```bash
+# CLI × debug_category の count 一覧
+log_summary --days 7
+
+# 特定の DEBUG ログ詳細を表示
+log_show_debug --run-name create_dblink_bp_bs_relations --category invalid_biosample_id --limit 100
+```
 
 ## 開発
 

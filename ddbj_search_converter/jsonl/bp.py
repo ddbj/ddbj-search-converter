@@ -11,11 +11,11 @@ from ddbj_search_converter.config import (BP_BASE_DIR_NAME, JSONL_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           get_config, read_last_run,
                                           write_last_run)
-from ddbj_search_converter.dblink.db import get_related_entities_bulk
 from ddbj_search_converter.dblink.utils import load_blacklist
-from ddbj_search_converter.jsonl.utils import to_xref
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
+from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, log_warn,
+                                                  run_logger)
 from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
                                           ExternalLink, Grant, Organism,
                                           Organization, Publication, Xref)
@@ -227,7 +227,7 @@ def parse_external_link(project: Dict[str, Any], accession: str = "") -> List[Ex
                     label = obj.get("label", id_)
                     return ExternalLink(url=url, label=label)
                 else:
-                    log_warn(f"Unsupported ExternalLink db: {db}", accession=accession)
+                    log_info(f"Unsupported ExternalLink db: {db}", accession=accession)
         return None
 
     links: List[ExternalLink] = []
@@ -278,12 +278,32 @@ def parse_same_as(project: Dict[str, Any], accession: str = "") -> List[Xref]:
     return []
 
 
-def parse_status(project: Dict[str, Any], is_ddbj: bool) -> str:
-    """BioProject から status を抽出する。"""
+def parse_status(
+    project: Dict[str, Any],  # pylint: disable=unused-argument
+    is_ddbj: bool,  # pylint: disable=unused-argument
+) -> str:
+    """
+    BioProject の status を返す。
+
+    BioProject XML には本来の status 情報 (live/suppressed 等) がないため、
+    常に "live" を返す。
+    """
+    return "live"
+
+
+def parse_accessibility(project: Dict[str, Any], is_ddbj: bool) -> str:
+    """
+    BioProject から accessibility を抽出する。
+
+    NCBI: Submission/Description/@Access (public, controlled-access)
+    DDBJ: 常に "public-access"
+    """
     if is_ddbj:
-        return "public"
-    status = project.get("Submission", {}).get("Description", {}).get("Access", "public")
-    return status if isinstance(status, str) else "public"
+        return "public-access"
+    access = project.get("Submission", {}).get("Description", {}).get("Access")
+    if access == "controlled-access":
+        return "controlled-access"
+    return "public-access"
 
 
 def parse_date_from_xml(
@@ -451,45 +471,11 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
         dbXref=[],  # 後で更新
         sameAs=parse_same_as(project, accession),
         status=parse_status(project, is_ddbj),
-        visibility="unrestricted-access",
+        accessibility=parse_accessibility(project, is_ddbj),
         dateCreated=None,  # 後で更新
         dateModified=None,  # 後で更新
         datePublished=None,  # 後で更新
     )
-
-
-# === DBLink ===
-
-
-def get_dbxref_map(config: Config, accessions: List[str]) -> Dict[str, List[Xref]]:
-    """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
-    if not accessions:
-        return {}
-
-    relations = get_related_entities_bulk(
-        config, entity_type="bioproject", accessions=accessions
-    )
-
-    result: Dict[str, List[Xref]] = {}
-    for accession, related_list in relations.items():
-        xrefs: List[Xref] = []
-        for related_type, related_id in related_list:
-            xref = to_xref(related_id, type_hint=related_type)
-            xrefs.append(xref)
-        xrefs.sort(key=lambda x: x.identifier)
-        result[accession] = xrefs
-
-    return result
-
-
-# === Output ===
-
-
-def write_jsonl(output_path: Path, docs: List[BioProject]) -> None:
-    """BioProject インスタンスのリストを JSONL ファイルに書き込む。"""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as f:
-        f.write("\n".join(doc.model_dump_json(by_alias=True) for doc in docs))
 
 
 # === XML iteration ===
@@ -529,7 +515,7 @@ def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioProject]) -> None:
                 docs[accession].dateModified = date_modified
                 docs[accession].datePublished = date_published
     except ImportError:
-        log_warn("psycopg2 not available, skipping date fetch for DDBJ BioProject")
+        log_info("psycopg2 not available, skipping date fetch for DDBJ BioProject")
 
 
 def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioProject]) -> None:
@@ -602,7 +588,7 @@ def _process_xml_file_worker(
         log_info(f"Filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXref を一括取得
-    dbxref_map = get_dbxref_map(config, list(docs.keys()))
+    dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
             docs[accession].dbXref = xrefs
@@ -686,9 +672,9 @@ def generate_bp_jsonl(
                 ddbj_target_accessions = fetch_bp_accessions_modified_since(config, since)
                 log_info(f"DDBJ target accessions: {len(ddbj_target_accessions)}")
             except ImportError:
-                log_warn("psycopg2 not available, processing all DDBJ entries")
+                log_info("psycopg2 not available, processing all DDBJ entries")
             except Exception as e:
-                log_warn(f"Failed to fetch DDBJ target accessions: {e}")
+                log_error(f"Failed to fetch DDBJ target accessions: {e}")
         else:
             log_info("Full update mode: no previous run found")
     else:

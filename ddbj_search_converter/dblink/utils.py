@@ -22,7 +22,7 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
         log_info(f"loaded {len(bp_blacklist)} BioProject blacklist entries",
                  file=str(bp_blacklist_path))
     else:
-        log_warn(f"BioProject blacklist not found, skipping: {bp_blacklist_path}",
+        log_info(f"BioProject blacklist not found, skipping: {bp_blacklist_path}",
                  file=str(bp_blacklist_path))
 
     if bs_blacklist_path.exists():
@@ -31,7 +31,7 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
         log_info(f"loaded {len(bs_blacklist)} BioSample blacklist entries",
                  file=str(bs_blacklist_path))
     else:
-        log_warn(f"BioSample blacklist not found, skipping: {bs_blacklist_path}",
+        log_info(f"BioSample blacklist not found, skipping: {bs_blacklist_path}",
                  file=str(bs_blacklist_path))
 
     return bp_blacklist, bs_blacklist
@@ -41,18 +41,22 @@ def load_sra_blacklist(config: Config) -> Set[str]:
     """SRA の blacklist ファイルを読み込む。
 
     SRA blacklist には Study, Experiment, Run, Sample の accession が含まれる。
+    コメント行 (#) は無視する。
     """
     sra_blacklist_path = config.const_dir.joinpath(SRA_BLACKLIST_REL_PATH)
 
     sra_blacklist: Set[str] = set()
 
     if sra_blacklist_path.exists():
-        sra_blacklist = set(sra_blacklist_path.read_text(encoding="utf-8").strip().split("\n"))
-        sra_blacklist.discard("")
+        with sra_blacklist_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    sra_blacklist.add(line)
         log_info(f"loaded {len(sra_blacklist)} SRA blacklist entries",
                  file=str(sra_blacklist_path))
     else:
-        log_warn(f"SRA blacklist not found, skipping: {sra_blacklist_path}",
+        log_info(f"SRA blacklist not found, skipping: {sra_blacklist_path}",
                  file=str(sra_blacklist_path))
 
     return sra_blacklist

@@ -225,7 +225,7 @@ class TestParsePublication:
         }
         result = parse_publication(project)
         assert len(result) == 1
-        assert result[0].id == "12345"
+        assert result[0].id_ == "12345"
         assert result[0].DbType == "ePubmed"
         assert result[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
         assert result[0].title == "Paper Title"
@@ -303,7 +303,7 @@ class TestParseGrant:
         }
         result = parse_grant(project)
         assert len(result) == 1
-        assert result[0].id == "GRANT001"
+        assert result[0].id_ == "GRANT001"
         assert result[0].title == "Grant Title"
         assert len(result[0].agency) == 1
         assert result[0].agency[0].name == "NIH"
@@ -478,13 +478,13 @@ class TestParseSameAs:
 class TestParseStatus:
     """Tests for parse_status function."""
 
-    def test_returns_public_for_ddbj(self) -> None:
-        """DDBJ は常に public を返す。"""
+    def test_returns_live_for_ddbj(self) -> None:
+        """DDBJ は常に live を返す。"""
         project: Dict[str, Any] = {}
-        assert parse_status(project, is_ddbj=True) == "public"
+        assert parse_status(project, is_ddbj=True) == "live"
 
-    def test_parses_ncbi_status(self) -> None:
-        """NCBI の status を抽出する。"""
+    def test_returns_live_for_ncbi(self) -> None:
+        """NCBI も常に live を返す (BioProject には status 情報がない)。"""
         project: Dict[str, Any] = {
             "Submission": {
                 "Description": {
@@ -492,12 +492,12 @@ class TestParseStatus:
                 }
             }
         }
-        assert parse_status(project, is_ddbj=False) == "controlled"
+        assert parse_status(project, is_ddbj=False) == "live"
 
-    def test_defaults_to_public_for_ncbi(self) -> None:
-        """NCBI で status がない場合は public を返す。"""
+    def test_returns_live_always(self) -> None:
+        """常に live を返す。"""
         project: Dict[str, Any] = {}
-        assert parse_status(project, is_ddbj=False) == "public"
+        assert parse_status(project, is_ddbj=False) == "live"
 
 
 class TestNormalizeProperties:
@@ -658,7 +658,7 @@ class TestXmlEntryToBpInstance:
         assert result.title == "Test Project"
         assert result.description == "Test Description"
         assert result.objectType == "BioProject"
-        assert result.visibility == "unrestricted-access"
+        assert result.accessibility == "public-access"
 
 
 class TestWriteJsonl:
@@ -684,8 +684,8 @@ class TestWriteJsonl:
             externalLink=[],
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="unrestricted-access",
+            status="live",
+            accessibility="public-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -719,8 +719,8 @@ class TestWriteJsonl:
             externalLink=[],
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="unrestricted-access",
+            status="live",
+            accessibility="public-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -743,8 +743,8 @@ class TestWriteJsonl:
             externalLink=[],
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="unrestricted-access",
+            status="live",
+            accessibility="public-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,

@@ -102,8 +102,8 @@ class TestJGA:
             description="Test Description",
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="controlled-access",
+            status="live",
+            accessibility="controlled-access",
             dateCreated="2024-01-01T00:00:00Z",
             dateModified="2024-01-02T00:00:00Z",
             datePublished="2024-01-03T00:00:00Z",
@@ -111,8 +111,8 @@ class TestJGA:
 
         assert jga.identifier == "JGAS000001"
         assert jga.type_ == "jga-study"
-        assert jga.status == "public"
-        assert jga.visibility == "controlled-access"
+        assert jga.status == "live"
+        assert jga.accessibility == "controlled-access"
 
     def test_jga_json_output(self) -> None:
         """JGA の JSON 出力が正しい形式になる。"""
@@ -129,8 +129,8 @@ class TestJGA:
             description=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="controlled-access",
+            status="live",
+            accessibility="controlled-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,

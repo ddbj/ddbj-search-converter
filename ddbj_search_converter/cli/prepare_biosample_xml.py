@@ -35,9 +35,13 @@ def process_biosample_xml(
     prefix: str,
     batch_size: int,
 ) -> List[Path]:
+    """Process BioSample XML gzip file.
+
+    Raises:
+        FileNotFoundError: If gzip file is not found.
+    """
     if not gz_path.exists():
-        log_warn(f"file not found, skipping: {gz_path}", file=str(gz_path))
-        return []
+        raise FileNotFoundError(f"file not found: {gz_path}")
 
     tmp_dir = get_tmp_xml_dir(config, "biosample")
 

@@ -11,15 +11,13 @@ from ddbj_search_converter.config import (BS_BASE_DIR_NAME, JSONL_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           get_config, read_last_run,
                                           write_last_run)
-from ddbj_search_converter.dblink.db import get_related_entities_bulk
 from ddbj_search_converter.dblink.utils import load_blacklist
-from ddbj_search_converter.jsonl.utils import to_xref
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
-from ddbj_search_converter.schema import (Attribute, BioSample,
-                                          BioSampleStatus, BioSampleVisibility,
-                                          Distribution, Model, Organism,
-                                          Package, Xref)
+from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, log_warn,
+                                                  run_logger)
+from ddbj_search_converter.schema import (Attribute, BioSample, Distribution,
+                                          Model, Organism, Package, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
@@ -201,7 +199,7 @@ def parse_date_from_xml(
     return date_created, date_modified, date_published
 
 
-def parse_status(sample: Dict[str, Any], accession: str = "") -> BioSampleStatus:
+def parse_status(sample: Dict[str, Any], accession: str = "") -> str:
     """
     BioSample から status を抽出する。
 
@@ -220,21 +218,26 @@ def parse_status(sample: Dict[str, Any], accession: str = "") -> BioSampleStatus
     return "live"
 
 
-def parse_visibility(sample: Dict[str, Any], accession: str = "") -> BioSampleVisibility:
+def parse_accessibility(sample: Dict[str, Any], accession: str = "") -> str:
     """
-    BioSample から visibility (@access) を抽出する。
+    BioSample から accessibility (@access) を抽出する。
 
     NCBI: @access (public, controlled)
     DDBJ: @access (public のみ)
+
+    入力値 -> 出力値:
+    - public -> public-access
+    - controlled -> controlled-access
+    - その他 -> public-access
     """
     try:
         access: str = sample.get("access", "public")
         if access == "controlled":
-            return "controlled"
-        return "public"
+            return "controlled-access"
+        return "public-access"
     except Exception as e:
-        log_warn(f"Failed to parse visibility: {e}", accession=accession)
-    return "public"
+        log_warn(f"Failed to parse accessibility: {e}", accession=accession)
+    return "public-access"
 
 
 # === Properties normalization ===
@@ -312,45 +315,11 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
         dbXref=[],  # 後で更新
         sameAs=parse_same_as(sample, accession),
         status=parse_status(sample, accession),
-        visibility=parse_visibility(sample, accession),
+        accessibility=parse_accessibility(sample, accession),
         dateCreated=None,  # 後で更新
         dateModified=None,  # 後で更新
         datePublished=None,  # 後で更新
     )
-
-
-# === DBLink ===
-
-
-def get_dbxref_map(config: Config, accessions: List[str]) -> Dict[str, List[Xref]]:
-    """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
-    if not accessions:
-        return {}
-
-    relations = get_related_entities_bulk(
-        config, entity_type="biosample", accessions=accessions
-    )
-
-    result: Dict[str, List[Xref]] = {}
-    for accession, related_list in relations.items():
-        xrefs: List[Xref] = []
-        for related_type, related_id in related_list:
-            xref = to_xref(related_id, type_hint=related_type)
-            xrefs.append(xref)
-        xrefs.sort(key=lambda x: x.identifier)
-        result[accession] = xrefs
-
-    return result
-
-
-# === Output ===
-
-
-def write_jsonl(output_path: Path, docs: List[BioSample]) -> None:
-    """BioSample インスタンスのリストを JSONL ファイルに書き込む。"""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as f:
-        f.write("\n".join(doc.model_dump_json(by_alias=True) for doc in docs))
 
 
 # === XML iteration ===
@@ -390,7 +359,7 @@ def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
                 docs[accession].dateModified = date_modified
                 docs[accession].datePublished = date_published
     except ImportError:
-        log_warn("psycopg2 not available, skipping date fetch for DDBJ BioSample")
+        log_info("psycopg2 not available, skipping date fetch for DDBJ BioSample")
 
 
 def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool) -> None:
@@ -463,7 +432,7 @@ def _process_xml_file_worker(
         log_info(f"Filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXref を一括取得
-    dbxref_map = get_dbxref_map(config, list(docs.keys()))
+    dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
             docs[accession].dbXref = xrefs
@@ -547,9 +516,9 @@ def generate_bs_jsonl(
                 ddbj_target_accessions = fetch_bs_accessions_modified_since(config, since)
                 log_info(f"DDBJ target accessions: {len(ddbj_target_accessions)}")
             except ImportError:
-                log_warn("psycopg2 not available, processing all DDBJ entries")
+                log_info("psycopg2 not available, processing all DDBJ entries")
             except Exception as e:
-                log_warn(f"Failed to fetch DDBJ target accessions: {e}")
+                log_error(f"Failed to fetch DDBJ target accessions: {e}")
         else:
             log_info("Full update mode: no previous run found")
     else:

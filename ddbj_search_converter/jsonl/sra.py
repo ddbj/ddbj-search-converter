@@ -11,18 +11,13 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import xmltodict
 
 from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
-                                          SRA_BLACKLIST_REL_PATH, TODAY_STR,
-                                          Config, get_config, read_last_run,
-                                          write_last_run)
-from ddbj_search_converter.dblink.db import get_related_entities_bulk
-from ddbj_search_converter.jsonl.utils import to_xref
+                                          TODAY_STR, Config, get_config,
+                                          read_last_run, write_last_run)
+from ddbj_search_converter.dblink.utils import load_sra_blacklist
+from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
                                                   log_warn, run_logger)
-from ddbj_search_converter.schema import (Distribution, SraAnalysis,
-                                          SraExperiment, SraOrganism, SraRun,
-                                          SraSample, SraSampleAttribute,
-                                          SraStatus, SraStudy, SraSubmission,
-                                          SraVisibility, Xref, XrefType)
+from ddbj_search_converter.schema import SRA, Distribution, Organism, XrefType
 from ddbj_search_converter.sra.tar_reader import (SraXmlType, TarXMLReader,
                                                   get_dra_tar_reader,
                                                   get_ncbi_tar_reader)
@@ -38,24 +33,6 @@ DEFAULT_PARALLEL_NUM = 8
 XML_TYPES: List[SraXmlType] = [
     "submission", "study", "experiment", "run", "sample", "analysis"
 ]
-
-
-# === Blacklist ===
-
-
-def load_sra_blacklist(config: Config) -> Set[str]:
-    """SRA blacklist を読み込む。"""
-    blacklist_path = config.const_dir / SRA_BLACKLIST_REL_PATH
-    if not blacklist_path.exists():
-        return set()
-
-    blacklist: Set[str] = set()
-    with blacklist_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                blacklist.add(line)
-    return blacklist
 
 
 # === Parse functions ===
@@ -75,24 +52,51 @@ def _get_text(d: Any, key: str) -> Optional[str]:
     return str(v)
 
 
-def _normalize_status(status: Optional[str]) -> SraStatus:
-    """status を正規化する。"""
+def _normalize_status(status: Optional[str]) -> str:
+    """
+    status を INSDC 標準に正規化する。
+
+    入力値 -> 出力値:
+    - live -> live
+    - unpublished -> unpublished
+    - suppressed -> suppressed
+    - withdrawn -> withdrawn
+    - public -> live (DRA 互換)
+    - replaced -> withdrawn (旧値互換)
+    - killed -> withdrawn (旧値互換)
+    - NULL/その他 -> live (デフォルト)
+    """
     if status is None:
-        return "public"
+        return "live"
     status_lower = status.lower()
-    if status_lower in ("public", "suppressed", "replaced", "killed", "unpublished"):
-        return status_lower  # type: ignore
-    return "public"
+    if status_lower in ("live", "unpublished", "suppressed", "withdrawn"):
+        return status_lower
+    if status_lower == "public":
+        return "live"
+    if status_lower in ("replaced", "killed"):
+        return "withdrawn"
+    return "live"
 
 
-def _normalize_visibility(visibility: Optional[str]) -> SraVisibility:
-    """visibility を正規化する。"""
-    if visibility is None:
-        return "public"
-    visibility_lower = visibility.lower()
-    if visibility_lower == "controlled-access":
+def _normalize_accessibility(accessibility: Optional[str]) -> str:
+    """
+    accessibility を正規化する。
+
+    入力値 -> 出力値:
+    - public -> public-access
+    - controlled -> controlled-access (BioSample 互換)
+    - controlled-access -> controlled-access
+    - controlled_access -> controlled-access (アンダースコア互換)
+    - NULL/その他 -> public-access (デフォルト)
+    """
+    if accessibility is None:
+        return "public-access"
+    accessibility_lower = accessibility.lower().replace("_", "-")
+    if accessibility_lower == "controlled-access":
         return "controlled-access"
-    return "public"
+    if accessibility_lower == "controlled":
+        return "controlled-access"
+    return "public-access"
 
 
 def parse_submission(
@@ -275,31 +279,16 @@ def parse_sample(
             tax_id = sample_name.get("TAXON_ID")
             sci_name = sample_name.get("SCIENTIFIC_NAME")
             if tax_id or sci_name:
-                organism = SraOrganism(
+                organism = Organism(
                     identifier=str(tax_id) if tax_id else None,
                     name=sci_name,
                 )
-
-            # 属性を取得
-            attributes: List[SraSampleAttribute] = []
-            sample_attrs = sample.get("SAMPLE_ATTRIBUTES", {}).get("SAMPLE_ATTRIBUTE")
-            if sample_attrs:
-                if not isinstance(sample_attrs, list):
-                    sample_attrs = [sample_attrs]
-                for attr in sample_attrs:
-                    if isinstance(attr, dict):
-                        attributes.append(SraSampleAttribute(
-                            tag=attr.get("TAG"),
-                            value=attr.get("VALUE"),
-                            units=attr.get("UNITS"),
-                        ))
 
             results.append({
                 "accession": sample.get("accession"),
                 "title": _get_text(sample, "TITLE"),
                 "description": _get_text(sample, "DESCRIPTION"),
                 "organism": organism,
-                "attributes": attributes,
                 "center_name": sample.get("center_name"),
                 "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
             })
@@ -369,30 +358,30 @@ def _make_url(entry_type: str, identifier: str) -> str:
 
 def create_submission(
     parsed: Dict[str, Any],
-    status: SraStatus,
-    visibility: SraVisibility,
+    status: str,
+    accessibility: str,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
-) -> SraSubmission:
-    """SraSubmission を作成する。"""
+) -> SRA:
+    """SRA (submission) を作成する。"""
     identifier = parsed["accession"]
-    return SraSubmission(
+    return SRA(
         identifier=identifier,
         properties=parsed["properties"],
         distribution=_make_distribution("sra-submission", identifier),
-        isPartOf="SRA",
+        isPartOf="sra",
         type="sra-submission",
         name=None,
         url=_make_url("sra-submission", identifier),
+        organism=None,
         title=parsed.get("title"),
         description=parsed.get("submission_comment"),
-        centerName=parsed.get("center_name"),
-        labName=parsed.get("lab_name"),
         dbXref=[],
         sameAs=[],
+        downloadUrl=[],
         status=status,
-        visibility=visibility,
+        accessibility=accessibility,
         dateCreated=date_created,
         dateModified=date_modified,
         datePublished=date_published,
@@ -401,31 +390,30 @@ def create_submission(
 
 def create_study(
     parsed: Dict[str, Any],
-    status: SraStatus,
-    visibility: SraVisibility,
+    status: str,
+    accessibility: str,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
-) -> SraStudy:
-    """SraStudy を作成する。"""
+) -> SRA:
+    """SRA (study) を作成する。"""
     identifier = parsed["accession"]
-    return SraStudy(
+    return SRA(
         identifier=identifier,
         properties=parsed["properties"],
         distribution=_make_distribution("sra-study", identifier),
-        isPartOf="SRA",
+        isPartOf="sra",
         type="sra-study",
         name=None,
         url=_make_url("sra-study", identifier),
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        studyType=parsed.get("study_type"),
-        centerName=parsed.get("center_name"),
         dbXref=[],
         sameAs=[],
+        downloadUrl=[],
         status=status,
-        visibility=visibility,
+        accessibility=accessibility,
         dateCreated=date_created,
         dateModified=date_modified,
         datePublished=date_published,
@@ -434,35 +422,30 @@ def create_study(
 
 def create_experiment(
     parsed: Dict[str, Any],
-    status: SraStatus,
-    visibility: SraVisibility,
+    status: str,
+    accessibility: str,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
-) -> SraExperiment:
-    """SraExperiment を作成する。"""
+) -> SRA:
+    """SRA (experiment) を作成する。"""
     identifier = parsed["accession"]
-    return SraExperiment(
+    return SRA(
         identifier=identifier,
         properties=parsed["properties"],
         distribution=_make_distribution("sra-experiment", identifier),
-        isPartOf="SRA",
+        isPartOf="sra",
         type="sra-experiment",
         name=None,
         url=_make_url("sra-experiment", identifier),
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        instrumentModel=parsed.get("instrument_model"),
-        libraryStrategy=parsed.get("library_strategy"),
-        librarySource=parsed.get("library_source"),
-        librarySelection=parsed.get("library_selection"),
-        libraryLayout=parsed.get("library_layout"),
-        centerName=parsed.get("center_name"),
         dbXref=[],
         sameAs=[],
+        downloadUrl=[],
         status=status,
-        visibility=visibility,
+        accessibility=accessibility,
         dateCreated=date_created,
         dateModified=date_modified,
         datePublished=date_published,
@@ -471,31 +454,30 @@ def create_experiment(
 
 def create_run(
     parsed: Dict[str, Any],
-    status: SraStatus,
-    visibility: SraVisibility,
+    status: str,
+    accessibility: str,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
-) -> SraRun:
-    """SraRun を作成する。"""
+) -> SRA:
+    """SRA (run) を作成する。"""
     identifier = parsed["accession"]
-    return SraRun(
+    return SRA(
         identifier=identifier,
         properties=parsed["properties"],
         distribution=_make_distribution("sra-run", identifier),
-        isPartOf="SRA",
+        isPartOf="sra",
         type="sra-run",
         name=None,
         url=_make_url("sra-run", identifier),
+        organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        runDate=parsed.get("run_date"),
-        runCenter=parsed.get("run_center"),
-        centerName=parsed.get("center_name"),
         dbXref=[],
         sameAs=[],
+        downloadUrl=[],
         status=status,
-        visibility=visibility,
+        accessibility=accessibility,
         dateCreated=date_created,
         dateModified=date_modified,
         datePublished=date_published,
@@ -504,31 +486,30 @@ def create_run(
 
 def create_sample(
     parsed: Dict[str, Any],
-    status: SraStatus,
-    visibility: SraVisibility,
+    status: str,
+    accessibility: str,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
-) -> SraSample:
-    """SraSample を作成する。"""
+) -> SRA:
+    """SRA (sample) を作成する。"""
     identifier = parsed["accession"]
-    return SraSample(
+    return SRA(
         identifier=identifier,
         properties=parsed["properties"],
         distribution=_make_distribution("sra-sample", identifier),
-        isPartOf="SRA",
+        isPartOf="sra",
         type="sra-sample",
         name=None,
         url=_make_url("sra-sample", identifier),
         organism=parsed.get("organism"),
         title=parsed.get("title"),
         description=parsed.get("description"),
-        attributes=parsed.get("attributes", []),
-        centerName=parsed.get("center_name"),
         dbXref=[],
         sameAs=[],
+        downloadUrl=[],
         status=status,
-        visibility=visibility,
+        accessibility=accessibility,
         dateCreated=date_created,
         dateModified=date_modified,
         datePublished=date_published,
@@ -537,62 +518,34 @@ def create_sample(
 
 def create_analysis(
     parsed: Dict[str, Any],
-    status: SraStatus,
-    visibility: SraVisibility,
+    status: str,
+    accessibility: str,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
-) -> SraAnalysis:
-    """SraAnalysis を作成する。"""
+) -> SRA:
+    """SRA (analysis) を作成する。"""
     identifier = parsed["accession"]
-    return SraAnalysis(
+    return SRA(
         identifier=identifier,
         properties=parsed["properties"],
         distribution=_make_distribution("sra-analysis", identifier),
-        isPartOf="SRA",
+        isPartOf="sra",
         type="sra-analysis",
         name=None,
         url=_make_url("sra-analysis", identifier),
+        organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        analysisType=parsed.get("analysis_type"),
-        centerName=parsed.get("center_name"),
         dbXref=[],
         sameAs=[],
+        downloadUrl=[],
         status=status,
-        visibility=visibility,
+        accessibility=accessibility,
         dateCreated=date_created,
         dateModified=date_modified,
         datePublished=date_published,
     )
-
-
-# === DBLink ===
-
-
-def get_dbxref_map(
-    config: Config,
-    entity_type: XrefType,
-    accessions: List[str],
-) -> Dict[str, List[Xref]]:
-    """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
-    if not accessions:
-        return {}
-
-    relations = get_related_entities_bulk(
-        config, entity_type=entity_type, accessions=accessions
-    )
-
-    result: Dict[str, List[Xref]] = {}
-    for accession, related_list in relations.items():
-        xrefs: List[Xref] = []
-        for related_type, related_id in related_list:
-            xref = to_xref(related_id, type_hint=related_type)
-            xrefs.append(xref)
-        xrefs.sort(key=lambda x: x.identifier)
-        result[accession] = xrefs
-
-    return result
 
 
 # === Submission processing ===
@@ -615,7 +568,7 @@ def process_submission_xml(
         is_dra: DRA かどうか
         config: Config
         blacklist: blacklist
-        accession_info: {accession: (status, visibility, received, updated, published, type)}
+        accession_info: {accession: (status, accessibility, received, updated, published, type)}
 
     Returns:
         {xml_type: [model_instance, ...]}
@@ -636,10 +589,10 @@ def process_submission_xml(
         if parsed and parsed.get("accession"):
             acc = parsed["accession"]
             if acc not in blacklist:
-                info = accession_info.get(acc, ("public", "public", None, None, None, ""))
+                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
                 status = _normalize_status(info[0])
-                visibility = _normalize_visibility(info[1])
-                submission_entry = create_submission(parsed, status, visibility, info[2], info[3], info[4])
+                accessibility = _normalize_accessibility(info[1])
+                submission_entry = create_submission(parsed, status, accessibility, info[2], info[3], info[4])
                 results["submission"].append(submission_entry)
 
     # study XML を処理
@@ -648,10 +601,10 @@ def process_submission_xml(
         for parsed in parse_study(xml_bytes, is_dra, submission):
             acc = parsed.get("accession")
             if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("public", "public", None, None, None, ""))
+                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
                 status = _normalize_status(info[0])
-                visibility = _normalize_visibility(info[1])
-                study_entry = create_study(parsed, status, visibility, info[2], info[3], info[4])
+                accessibility = _normalize_accessibility(info[1])
+                study_entry = create_study(parsed, status, accessibility, info[2], info[3], info[4])
                 results["study"].append(study_entry)
 
     # experiment XML を処理
@@ -660,10 +613,10 @@ def process_submission_xml(
         for parsed in parse_experiment(xml_bytes, is_dra, submission):
             acc = parsed.get("accession")
             if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("public", "public", None, None, None, ""))
+                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
                 status = _normalize_status(info[0])
-                visibility = _normalize_visibility(info[1])
-                experiment_entry = create_experiment(parsed, status, visibility, info[2], info[3], info[4])
+                accessibility = _normalize_accessibility(info[1])
+                experiment_entry = create_experiment(parsed, status, accessibility, info[2], info[3], info[4])
                 results["experiment"].append(experiment_entry)
 
     # run XML を処理
@@ -672,10 +625,10 @@ def process_submission_xml(
         for parsed in parse_run(xml_bytes, is_dra, submission):
             acc = parsed.get("accession")
             if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("public", "public", None, None, None, ""))
+                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
                 status = _normalize_status(info[0])
-                visibility = _normalize_visibility(info[1])
-                run_entry = create_run(parsed, status, visibility, info[2], info[3], info[4])
+                accessibility = _normalize_accessibility(info[1])
+                run_entry = create_run(parsed, status, accessibility, info[2], info[3], info[4])
                 results["run"].append(run_entry)
 
     # sample XML を処理
@@ -684,10 +637,10 @@ def process_submission_xml(
         for parsed in parse_sample(xml_bytes, is_dra, submission):
             acc = parsed.get("accession")
             if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("public", "public", None, None, None, ""))
+                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
                 status = _normalize_status(info[0])
-                visibility = _normalize_visibility(info[1])
-                sample_entry = create_sample(parsed, status, visibility, info[2], info[3], info[4])
+                accessibility = _normalize_accessibility(info[1])
+                sample_entry = create_sample(parsed, status, accessibility, info[2], info[3], info[4])
                 results["sample"].append(sample_entry)
 
     # analysis XML を処理
@@ -696,25 +649,13 @@ def process_submission_xml(
         for parsed in parse_analysis(xml_bytes, is_dra, submission):
             acc = parsed.get("accession")
             if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("public", "public", None, None, None, ""))
+                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
                 status = _normalize_status(info[0])
-                visibility = _normalize_visibility(info[1])
-                analysis_entry = create_analysis(parsed, status, visibility, info[2], info[3], info[4])
+                accessibility = _normalize_accessibility(info[1])
+                analysis_entry = create_analysis(parsed, status, accessibility, info[2], info[3], info[4])
                 results["analysis"].append(analysis_entry)
 
     return results
-
-
-# === Output ===
-
-
-def write_jsonl(output_path: Path, docs: List[Any]) -> None:
-    """モデルインスタンスのリストを JSONL ファイルに書き込む。"""
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as f:
-        for doc in docs:
-            f.write(doc.model_dump_json(by_alias=True))
-            f.write("\n")
 
 
 # === Main processing ===
@@ -891,22 +832,14 @@ def generate_sra_jsonl(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # DRA を処理
-    try:
-        dra_counts = process_source(config, "dra", output_dir, blacklist, full, since)
-        total_dra = sum(dra_counts.values())
-        log_info(f"DRA total: {total_dra} entries")
-    except FileNotFoundError as e:
-        log_warn(f"DRA tar not found, skipping: {e}")
-        dra_counts = {t: 0 for t in XML_TYPES}
+    dra_counts = process_source(config, "dra", output_dir, blacklist, full, since)
+    total_dra = sum(dra_counts.values())
+    log_info(f"DRA total: {total_dra} entries")
 
     # NCBI SRA を処理
-    try:
-        sra_counts = process_source(config, "sra", output_dir, blacklist, full, since)
-        total_sra = sum(sra_counts.values())
-        log_info(f"NCBI SRA total: {total_sra} entries")
-    except FileNotFoundError as e:
-        log_warn(f"NCBI SRA tar not found, skipping: {e}")
-        sra_counts = {t: 0 for t in XML_TYPES}
+    sra_counts = process_source(config, "sra", output_dir, blacklist, full, since)
+    total_sra = sum(sra_counts.values())
+    log_info(f"NCBI SRA total: {total_sra} entries")
 
     # 合計を出力
     for xml_type in XML_TYPES:

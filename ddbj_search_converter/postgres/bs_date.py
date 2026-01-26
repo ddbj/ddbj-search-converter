@@ -3,37 +3,16 @@ PostgreSQL から DDBJ BioSample の日付情報を取得するモジュール�
 
 DDBJ BioSample の日付は XML に含まれていないため、PostgreSQL から取得する必要がある。
 """
-from datetime import datetime, timezone
-from typing import Dict, Iterable, Optional, Tuple
-from urllib.parse import urlparse
+from typing import Dict, Iterable, Optional, Set, Tuple
 
 import psycopg2  # type: ignore[import-untyped]
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import log_debug
+from ddbj_search_converter.postgres.utils import (format_date,
+                                                  parse_postgres_url)
 
 POSTGRES_DB_NAME = "biosample"
-
-
-def _format_date(dt: Optional[datetime]) -> Optional[str]:
-    """datetime を ISO 8601 形式の文字列に変換する。"""
-    if dt is None:
-        return None
-    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def _parse_postgres_url(postgres_url: str) -> Tuple[str, int, str, str]:
-    """
-    PostgreSQL URL を解析して (host, port, user, password) を返す。
-
-    Format: postgresql://{username}:{password}@{host}:{port}
-    """
-    parsed = urlparse(postgres_url)
-    host = parsed.hostname or "localhost"
-    port = parsed.port or 5432
-    user = parsed.username or ""
-    password = parsed.password or ""
-    return host, port, user, password
 
 
 def fetch_bs_dates_bulk(
@@ -61,7 +40,7 @@ def fetch_bs_dates_bulk(
     if not accession_list:
         return {}
 
-    host, port, user, password = _parse_postgres_url(config.postgres_url)
+    host, port, user, password = parse_postgres_url(config.postgres_url)
     result: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]] = {}
 
     try:
@@ -96,9 +75,9 @@ def fetch_bs_dates_bulk(
                 for row in rows:
                     accession, create_date, modified_date, release_date = row
                     result[accession] = (
-                        _format_date(create_date),
-                        _format_date(modified_date),
-                        _format_date(release_date),
+                        format_date(create_date),
+                        format_date(modified_date),
+                        format_date(release_date),
                     )
         finally:
             conn.close()
@@ -113,7 +92,7 @@ def fetch_bs_dates_bulk(
 def fetch_bs_accessions_modified_since(
     config: Config,
     since: str,
-) -> set[str]:
+) -> Set[str]:
     """
     PostgreSQL から指定日時以降に更新された BioSample の accession を取得する。
 
@@ -135,8 +114,8 @@ def fetch_bs_accessions_modified_since(
         ) p ON s.submission_id = p.submission_id
         WHERE p.modified_date >= %s
     """
-    host, port, user, password = _parse_postgres_url(config.postgres_url)
-    result: set[str] = set()
+    host, port, user, password = parse_postgres_url(config.postgres_url)
+    result: Set[str] = set()
 
     try:
         conn = psycopg2.connect(

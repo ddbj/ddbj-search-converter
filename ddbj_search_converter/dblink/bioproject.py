@@ -35,8 +35,10 @@ from typing import Dict, List, Optional, Set, Tuple
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.logging.logger import (log_error, log_info,
-                                                  log_warn, run_logger)
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, log_warn,
+                                                  run_logger)
+from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir
 
 DEFAULT_PARALLEL_NUM = 32
@@ -227,8 +229,9 @@ def process_xml_files_parallel(
                              file=str(xml_path))
 
                 for acc in file_result.skipped_accessions:
-                    log_warn(f"skipping invalid bioproject: {acc}",
-                             accession=acc, file=str(xml_path))
+                    log_debug(f"skipping invalid bioproject: {acc}",
+                              accession=acc, file=str(xml_path),
+                              debug_category=DebugCategory.INVALID_BIOPROJECT_ID)
 
             except Exception as e:  # pylint: disable=broad-exception-caught
                 log_error(f"error processing {xml_path.name}: {e}",
@@ -323,27 +326,25 @@ def process_bioproject_xml(
 
     # NCBI files
     ncbi_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
-    if ncbi_files:
-        log_info(f"found {len(ncbi_files)} NCBI XML files")
-        umbrella, hum_id, geo = process_xml_files_parallel(ncbi_files, parallel_num)
-        umbrella_all.update(umbrella)
-        hum_id_all.update(hum_id)
-        geo_all.update(geo)
-        log_info(f"NCBI: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
-    else:
-        log_warn(f"no NCBI XML files found in {tmp_xml_dir}")
+    if not ncbi_files:
+        raise FileNotFoundError(f"no NCBI XML files found in {tmp_xml_dir}")
+    log_info(f"found {len(ncbi_files)} NCBI XML files")
+    umbrella, hum_id, geo = process_xml_files_parallel(ncbi_files, parallel_num)
+    umbrella_all.update(umbrella)
+    hum_id_all.update(hum_id)
+    geo_all.update(geo)
+    log_info(f"NCBI: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
 
     # DDBJ files
     ddbj_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
-    if ddbj_files:
-        log_info(f"found {len(ddbj_files)} DDBJ XML files")
-        umbrella, hum_id, geo = process_xml_files_parallel(ddbj_files, parallel_num)
-        umbrella_all.update(umbrella)
-        hum_id_all.update(hum_id)
-        geo_all.update(geo)
-        log_info(f"DDBJ: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
-    else:
-        log_warn(f"no DDBJ XML files found in {tmp_xml_dir}")
+    if not ddbj_files:
+        raise FileNotFoundError(f"no DDBJ XML files found in {tmp_xml_dir}")
+    log_info(f"found {len(ddbj_files)} DDBJ XML files")
+    umbrella, hum_id, geo = process_xml_files_parallel(ddbj_files, parallel_num)
+    umbrella_all.update(umbrella)
+    hum_id_all.update(hum_id)
+    geo_all.update(geo)
+    log_info(f"DDBJ: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
 
     return umbrella_all, hum_id_all, geo_all
 

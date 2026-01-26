@@ -186,7 +186,7 @@ class TestJgaEntryToJgaInstance:
         assert result.description == "Test Abstract"
         assert result.organism is not None
         assert result.organism.identifier == "9606"
-        assert result.visibility == "controlled-access"
+        assert result.accessibility == "controlled-access"
 
     def test_uses_accession_as_name_when_no_alias(self) -> None:
         """alias がない場合は accession を name とする。"""
@@ -215,8 +215,8 @@ class TestWriteJsonl:
             description=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="controlled-access",
+            status="live",
+            accessibility="controlled-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -245,8 +245,8 @@ class TestWriteJsonl:
             description=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="controlled-access",
+            status="live",
+            accessibility="controlled-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,
@@ -264,8 +264,8 @@ class TestWriteJsonl:
             description=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="controlled-access",
+            status="live",
+            accessibility="controlled-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,

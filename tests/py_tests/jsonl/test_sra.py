@@ -4,83 +4,92 @@ from typing import Any, Dict
 
 import pytest
 
-from ddbj_search_converter.jsonl.sra import (
-    _normalize_status,
-    _normalize_visibility,
-    create_analysis,
-    create_experiment,
-    create_run,
-    create_sample,
-    create_study,
-    create_submission,
-    load_sra_blacklist,
-    parse_analysis,
-    parse_args,
-    parse_experiment,
-    parse_run,
-    parse_sample,
-    parse_study,
-    parse_submission,
-    write_jsonl,
-)
-from ddbj_search_converter.schema import SraOrganism, SraSampleAttribute, SraSubmission
+from ddbj_search_converter.dblink.utils import load_sra_blacklist
+from ddbj_search_converter.jsonl.sra import (_normalize_accessibility,
+                                             _normalize_status,
+                                             create_analysis,
+                                             create_experiment, create_run,
+                                             create_sample, create_study,
+                                             create_submission, parse_analysis,
+                                             parse_args, parse_experiment,
+                                             parse_run, parse_sample,
+                                             parse_study, parse_submission)
+from ddbj_search_converter.jsonl.utils import write_jsonl
+from ddbj_search_converter.logging.logger import run_logger
+from ddbj_search_converter.schema import SRA, Organism
 
 
 class TestNormalizeStatus:
     """Tests for _normalize_status function."""
 
-    def test_returns_public_for_none(self) -> None:
-        """None の場合は public を返す。"""
-        assert _normalize_status(None) == "public"
+    def test_returns_live_for_none(self) -> None:
+        """None の場合は live を返す。"""
+        assert _normalize_status(None) == "live"
 
-    def test_returns_public_for_public(self) -> None:
-        """public の場合は public を返す。"""
-        assert _normalize_status("public") == "public"
+    def test_returns_live_for_public(self) -> None:
+        """public の場合は live を返す (DRA 互換)。"""
+        assert _normalize_status("public") == "live"
+
+    def test_returns_live_for_live(self) -> None:
+        """live の場合は live を返す。"""
+        assert _normalize_status("live") == "live"
 
     def test_returns_suppressed(self) -> None:
         """suppressed の場合は suppressed を返す。"""
         assert _normalize_status("suppressed") == "suppressed"
 
-    def test_returns_replaced(self) -> None:
-        """replaced の場合は replaced を返す。"""
-        assert _normalize_status("replaced") == "replaced"
+    def test_returns_withdrawn_for_replaced(self) -> None:
+        """replaced の場合は withdrawn を返す (旧値互換)。"""
+        assert _normalize_status("replaced") == "withdrawn"
 
-    def test_returns_killed(self) -> None:
-        """killed の場合は killed を返す。"""
-        assert _normalize_status("killed") == "killed"
+    def test_returns_withdrawn_for_killed(self) -> None:
+        """killed の場合は withdrawn を返す (旧値互換)。"""
+        assert _normalize_status("killed") == "withdrawn"
+
+    def test_returns_withdrawn_for_withdrawn(self) -> None:
+        """withdrawn の場合は withdrawn を返す。"""
+        assert _normalize_status("withdrawn") == "withdrawn"
 
     def test_returns_unpublished(self) -> None:
         """unpublished の場合は unpublished を返す。"""
         assert _normalize_status("unpublished") == "unpublished"
 
-    def test_returns_public_for_unknown(self) -> None:
-        """不明なステータスの場合は public を返す。"""
-        assert _normalize_status("unknown") == "public"
+    def test_returns_live_for_unknown(self) -> None:
+        """不明なステータスの場合は live を返す。"""
+        assert _normalize_status("unknown") == "live"
 
     def test_case_insensitive(self) -> None:
         """大文字小文字を区別しない。"""
-        assert _normalize_status("PUBLIC") == "public"
+        assert _normalize_status("PUBLIC") == "live"
         assert _normalize_status("Suppressed") == "suppressed"
 
 
-class TestNormalizeVisibility:
-    """Tests for _normalize_visibility function."""
+class TestNormalizeAccessibility:
+    """Tests for _normalize_accessibility function."""
 
-    def test_returns_public_for_none(self) -> None:
-        """None の場合は public を返す。"""
-        assert _normalize_visibility(None) == "public"
+    def test_returns_public_access_for_none(self) -> None:
+        """None の場合は public-access を返す。"""
+        assert _normalize_accessibility(None) == "public-access"
 
-    def test_returns_public(self) -> None:
-        """public の場合は public を返す。"""
-        assert _normalize_visibility("public") == "public"
+    def test_returns_public_access(self) -> None:
+        """public の場合は public-access を返す。"""
+        assert _normalize_accessibility("public") == "public-access"
 
     def test_returns_controlled_access(self) -> None:
         """controlled-access の場合は controlled-access を返す。"""
-        assert _normalize_visibility("controlled-access") == "controlled-access"
+        assert _normalize_accessibility("controlled-access") == "controlled-access"
 
-    def test_returns_public_for_unknown(self) -> None:
-        """不明な visibility の場合は public を返す。"""
-        assert _normalize_visibility("unknown") == "public"
+    def test_returns_controlled_access_for_controlled(self) -> None:
+        """controlled の場合は controlled-access を返す (BioSample 互換)。"""
+        assert _normalize_accessibility("controlled") == "controlled-access"
+
+    def test_returns_controlled_access_for_underscore(self) -> None:
+        """controlled_access の場合は controlled-access を返す (アンダースコア互換)。"""
+        assert _normalize_accessibility("controlled_access") == "controlled-access"
+
+    def test_returns_public_access_for_unknown(self) -> None:
+        """不明な accessibility の場合は public-access を返す。"""
+        assert _normalize_accessibility("unknown") == "public-access"
 
 
 class TestLoadSraBlacklist:
@@ -88,8 +97,9 @@ class TestLoadSraBlacklist:
 
     def test_returns_empty_for_missing_file(self, test_config):  # type: ignore
         """ファイルがない場合は空セットを返す。"""
-        result = load_sra_blacklist(test_config)
-        assert result == set()
+        with run_logger(config=test_config):
+            result = load_sra_blacklist(test_config)
+            assert result == set()
 
     def test_loads_blacklist(self, test_config):  # type: ignore
         """blacklist ファイルを読み込む。"""
@@ -98,8 +108,9 @@ class TestLoadSraBlacklist:
         blacklist_path = blacklist_dir / "blacklist.txt"
         blacklist_path.write_text("DRA000001\nDRA000002\n# comment\nDRA000003\n")
 
-        result = load_sra_blacklist(test_config)
-        assert result == {"DRA000001", "DRA000002", "DRA000003"}
+        with run_logger(config=test_config):
+            result = load_sra_blacklist(test_config)
+            assert result == {"DRA000001", "DRA000002", "DRA000003"}
 
 
 class TestParseSubmission:
@@ -273,9 +284,6 @@ class TestParseSample:
         assert results[0]["organism"] is not None
         assert results[0]["organism"].identifier == "645657"
         assert results[0]["organism"].name == "Bacillus subtilis"
-        assert len(results[0]["attributes"]) == 1
-        assert results[0]["attributes"][0].tag == "strain"
-        assert results[0]["attributes"][0].value == "BEST195"
 
 
 class TestParseAnalysis:
@@ -319,8 +327,8 @@ class TestCreateSubmission:
 
         result = create_submission(
             parsed,
-            status="public",
-            visibility="public",
+            status="live",
+            accessibility="public-access",
             date_created="2009-05-14",
             date_modified="2014-05-12",
             date_published="2010-03-26",
@@ -329,15 +337,13 @@ class TestCreateSubmission:
         assert result.identifier == "DRA000001"
         assert result.title == "Test Submission"
         assert result.description == "Test comment"
-        assert result.centerName == "KEIO"
-        assert result.labName == "Lab"
-        assert result.status == "public"
-        assert result.visibility == "public"
+        assert result.status == "live"
+        assert result.accessibility == "public-access"
         assert result.dateCreated == "2009-05-14"
         assert result.dateModified == "2014-05-12"
         assert result.datePublished == "2010-03-26"
         assert result.type_ == "sra-submission"
-        assert result.isPartOf == "SRA"
+        assert result.isPartOf == "sra"
 
 
 class TestCreateStudy:
@@ -356,8 +362,8 @@ class TestCreateStudy:
 
         result = create_study(
             parsed,
-            status="public",
-            visibility="public",
+            status="live",
+            accessibility="public-access",
             date_created=None,
             date_modified=None,
             date_published=None,
@@ -365,7 +371,6 @@ class TestCreateStudy:
 
         assert result.identifier == "DRP000001"
         assert result.title == "Study Title"
-        assert result.studyType == "Whole Genome Sequencing"
         assert result.type_ == "sra-study"
 
 
@@ -374,22 +379,22 @@ class TestWriteJsonl:
 
     def test_writes_jsonl(self, tmp_path: Path) -> None:
         """JSONL ファイルを書き込む。"""
-        submission = SraSubmission(
+        submission = SRA(
             identifier="DRA000001",
             properties={},
             distribution=[],
-            isPartOf="SRA",
+            isPartOf="sra",
             type="sra-submission",
             name=None,
             url="https://example.com",
+            organism=None,
             title="Test",
             description=None,
-            centerName="CENTER",
-            labName=None,
             dbXref=[],
             sameAs=[],
-            status="public",
-            visibility="public",
+            downloadUrl=[],
+            status="live",
+            accessibility="public-access",
             dateCreated=None,
             dateModified=None,
             datePublished=None,

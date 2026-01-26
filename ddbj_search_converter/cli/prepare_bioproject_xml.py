@@ -31,9 +31,13 @@ def process_bioproject_xml(
     prefix: str,
     batch_size: int,
 ) -> List[Path]:
+    """Process BioProject XML file.
+
+    Raises:
+        FileNotFoundError: If XML file is not found.
+    """
     if not xml_path.exists():
-        log_warn(f"file not found, skipping: {xml_path}", file=str(xml_path))
-        return []
+        raise FileNotFoundError(f"file not found: {xml_path}")
 
     log_info(f"splitting {xml_path} with batch_size={batch_size}", file=str(xml_path))
     output_files = split_xml(
