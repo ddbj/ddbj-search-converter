@@ -19,7 +19,9 @@ from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
                                                    parse_sdrf_file)
 from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
                                                 load_blacklist)
-from ddbj_search_converter.logging.logger import log_info, run_logger
+from ddbj_search_converter.id_patterns import is_valid_accession
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
+from ddbj_search_converter.logging.schema import DebugCategory
 
 
 def iterate_gea_dirs(base_path: Path) -> Iterator[Path]:
@@ -74,10 +76,28 @@ def main() -> None:
             dir_count += 1
 
             if bp_id:
-                gea_to_bp.add((gea_id, bp_id))
+                if is_valid_accession(bp_id, "bioproject"):
+                    gea_to_bp.add((gea_id, bp_id))
+                else:
+                    log_debug(
+                        f"skipping invalid bioproject: {bp_id}",
+                        accession=bp_id,
+                        file=str(gea_dir),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="gea",
+                    )
 
             for bs_id in bs_ids:
-                gea_to_bs.add((gea_id, bs_id))
+                if is_valid_accession(bs_id, "biosample"):
+                    gea_to_bs.add((gea_id, bs_id))
+                else:
+                    log_debug(
+                        f"skipping invalid biosample: {bs_id}",
+                        accession=bs_id,
+                        file=str(gea_dir),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="gea",
+                    )
 
         log_info(f"processed {dir_count} GEA directories")
         log_info(f"extracted {len(gea_to_bp)} GEA -> BioProject relations")

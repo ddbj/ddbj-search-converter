@@ -9,15 +9,17 @@ fi
 BASEPATH="$1"
 
 # DBLink output files (directory/filename)
+# Keep in sync with EXPORT_RELATIONS in ddbj_search_converter/cli/dump_dblink_files.py
 FILES=(
     "assembly_genome-bp/assembly_genome2bp.tsv"
     "assembly_genome-bs/assembly_genome2bs.tsv"
     "assembly_genome-insdc/assembly_genome2insdc.tsv"
     "insdc_master-bioproject/insdc_master2bioproject.tsv"
     "insdc_master-biosample/insdc_master2biosample.tsv"
-    "bioproject-biosample/bioproject2biosample.tsv"
     "biosample-bioproject/biosample2bioproject.tsv"
+    "bioproject-biosample/bioproject2biosample.tsv"
     "bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv"
+    "bioproject-humID/bioproject2humID.tsv"
     "gea-bioproject/gea2bioproject.tsv"
     "gea-biosample/gea2biosample.tsv"
     "mtb2bp/mtb_id_bioproject.tsv"
@@ -35,9 +37,11 @@ for file in "${FILES[@]}"; do
 
     if [ -f "$filepath" ]; then
         head_content=$(head -1 "$filepath" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g')
+        tail_content=$(tail -1 "$filepath" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g')
         line_count=$(wc -l < "$filepath")
     else
         head_content="FILE_NOT_FOUND"
+        tail_content="FILE_NOT_FOUND"
         line_count=0
     fi
 
@@ -47,7 +51,7 @@ for file in "${FILES[@]}"; do
         echo ","
     fi
 
-    printf '  "%s": {"head-1": "%s", "wc-l": %d}' "$file" "$head_content" "$line_count"
+    printf '  "%s": {"head-1": "%s", "tail-1": "%s", "wc-l": %d}' "$file" "$head_content" "$tail_content" "$line_count"
 done
 echo ""
 echo "}"

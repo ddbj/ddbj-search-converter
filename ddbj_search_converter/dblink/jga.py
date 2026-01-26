@@ -34,7 +34,10 @@ from ddbj_search_converter.config import (JGA_ANALYSIS_STUDY_CSV,
                                           JGA_POLICY_DAC_CSV, JGA_STUDY_XML,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
+from ddbj_search_converter.id_patterns import is_valid_accession
+from ddbj_search_converter.logging.logger import (log_debug, log_info,
+                                                  log_warn, run_logger)
+from ddbj_search_converter.logging.schema import DebugCategory
 
 # === CSV relation operations ===
 
@@ -201,21 +204,50 @@ def process_jga_study_xml() -> Tuple[IdPairs, IdPairs]:
     study_to_hum_id: IdPairs = set()
     study_to_pubmed_id: IdPairs = set()
 
+    xml_file = str(JGA_STUDY_XML)
     studies = load_jga_study_xml()
     for study in studies:
         accession = study.get("accession")
         if not accession:
             continue
 
+        if not is_valid_accession(accession, "jga-study"):
+            log_debug(
+                f"skipping invalid jga-study: {accession}",
+                accession=accession,
+                file=xml_file,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source="jga",
+            )
+            continue
+
         # Extract hum-id
         hum_id = extract_hum_id(study)
         if hum_id:
-            study_to_hum_id.add((accession, hum_id))
+            if is_valid_accession(hum_id, "hum-id"):
+                study_to_hum_id.add((accession, hum_id))
+            else:
+                log_debug(
+                    f"skipping invalid hum-id: {hum_id}",
+                    accession=hum_id,
+                    file=xml_file,
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="jga",
+                )
 
         # Extract pubmed-ids
         pubmed_ids = extract_pubmed_ids(study)
         for pub_id in pubmed_ids:
-            study_to_pubmed_id.add((accession, pub_id))
+            if is_valid_accession(pub_id, "pubmed-id"):
+                study_to_pubmed_id.add((accession, pub_id))
+            else:
+                log_debug(
+                    f"skipping invalid pubmed-id: {pub_id}",
+                    accession=pub_id,
+                    file=xml_file,
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="jga",
+                )
 
     return study_to_hum_id, study_to_pubmed_id
 

@@ -1,38 +1,12 @@
 """JSONL 生成用の共通ユーティリティ関数。"""
-import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Pattern
+from typing import Any, Dict, List, Optional
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import (AccessionType,
                                              get_related_entities_bulk)
+from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Xref, XrefType
-
-ID_PATTERN_MAP: Dict[XrefType, Pattern[str]] = {
-    "biosample": re.compile(r"^SAM[NED](\w)?\d+$"),
-    "bioproject": re.compile(r"^PRJ[DEN][A-Z]\d+$"),
-    "umbrella-bioproject": re.compile(r"^PRJ[DEN][A-Z]\d+$"),  # bioproject と同じパターン
-    "sra-submission": re.compile(r"[SDE]RA\d+"),
-    "sra-study": re.compile(r"[SDE]RP\d+"),
-    "sra-experiment": re.compile(r"[SDE]RX\d+"),
-    "sra-run": re.compile(r"[SDE]RR\d+"),
-    "sra-sample": re.compile(r"[SDE]RS\d+"),
-    "sra-analysis": re.compile(r"[SDE]RZ\d+"),
-    "jga-study": re.compile(r"^JGAS\d+$"),
-    "jga-dataset": re.compile(r"^JGAD\d+$"),
-    "jga-dac": re.compile(r"^JGAC\d+$"),
-    "jga-policy": re.compile(r"^JGAP\d+$"),
-    "gea": re.compile(r"^E-GEAD-\d+$"),
-    "geo": re.compile(r"^GSE\d+$"),
-    "insdc-assembly": re.compile(r"^GCA_[0-9]{9}(\.[0-9]+)?$"),
-    "insdc-master": re.compile(
-        r"^([A-Z]0{5}|[A-Z]{2}0{6}|[A-Z]{4,6}0{8,10}|[A-J][A-Z]{2}0{5})$"
-    ),
-    "metabobank": re.compile(r"^MTB"),
-    "hum-id": re.compile(r"^hum\d+$"),
-    "pubmed-id": re.compile(r"^\d+$"),  # pubmed-id は数字のみ (to_xref では最後にフォールバック)
-    "taxonomy": re.compile(r"^\d+"),
-}
 
 URL_TEMPLATE: Dict[XrefType, str] = {
     "biosample": "https://ddbj.nig.ac.jp/search/entry/biosample/{id}",

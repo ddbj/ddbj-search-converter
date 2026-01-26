@@ -25,7 +25,10 @@ from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
                                                    parse_sdrf_file)
 from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
                                                 load_blacklist)
-from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
+from ddbj_search_converter.id_patterns import is_valid_accession
+from ddbj_search_converter.logging.logger import (log_debug, log_info,
+                                                  log_warn, run_logger)
+from ddbj_search_converter.logging.schema import DebugCategory
 
 
 def iterate_metabobank_dirs(base_path: Path) -> Iterator[Path]:
@@ -60,7 +63,17 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
                 continue
             parts = line.split("\t")
             if len(parts) >= 2:
-                mtb_to_bp.add((parts[0], parts[1]))
+                bp_id = parts[1]
+                if is_valid_accession(bp_id, "bioproject"):
+                    mtb_to_bp.add((parts[0], bp_id))
+                else:
+                    log_debug(
+                        f"skipping invalid bioproject: {bp_id}",
+                        accession=bp_id,
+                        file=str(bp_preserve_path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="metabobank-preserve",
+                    )
     log_info(f"loaded {len(mtb_to_bp)} MetaboBank -> BioProject from preserve",
              file=str(bp_preserve_path))
 
@@ -75,7 +88,17 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
                 continue
             parts = line.split("\t")
             if len(parts) >= 2:
-                mtb_to_bs.add((parts[0], parts[1]))
+                bs_id = parts[1]
+                if is_valid_accession(bs_id, "biosample"):
+                    mtb_to_bs.add((parts[0], bs_id))
+                else:
+                    log_debug(
+                        f"skipping invalid biosample: {bs_id}",
+                        accession=bs_id,
+                        file=str(bs_preserve_path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="metabobank-preserve",
+                    )
     log_info(f"loaded {len(mtb_to_bs)} MetaboBank -> BioSample from preserve",
              file=str(bs_preserve_path))
 
@@ -119,10 +142,28 @@ def main() -> None:
             dir_count += 1
 
             if bp_id:
-                mtb_to_bp.add((mtb_id, bp_id))
+                if is_valid_accession(bp_id, "bioproject"):
+                    mtb_to_bp.add((mtb_id, bp_id))
+                else:
+                    log_debug(
+                        f"skipping invalid bioproject: {bp_id}",
+                        accession=bp_id,
+                        file=str(mtb_dir),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="metabobank",
+                    )
 
             for bs_id in bs_ids:
-                mtb_to_bs.add((mtb_id, bs_id))
+                if is_valid_accession(bs_id, "biosample"):
+                    mtb_to_bs.add((mtb_id, bs_id))
+                else:
+                    log_debug(
+                        f"skipping invalid biosample: {bs_id}",
+                        accession=bs_id,
+                        file=str(mtb_dir),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="metabobank",
+                    )
 
         log_info(f"processed {dir_count} MetaboBank directories")
         log_info(f"extracted {len(mtb_to_bp)} MetaboBank -> BioProject from IDF")

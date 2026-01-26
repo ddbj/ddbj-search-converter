@@ -28,8 +28,7 @@ class DebugCategory(str, Enum):
     CONFIG = "config"
 
     # ID pattern mismatch
-    INVALID_BIOSAMPLE_ID = "invalid_biosample_id"
-    INVALID_BIOPROJECT_ID = "invalid_bioproject_id"
+    INVALID_ACCESSION_ID = "invalid_accession_id"
     INVALID_GCF_FORMAT = "invalid_gcf_format"
     INVALID_WGS_RANGE = "invalid_wgs_range"
 

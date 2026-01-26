@@ -29,14 +29,17 @@ dump_dblink_files CLI コマンドで出力する。
 出力:
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
+from typing import Dict
+
 import httpx
 
 from ddbj_search_converter.config import (ASSEMBLY_SUMMARY_URL, TRAD_BASE_PATH,
                                           get_config)
-from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 filter_pairs_by_blacklist,
                                                 load_blacklist)
+from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
                                                   log_warn, run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
@@ -77,6 +80,13 @@ def process_assembly_summary_file(
     """cols: [0]=assembly, [1]=bioproject, [2]=biosample, [3]=wgs_master"""
     log_info("streaming assembly_summary_genbank.txt", url=ASSEMBLY_SUMMARY_URL)
 
+    KEY_TO_TYPE: Dict[str, AccessionType] = {
+        "asm": "insdc-assembly",
+        "bp": "bioproject",
+        "bs": "biosample",
+        "master": "insdc-master",
+    }
+
     relations = [
         ("asm", "bp", assembly_to_bp),
         ("asm", "bs", assembly_to_bs),
@@ -111,26 +121,27 @@ def process_assembly_summary_file(
                     if left_val == "na" or right_val == "na":
                         continue
 
-                    # bs_to_bp の場合は SAM/PRJ チェック
-                    if target_set is bs_to_bp:
-                        if not left_val.startswith("SAM"):
-                            log_debug(
-                                f"skipping invalid biosample: {left_val}",
-                                accession=left_val,
-                                file="assembly_summary_genbank.txt",
-                                debug_category=DebugCategory.INVALID_BIOSAMPLE_ID,
-                                source="assembly",
-                            )
-                            continue
-                        if not right_val.startswith("PRJ"):
-                            log_debug(
-                                f"skipping invalid bioproject: {right_val}",
-                                accession=right_val,
-                                file="assembly_summary_genbank.txt",
-                                debug_category=DebugCategory.INVALID_BIOPROJECT_ID,
-                                source="assembly",
-                            )
-                            continue
+                    left_type = KEY_TO_TYPE[left]
+                    right_type = KEY_TO_TYPE[right]
+
+                    if not is_valid_accession(left_val, left_type):
+                        log_debug(
+                            f"skipping invalid {left_type}: {left_val}",
+                            accession=left_val,
+                            file="assembly_summary_genbank.txt",
+                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                            source="assembly",
+                        )
+                        continue
+                    if not is_valid_accession(right_val, right_type):
+                        log_debug(
+                            f"skipping invalid {right_type}: {right_val}",
+                            accession=right_val,
+                            file="assembly_summary_genbank.txt",
+                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                            source="assembly",
+                        )
+                        continue
 
                     target_set.add((left_val, right_val))
 
@@ -158,10 +169,38 @@ def process_trad_files(
                 bp = cols[9]
                 bs = cols[10]
 
+                if not is_valid_accession(master, "insdc-master"):
+                    log_debug(
+                        f"skipping invalid insdc-master: {master}",
+                        accession=master,
+                        file=str(path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="trad",
+                    )
+                    continue
+
                 if bp:
-                    master_to_bp.add((master, bp))
+                    if is_valid_accession(bp, "bioproject"):
+                        master_to_bp.add((master, bp))
+                    else:
+                        log_debug(
+                            f"skipping invalid bioproject: {bp}",
+                            accession=bp,
+                            file=str(path),
+                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                            source="trad",
+                        )
                 if bs:
-                    master_to_bs.add((master, bs))
+                    if is_valid_accession(bs, "biosample"):
+                        master_to_bs.add((master, bs))
+                    else:
+                        log_debug(
+                            f"skipping invalid biosample: {bs}",
+                            accession=bs,
+                            file=str(path),
+                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                            source="trad",
+                        )
 
 
 def main() -> None:

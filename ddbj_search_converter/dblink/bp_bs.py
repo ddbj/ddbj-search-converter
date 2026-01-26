@@ -45,6 +45,7 @@ from ddbj_search_converter.config import (BP_BS_PRESERVED_REL_PATH,
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 load_blacklist)
+from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, log_warn,
                                                   run_logger)
@@ -79,7 +80,7 @@ def process_ncbi_xml_file(xml_path: Path) -> XmlProcessResult:
 
             if event == "start" and tag == "BioSample":
                 current_bs = elem.attrib.get("accession")
-                current_bs_is_valid = bool(current_bs and current_bs.startswith("SAM"))
+                current_bs_is_valid = bool(current_bs and is_valid_accession(current_bs, "biosample"))
                 if current_bs and not current_bs_is_valid:
                     skipped.append(current_bs)
 
@@ -93,12 +94,12 @@ def process_ncbi_xml_file(xml_path: Path) -> XmlProcessResult:
                     bp = elem.attrib.get("label") or (elem.text or "").strip()
                     if bp and not bp.startswith("PRJ"):
                         bp = f"PRJNA{bp}"
-                    if bp.startswith("PRJ"):
+                    if bp and is_valid_accession(bp, "bioproject"):
                         results.append((current_bs, bp))  # type: ignore
 
                 elif tag == "Attribute" and elem.attrib.get("attribute_name") == "bioproject_accession":
                     bp = (elem.text or "").strip()
-                    if bp.startswith("PRJ"):
+                    if bp and is_valid_accession(bp, "bioproject"):
                         results.append((current_bs, bp))  # type: ignore
 
                 elem.clear()
@@ -139,7 +140,7 @@ def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
             elif event == "end" and tag == "Id" and in_ids:
                 if elem.attrib.get("namespace") == "BioSample":
                     current_bs = (elem.text or "").strip()
-                    current_bs_is_valid = bool(current_bs and current_bs.startswith("SAM"))
+                    current_bs_is_valid = bool(current_bs and is_valid_accession(current_bs, "biosample"))
                     if current_bs and not current_bs_is_valid:
                         skipped.append(current_bs)
                 elem.clear()
@@ -154,7 +155,7 @@ def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
                 # DDBJ uses "bioproject_id", NCBI uses "bioproject_accession"
                 if tag == "Attribute" and attr_name in ("bioproject_id", "bioproject_accession"):
                     bp = (elem.text or "").strip()
-                    if bp.startswith("PRJ"):
+                    if bp and is_valid_accession(bp, "bioproject"):
                         results.append((current_bs, bp))  # type: ignore
                 elem.clear()
 
@@ -189,7 +190,7 @@ def process_xml_files_parallel(
                          file=str(xml_path))
                 for acc in skipped:
                     log_debug(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path),
-                              debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source=source)
+                              debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
@@ -238,13 +239,13 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
         # SRA_Accessions.tab contains invalid BioSample IDs (numeric internal IDs)
         if not bs or not bp:
             continue
-        if not bs.startswith("SAM"):
+        if not is_valid_accession(bs, "biosample"):
             log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(sra_db_path),
-                      debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="sra")
+                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source="sra")
             continue
-        if not bp.startswith("PRJ"):
+        if not is_valid_accession(bp, "bioproject"):
             log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(sra_db_path),
-                      debug_category=DebugCategory.INVALID_BIOPROJECT_ID, source="sra")
+                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source="sra")
             continue
         bs_to_bp.add((bs, bp))
 
@@ -253,13 +254,13 @@ def process_sra_dra_accessions(config: Config, bs_to_bp: IdPairs) -> None:
     for bp, bs in iter_bp_bs_relations(config, source="dra"):
         if not bs or not bp:
             continue
-        if not bs.startswith("SAM"):
+        if not is_valid_accession(bs, "biosample"):
             log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(dra_db_path),
-                      debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="dra")
+                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source="dra")
             continue
-        if not bp.startswith("PRJ"):
+        if not is_valid_accession(bp, "bioproject"):
             log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(dra_db_path),
-                      debug_category=DebugCategory.INVALID_BIOPROJECT_ID, source="dra")
+                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source="dra")
             continue
         bs_to_bp.add((bs, bp))
 
@@ -287,13 +288,13 @@ def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
             parts = line.split("\t")
             if len(parts) >= 2:
                 bs, bp = parts[0], parts[1]
-                if not bs.startswith("SAM"):
+                if not is_valid_accession(bs, "biosample"):
                     log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(preserved_path),
-                              debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="preserved")
+                              debug_category=DebugCategory.INVALID_ACCESSION_ID, source="preserved")
                     continue
-                if not bp.startswith("PRJ"):
+                if not is_valid_accession(bp, "bioproject"):
                     log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(preserved_path),
-                              debug_category=DebugCategory.INVALID_BIOPROJECT_ID, source="preserved")
+                              debug_category=DebugCategory.INVALID_ACCESSION_ID, source="preserved")
                     continue
                 bs_to_bp.add((bs, bp))
 
