@@ -139,15 +139,15 @@ def download_full_tar_gz(config: Config, date_str: str) -> None:
 
     tar_gz_path = tar_dir.joinpath(f"ncbi_full_{date_str}.tar.gz")
 
-    log_info(f"Downloading NCBI Full tar.gz: {url}")
-    log_info(f"Output: {tar_path}")
+    log_info(f"downloading ncbi full tar.gz: {url}")
+    log_info(f"output: {tar_path}")
 
     try:
         # Download with aria2c
         _download_with_aria2c(url, tar_gz_path)
 
         # Decompress with pigz
-        log_info("Decompressing with pigz...")
+        log_info("decompressing with pigz...")
         cmd = f'pigz -d -c "{tar_gz_path}" > "{tar_path}"'
         subprocess.run(cmd, shell=True, check=True)
     finally:
@@ -157,7 +157,7 @@ def download_full_tar_gz(config: Config, date_str: str) -> None:
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)
     last_merged_path.write_text(date_str)
-    log_info(f"Updated last_merged: {date_str}")
+    log_info(f"updated last_merged: {date_str}")
 
 
 def append_daily_tar_gz(config: Config, date_str: str) -> bool:
@@ -176,13 +176,13 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
         with httpx.Client(timeout=10) as client:
             response = client.head(url)
             if response.status_code != 200:
-                log_info(f"Daily tar.gz not found: {url}")
+                log_info(f"daily tar.gz not found: {url}")
                 return False
     except httpx.RequestError as e:
-        log_info(f"Failed to check daily tar.gz: {e}")
+        log_info(f"failed to check daily tar.gz: {e}")
         return False
 
-    log_info(f"Appending daily tar.gz: {url}")
+    log_info(f"appending daily tar.gz: {url}")
 
     tar_gz_path = tar_path.parent.joinpath(f"daily_{date_str}.tar.gz")
     tmp_tar_path = tar_path.parent.joinpath(f"daily_{date_str}.tar")
@@ -206,7 +206,7 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)
     last_merged_path.write_text(date_str)
-    log_info(f"Updated last_merged: {date_str}")
+    log_info(f"updated last_merged: {date_str}")
 
     return True
 
@@ -228,7 +228,7 @@ def _check_for_newer_full(config: Config) -> Optional[str]:
             with httpx.Client(timeout=10) as client:
                 response = client.head(url)
                 if response.status_code == 200:
-                    log_info(f"Found newer Full tar.gz: {date_str}")
+                    log_info(f"found newer full tar.gz: {date_str}")
                     return date_str
         except httpx.RequestError:
             pass
@@ -267,20 +267,20 @@ def sync_ncbi_tar(config: Config, force_full: bool = False) -> None:
         # Append dailies from Full date to today
         synced_count = _append_daily_updates(config)
         if synced_count > 0:
-            log_info(f"Appended {synced_count} daily tar.gz files after Full")
+            log_info(f"appended {synced_count} daily tar.gz files after full")
         return
 
     # Check if a newer Full tar.gz is available
     newer_full_date = _check_for_newer_full(config)
     if newer_full_date is not None:
-        log_info(f"Downloading newer Full tar.gz: {newer_full_date}")
+        log_info(f"downloading newer full tar.gz: {newer_full_date}")
         download_full_tar_gz(config, newer_full_date)
         # Append dailies from Full date to today
         synced_count = _append_daily_updates(config)
         if synced_count > 0:
-            log_info(f"Appended {synced_count} daily tar.gz files after Full")
+            log_info(f"appended {synced_count} daily tar.gz files after full")
         return
 
     # Append daily tar.gz files
     synced_count = _append_daily_updates(config)
-    log_info(f"Synced {synced_count} daily tar.gz files")
+    log_info(f"synced {synced_count} daily tar.gz files")

@@ -146,7 +146,7 @@ def build_dra_tar(config: Config) -> None:
     tar_dir = tar_path.parent
     tar_dir.mkdir(parents=True, exist_ok=True)
 
-    log_info(f"Building DRA tar: {tar_path}")
+    log_info(f"building dra tar: {tar_path}")
 
     # Remove existing tar file
     if tar_path.exists():
@@ -157,7 +157,7 @@ def build_dra_tar(config: Config) -> None:
     total_files = 0
     submission_count = 0
 
-    log_info("Collecting DRA XML files...")
+    log_info("collecting dra xml files...")
     with open(file_list_path, "w", encoding="utf-8") as f:
         for submission in iter_all_dra_submissions(config):
             files = collect_xml_files_for_submission(submission)
@@ -167,9 +167,9 @@ def build_dra_tar(config: Config) -> None:
                 for src_path in files:
                     f.write(f"{src_path}\n")
                 if submission_count % 10000 == 0:
-                    log_info(f"Collected {submission_count} submissions ({total_files} files)")
+                    log_info(f"collected {submission_count} submissions ({total_files} files)")
 
-    log_info(f"Collected {submission_count} submissions ({total_files} files)")
+    log_info(f"collected {submission_count} submissions ({total_files} files)")
 
     if total_files == 0:
         file_list_path.unlink(missing_ok=True)
@@ -178,7 +178,7 @@ def build_dra_tar(config: Config) -> None:
     # Build tar using tar command with --transform
     # Transform: /usr/local/resources/dra/fastq/DRA000/DRA000001/DRA000001.submission.xml
     #         -> DRA000001/DRA000001.submission.xml
-    log_info("Creating tar archive...")
+    log_info("creating tar archive...")
     transform_pattern = r"s|.*/fastq/[^/]*/\([^/]*\)/|\1/|"
     cmd = f'tar -cf "{tar_path}" --transform "{transform_pattern}" -T "{file_list_path}"'
     subprocess.run(cmd, shell=True, check=True)
@@ -186,12 +186,12 @@ def build_dra_tar(config: Config) -> None:
     # Cleanup
     file_list_path.unlink(missing_ok=True)
 
-    log_info(f"DRA tar built: {submission_count} submissions, {total_files} files")
+    log_info(f"dra tar built: {submission_count} submissions, {total_files} files")
 
     # Update last_updated file
     last_updated_path = get_dra_last_updated_path(config)
     last_updated_path.write_text(TODAY.strftime("%Y%m%d"))
-    log_info(f"Updated dra_last_updated: {TODAY.strftime('%Y%m%d')}")
+    log_info(f"updated dra_last_updated: {TODAY.strftime('%Y%m%d')}")
 
 
 def sync_dra_tar(config: Config) -> None:
@@ -204,7 +204,7 @@ def sync_dra_tar(config: Config) -> None:
     last_updated_path = get_dra_last_updated_path(config)
 
     if not tar_path.exists():
-        log_info("DRA tar does not exist, building from scratch")
+        log_info("dra tar does not exist, building from scratch")
         build_dra_tar(config)
         return
 
@@ -218,11 +218,11 @@ def sync_dra_tar(config: Config) -> None:
         )
     else:
         # If no last_updated file, rebuild from scratch
-        log_info("No dra_last_updated file found, building from scratch")
+        log_info("no dra_last_updated file found, building from scratch")
         build_dra_tar(config)
         return
 
-    log_info(f"Syncing DRA tar since: {last_updated}")
+    log_info(f"syncing dra tar since: {last_updated}")
 
     # Collect updated files
     tar_dir = tar_path.parent
@@ -240,13 +240,13 @@ def sync_dra_tar(config: Config) -> None:
                     f.write(f"{src_path}\n")
 
     if total_files == 0:
-        log_info("No updated DRA submissions found")
+        log_info("no updated dra submissions found")
         file_list_path.unlink(missing_ok=True)
         # Update last_updated file
         last_updated_path.write_text(TODAY.strftime("%Y%m%d"))
         return
 
-    log_info(f"Found {submission_count} updated submissions ({total_files} files)")
+    log_info(f"found {submission_count} updated submissions ({total_files} files)")
 
     # Create temp tar with updated files
     tmp_tar_path = tar_dir.joinpath("dra_update.tar")
@@ -262,8 +262,8 @@ def sync_dra_tar(config: Config) -> None:
     file_list_path.unlink(missing_ok=True)
     tmp_tar_path.unlink(missing_ok=True)
 
-    log_info(f"DRA tar synced: {submission_count} submissions, {total_files} files")
+    log_info(f"dra tar synced: {submission_count} submissions, {total_files} files")
 
     # Update last_updated file
     last_updated_path.write_text(TODAY.strftime("%Y%m%d"))
-    log_info(f"Updated dra_last_updated: {TODAY.strftime('%Y%m%d')}")
+    log_info(f"updated dra_last_updated: {TODAY.strftime('%Y%m%d')}")

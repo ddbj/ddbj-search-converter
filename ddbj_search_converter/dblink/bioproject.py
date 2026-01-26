@@ -251,7 +251,7 @@ def load_bp_blacklist(config: Config) -> Set[str]:
         log_info(f"loaded {len(bp_blacklist)} BioProject blacklist entries",
                  file=str(bp_blacklist_path))
     else:
-        log_warn(f"BioProject blacklist not found, skipping: {bp_blacklist_path}",
+        log_warn(f"bioproject blacklist not found, skipping: {bp_blacklist_path}",
                  file=str(bp_blacklist_path))
 
     return bp_blacklist
@@ -333,7 +333,7 @@ def process_bioproject_xml(
     umbrella_all.update(umbrella)
     hum_id_all.update(hum_id)
     geo_all.update(geo)
-    log_info(f"NCBI: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
+    log_info(f"ncbi: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
 
     # DDBJ files
     ddbj_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
@@ -344,7 +344,7 @@ def process_bioproject_xml(
     umbrella_all.update(umbrella)
     hum_id_all.update(hum_id)
     geo_all.update(geo)
-    log_info(f"DDBJ: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
+    log_info(f"ddbj: {len(umbrella)} umbrella, {len(hum_id)} hum-id, {len(geo)} geo relations")
 
     return umbrella_all, hum_id_all, geo_all
 

@@ -22,8 +22,8 @@ from ddbj_search_converter.es.index import (ALL_INDEXES, IndexGroup, IndexName,
                                             create_index, delete_index,
                                             get_indexes_for_group,
                                             list_indexes)
-from ddbj_search_converter.logging import (log_debug, log_error, log_info,
-                                           run_logger)
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, run_logger)
 
 # === Create Index ===
 
@@ -64,16 +64,16 @@ def main_create_index() -> None:
     config, index, skip_existing = parse_create_index_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info("Creating Elasticsearch indexes", index=index)
+        log_info("creating elasticsearch indexes", index=index)
 
         try:
             created = create_index(config, index, skip_existing=skip_existing)  # type: ignore
             if created:
-                log_info("Created indexes", indexes=created)
+                log_info("created indexes", indexes=created)
             else:
                 log_info("No indexes created (all already exist)")
         except Exception as e:
-            log_error("Failed to create index", error=str(e))
+            log_error("failed to create index", error=e)
             sys.exit(1)
 
 
@@ -124,22 +124,22 @@ def main_delete_index() -> None:
 
         # Show warning for destructive operation
         indexes_to_delete = get_indexes_for_group(index)  # type: ignore
-        log_info("Indexes to delete", indexes=indexes_to_delete)
+        log_info("indexes to delete", indexes=indexes_to_delete)
 
         if not force:
             confirm = input(f"Are you sure you want to delete {len(indexes_to_delete)} index(es)? [y/N]: ")
             if confirm.lower() != "y":
-                log_info("Operation cancelled")
+                log_info("operation cancelled")
                 return
 
         try:
             deleted = delete_index(config, index, skip_missing=skip_missing)  # type: ignore
             if deleted:
-                log_info("Deleted indexes", indexes=deleted)
+                log_info("deleted indexes", indexes=deleted)
             else:
                 log_info("No indexes deleted (none exist)")
         except Exception as e:
-            log_error("Failed to delete index", error=str(e))
+            log_error("failed to delete index", error=e)
             sys.exit(1)
 
 
@@ -199,7 +199,7 @@ def main_bulk_insert() -> None:
     config, index, jsonl_dir, jsonl_files, batch_size = parse_bulk_insert_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info("Bulk inserting into Elasticsearch", index=index)
+        log_info("bulk inserting into elasticsearch", index=index)
 
         try:
             if jsonl_files:
@@ -230,7 +230,7 @@ def main_bulk_insert() -> None:
                 sys.exit(1)
 
         except Exception as e:
-            log_error("Failed to bulk insert", error=str(e))
+            log_error("failed to bulk insert", error=e)
             sys.exit(1)
 
 
@@ -280,5 +280,5 @@ def main_list_indexes() -> None:
             print("-" * 50)
 
         except Exception as e:
-            log_error("Failed to list indexes", error=str(e))
+            log_error("failed to list indexes", error=e)
             sys.exit(1)

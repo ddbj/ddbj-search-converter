@@ -6,7 +6,7 @@ DRA (DDBJ) と NCBI SRA の XML を tar ファイルから読み込み、
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, cast
 
 import xmltodict
 
@@ -15,9 +15,12 @@ from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
                                           read_last_run, write_last_run)
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
-from ddbj_search_converter.schema import SRA, Distribution, Organism, XrefType
+from ddbj_search_converter.logging.logger import (log_debug, log_error,
+                                                  log_info, log_warn,
+                                                  run_logger)
+from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.schema import (SRA, Accessibility, Distribution,
+                                          Organism, Status, XrefType)
 from ddbj_search_converter.sra.tar_reader import (SraXmlType, TarXMLReader,
                                                   get_dra_tar_reader,
                                                   get_ncbi_tar_reader)
@@ -52,7 +55,7 @@ def _get_text(d: Any, key: str) -> Optional[str]:
     return str(v)
 
 
-def _normalize_status(status: Optional[str]) -> str:
+def _normalize_status(status: Optional[str]) -> Status:
     """
     status を INSDC 標準に正規化する。
 
@@ -70,7 +73,7 @@ def _normalize_status(status: Optional[str]) -> str:
         return "live"
     status_lower = status.lower()
     if status_lower in ("live", "unpublished", "suppressed", "withdrawn"):
-        return status_lower
+        return cast(Status, status_lower)
     if status_lower == "public":
         return "live"
     if status_lower in ("replaced", "killed"):
@@ -78,7 +81,7 @@ def _normalize_status(status: Optional[str]) -> str:
     return "live"
 
 
-def _normalize_accessibility(accessibility: Optional[str]) -> str:
+def _normalize_accessibility(accessibility: Optional[str]) -> Accessibility:
     """
     accessibility を正規化する。
 
@@ -123,7 +126,7 @@ def parse_submission(
             "properties": parsed,
         }
     except Exception as e:
-        log_warn(f"Failed to parse submission XML: {e}", accession=accession)
+        log_warn(f"failed to parse submission xml: {e}", accession=accession)
         return None
 
 
@@ -159,7 +162,7 @@ def parse_study(
                 "properties": {"STUDY_SET": {"STUDY": study}},
             })
     except Exception as e:
-        log_warn(f"Failed to parse study XML: {e}", accession=accession)
+        log_warn(f"failed to parse study xml: {e}", accession=accession)
     return results
 
 
@@ -216,7 +219,7 @@ def parse_experiment(
                 "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
             })
     except Exception as e:
-        log_warn(f"Failed to parse experiment XML: {e}", accession=accession)
+        log_warn(f"failed to parse experiment xml: {e}", accession=accession)
     return results
 
 
@@ -250,7 +253,7 @@ def parse_run(
                 "properties": {"RUN_SET": {"RUN": run}},
             })
     except Exception as e:
-        log_warn(f"Failed to parse run XML: {e}", accession=accession)
+        log_warn(f"failed to parse run xml: {e}", accession=accession)
     return results
 
 
@@ -293,7 +296,7 @@ def parse_sample(
                 "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
             })
     except Exception as e:
-        log_warn(f"Failed to parse sample XML: {e}", accession=accession)
+        log_warn(f"failed to parse sample xml: {e}", accession=accession)
     return results
 
 
@@ -335,7 +338,7 @@ def parse_analysis(
                 "properties": {"ANALYSIS_SET": {"ANALYSIS": analysis}},
             })
     except Exception as e:
-        log_warn(f"Failed to parse analysis XML: {e}", accession=accession)
+        log_warn(f"failed to parse analysis xml: {e}", accession=accession)
     return results
 
 
@@ -358,8 +361,8 @@ def _make_url(entry_type: str, identifier: str) -> str:
 
 def create_submission(
     parsed: Dict[str, Any],
-    status: str,
-    accessibility: str,
+    status: Status,
+    accessibility: Accessibility,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
@@ -390,8 +393,8 @@ def create_submission(
 
 def create_study(
     parsed: Dict[str, Any],
-    status: str,
-    accessibility: str,
+    status: Status,
+    accessibility: Accessibility,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
@@ -422,8 +425,8 @@ def create_study(
 
 def create_experiment(
     parsed: Dict[str, Any],
-    status: str,
-    accessibility: str,
+    status: Status,
+    accessibility: Accessibility,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
@@ -454,8 +457,8 @@ def create_experiment(
 
 def create_run(
     parsed: Dict[str, Any],
-    status: str,
-    accessibility: str,
+    status: Status,
+    accessibility: Accessibility,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
@@ -486,8 +489,8 @@ def create_run(
 
 def create_sample(
     parsed: Dict[str, Any],
-    status: str,
-    accessibility: str,
+    status: Status,
+    accessibility: Accessibility,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
@@ -518,8 +521,8 @@ def create_sample(
 
 def create_analysis(
     parsed: Dict[str, Any],
-    status: str,
-    accessibility: str,
+    status: Status,
+    accessibility: Accessibility,
     date_created: Optional[str],
     date_modified: Optional[str],
     date_published: Optional[str],
@@ -686,7 +689,7 @@ def process_source(
     is_dra = source == "dra"
     prefix = "dra" if is_dra else "ncbi"
 
-    log_info(f"Processing {source.upper()}...")
+    log_info(f"processing {source.upper()}...")
 
     # tar reader を取得
     if is_dra:
@@ -697,13 +700,13 @@ def process_source(
     # 対象 submission を取得
     if full or since is None:
         submissions = list(iter_all_submissions(config, source))
-        log_info(f"Full update mode: {len(submissions)} submissions")
+        log_info(f"full update mode: {len(submissions)} submissions")
     else:
         submissions = list(iter_updated_submissions(config, source, since))
-        log_info(f"Incremental update mode: {len(submissions)} submissions (since={since})")
+        log_info(f"incremental update mode: {len(submissions)} submissions (since={since})")
 
     if not submissions:
-        log_info(f"No submissions to process for {source}")
+        log_info(f"no submissions to process for {source}")
         return {t: 0 for t in XML_TYPES}
 
     # 結果を格納
@@ -713,7 +716,7 @@ def process_source(
     batch_size = DEFAULT_BATCH_SIZE
     for i in range(0, len(submissions), batch_size):
         batch = submissions[i:i + batch_size]
-        log_info(f"Processing batch {i // batch_size + 1}/{(len(submissions) - 1) // batch_size + 1} ({len(batch)} submissions)")
+        log_info(f"processing batch {i // batch_size + 1}/{(len(submissions) - 1) // batch_size + 1} ({len(batch)} submissions)")
 
         # Accessions DB から情報を取得
         # 各 submission に含まれる全 accession のリストを作成
@@ -749,8 +752,8 @@ def process_source(
                                 acc = entry_data.get("accession")
                                 if acc:
                                     sub_accessions.append(acc)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        log_debug(f"failed to collect accessions from {xml_type} xml: {e}", accession=sub, debug_category=DebugCategory.XML_ACCESSION_COLLECT_FAILED)
 
             # Accessions DB から情報を取得
             accession_info = get_accession_info_bulk(config, source, sub_accessions)
@@ -790,7 +793,7 @@ def process_source(
         output_path = output_dir / f"{prefix}_{xml_type}.jsonl"
         write_jsonl(output_path, all_entries[xml_type])
         counts[xml_type] = len(all_entries[xml_type])
-        log_info(f"Wrote {counts[xml_type]} {xml_type} entries to {output_path.name}")
+        log_info(f"wrote {counts[xml_type]} {xml_type} entries to {output_path.name}")
 
     return counts
 
@@ -814,7 +817,7 @@ def generate_sra_jsonl(
     """
     # blacklist を読み込む
     blacklist = load_sra_blacklist(config)
-    log_info(f"Loaded {len(blacklist)} blacklisted accessions")
+    log_info(f"loaded {len(blacklist)} blacklisted accessions")
 
     # 差分更新の基準日時を取得
     since: Optional[str] = None
@@ -822,11 +825,11 @@ def generate_sra_jsonl(
         last_run = read_last_run(config)
         since = last_run.get("sra")
         if since is not None:
-            log_info(f"Incremental update mode: since={since}")
+            log_info(f"incremental update mode: since={since}")
         else:
-            log_info("Full update mode: no previous run found")
+            log_info("full update mode: no previous run found")
     else:
-        log_info("Full update mode: --full specified")
+        log_info("full update mode: --full specified")
 
     # 出力ディレクトリを作成
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -834,21 +837,21 @@ def generate_sra_jsonl(
     # DRA を処理
     dra_counts = process_source(config, "dra", output_dir, blacklist, full, since)
     total_dra = sum(dra_counts.values())
-    log_info(f"DRA total: {total_dra} entries")
+    log_info(f"dra total: {total_dra} entries")
 
     # NCBI SRA を処理
     sra_counts = process_source(config, "sra", output_dir, blacklist, full, since)
     total_sra = sum(sra_counts.values())
-    log_info(f"NCBI SRA total: {total_sra} entries")
+    log_info(f"ncbi sra total: {total_sra} entries")
 
     # 合計を出力
     for xml_type in XML_TYPES:
         total = dra_counts.get(xml_type, 0) + sra_counts.get(xml_type, 0)
-        log_info(f"Total {xml_type}: {total} entries")
+        log_info(f"total {xml_type}: {total} entries")
 
     # last_run.json を更新
     write_last_run(config, "sra")
-    log_info("Updated last_run.json for sra")
+    log_info("updated last_run.json for sra")
 
 
 # === CLI ===
@@ -907,10 +910,10 @@ def main() -> None:
     config, output_dir, parallel_num, full = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_sra_jsonl", config=config):
-        log_debug(f"Config: {config.model_dump_json(indent=2)}")
-        log_debug(f"Output directory: {output_dir}")
-        log_debug(f"Parallel workers: {parallel_num}")
-        log_debug(f"Full update: {full}")
+        log_debug(f"config: {config.model_dump_json(indent=2)}")
+        log_debug(f"output directory: {output_dir}")
+        log_debug(f"parallel workers: {parallel_num}")
+        log_debug(f"full update: {full}")
 
         generate_sra_jsonl(config, output_dir, parallel_num, full)
 

@@ -83,20 +83,20 @@ def main() -> None:
         required_files = get_required_files(config.const_dir)
         for name, path in required_files:
             if path is None:
-                log_warn(f"MISSING: {name} (file not found)")
+                log_warn(f"missing: {name} (file not found)")
                 missing.append(name)
                 continue
 
             if path.exists():
-                log_info(f"OK: {name}", file=str(path))
+                log_info(f"ok: {name}", file=str(path))
             else:
-                log_warn(f"MISSING: {name}", file=str(path))
+                log_warn(f"missing: {name}", file=str(path))
                 missing.append(name)
 
         if missing:
             raise Exception(f"{len(missing)} required file(s) are missing.")
 
-        log_info("All required files exist")
+        log_info("all required files exist")
 
 
 if __name__ == "__main__":

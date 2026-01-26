@@ -108,7 +108,7 @@ def load_date_map(
         next(reader)  # Skip header
         for row in reader:
             if len(row) != 4:
-                log_error(f"Invalid row in date map CSV: {row}")
+                log_error(f"invalid row in date map csv: {row}")
                 continue
             accession, date_created, date_published, date_modified = row
             date_map[accession] = (
@@ -183,7 +183,7 @@ def generate_jga_jsonl(
     if not xml_path.exists():
         raise FileNotFoundError(f"XML file for {index_name} does not exist: {xml_path}")
 
-    log_info(f"Loading XML file: {xml_path}")
+    log_info(f"loading xml file: {xml_path}")
     xml_metadata = load_jga_xml(xml_path)
 
     # XML からエントリを抽出
@@ -197,7 +197,7 @@ def generate_jga_jsonl(
     except Exception as e:
         raise ValueError(f"Failed to parse XML for {index_name}: {e}") from e
 
-    log_info(f"Processing {len(entries)} entries from XML file: {xml_path}")
+    log_info(f"processing {len(entries)} entries from xml file: {xml_path}")
 
     # エントリを JGA インスタンスに変換
     jga_instances: Dict[str, JGA] = {}
@@ -225,7 +225,7 @@ def generate_jga_jsonl(
     # JSONL ファイルに出力
     output_path = output_dir.joinpath(f"{index_name}.jsonl")
     write_jsonl(output_path, list(jga_instances.values()))
-    log_info(f"Wrote {len(jga_instances)} entries to JSONL file: {output_path}")
+    log_info(f"wrote {len(jga_instances)} entries to jsonl file: {output_path}")
 
 
 def parse_args(args: List[str]) -> Tuple[Config, Path, Path]:
@@ -278,12 +278,12 @@ def main() -> None:
     config, output_dir, jga_base_path = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_jga_jsonl", config=config):
-        log_debug(f"Config: {config.model_dump_json(indent=2)}")
-        log_debug(f"Output directory: {output_dir}")
-        log_debug(f"JGA base path: {jga_base_path}")
+        log_debug(f"config: {config.model_dump_json(indent=2)}")
+        log_debug(f"output directory: {output_dir}")
+        log_debug(f"jga base path: {jga_base_path}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
-        log_info(f"Output directory: {output_dir}")
+        log_info(f"output directory: {output_dir}")
 
         for index_name in INDEX_NAMES:
             generate_jga_jsonl(config, index_name, output_dir, jga_base_path)

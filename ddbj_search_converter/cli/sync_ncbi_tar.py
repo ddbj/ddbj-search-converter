@@ -42,7 +42,7 @@ def main() -> None:
     with run_logger(config=config):
         ncbi_tar_path = get_ncbi_tar_path(config)
         if not ncbi_tar_path.exists() and not force_full:
-            log_info("NCBI tar does not exist, will download Full tar.gz")
+            log_info("ncbi tar does not exist, will download full tar.gz")
 
         sync_ncbi_tar(config, force_full=force_full)
 

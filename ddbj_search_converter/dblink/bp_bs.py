@@ -165,6 +165,7 @@ def process_xml_files_parallel(
     xml_files: List[Path],
     worker_func: Callable[[Path], XmlProcessResult],
     parallel_num: int = DEFAULT_PARALLEL_NUM,
+    source: str = "ncbi",
 ) -> IdPairs:
     results: IdPairs = set()
 
@@ -188,7 +189,7 @@ def process_xml_files_parallel(
                          file=str(xml_path))
                 for acc in skipped:
                     log_debug(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path),
-                              debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source="ncbi")
+                              debug_category=DebugCategory.INVALID_BIOSAMPLE_ID, source=source)
             except Exception as e:  # pylint: disable=broad-exception-caught
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
@@ -208,7 +209,7 @@ def process_ncbi_biosample_xml(
         raise FileNotFoundError(f"no NCBI XML files found in {tmp_xml_dir}")
 
     log_info(f"found {len(ncbi_files)} NCBI XML files in {tmp_xml_dir}")
-    results = process_xml_files_parallel(ncbi_files, process_ncbi_xml_file, parallel_num)
+    results = process_xml_files_parallel(ncbi_files, process_ncbi_xml_file, parallel_num, source="ncbi")
     bs_to_bp.update(results)
     log_info(f"extracted {len(results)} NCBI BioSample -> BioProject relations")
 
@@ -225,7 +226,7 @@ def process_ddbj_biosample_xml(
         raise FileNotFoundError(f"no DDBJ XML files found in {tmp_xml_dir}")
 
     log_info(f"found {len(ddbj_files)} DDBJ XML files in {tmp_xml_dir}")
-    results = process_xml_files_parallel(ddbj_files, process_ddbj_xml_file, parallel_num)
+    results = process_xml_files_parallel(ddbj_files, process_ddbj_xml_file, parallel_num, source="ddbj")
     bs_to_bp.update(results)
     log_info(f"extracted {len(results)} DDBJ BioSample -> BioProject relations")
 

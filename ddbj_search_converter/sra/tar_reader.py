@@ -28,7 +28,7 @@ class TarXMLReader:
 
     def _ensure_open(self) -> None:
         if self._tar is None:
-            log_info(f"Opening tar: {self.tar_path}")
+            log_info(f"opening tar: {self.tar_path}")
             # pylint: disable=consider-using-with
             self._tar = tarfile.open(self.tar_path, "r")
 
@@ -40,13 +40,13 @@ class TarXMLReader:
         self._ensure_open()
         assert self._tar is not None
 
-        log_info("Building tar index (this may take a few minutes)...")
+        log_info("building tar index (this may take a few minutes)...")
         # Later entries overwrite earlier ones (append-based update support)
         self._members = {}
         for member in self._tar.getmembers():
             self._members[member.name] = member
 
-        log_info(f"Tar index built: {len(self._members)} entries")
+        log_info(f"tar index built: {len(self._members)} entries")
 
     @property
     def members(self) -> Dict[str, tarfile.TarInfo]:

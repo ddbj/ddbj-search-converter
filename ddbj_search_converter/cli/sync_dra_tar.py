@@ -45,11 +45,11 @@ def main() -> None:
         dra_tar_path = get_dra_tar_path(config)
 
         if force_rebuild:
-            log_info("Force rebuilding DRA Metadata tar...")
+            log_info("force rebuilding dra metadata tar...")
             build_dra_tar(config)
         else:
             if not dra_tar_path.exists():
-                log_info("DRA tar does not exist, building from scratch")
+                log_info("dra tar does not exist, building from scratch")
             sync_dra_tar(config)
 
 

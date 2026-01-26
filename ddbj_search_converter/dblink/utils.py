@@ -22,7 +22,7 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
         log_info(f"loaded {len(bp_blacklist)} BioProject blacklist entries",
                  file=str(bp_blacklist_path))
     else:
-        log_info(f"BioProject blacklist not found, skipping: {bp_blacklist_path}",
+        log_info(f"bioproject blacklist not found, skipping: {bp_blacklist_path}",
                  file=str(bp_blacklist_path))
 
     if bs_blacklist_path.exists():
@@ -31,7 +31,7 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
         log_info(f"loaded {len(bs_blacklist)} BioSample blacklist entries",
                  file=str(bs_blacklist_path))
     else:
-        log_info(f"BioSample blacklist not found, skipping: {bs_blacklist_path}",
+        log_info(f"biosample blacklist not found, skipping: {bs_blacklist_path}",
                  file=str(bs_blacklist_path))
 
     return bp_blacklist, bs_blacklist
@@ -56,7 +56,7 @@ def load_sra_blacklist(config: Config) -> Set[str]:
         log_info(f"loaded {len(sra_blacklist)} SRA blacklist entries",
                  file=str(sra_blacklist_path))
     else:
-        log_info(f"SRA blacklist not found, skipping: {sra_blacklist_path}",
+        log_info(f"sra blacklist not found, skipping: {sra_blacklist_path}",
                  file=str(sra_blacklist_path))
 
     return sra_blacklist
@@ -114,6 +114,6 @@ def filter_sra_pairs_by_blacklist(
     removed_count = original_count - len(filtered)
 
     if removed_count > 0:
-        log_info(f"removed {removed_count} SRA relations by blacklist")
+        log_info(f"removed {removed_count} sra relations by blacklist")
 
     return filtered

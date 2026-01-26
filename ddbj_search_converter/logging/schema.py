@@ -43,6 +43,26 @@ class DebugCategory(str, Enum):
     # Parse related
     PARSE_FALLBACK = "parse_fallback"
 
+    # Normalize function failures (bp.py)
+    NORMALIZE_BIOSAMPLE_SET_ID = "normalize_biosample_set_id"
+    NORMALIZE_LOCUS_TAG_PREFIX = "normalize_locus_tag_prefix"
+    NORMALIZE_LOCAL_ID = "normalize_local_id"
+    NORMALIZE_ORGANIZATION_NAME = "normalize_organization_name"
+    NORMALIZE_GRANT_AGENCY = "normalize_grant_agency"
+
+    # Normalize function failures (bs.py)
+    NORMALIZE_OWNER_NAME = "normalize_owner_name"
+    NORMALIZE_MODEL = "normalize_model"
+
+    # Date fetch failures
+    FETCH_DATES_FAILED = "fetch_dates_failed"
+
+    # XML accession collection failure (sra.py)
+    XML_ACCESSION_COLLECT_FAILED = "xml_accession_collect_failed"
+
+    # Unsupported external link DB (bp.py)
+    UNSUPPORTED_EXTERNAL_LINK_DB = "unsupported_external_link_db"
+
 
 class Extra(BaseModel):
     """

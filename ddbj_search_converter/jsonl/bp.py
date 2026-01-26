@@ -16,9 +16,11 @@ from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, log_warn,
                                                   run_logger)
-from ddbj_search_converter.schema import (Agency, BioProject, Distribution,
-                                          ExternalLink, Grant, Organism,
-                                          Organization, Publication, Xref)
+from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.schema import (Accessibility, Agency, BioProject,
+                                          Distribution, ExternalLink, Grant,
+                                          Organism, Organization, Publication,
+                                          Status, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
@@ -71,7 +73,7 @@ def parse_organism(project: Dict[str, Any], is_ddbj: bool, accession: str = "") 
             name=organism_obj.get("OrganismName"),
         )
     except Exception as e:
-        log_warn(f"Failed to parse organism: {e}", accession=accession)
+        log_warn(f"failed to parse organism: {e}", accession=accession)
         return None
 
 
@@ -81,7 +83,7 @@ def parse_title(project: Dict[str, Any], accession: str = "") -> Optional[str]:
         title = project.get("Project", {}).get("ProjectDescr", {}).get("Title")
         return str(title) if title is not None else None
     except Exception as e:
-        log_warn(f"Failed to parse title: {e}", accession=accession)
+        log_warn(f"failed to parse title: {e}", accession=accession)
         return None
 
 
@@ -91,7 +93,7 @@ def parse_description(project: Dict[str, Any], accession: str = "") -> Optional[
         description = project.get("Project", {}).get("ProjectDescr", {}).get("Description")
         return str(description) if description is not None else None
     except Exception as e:
-        log_warn(f"Failed to parse description: {e}", accession=accession)
+        log_warn(f"failed to parse description: {e}", accession=accession)
         return None
 
 
@@ -140,7 +142,7 @@ def parse_organization(project: Dict[str, Any], is_ddbj: bool, accession: str = 
                         abbreviation=name.get("abbr"),
                     ))
     except Exception as e:
-        log_warn(f"Failed to parse organization: {e}", accession=accession)
+        log_warn(f"failed to parse organization: {e}", accession=accession)
     return organizations
 
 
@@ -174,7 +176,7 @@ def parse_publication(project: Dict[str, Any], accession: str = "") -> List[Publ
                 status=item.get("status"),
             ))
     except Exception as e:
-        log_warn(f"Failed to parse publication: {e}", accession=accession)
+        log_warn(f"failed to parse publication: {e}", accession=accession)
     return publications
 
 
@@ -205,7 +207,7 @@ def parse_grant(project: Dict[str, Any], accession: str = "") -> List[Grant]:
                     )]
                 ))
     except Exception as e:
-        log_warn(f"Failed to parse grant: {e}", accession=accession)
+        log_warn(f"failed to parse grant: {e}", accession=accession)
     return grants
 
 
@@ -227,7 +229,7 @@ def parse_external_link(project: Dict[str, Any], accession: str = "") -> List[Ex
                     label = obj.get("label", id_)
                     return ExternalLink(url=url, label=label)
                 else:
-                    log_info(f"Unsupported ExternalLink db: {db}", accession=accession)
+                    log_debug(f"unsupported external link db: {db}", accession=accession, debug_category=DebugCategory.UNSUPPORTED_EXTERNAL_LINK_DB)
         return None
 
     links: List[ExternalLink] = []
@@ -246,7 +248,7 @@ def parse_external_link(project: Dict[str, Any], accession: str = "") -> List[Ex
                 if link is not None:
                     links.append(link)
     except Exception as e:
-        log_warn(f"Failed to parse external_link: {e}", accession=accession)
+        log_warn(f"failed to parse external_link: {e}", accession=accession)
     return links
 
 
@@ -274,14 +276,14 @@ def parse_same_as(project: Dict[str, Any], accession: str = "") -> List[Xref]:
             xref = _to_geo_xref(center_obj)
             return [xref] if xref is not None else []
     except Exception as e:
-        log_warn(f"Failed to parse same_as: {e}", accession=accession)
+        log_warn(f"failed to parse same_as: {e}", accession=accession)
     return []
 
 
 def parse_status(
     project: Dict[str, Any],  # pylint: disable=unused-argument
     is_ddbj: bool,  # pylint: disable=unused-argument
-) -> str:
+) -> Status:
     """
     BioProject の status を返す。
 
@@ -291,7 +293,7 @@ def parse_status(
     return "live"
 
 
-def parse_accessibility(project: Dict[str, Any], is_ddbj: bool) -> str:
+def parse_accessibility(project: Dict[str, Any], is_ddbj: bool) -> Accessibility:
     """
     BioProject から accessibility を抽出する。
 
@@ -347,8 +349,8 @@ def _normalize_biosample_set_id(project: Dict[str, Any]) -> None:
                     project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"][i] = {"content": item}
         elif isinstance(bs_set_ids, str):
             project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] = {"content": bs_set_ids}
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize biosample set id: {e}", debug_category=DebugCategory.NORMALIZE_BIOSAMPLE_SET_ID)
 
 
 def _normalize_locus_tag_prefix(project: Dict[str, Any]) -> None:
@@ -363,8 +365,8 @@ def _normalize_locus_tag_prefix(project: Dict[str, Any]) -> None:
                     project["Project"]["ProjectDescr"]["LocusTagPrefix"][i] = {"content": item}
         elif isinstance(prefix, str):
             project["Project"]["ProjectDescr"]["LocusTagPrefix"] = {"content": prefix}
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize locus tag prefix: {e}", debug_category=DebugCategory.NORMALIZE_LOCUS_TAG_PREFIX)
 
 
 def _normalize_local_id(project: Dict[str, Any]) -> None:
@@ -379,8 +381,8 @@ def _normalize_local_id(project: Dict[str, Any]) -> None:
                     project["Project"]["ProjectID"]["LocalID"][i] = {"content": item}
         elif isinstance(local_id, str):
             project["Project"]["ProjectID"]["LocalID"] = {"content": local_id}
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize local id: {e}", debug_category=DebugCategory.NORMALIZE_LOCAL_ID)
 
 
 def _normalize_organization_name(project: Dict[str, Any]) -> None:
@@ -412,8 +414,8 @@ def _normalize_organization_name(project: Dict[str, Any]) -> None:
         # NCBI case: project["Project"]["ProjectDescr"]["Organization"]
         org = project.get("Project", {}).get("ProjectDescr", {}).get("Organization")
         _normalize_org(org)
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize organization name: {e}", debug_category=DebugCategory.NORMALIZE_ORGANIZATION_NAME)
 
 
 def _normalize_grant_agency(project: Dict[str, Any]) -> None:
@@ -433,8 +435,8 @@ def _normalize_grant_agency(project: Dict[str, Any]) -> None:
                 _normalize_single(item)
         elif isinstance(grant, dict):
             _normalize_single(grant)
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize grant agency: {e}", debug_category=DebugCategory.NORMALIZE_GRANT_AGENCY)
 
 
 # === Conversion ===
@@ -532,8 +534,8 @@ def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioProject]) -> None:
                 docs[accession].dateCreated = date_created
                 docs[accession].dateModified = date_modified
                 docs[accession].datePublished = date_published
-        except Exception:
-            pass
+        except Exception as e:
+            log_debug(f"failed to fetch ncbi dates from xml element: {e}", debug_category=DebugCategory.FETCH_DATES_FAILED)
 
 
 def _process_xml_file_worker(
@@ -554,7 +556,7 @@ def _process_xml_file_worker(
         target_accessions: 処理対象の accession の集合 (DDBJ 差分更新用)。None の場合は全件処理。
         since: 差分更新の基準日時 (NCBI 用)。None の場合は全件処理。
     """
-    log_info(f"Processing {xml_path.name} -> {output_path.name}")
+    log_info(f"processing {xml_path.name} -> {output_path.name}")
 
     docs: Dict[str, BioProject] = {}
     skipped_count = 0
@@ -580,12 +582,12 @@ def _process_xml_file_worker(
 
             docs[bp_instance.identifier] = bp_instance
         except Exception as e:
-            log_warn(f"Failed to parse XML element: {e}")
+            log_warn(f"failed to parse xml element: {e}", file=str(xml_path))
 
     if skipped_count > 0:
-        log_info(f"Skipped {skipped_count} blacklisted entries")
+        log_info(f"skipped {skipped_count} blacklisted entries")
     if filtered_count > 0:
-        log_info(f"Filtered {filtered_count} entries (not in target_accessions)")
+        log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXref を一括取得
     dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
@@ -608,10 +610,10 @@ def _process_xml_file_worker(
         }
         ncbi_filtered = original_count - len(docs)
         if ncbi_filtered > 0:
-            log_info(f"Filtered {ncbi_filtered} NCBI entries (dateModified < {since})")
+            log_info(f"filtered {ncbi_filtered} ncbi entries (dateModified < {since})")
 
     write_jsonl(output_path, list(docs.values()))
-    log_info(f"Wrote {len(docs)} entries to {output_path}")
+    log_info(f"wrote {len(docs)} entries to {output_path}")
 
     return len(docs)
 
@@ -664,27 +666,27 @@ def generate_bp_jsonl(
         last_run = read_last_run(config)
         since = last_run.get("bioproject")
         if since is not None:
-            log_info(f"Incremental update mode: since={since}")
+            log_info(f"incremental update mode: since={since}")
             # DDBJ: PostgreSQL から対象 accession を取得
             try:
                 from ddbj_search_converter.postgres.bp_date import \
                     fetch_bp_accessions_modified_since  # pylint: disable=import-outside-toplevel
                 ddbj_target_accessions = fetch_bp_accessions_modified_since(config, since)
-                log_info(f"DDBJ target accessions: {len(ddbj_target_accessions)}")
+                log_info(f"ddbj target accessions: {len(ddbj_target_accessions)}")
             except ImportError:
                 log_info("psycopg2 not available, processing all DDBJ entries")
             except Exception as e:
-                log_error(f"Failed to fetch DDBJ target accessions: {e}")
+                log_error(f"failed to fetch ddbj target accessions: {e}")
         else:
-            log_info("Full update mode: no previous run found")
+            log_info("full update mode: no previous run found")
     else:
-        log_info("Full update mode: --full specified")
+        log_info("full update mode: --full specified")
 
     # DDBJ XML と NCBI XML をそれぞれ処理
     ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
     ncbi_xml_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
 
-    log_info(f"Found {len(ddbj_xml_files)} DDBJ XML files and {len(ncbi_xml_files)} NCBI XML files")
+    log_info(f"found {len(ddbj_xml_files)} ddbj xml files and {len(ncbi_xml_files)} ncbi xml files")
 
     tasks: List[Tuple[Path, Path, bool, Optional[Set[str]], Optional[str]]] = []
     for xml_file in ddbj_xml_files:
@@ -709,13 +711,13 @@ def generate_bp_jsonl(
                 count = future.result()
                 total_count += count
             except Exception as e:
-                log_warn(f"Failed to process {xml_path}: {e}")
+                log_error(f"failed to process {xml_path}: {e}", error=e, file=str(xml_path))
 
-    log_info(f"Generated {total_count} BioProject entries in total")
+    log_info(f"generated {total_count} bioproject entries in total")
 
     # last_run.json を更新
     write_last_run(config, "bioproject")
-    log_info("Updated last_run.json for bioproject")
+    log_info("updated last_run.json for bioproject")
 
 
 # === CLI ===
@@ -776,14 +778,14 @@ def main() -> None:
     config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bp_jsonl", config=config):
-        log_debug(f"Config: {config.model_dump_json(indent=2)}")
+        log_debug(f"config: {config.model_dump_json(indent=2)}")
         log_debug(f"tmp_xml directory: {tmp_xml_dir}")
-        log_debug(f"Output directory: {output_dir}")
-        log_debug(f"Parallel workers: {parallel_num}")
-        log_debug(f"Full update: {full}")
+        log_debug(f"output directory: {output_dir}")
+        log_debug(f"parallel workers: {parallel_num}")
+        log_debug(f"full update: {full}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
-        log_info(f"Output directory: {output_dir}")
+        log_info(f"output directory: {output_dir}")
 
         generate_bp_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full)
 

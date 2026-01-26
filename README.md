@@ -128,15 +128,52 @@ JSONL 生成・Elasticsearch コマンドは `--help` で引数を確認可能�
 - **DuckDB**: `{result_dir}/log.duckdb` (集計用、JSONL から自動挿入)
 - **stderr**: INFO 以上のログのみ出力 (DEBUG は出力しない)
 
+### メッセージ形式
+
+- **先頭は小文字**: `"processing ..."`, NOT `"Processing ..."`
+- 固有名詞 (BioProject, NCBI, SRA 等) は中置なら元の表記を維持
+- 先頭に来る場合も小文字: `"bioproject blacklist not found"`
+- 英語で記述し、動詞始まりを推奨: `"failed to parse ..."`, `"processing batch ..."`
+
 ### Log Level
 
-| Level | 用途 | stderr 出力 | 例 |
-|-------|------|-------------|-----|
-| `CRITICAL` | 処理が続行できない（例外で止まる） | ○ | リソース欠落、DB 接続不可 |
-| `ERROR` | 失敗してスキップ | ○ | ファイル処理失敗 → スキップ |
-| `WARNING` | 成功だが不完全（空/デフォルトで埋める） | ○ | パース失敗 → 空リストで続行 |
-| `INFO` | 進捗、完了、統計 | ○ | `Processing batch 1/10` |
-| `DEBUG` | 詳細情報（想定内のスキップなど） | × | ID パターン不一致 |
+| Level | 用途 | stderr 出力 | `error=e` 必須 | 例 |
+|-------|------|-------------|---------------|-----|
+| `CRITICAL` | 処理が続行できない（例外で止まる） | ○ | — (自動付与: `log_failed`) | リソース欠落、DB 接続不可 |
+| `ERROR` | ファイル/ワーカー単位の処理失敗 → スキップ | ○ | ○ | `log_error("failed to process ...", error=e, file=...)` |
+| `WARNING` | パース失敗 → 空/デフォルトで続行 (レコード単位) | ○ | × | パース失敗 → 空リストで続行 |
+| `INFO` | 進捗、完了、統計、設定 | ○ | × | `"processing batch 1/10"` |
+| `DEBUG` | 想定内のスキップ、normalize 失敗、unsupported 値 | × | × | ID パターン不一致、`debug_category` 必須 |
+
+**WARNING vs ERROR の境界**: WARNING はレコード単位で空/デフォルトで続行する場合。ERROR はファイル/ワーカー単位で処理をスキップする場合。
+
+### Extra Fields
+
+| フィールド | 付与条件 | 例 |
+|-----------|---------|-----|
+| `file` | ファイル処理に関連するログ全般 | `file=str(xml_path)` |
+| `accession` | 特定の accession に関連するエラー/警告/デバッグ | `accession="PRJDB12345"` |
+| `source` | データソース区別可能な場合 | `source="ncbi"`, `"ddbj"`, `"sra"`, `"dra"`, `"preserved"` |
+| `debug_category` | `DEBUG` レベルのログには **必ず** 付与 | `debug_category=DebugCategory.INVALID_BIOSAMPLE_ID` |
+| `error` | `ERROR` レベルのログには **必ず** 付与 | `error=e` |
+
+### DebugCategory 一覧
+
+| Category | 用途 |
+|----------|------|
+| `INVALID_BIOSAMPLE_ID` | BioSample accession が無効 (SAM で始まらない) |
+| `INVALID_BIOPROJECT_ID` | BioProject accession が無効 (PRJ で始まらない) |
+| `PARSE_FALLBACK` | パース失敗でフォールバック |
+| `NORMALIZE_BIOSAMPLE_SET_ID` | BioSampleSet ID の正規化失敗 |
+| `NORMALIZE_LOCUS_TAG_PREFIX` | LocusTagPrefix の正規化失敗 |
+| `NORMALIZE_LOCAL_ID` | LocalID の正規化失敗 |
+| `NORMALIZE_ORGANIZATION_NAME` | Organization Name の正規化失敗 |
+| `NORMALIZE_GRANT_AGENCY` | Grant Agency の正規化失敗 |
+| `NORMALIZE_OWNER_NAME` | Owner Name の正規化失敗 |
+| `NORMALIZE_MODEL` | Model の正規化失敗 |
+| `FETCH_DATES_FAILED` | XML からの日付取得失敗 |
+| `XML_ACCESSION_COLLECT_FAILED` | XML からの accession 収集失敗 |
+| `UNSUPPORTED_EXTERNAL_LINK_DB` | 未対応の ExternalLink DB |
 
 ### ログ集計
 

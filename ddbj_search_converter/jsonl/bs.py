@@ -16,8 +16,10 @@ from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, log_warn,
                                                   run_logger)
-from ddbj_search_converter.schema import (Attribute, BioSample, Distribution,
-                                          Model, Organism, Package, Xref)
+from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.schema import (Accessibility, Attribute, BioSample,
+                                          Distribution, Model, Organism,
+                                          Package, Status, Xref)
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
@@ -61,7 +63,7 @@ def parse_organism(sample: Dict[str, Any], is_ddbj: bool, accession: str = "") -
             name=name,
         )
     except Exception as e:
-        log_warn(f"Failed to parse organism: {e}", accession=accession)
+        log_warn(f"failed to parse organism: {e}", accession=accession)
         return None
 
 
@@ -71,7 +73,7 @@ def parse_title(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
         title = sample.get("Description", {}).get("Title")
         return str(title) if title is not None else None
     except Exception as e:
-        log_warn(f"Failed to parse title: {e}", accession=accession)
+        log_warn(f"failed to parse title: {e}", accession=accession)
         return None
 
 
@@ -91,7 +93,7 @@ def parse_description(sample: Dict[str, Any], accession: str = "") -> Optional[s
                 return " ".join(str(p) for p in para if p)
         return None
     except Exception as e:
-        log_warn(f"Failed to parse description: {e}", accession=accession)
+        log_warn(f"failed to parse description: {e}", accession=accession)
         return None
 
 
@@ -119,7 +121,7 @@ def parse_attributes(sample: Dict[str, Any], accession: str = "") -> List[Attrib
                     content=attr,
                 ))
     except Exception as e:
-        log_warn(f"Failed to parse attributes: {e}", accession=accession)
+        log_warn(f"failed to parse attributes: {e}", accession=accession)
     return attributes
 
 
@@ -139,7 +141,7 @@ def parse_model(sample: Dict[str, Any], accession: str = "") -> List[Model]:
                 if content:
                     models.append(Model(name=str(content)))
     except Exception as e:
-        log_warn(f"Failed to parse model: {e}", accession=accession)
+        log_warn(f"failed to parse model: {e}", accession=accession)
     return models
 
 
@@ -161,7 +163,7 @@ def parse_package(sample: Dict[str, Any], model: List[Model], is_ddbj: bool, acc
             return Package(name=name, display_name=display_name)
         return None
     except Exception as e:
-        log_warn(f"Failed to parse package: {e}", accession=accession)
+        log_warn(f"failed to parse package: {e}", accession=accession)
         return None
 
 
@@ -185,7 +187,7 @@ def parse_same_as(sample: Dict[str, Any], accession: str = "") -> List[Xref]:
                     url=f"https://ddbj.nig.ac.jp/search/entry/sra-sample/{content}",
                 ))
     except Exception as e:
-        log_warn(f"Failed to parse same_as: {e}", accession=accession)
+        log_warn(f"failed to parse same_as: {e}", accession=accession)
     return xrefs
 
 
@@ -199,7 +201,7 @@ def parse_date_from_xml(
     return date_created, date_modified, date_published
 
 
-def parse_status(sample: Dict[str, Any], accession: str = "") -> str:
+def parse_status(sample: Dict[str, Any], accession: str = "") -> Status:
     """
     BioSample から status を抽出する。
 
@@ -214,11 +216,11 @@ def parse_status(sample: Dict[str, Any], accession: str = "") -> str:
                 return "suppressed"
             return "live"
     except Exception as e:
-        log_warn(f"Failed to parse status: {e}", accession=accession)
+        log_warn(f"failed to parse status: {e}", accession=accession)
     return "live"
 
 
-def parse_accessibility(sample: Dict[str, Any], accession: str = "") -> str:
+def parse_accessibility(sample: Dict[str, Any], accession: str = "") -> Accessibility:
     """
     BioSample から accessibility (@access) を抽出する。
 
@@ -236,7 +238,7 @@ def parse_accessibility(sample: Dict[str, Any], accession: str = "") -> str:
             return "controlled-access"
         return "public-access"
     except Exception as e:
-        log_warn(f"Failed to parse accessibility: {e}", accession=accession)
+        log_warn(f"failed to parse accessibility: {e}", accession=accession)
     return "public-access"
 
 
@@ -262,8 +264,8 @@ def _normalize_owner_name(sample: Dict[str, Any]) -> None:
             for i, item in enumerate(name):
                 if isinstance(item, str):
                     sample["Owner"]["Name"][i] = {"content": item}
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize owner name: {e}", debug_category=DebugCategory.NORMALIZE_OWNER_NAME)
 
 
 def _normalize_model(sample: Dict[str, Any]) -> None:
@@ -278,8 +280,8 @@ def _normalize_model(sample: Dict[str, Any]) -> None:
             for i, item in enumerate(model):
                 if isinstance(item, str):
                     sample["Models"]["Model"][i] = {"content": item}
-    except Exception:
-        pass
+    except Exception as e:
+        log_debug(f"failed to normalize model: {e}", debug_category=DebugCategory.NORMALIZE_MODEL)
 
 
 # === Conversion ===
@@ -376,8 +378,8 @@ def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool)
                 docs[accession].dateCreated = date_created
                 docs[accession].dateModified = date_modified
                 docs[accession].datePublished = date_published
-        except Exception:
-            pass
+        except Exception as e:
+            log_debug(f"failed to fetch ncbi dates from xml element: {e}", debug_category=DebugCategory.FETCH_DATES_FAILED)
 
 
 def _process_xml_file_worker(
@@ -398,7 +400,7 @@ def _process_xml_file_worker(
         target_accessions: 処理対象の accession の集合 (DDBJ 差分更新用)。None の場合は全件処理。
         since: 差分更新の基準日時 (NCBI 用)。None の場合は全件処理。
     """
-    log_info(f"Processing {xml_path.name} -> {output_path.name}")
+    log_info(f"processing {xml_path.name} -> {output_path.name}")
 
     docs: Dict[str, BioSample] = {}
     skipped_count = 0
@@ -424,12 +426,12 @@ def _process_xml_file_worker(
 
             docs[bs_instance.identifier] = bs_instance
         except Exception as e:
-            log_warn(f"Failed to parse XML element: {e}")
+            log_warn(f"failed to parse xml element: {e}", file=str(xml_path))
 
     if skipped_count > 0:
-        log_info(f"Skipped {skipped_count} blacklisted entries")
+        log_info(f"skipped {skipped_count} blacklisted entries")
     if filtered_count > 0:
-        log_info(f"Filtered {filtered_count} entries (not in target_accessions)")
+        log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXref を一括取得
     dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
@@ -452,10 +454,10 @@ def _process_xml_file_worker(
         }
         ncbi_filtered = original_count - len(docs)
         if ncbi_filtered > 0:
-            log_info(f"Filtered {ncbi_filtered} NCBI entries (dateModified < {since})")
+            log_info(f"filtered {ncbi_filtered} ncbi entries (dateModified < {since})")
 
     write_jsonl(output_path, list(docs.values()))
-    log_info(f"Wrote {len(docs)} entries to {output_path}")
+    log_info(f"wrote {len(docs)} entries to {output_path}")
 
     return len(docs)
 
@@ -508,27 +510,27 @@ def generate_bs_jsonl(
         last_run = read_last_run(config)
         since = last_run.get("biosample")
         if since is not None:
-            log_info(f"Incremental update mode: since={since}")
+            log_info(f"incremental update mode: since={since}")
             # DDBJ: PostgreSQL から対象 accession を取得
             try:
                 from ddbj_search_converter.postgres.bs_date import \
                     fetch_bs_accessions_modified_since  # pylint: disable=import-outside-toplevel
                 ddbj_target_accessions = fetch_bs_accessions_modified_since(config, since)
-                log_info(f"DDBJ target accessions: {len(ddbj_target_accessions)}")
+                log_info(f"ddbj target accessions: {len(ddbj_target_accessions)}")
             except ImportError:
                 log_info("psycopg2 not available, processing all DDBJ entries")
             except Exception as e:
-                log_error(f"Failed to fetch DDBJ target accessions: {e}")
+                log_error(f"failed to fetch ddbj target accessions: {e}")
         else:
-            log_info("Full update mode: no previous run found")
+            log_info("full update mode: no previous run found")
     else:
-        log_info("Full update mode: --full specified")
+        log_info("full update mode: --full specified")
 
     # DDBJ XML と NCBI XML をそれぞれ処理
     ddbj_xml_files = sorted(tmp_xml_dir.glob("ddbj_*.xml"))
     ncbi_xml_files = sorted(tmp_xml_dir.glob("ncbi_*.xml"))
 
-    log_info(f"Found {len(ddbj_xml_files)} DDBJ XML files and {len(ncbi_xml_files)} NCBI XML files")
+    log_info(f"found {len(ddbj_xml_files)} ddbj xml files and {len(ncbi_xml_files)} ncbi xml files")
 
     tasks: List[Tuple[Path, Path, bool, Optional[Set[str]], Optional[str]]] = []
     for xml_file in ddbj_xml_files:
@@ -553,13 +555,13 @@ def generate_bs_jsonl(
                 count = future.result()
                 total_count += count
             except Exception as e:
-                log_warn(f"Failed to process {xml_path}: {e}")
+                log_error(f"failed to process {xml_path}: {e}", error=e, file=str(xml_path))
 
-    log_info(f"Generated {total_count} BioSample entries in total")
+    log_info(f"generated {total_count} biosample entries in total")
 
     # last_run.json を更新
     write_last_run(config, "biosample")
-    log_info("Updated last_run.json for biosample")
+    log_info("updated last_run.json for biosample")
 
 
 # === CLI ===
@@ -620,14 +622,14 @@ def main() -> None:
     config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bs_jsonl", config=config):
-        log_debug(f"Config: {config.model_dump_json(indent=2)}")
+        log_debug(f"config: {config.model_dump_json(indent=2)}")
         log_debug(f"tmp_xml directory: {tmp_xml_dir}")
-        log_debug(f"Output directory: {output_dir}")
-        log_debug(f"Parallel workers: {parallel_num}")
-        log_debug(f"Full update: {full}")
+        log_debug(f"output directory: {output_dir}")
+        log_debug(f"parallel workers: {parallel_num}")
+        log_debug(f"full update: {full}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
-        log_info(f"Output directory: {output_dir}")
+        log_info(f"output directory: {output_dir}")
 
         generate_bs_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full)
 

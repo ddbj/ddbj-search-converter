@@ -5,7 +5,7 @@ DDBJ BioSample の日付は XML に含まれていないため、PostgreSQL か�
 """
 from typing import Dict, Iterable, Optional, Set, Tuple
 
-import psycopg2  # type: ignore[import-untyped]
+import psycopg2
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import log_debug
@@ -82,10 +82,10 @@ def fetch_bs_dates_bulk(
         finally:
             conn.close()
     except Exception as e:
-        log_debug(f"Failed to fetch dates from PostgreSQL: {e}")
+        log_debug(f"failed to fetch dates from postgresql: {e}")
         raise
 
-    log_debug(f"Fetched {len(result)} dates from PostgreSQL for {len(accession_list)} accessions")
+    log_debug(f"fetched {len(result)} dates from postgresql for {len(accession_list)} accessions")
     return result
 
 
@@ -146,8 +146,8 @@ def fetch_bs_accessions_modified_since(
         finally:
             conn.close()
     except Exception as e:
-        log_debug(f"Failed to fetch accessions from PostgreSQL: {e}")
+        log_debug(f"failed to fetch accessions from postgresql: {e}")
         raise
 
-    log_debug(f"Fetched {len(result)} accessions modified since {since}")
+    log_debug(f"fetched {len(result)} accessions modified since {since}")
     return result
