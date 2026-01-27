@@ -17,7 +17,8 @@ from typing import List
 import duckdb
 
 from ddbj_search_converter.cli.debug.show_log_debug import _row_to_dict
-from ddbj_search_converter.config import (LOG_DB_FILE_NAME,
+from ddbj_search_converter.config import (DBLINK_DB_FILE_NAME,
+                                           LOG_DB_FILE_NAME,
                                            TMP_DBLINK_DB_FILE_NAME, TODAY,
                                            get_config)
 
@@ -27,6 +28,10 @@ def _log_db_path(result_dir: Path) -> Path:
 
 
 def _dblink_db_path(const_dir: Path) -> Path:
+    """Return the dblink DB path, preferring finalized over tmp."""
+    finalized = const_dir.joinpath("dblink", DBLINK_DB_FILE_NAME)
+    if finalized.exists():
+        return finalized
     return const_dir.joinpath("dblink", TMP_DBLINK_DB_FILE_NAME)
 
 

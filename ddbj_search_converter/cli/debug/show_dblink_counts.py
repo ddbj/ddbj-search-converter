@@ -10,10 +10,15 @@ from typing import Dict, List
 
 import duckdb
 
-from ddbj_search_converter.config import TMP_DBLINK_DB_FILE_NAME, get_config
+from ddbj_search_converter.config import (DBLINK_DB_FILE_NAME,
+                                           TMP_DBLINK_DB_FILE_NAME, get_config)
 
 
 def _get_db_path(const_dir: Path) -> Path:
+    """Return the dblink DB path, preferring finalized over tmp."""
+    finalized = const_dir.joinpath("dblink", DBLINK_DB_FILE_NAME)
+    if finalized.exists():
+        return finalized
     return const_dir.joinpath("dblink", TMP_DBLINK_DB_FILE_NAME)
 
 
