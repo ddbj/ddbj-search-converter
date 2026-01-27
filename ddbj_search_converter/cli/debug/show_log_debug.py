@@ -1,6 +1,8 @@
 """Log show debug CLI.
 
-Shows detailed DEBUG logs filtered by run_name and debug_category.
+Shows DEBUG logs filtered by run_name and optionally debug_category.
+Output is JSON Lines (one JSON object per line) to stdout.
+Metadata and jq examples are printed to stderr.
 """
 import argparse
 import json
@@ -17,10 +19,38 @@ def _get_db_path(result_dir: Path) -> Path:
     return result_dir.joinpath(LOG_DB_FILE_NAME)
 
 
+def _row_to_dict(timestamp, run_name: str, message: str, extra_json) -> dict:
+    """Convert a log row to a dict for JSONL output."""
+    record: dict = {
+        "timestamp": str(timestamp)[:19] if timestamp else None,
+        "run_name": run_name,
+        "message": message,
+    }
+
+    if extra_json:
+        try:
+            extra = json.loads(extra_json) if isinstance(extra_json, str) else extra_json
+            if extra.get("debug_category"):
+                record["debug_category"] = extra["debug_category"]
+            if extra.get("accession"):
+                record["accession"] = extra["accession"]
+            if extra.get("file"):
+                record["file"] = extra["file"]
+            if extra.get("source"):
+                record["source"] = extra["source"]
+            for key, value in extra.items():
+                if key not in ("debug_category", "accession", "file", "source", "lifecycle"):
+                    record[key] = value
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    return record
+
+
 def parse_args(args: List[str]) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Show detailed DEBUG logs filtered by run_name and debug_category."
+        description="Show DEBUG logs as JSON Lines. Pipe to jq for analysis."
     )
     parser.add_argument(
         "--run-name",
@@ -29,14 +59,15 @@ def parse_args(args: List[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--category",
-        required=True,
-        help="Debug category to filter (e.g., invalid_biosample_id).",
+        required=False,
+        default=None,
+        help="Debug category to filter (e.g., invalid_biosample_id). If omitted, show all categories.",
     )
     parser.add_argument(
         "--limit",
         type=int,
-        default=100,
-        help="Maximum number of entries to show. Default: 100",
+        default=0,
+        help="Maximum number of entries to output. 0 = unlimited. Default: 0",
     )
     parser.add_argument(
         "--result-dir",
@@ -58,73 +89,73 @@ def main() -> None:
     db_path = _get_db_path(config.result_dir)
 
     if not db_path.exists():
-        print(f"Log database not found: {db_path}")
+        print(f"Log database not found: {db_path}", file=sys.stderr)
         sys.exit(1)
 
     con = duckdb.connect(str(db_path), read_only=True)
     try:
-        # Get total count
+        conditions = ["run_name = ?", "log_level = 'DEBUG'"]
+        params: list = [parsed.run_name]
+
+        if parsed.category is not None:
+            conditions.append("json_extract_string(extra, '$.debug_category') = ?")
+            params.append(parsed.category)
+        else:
+            conditions.append("json_extract_string(extra, '$.debug_category') IS NOT NULL")
+
+        where_clause = " AND ".join(conditions)
+
         total_result = con.execute(
-            """
-            SELECT COUNT(*)
-            FROM log_records
-            WHERE run_name = ?
-              AND log_level = 'DEBUG'
-              AND json_extract_string(extra, '$.debug_category') = ?
-            """,
-            [parsed.run_name, parsed.category],
+            f"SELECT COUNT(*) FROM log_records WHERE {where_clause}",
+            params,
         ).fetchone()
         total_count = total_result[0] if total_result else 0
 
-        print()
-        print(f"=== DEBUG logs: {parsed.run_name} / {parsed.category} ===")
-        print(f"Total: {total_count:,} entries (showing first {parsed.limit})")
-        print()
+        category_label = parsed.category if parsed.category else "(all)"
+        limit_label = f" (showing first {parsed.limit})" if parsed.limit > 0 else ""
+        print(f"DEBUG logs: {parsed.run_name} / {category_label}", file=sys.stderr)
+        print(f"Total: {total_count:,} entries{limit_label}", file=sys.stderr)
 
         if total_count == 0:
-            print("No matching DEBUG logs found.")
+            print("No matching DEBUG logs found.", file=sys.stderr)
+            _print_jq_examples(parsed.run_name)
             return
 
-        # Get log entries
-        rows = con.execute(
-            """
-            SELECT
-                timestamp,
-                message,
-                extra
+        _print_jq_examples(parsed.run_name)
+
+        query = f"""
+            SELECT timestamp, run_name, message, extra
             FROM log_records
-            WHERE run_name = ?
-              AND log_level = 'DEBUG'
-              AND json_extract_string(extra, '$.debug_category') = ?
+            WHERE {where_clause}
             ORDER BY timestamp DESC
-            LIMIT ?
-            """,
-            [parsed.run_name, parsed.category, parsed.limit],
-        ).fetchall()
+        """
+        if parsed.limit > 0:
+            query += f" LIMIT {parsed.limit}"
 
-        for timestamp, message, extra_json in rows:
-            # Format timestamp
-            ts_str = str(timestamp)[:19] if timestamp else ""
+        rows = con.execute(query, params).fetchall()
 
-            # Parse extra fields
-            extra_parts = []
-            if extra_json:
-                try:
-                    extra = json.loads(extra_json) if isinstance(extra_json, str) else extra_json
-                    if extra.get("accession"):
-                        extra_parts.append(f"accession={extra['accession']}")
-                    if extra.get("file"):
-                        extra_parts.append(f"file={extra['file']}")
-                    if extra.get("source"):
-                        extra_parts.append(f"source={extra['source']}")
-                except (json.JSONDecodeError, TypeError):
-                    pass
-
-            extra_str = "  " + "  ".join(extra_parts) if extra_parts else ""
-            print(f"{ts_str}  {message}{extra_str}")
+        for timestamp, run_name, message, extra_json in rows:
+            record = _row_to_dict(timestamp, run_name, message, extra_json)
+            print(json.dumps(record, ensure_ascii=False))
 
     finally:
         con.close()
+
+
+def _print_jq_examples(run_name: str) -> None:
+    """Print jq usage examples to stderr."""
+    cmd = f"show_log_debug --run-name {run_name}"
+    print(file=sys.stderr)
+    print("jq examples:", file=sys.stderr)
+    print(f"  # Count by category", file=sys.stderr)
+    print(f"  {cmd} | jq -s 'group_by(.debug_category) | map({{category: .[0].debug_category, count: length}})'", file=sys.stderr)
+    print(f"  # Filter by category", file=sys.stderr)
+    print(f'  {cmd} | jq \'select(.debug_category == "invalid_biosample_id")\'', file=sys.stderr)
+    print(f"  # Unique accessions", file=sys.stderr)
+    print(f"  {cmd} | jq -r '.accession // empty' | sort -u", file=sys.stderr)
+    print(f"  # Count per accession", file=sys.stderr)
+    print(f"  {cmd} | jq -r '.accession // empty' | sort | uniq -c | sort -rn | head -20", file=sys.stderr)
+    print(file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Literal, Optional
 from zoneinfo import ZoneInfo
@@ -138,6 +138,15 @@ def get_config() -> Config:
 # === last_run.json utilities ===
 
 LAST_RUN_FILE_NAME = "last_run.json"
+
+DEFAULT_MARGIN_DAYS = 7
+
+
+def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
+    """since から margin_days を引いた ISO8601 日時文字列を返す。"""
+    dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+    margin_dt = dt - timedelta(days=margin_days)
+    return margin_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 DataType = Literal["bioproject", "biosample", "sra", "jga"]
 

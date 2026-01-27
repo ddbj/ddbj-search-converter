@@ -35,7 +35,7 @@ RESPONSE_2=$(curl -fsSL -X POST "http://ddbj-search-elasticsearch:9200/jga-study
     "query": {
       "match": { "identifier": "JGAS000284" }
     },
-    "_source": ["identifier", "title", "dbXref", "properties"],
+    "_source": ["identifier", "title", "dbXrefs", "properties"],
     "from": 0,
     "size": 10000
   }')
@@ -61,7 +61,7 @@ RESPONSE_3=$(curl -fsSL -X POST "http://ddbj-search-elasticsearch:9200/jga-study
         ]
       }
     },
-    "_source": ["identifier", "title", "dbXref", "properties"],
+    "_source": ["identifier", "title", "dbXrefs", "properties"],
     "from": 0,
     "size": 10000
   }')
@@ -75,19 +75,19 @@ else
 fi
 
 # === Query 4 ===
-echo "=== Running Query 4: Search for JGAS000284 (JGAD000390) in dbXref.identifier ==="
+echo "=== Running Query 4: Search for JGAS000284 (JGAD000390) in dbXrefs.identifier ==="
 RESPONSE_4=$(curl -fsSL -X POST "http://ddbj-search-elasticsearch:9200/jga-study/_search" \
   -H "Content-Type: application/json" \
   -d '{
     "query": {
       "nested": {
-        "path": "dbXref",
+        "path": "dbXrefs",
         "query": {
-          "term": { "dbXref.identifier": "JGAD000390" }
+          "term": { "dbXrefs.identifier": "JGAD000390" }
         }
       }
     },
-    "_source": ["identifier", "title", "dbXref", "properties"],
+    "_source": ["identifier", "title", "dbXrefs", "properties"],
     "from": 0,
     "size": 10000
   }')

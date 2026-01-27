@@ -66,7 +66,7 @@ class TestInitDblinkDbMain:
 
             log_dir = result_dir / "logs"
             assert log_dir.exists()
-            log_files = list(log_dir.glob("*.log.jsonl"))
+            log_files = list(log_dir.glob("**/*.log.jsonl"))
             assert len(log_files) == 1
 
         finally:

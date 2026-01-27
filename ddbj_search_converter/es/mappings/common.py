@@ -39,7 +39,7 @@ def get_common_mapping() -> Dict[str, Any]:
         },
         "title": {"type": "text"},
         "description": {"type": "text"},
-        "dbXref": {
+        "dbXrefs": {
             "type": "nested",
             "properties": {
                 "identifier": {"type": "keyword"},

@@ -380,7 +380,7 @@ def create_submission(
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("submission_comment"),
-        dbXref=[],
+        dbXrefs=[],
         sameAs=[],
         downloadUrl=[],
         status=status,
@@ -412,7 +412,7 @@ def create_study(
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        dbXref=[],
+        dbXrefs=[],
         sameAs=[],
         downloadUrl=[],
         status=status,
@@ -444,7 +444,7 @@ def create_experiment(
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        dbXref=[],
+        dbXrefs=[],
         sameAs=[],
         downloadUrl=[],
         status=status,
@@ -476,7 +476,7 @@ def create_run(
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        dbXref=[],
+        dbXrefs=[],
         sameAs=[],
         downloadUrl=[],
         status=status,
@@ -508,7 +508,7 @@ def create_sample(
         organism=parsed.get("organism"),
         title=parsed.get("title"),
         description=parsed.get("description"),
-        dbXref=[],
+        dbXrefs=[],
         sameAs=[],
         downloadUrl=[],
         status=status,
@@ -540,7 +540,7 @@ def create_analysis(
         organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
-        dbXref=[],
+        dbXrefs=[],
         sameAs=[],
         downloadUrl=[],
         status=status,
@@ -769,7 +769,7 @@ def process_source(
     # tar reader を閉じる
     tar_reader.close()
 
-    # dbXref を更新
+    # dbXrefs を更新
     xref_type_map: Dict[SraXmlType, XrefType] = {
         "submission": "sra-submission",
         "study": "sra-study",
@@ -785,7 +785,7 @@ def process_source(
             dbxref_map = get_dbxref_map(config, entity_type, accessions)
             for entry in all_entries[xml_type]:
                 if entry.identifier in dbxref_map:
-                    entry.dbXref = dbxref_map[entry.identifier]
+                    entry.dbXrefs = dbxref_map[entry.identifier]
 
     # JSONL を出力
     counts: Dict[str, int] = {}

@@ -104,7 +104,7 @@ class BioProject(BaseModel):
     publication: List[Publication]
     grant: List[Grant]
     externalLink: List[ExternalLink]
-    dbXref: List[Xref]
+    dbXrefs: List[Xref]
     sameAs: List[Xref]
     status: Status
     accessibility: Accessibility
@@ -146,7 +146,7 @@ class BioSample(BaseModel):
     attributes: List[Attribute]
     model: List[Model]
     package: Optional[Package]
-    dbXref: List[Xref]
+    dbXrefs: List[Xref]
     sameAs: List[Xref]
     status: Status
     accessibility: Accessibility
@@ -174,7 +174,7 @@ class SRA(BaseModel):
     organism: Optional[Organism]
     title: Optional[str]
     description: Optional[str]
-    dbXref: List[Xref]
+    dbXrefs: List[Xref]
     sameAs: List[Xref]
     downloadUrl: List[DownloadUrl]
     status: Status
@@ -198,7 +198,7 @@ class JGA(BaseModel):
     organism: Optional[Organism]
     title: Optional[str]
     description: Optional[str]
-    dbXref: List[Xref]
+    dbXrefs: List[Xref]
     sameAs: List[Xref]
     status: Literal["live"]
     accessibility: Literal["controlled-access"]

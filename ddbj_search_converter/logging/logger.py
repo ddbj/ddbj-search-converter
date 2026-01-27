@@ -63,8 +63,9 @@ def init_logger(
 ) -> None:
     if config is None:
         config = default_config
-    run_id = f"{TODAY_STR}_{run_name}_{token_hex(2)}"
-    log_file = config.result_dir.joinpath(LOG_DIR_NAME, f"{run_id}.log.jsonl")
+    hex_token = token_hex(2)
+    run_id = f"{TODAY_STR}_{run_name}_{hex_token}"
+    log_file = config.result_dir.joinpath(LOG_DIR_NAME, TODAY_STR, f"{run_name}_{hex_token}.log.jsonl")
 
     ctx = LoggerContext(
         run_name=run_name,

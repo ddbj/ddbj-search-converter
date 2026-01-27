@@ -162,7 +162,7 @@ def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> J
         organism=Organism(identifier="9606", name="Homo sapiens"),
         title=extract_title(entry, index_name),
         description=extract_description(entry, index_name),
-        dbXref=[],  # 後で更新
+        dbXrefs=[],  # 後で更新
         sameAs=[],
         status="live",
         accessibility="controlled-access",
@@ -207,11 +207,11 @@ def generate_jga_jsonl(
 
     accessions = list(jga_instances.keys())
 
-    # dbXref を取得して更新
+    # dbXrefs を取得して更新
     dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
     for accession, xrefs in dbxref_map.items():
         jga_instance = jga_instances[accession]
-        jga_instance.dbXref = xrefs
+        jga_instance.dbXrefs = xrefs
 
     # 日付を取得して更新
     date_map = load_date_map(jga_base_path, index_name)

@@ -3,7 +3,7 @@
 Creates a debug_log/ directory with all debug information:
 - summary.txt: log summary output
 - relation_counts.json: DBLink relation counts
-- {run_name}_{category}.txt: per debug category logs
+- {run_name}_debug.jsonl: per run_name debug logs (JSON Lines)
 """
 import argparse
 import io
@@ -16,6 +16,7 @@ from typing import List
 
 import duckdb
 
+from ddbj_search_converter.cli.debug.show_log_debug import _row_to_dict
 from ddbj_search_converter.config import (LOG_DB_FILE_NAME,
                                            TMP_DBLINK_DB_FILE_NAME, TODAY,
                                            get_config)
@@ -79,28 +80,24 @@ def _dump_relation_counts(const_dir: Path, output_dir: Path) -> None:
 
 
 def _dump_debug_logs(result_dir: Path, output_dir: Path) -> None:
-    """Dump all (run_name, category) debug logs."""
+    """Dump all debug logs per run_name as JSONL."""
     db_path = _log_db_path(result_dir)
     if not db_path.exists():
         return
 
     con = duckdb.connect(str(db_path), read_only=True)
     try:
-        pairs = con.execute("""
-            SELECT DISTINCT
-                run_name,
-                json_extract_string(extra, '$.debug_category') as category
+        run_names = con.execute("""
+            SELECT DISTINCT run_name
             FROM log_records
-            WHERE log_level = 'DEBUG'
-              AND json_extract_string(extra, '$.debug_category') IS NOT NULL
-            ORDER BY run_name, category
+            ORDER BY run_name
         """).fetchall()
 
-        if not pairs:
-            print("  No debug logs found.", file=sys.stderr)
+        if not run_names:
+            print("  No log records found.", file=sys.stderr)
             return
 
-        for run_name, category in pairs:
+        for (run_name,) in run_names:
             rows = con.execute(
                 """
                 SELECT
@@ -110,38 +107,21 @@ def _dump_debug_logs(result_dir: Path, output_dir: Path) -> None:
                 FROM log_records
                 WHERE run_name = ?
                   AND log_level = 'DEBUG'
-                  AND json_extract_string(extra, '$.debug_category') = ?
+                  AND json_extract_string(extra, '$.debug_category') IS NOT NULL
                 ORDER BY timestamp DESC
                 """,
-                [run_name, category],
+                [run_name],
             ).fetchall()
 
-            total_count = len(rows)
+            out_path = output_dir / f"{run_name}_debug.jsonl"
 
-            buf = io.StringIO()
-            buf.write(f"\n=== DEBUG logs: {run_name} / {category} ===\n")
-            buf.write(f"Total: {total_count:,} entries\n\n")
+            with open(out_path, "w", encoding="utf-8") as f:
+                for timestamp, message, extra_json in rows:
+                    record = _row_to_dict(timestamp, run_name, message, extra_json)
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-            for timestamp, message, extra_json in rows:
-                ts_str = str(timestamp)[:19] if timestamp else ""
-                extra_parts: list[str] = []
-                if extra_json:
-                    try:
-                        extra = json.loads(extra_json) if isinstance(extra_json, str) else extra_json
-                        if extra.get("accession"):
-                            extra_parts.append(f"accession={extra['accession']}")
-                        if extra.get("file"):
-                            extra_parts.append(f"file={extra['file']}")
-                        if extra.get("source"):
-                            extra_parts.append(f"source={extra['source']}")
-                    except (json.JSONDecodeError, TypeError):
-                        pass
-                extra_str = "  " + "  ".join(extra_parts) if extra_parts else ""
-                buf.write(f"{ts_str}  {message}{extra_str}\n")
-
-            out_path = output_dir / f"{run_name}_{category}.txt"
-            out_path.write_text(buf.getvalue(), encoding="utf-8")
-            print(f"  {out_path}", file=sys.stderr)
+            count = len(rows)
+            print(f"  {out_path} ({count:,} entries)", file=sys.stderr)
 
     finally:
         con.close()
@@ -195,7 +175,7 @@ def main() -> None:
     print("[2/3] relation_counts.json", file=sys.stderr)
     _dump_relation_counts(config.const_dir, output_dir)
 
-    print("[3/3] debug logs", file=sys.stderr)
+    print("[3/3] debug logs (JSONL)", file=sys.stderr)
     _dump_debug_logs(config.result_dir, output_dir)
 
     print(file=sys.stderr)

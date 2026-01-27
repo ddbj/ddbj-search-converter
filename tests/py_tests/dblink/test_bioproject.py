@@ -1,10 +1,23 @@
 """Tests for ddbj_search_converter.dblink.bioproject module."""
 from pathlib import Path
+from typing import Generator
 
 import pytest
 
+from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.bioproject import (
     normalize_hum_id, process_bioproject_xml_file)
+from ddbj_search_converter.logging.logger import _ctx, init_logger
+
+
+@pytest.fixture(autouse=True)
+def _init_logger(tmp_path: Path) -> Generator[None, None, None]:
+    """Initialize logger for tests that call log_debug."""
+    config = Config()
+    config.result_dir = tmp_path
+    init_logger(run_name="test", config=config)
+    yield
+    _ctx.set(None)
 
 
 class TestNormalizeHumId:
@@ -237,7 +250,7 @@ class TestProcessBioprojectXmlFile:
         assert "INVALID123" in result.skipped_accessions
 
     def test_case_insensitive_hum_prefix(self, tmp_path: Path) -> None:
-        """hum の大文字小文字を区別しない。"""
+        """hum の大文字小文字を区別しない（小文字に正規化される）。"""
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <PackageSet>
     <Package>
@@ -258,7 +271,50 @@ class TestProcessBioprojectXmlFile:
         result = process_bioproject_xml_file(xml_path)
 
         assert len(result.hum_id) == 1
-        assert ("PRJDB33333", "HUM0001") in result.hum_id
+        assert ("PRJDB33333", "hum0001") in result.hum_id
+
+    def test_rejects_invalid_hum_id_format(self, tmp_path: Path) -> None:
+        """hum で始まるが hum-id パターンに合致しない値はスキップする。"""
+        xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<PackageSet>
+    <Package>
+        <Project>
+            <Project>
+                <ProjectID>
+                    <ArchiveID accession="PRJEB29894" archive="DDBJ" />
+                    <LocalID submission_id="human skin metagenome">NBDC</LocalID>
+                </ProjectID>
+            </Project>
+        </Project>
+    </Package>
+    <Package>
+        <Project>
+            <Project>
+                <ProjectID>
+                    <ArchiveID accession="PRJEB51075" archive="DDBJ" />
+                    <LocalID submission_id="human_gut_euk_paper">NBDC</LocalID>
+                </ProjectID>
+            </Project>
+        </Project>
+    </Package>
+    <Package>
+        <Project>
+            <Project>
+                <ProjectID>
+                    <ArchiveID accession="PRJEB8013" archive="DDBJ" />
+                    <LocalID submission_id="Humanisation_of_the_mouse">NBDC</LocalID>
+                </ProjectID>
+            </Project>
+        </Project>
+    </Package>
+</PackageSet>
+"""
+        xml_path = tmp_path / "test.xml"
+        xml_path.write_text(xml_content, encoding="utf-8")
+
+        result = process_bioproject_xml_file(xml_path)
+
+        assert len(result.hum_id) == 0
 
     def test_empty_package_set(self, tmp_path: Path) -> None:
         """空の PackageSet を処理する。"""

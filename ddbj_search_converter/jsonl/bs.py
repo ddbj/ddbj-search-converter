@@ -7,10 +7,11 @@ from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 import xmltodict
 
-from ddbj_search_converter.config import (BS_BASE_DIR_NAME, JSONL_DIR_NAME,
+from ddbj_search_converter.config import (BS_BASE_DIR_NAME,
+                                          DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
-                                          get_config, read_last_run,
-                                          write_last_run)
+                                          apply_margin, get_config,
+                                          read_last_run, write_last_run)
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -314,7 +315,7 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
         attributes=parse_attributes(sample, accession),
         model=model,
         package=parse_package(sample, model, is_ddbj, accession),
-        dbXref=[],  # 後で更新
+        dbXrefs=[],  # 後で更新
         sameAs=parse_same_as(sample, accession),
         status=parse_status(sample, accession),
         accessibility=parse_accessibility(sample, accession),
@@ -433,11 +434,11 @@ def _process_xml_file_worker(
     if filtered_count > 0:
         log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
-    # dbXref を一括取得
+    # dbXrefs を一括取得
     dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
-            docs[accession].dbXref = xrefs
+            docs[accession].dbXrefs = xrefs
 
     # 日付を取得
     if is_ddbj:
@@ -510,7 +511,9 @@ def generate_bs_jsonl(
         last_run = read_last_run(config)
         since = last_run.get("biosample")
         if since is not None:
-            log_info(f"incremental update mode: since={since}")
+            original_since = since
+            since = apply_margin(since)
+            log_info(f"incremental update mode: since={since} (original={original_since}, margin_days={DEFAULT_MARGIN_DAYS})")
             # DDBJ: PostgreSQL から対象 accession を取得
             try:
                 from ddbj_search_converter.postgres.bs_date import \

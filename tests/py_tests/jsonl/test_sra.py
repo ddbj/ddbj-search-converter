@@ -390,7 +390,7 @@ class TestWriteJsonl:
             organism=None,
             title="Test",
             description=None,
-            dbXref=[],
+            dbXrefs=[],
             sameAs=[],
             downloadUrl=[],
             status="live",

@@ -19,7 +19,8 @@ from typing import Iterator, List
 
 import duckdb
 
-from ddbj_search_converter.config import (DRA_BASE_PATH, DRA_DB_FILE_NAME,
+from ddbj_search_converter.config import (DEFAULT_MARGIN_DAYS, DRA_BASE_PATH,
+                                          DRA_DB_FILE_NAME,
                                           DRA_LAST_UPDATED_FILE_NAME,
                                           DRA_TAR_FILE_NAME, SRA_TAR_DIR_NAME,
                                           TODAY, Config)
@@ -82,7 +83,7 @@ def iter_all_dra_submissions(config: Config) -> Iterator[str]:
 def iter_updated_dra_submissions(
     config: Config,
     since_date: date,
-    margin_days: int = 3
+    margin_days: int = DEFAULT_MARGIN_DAYS
 ) -> Iterator[str]:
     """Iterate over DRA submissions updated since a given date.
 

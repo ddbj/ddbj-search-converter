@@ -35,6 +35,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, log_warn,
                                                   run_logger)
@@ -129,8 +130,15 @@ def process_bioproject_xml_file(xml_path: Path) -> BioProjectRelations:
                 elif tag == "LocalID":
                     submission_id = elem.attrib.get("submission_id", "")
                     if submission_id.lower().startswith("hum"):
-                        normalized = normalize_hum_id(submission_id)
-                        current_hum_ids.append(normalized)
+                        normalized = normalize_hum_id(submission_id.lower())
+                        if is_valid_accession(normalized, "hum-id"):
+                            current_hum_ids.append(normalized)
+                        else:
+                            log_debug(
+                                f"skipping invalid hum-id: {submission_id}",
+                                accession=submission_id,
+                                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                            )
                     elem.clear()
 
                 elif tag == "CenterID":

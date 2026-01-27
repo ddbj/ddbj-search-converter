@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from ddbj_search_converter.config import (Config, get_last_run_path,
-                                          read_last_run, write_last_run)
+from ddbj_search_converter.config import (Config, apply_margin,
+                                          get_last_run_path, read_last_run,
+                                          write_last_run)
 
 
 class TestLastRunUtilities:
@@ -99,3 +100,32 @@ class TestLastRunUtilities:
 
         last_run_path = result_dir / "last_run.json"
         assert last_run_path.exists()
+
+
+class TestApplyMargin:
+    """apply_margin のテスト。"""
+
+    def test_default_margin_7_days(self) -> None:
+        """デフォルトで 7 日分のマージンを減算する。"""
+        result = apply_margin("2026-01-20T00:00:00Z")
+        assert result == "2026-01-13T00:00:00Z"
+
+    def test_custom_margin_days(self) -> None:
+        """カスタム margin_days を指定できる。"""
+        result = apply_margin("2026-01-20T00:00:00Z", margin_days=3)
+        assert result == "2026-01-17T00:00:00Z"
+
+    def test_month_boundary(self) -> None:
+        """月またぎで正しく計算される。"""
+        result = apply_margin("2026-02-03T00:00:00Z")
+        assert result == "2026-01-27T00:00:00Z"
+
+    def test_year_boundary(self) -> None:
+        """年またぎで正しく計算される。"""
+        result = apply_margin("2026-01-05T00:00:00Z")
+        assert result == "2025-12-29T00:00:00Z"
+
+    def test_preserves_time_part(self) -> None:
+        """時刻部分が保持される。"""
+        result = apply_margin("2026-01-20T15:30:45Z")
+        assert result == "2026-01-13T15:30:45Z"

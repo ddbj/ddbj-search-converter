@@ -108,6 +108,99 @@ DRR000001\tDRA000001\tlive\t2022-09-23T10:09:59Z\t2010-03-24T03:10:22Z\t2009-06-
             assert rows[0][0] is None  # BioSample
             assert rows[0][1] is None  # Study
 
+    def test_handles_dra_format_empty_strings(self, tmp_path: Path) -> None:
+        """DRA形式: 空文字列 (連続タブ) が NULL として扱われる。"""
+        tsv_path = tmp_path / "accessions.tsv"
+        # DRA は SUBMISSION 行のみ、欠損値が空文字列
+        tsv_content = (
+            "Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\t"
+            "Type\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\t"
+            "Loaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy\n"
+            "DRA000001\tDRA000001\tlive\t2014-05-12\t2014-05-12\t2014-05-12\t"
+            "SUBMISSION\tDDBJ\tpublic\t\t\t\t\t\t\t\t\t"
+            "SAMD00016353\tPRJDB001\t\n"
+        )
+        tsv_path.write_text(tsv_content, encoding="utf-8")
+
+        db_path = tmp_path / "test.duckdb"
+        init_accession_db(db_path)
+        load_tsv_to_tmp_db(tsv_path, db_path)
+
+        with duckdb.connect(db_path) as conn:
+            rows = conn.execute(
+                "SELECT Accession, Experiment, Sample, Study, BioSample, BioProject "
+                "FROM accessions"
+            ).fetchall()
+            assert len(rows) == 1
+            assert rows[0][0] == "DRA000001"  # Accession
+            assert rows[0][1] is None  # Experiment (空文字列 → NULL)
+            assert rows[0][2] is None  # Sample (空文字列 → NULL)
+            assert rows[0][3] is None  # Study (空文字列 → NULL)
+            assert rows[0][4] == "SAMD00016353"  # BioSample
+            assert rows[0][5] == "PRJDB001"  # BioProject
+
+    def test_handles_dra_date_format(self, tmp_path: Path) -> None:
+        """DRA形式: YYYY-MM-DD 日付が TIMESTAMP にパースされる。"""
+        tsv_path = tmp_path / "accessions.tsv"
+        tsv_content = (
+            "Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\t"
+            "Type\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\t"
+            "Loaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy\n"
+            "DRA000001\tDRA000001\tlive\t2014-05-12\t2014-03-01\t2013-12-25\t"
+            "SUBMISSION\tDDBJ\tpublic\t\t\t\t\t\t\t\t\t\t\t\n"
+        )
+        tsv_path.write_text(tsv_content, encoding="utf-8")
+
+        db_path = tmp_path / "test.duckdb"
+        init_accession_db(db_path)
+        load_tsv_to_tmp_db(tsv_path, db_path)
+
+        with duckdb.connect(db_path) as conn:
+            rows = conn.execute(
+                "SELECT Updated, Published, Received FROM accessions"
+            ).fetchall()
+            assert len(rows) == 1
+            updated, published, received = rows[0]
+            assert updated is not None
+            assert updated.year == 2014
+            assert updated.month == 5
+            assert updated.day == 12
+            assert published.year == 2014
+            assert published.month == 3
+            assert received.year == 2013
+            assert received.month == 12
+
+    def test_sra_format_backward_compatible(self, tmp_path: Path) -> None:
+        """SRA形式: '-' null + ISO8601 日付が引き続き動作する。"""
+        tsv_path = tmp_path / "accessions.tsv"
+        tsv_content = (
+            "Accession\tSubmission\tStatus\tUpdated\tPublished\tReceived\t"
+            "Type\tCenter\tVisibility\tAlias\tExperiment\tSample\tStudy\t"
+            "Loaded\tSpots\tBases\tMd5sum\tBioSample\tBioProject\tReplacedBy\n"
+            "SRR000001\tSRA000001\tlive\t2022-09-23T10:09:59Z\t2010-03-24T03:10:22Z\t"
+            "2009-06-20T02:48:04Z\tRUN\tNCBI\tpublic\talias\tSRX000001\tSRS000001\t"
+            "SRP000001\t1\t10148174\t730668528\tmd5hash\t-\tPRJNA38027\t-\n"
+        )
+        tsv_path.write_text(tsv_content, encoding="utf-8")
+
+        db_path = tmp_path / "test.duckdb"
+        init_accession_db(db_path)
+        load_tsv_to_tmp_db(tsv_path, db_path)
+
+        with duckdb.connect(db_path) as conn:
+            rows = conn.execute(
+                "SELECT Accession, BioSample, BioProject, Updated FROM accessions"
+            ).fetchall()
+            assert len(rows) == 1
+            assert rows[0][0] == "SRR000001"
+            assert rows[0][1] is None  # '-' → NULL
+            assert rows[0][2] == "PRJNA38027"
+            updated = rows[0][3]
+            assert updated is not None
+            assert updated.year == 2022
+            assert updated.month == 9
+            assert updated.day == 23
+
 
 class TestFinalizeDb:
     """Tests for finalize_db function."""

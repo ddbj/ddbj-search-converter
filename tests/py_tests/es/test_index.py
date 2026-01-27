@@ -94,4 +94,4 @@ class TestGetMappingForIndex:
             mapping = get_mapping_for_index(jga_type)  # type: ignore
             props = mapping["mappings"]["properties"]
             assert "identifier" in props
-            assert "dbXref" in props
+            assert "dbXrefs" in props

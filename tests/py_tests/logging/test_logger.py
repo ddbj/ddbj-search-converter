@@ -34,7 +34,7 @@ class TestRunLogger:
 
         # Check that log file was created
         log_dir = test_config.result_dir.joinpath("logs")
-        log_files = list(log_dir.glob("*.log.jsonl"))
+        log_files = list(log_dir.glob("**/*.log.jsonl"))
         assert len(log_files) == 1
 
         # Read and verify log records
@@ -69,7 +69,7 @@ class TestRunLogger:
 
         # Check log file
         log_dir = test_config.result_dir.joinpath("logs")
-        log_files = list(log_dir.glob("*.log.jsonl"))
+        log_files = list(log_dir.glob("**/*.log.jsonl"))
         assert len(log_files) == 1
 
         with log_files[0].open("r", encoding="utf-8") as f:
@@ -105,7 +105,7 @@ class TestLogLevels:
 
         # Read log file
         log_dir = test_config.result_dir.joinpath("logs")
-        log_files = list(log_dir.glob("*.log.jsonl"))
+        log_files = list(log_dir.glob("**/*.log.jsonl"))
         assert len(log_files) == 1
 
         with log_files[0].open("r", encoding="utf-8") as f:
@@ -138,7 +138,7 @@ class TestLogWithExtra:
 
         # Read log file
         log_dir = test_config.result_dir.joinpath("logs")
-        log_files = list(log_dir.glob("*.log.jsonl"))
+        log_files = list(log_dir.glob("**/*.log.jsonl"))
 
         with log_files[0].open("r", encoding="utf-8") as f:
             records = [json.loads(line) for line in f if line.strip()]
@@ -159,7 +159,7 @@ class TestLogWithExtra:
         log_info("processing", file=Path("/path/to/file.xml"))
 
         log_dir = test_config.result_dir.joinpath("logs")
-        log_files = list(log_dir.glob("*.log.jsonl"))
+        log_files = list(log_dir.glob("**/*.log.jsonl"))
 
         with log_files[0].open("r", encoding="utf-8") as f:
             record = json.loads(f.readline())
@@ -223,7 +223,7 @@ class TestInferRunName:
             log_info("test")
 
         log_dir = test_config.result_dir.joinpath("logs")
-        log_files = list(log_dir.glob("*.log.jsonl"))
+        log_files = list(log_dir.glob("**/*.log.jsonl"))
 
         with log_files[0].open("r", encoding="utf-8") as f:
             record = json.loads(f.readline())

@@ -23,7 +23,8 @@ from typing import Dict, Iterator, List, Literal, Optional, Set, Tuple
 
 import duckdb
 
-from ddbj_search_converter.config import (DRA_ACCESSIONS_BASE_PATH,
+from ddbj_search_converter.config import (DEFAULT_MARGIN_DAYS,
+                                          DRA_ACCESSIONS_BASE_PATH,
                                           DRA_DB_FILE_NAME,
                                           SRA_ACCESSIONS_BASE_PATH,
                                           SRA_DB_FILE_NAME,
@@ -150,14 +151,14 @@ def load_tsv_to_tmp_db(
                 Type,
                 Status,
                 Visibility,
-                CAST(NULLIF(Updated, '') AS TIMESTAMP),
-                CAST(NULLIF(Published, '') AS TIMESTAMP),
-                CAST(NULLIF(Received, '') AS TIMESTAMP)
+                CAST(Updated AS TIMESTAMP),
+                CAST(Published AS TIMESTAMP),
+                CAST(Received AS TIMESTAMP)
             FROM read_csv(
                 '{tsv_path}',
                 delim='\\t',
                 header=true,
-                nullstr='-',
+                nullstr=['-', ''],
                 all_varchar=true
             )
             """
@@ -574,7 +575,7 @@ def iter_updated_submissions(
     config: Config,
     source: SourceKind,
     since: str,
-    margin_days: int = 3,
+    margin_days: int = DEFAULT_MARGIN_DAYS,
 ) -> Iterator[str]:
     """
     since 以降に更新された submission を取得する。
@@ -586,7 +587,7 @@ def iter_updated_submissions(
         config: Config オブジェクト
         source: "dra" or "sra"
         since: ISO8601 形式の日時文字列
-        margin_days: マージン日数 (デフォルト 3)
+        margin_days: マージン日数 (デフォルト 7)
 
     Returns:
         submission accession のイテレータ

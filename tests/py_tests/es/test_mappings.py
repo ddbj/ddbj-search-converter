@@ -24,7 +24,7 @@ class TestCommonMapping:
             "organism",
             "title",
             "description",
-            "dbXref",
+            "dbXrefs",
             "sameAs",
             "status",
             "visibility",
@@ -36,12 +36,12 @@ class TestCommonMapping:
             assert field in mapping, f"Missing field: {field}"
 
     def test_dbxref_is_nested(self) -> None:
-        """dbXref should be nested for relationship queries."""
+        """dbXrefs should be nested for relationship queries."""
         mapping = get_common_mapping()
-        assert mapping["dbXref"]["type"] == "nested"
-        assert "properties" in mapping["dbXref"]
-        assert "identifier" in mapping["dbXref"]["properties"]
-        assert "type" in mapping["dbXref"]["properties"]
+        assert mapping["dbXrefs"]["type"] == "nested"
+        assert "properties" in mapping["dbXrefs"]
+        assert "identifier" in mapping["dbXrefs"]["properties"]
+        assert "type" in mapping["dbXrefs"]["properties"]
 
     def test_properties_is_disabled(self) -> None:
         """properties field should be disabled (not searchable)."""
@@ -167,7 +167,7 @@ class TestJgaMapping:
             mapping = get_jga_mapping(jga_type)
             props = mapping["mappings"]["properties"]
             assert "identifier" in props
-            assert "dbXref" in props
+            assert "dbXrefs" in props
             assert "status" in props
 
 
