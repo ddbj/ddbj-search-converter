@@ -200,7 +200,7 @@ def get_related_entities(
     *,
     entity_type: AccessionType,
     accession: str,
-) -> Iterator[tuple[str, str]]:
+) -> Iterator[Tuple[str, str]]:
     """無向グラフなので src/dst 両方向を検索。"""
     db_path = _final_db_path(config)
     with duckdb.connect(db_path) as conn:
@@ -237,7 +237,7 @@ def get_related_entities_bulk(
     config: Config,
     *,
     entity_type: AccessionType,
-    accessions: list[str],
+    accessions: List[str],
 ) -> Dict[str, List[Tuple[AccessionType, str]]]:
     if not accessions:
         return {}

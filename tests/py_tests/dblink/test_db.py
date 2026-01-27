@@ -1,6 +1,6 @@
 """Tests for ddbj_search_converter.dblink.db module."""
 from pathlib import Path
-from typing import Generator
+from typing import Generator, List
 
 import duckdb
 import pytest
@@ -139,7 +139,7 @@ class TestWriteRelationsToTsv:
     def test_writes_relations(self, tmp_path: Path) -> None:
         """relationsをTSVファイルに書き出す。"""
         output_path = tmp_path / "relations.tsv"
-        relations: list[Relation] = [
+        relations: List[Relation] = [
             ("bioproject", "PRJDB1", "biosample", "SAMD1"),
             ("bioproject", "PRJDB2", "biosample", "SAMD2"),
         ]
@@ -156,7 +156,7 @@ class TestWriteRelationsToTsv:
     def test_normalizes_on_write(self, tmp_path: Path) -> None:
         """書き込み時に正規化される。"""
         output_path = tmp_path / "relations.tsv"
-        relations: list[Relation] = [
+        relations: List[Relation] = [
             ("biosample", "SAMD1", "bioproject", "PRJDB1"),
         ]
 
@@ -168,8 +168,8 @@ class TestWriteRelationsToTsv:
     def test_append_mode(self, tmp_path: Path) -> None:
         """appendモードで追記する。"""
         output_path = tmp_path / "relations.tsv"
-        relations1: list[Relation] = [("bioproject", "PRJDB1", "biosample", "SAMD1")]
-        relations2: list[Relation] = [("bioproject", "PRJDB2", "biosample", "SAMD2")]
+        relations1: List[Relation] = [("bioproject", "PRJDB1", "biosample", "SAMD1")]
+        relations2: List[Relation] = [("bioproject", "PRJDB2", "biosample", "SAMD2")]
 
         write_relations_to_tsv(output_path, relations1, append=False)
         write_relations_to_tsv(output_path, relations2, append=True)
@@ -180,7 +180,7 @@ class TestWriteRelationsToTsv:
     def test_creates_parent_dirs(self, tmp_path: Path) -> None:
         """親ディレクトリが存在しない場合は作成する。"""
         output_path = tmp_path / "nested" / "dir" / "relations.tsv"
-        relations: list[Relation] = [("bioproject", "PRJDB1", "biosample", "SAMD1")]
+        relations: List[Relation] = [("bioproject", "PRJDB1", "biosample", "SAMD1")]
 
         write_relations_to_tsv(output_path, relations)
 

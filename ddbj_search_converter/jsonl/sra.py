@@ -15,9 +15,8 @@ from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
                                           read_last_run, write_last_run)
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
-from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, log_warn,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import (log_debug, log_info,
+                                                  log_warn, run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (SRA, Accessibility, Distribution,
                                           Organism, Status, XrefType)
@@ -102,7 +101,7 @@ def _normalize_accessibility(accessibility: Optional[str]) -> Accessibility:
     return "public-access"
 
 
-def parse_submission(
+def parse_submission(  # pylint: disable=unused-argument
     xml_bytes: bytes,
     is_dra: bool,
     accession: str,
@@ -130,7 +129,7 @@ def parse_submission(
         return None
 
 
-def parse_study(
+def parse_study(  # pylint: disable=unused-argument
     xml_bytes: bytes,
     is_dra: bool,
     accession: str,
@@ -166,7 +165,7 @@ def parse_study(
     return results
 
 
-def parse_experiment(
+def parse_experiment(  # pylint: disable=unused-argument
     xml_bytes: bytes,
     is_dra: bool,
     accession: str,
@@ -223,7 +222,7 @@ def parse_experiment(
     return results
 
 
-def parse_run(
+def parse_run(  # pylint: disable=unused-argument
     xml_bytes: bytes,
     is_dra: bool,
     accession: str,
@@ -257,7 +256,7 @@ def parse_run(
     return results
 
 
-def parse_sample(
+def parse_sample(  # pylint: disable=unused-argument
     xml_bytes: bytes,
     is_dra: bool,
     accession: str,
@@ -300,7 +299,7 @@ def parse_sample(
     return results
 
 
-def parse_analysis(
+def parse_analysis(  # pylint: disable=unused-argument
     xml_bytes: bytes,
     is_dra: bool,
     accession: str,
@@ -554,7 +553,7 @@ def create_analysis(
 # === Submission processing ===
 
 
-def process_submission_xml(
+def process_submission_xml(  # pylint: disable=unused-argument
     tar_reader: TarXMLReader,
     submission: str,
     is_dra: bool,
@@ -744,7 +743,7 @@ def process_source(
                         # SET の中から accession を抽出
                         set_key = f"{xml_type.upper()}_SET"
                         entry_key = xml_type.upper()
-                        entries_data = parsed.get(set_key, {}).get(entry_key)
+                        entries_data = (parsed.get(set_key) or {}).get(entry_key)
                         if entries_data:
                             if not isinstance(entries_data, list):
                                 entries_data = [entries_data]
@@ -798,7 +797,7 @@ def process_source(
     return counts
 
 
-def generate_sra_jsonl(
+def generate_sra_jsonl(  # pylint: disable=unused-argument
     config: Config,
     output_dir: Path,
     parallel_num: int = DEFAULT_PARALLEL_NUM,

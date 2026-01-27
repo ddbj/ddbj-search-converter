@@ -1,6 +1,6 @@
 """JGA Elasticsearch mapping definitions for 4 types."""
 
-from typing import Any, Dict, Literal
+from typing import Any, Dict, List, Literal
 
 from ddbj_search_converter.es.mappings.common import (INDEX_SETTINGS,
                                                       get_common_mapping)
@@ -12,7 +12,7 @@ JgaIndexType = Literal[
     "jga-policy",
 ]
 
-JGA_INDEXES: list[JgaIndexType] = [
+JGA_INDEXES: List[JgaIndexType] = [
     "jga-study",
     "jga-dataset",
     "jga-dac",

@@ -22,7 +22,7 @@ from ddbj_search_converter.config import (NCBI_LAST_MERGED_FILE_NAME,
                                           NCBI_SRA_METADATA_LOCAL_PATH,
                                           NCBI_SRA_TAR_FILE_NAME,
                                           SRA_TAR_DIR_NAME, TODAY, Config)
-from ddbj_search_converter.logging.logger import log_info, log_warn
+from ddbj_search_converter.logging.logger import log_info
 
 
 def get_sra_tar_dir(config: Config) -> Path:

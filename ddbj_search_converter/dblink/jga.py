@@ -36,7 +36,7 @@ from ddbj_search_converter.config import (JGA_ANALYSIS_STUDY_CSV,
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
+                                                  run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
 
 # === CSV relation operations ===
@@ -162,7 +162,7 @@ def load_jga_study_xml() -> List[Dict[str, Any]]:
 
 def extract_hum_id(study_entry: Dict[str, Any]) -> Optional[str]:
     """STUDY_ATTRIBUTES から NBDC Number (hum-id) を抽出する。"""
-    attrs = study_entry.get("STUDY_ATTRIBUTES", {}).get("STUDY_ATTRIBUTE", [])
+    attrs = (study_entry.get("STUDY_ATTRIBUTES") or {}).get("STUDY_ATTRIBUTE", [])
 
     # Ensure it's a list (single attribute case)
     if isinstance(attrs, dict):
@@ -178,7 +178,7 @@ def extract_hum_id(study_entry: Dict[str, Any]) -> Optional[str]:
 
 def extract_pubmed_ids(study_entry: Dict[str, Any]) -> Set[str]:
     """PUBLICATIONS から PUBMED ID を抽出する。"""
-    pubs = study_entry.get("PUBLICATIONS", {}).get("PUBLICATION", [])
+    pubs = (study_entry.get("PUBLICATIONS") or {}).get("PUBLICATION", [])
 
     # Ensure it's a list (single publication case)
     if isinstance(pubs, dict):

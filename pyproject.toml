@@ -63,23 +63,6 @@ show_log_summary = "ddbj_search_converter.cli.debug.show_log_summary:main"
 show_log_debug = "ddbj_search_converter.cli.debug.show_log_debug:main"
 show_dblink_counts = "ddbj_search_converter.cli.debug.show_dblink_counts:main"
 dump_debug_report = "ddbj_search_converter.cli.debug.dump_debug_report:main"
-# create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
-# create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
-# create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
-# create_dra_date_db = "ddbj_search_converter.cache_db.dra_date:main"
-# create_bp_relation_ids = "ddbj_search_converter.cache_db.bp_relation_ids:main"
-# create_bs_relation_ids = "ddbj_search_converter.cache_db.bs_relation_ids:main"
-# create_dra_relation_ids = "ddbj_search_converter.cache_db.dra_relation_ids:main"
-# create_jga_relation_ids = "ddbj_search_converter.cache_db.jga_relation_ids:main"
-# bp_xml_to_jsonl = "ddbj_search_converter.bioproject.bp_xml_to_jsonl:main"
-# bp_bulk_insert = "ddbj_search_converter.bioproject.bp_bulk_insert:main"
-# bs_xml_to_jsonl = "ddbj_search_converter.biosample.bs_xml_to_jsonl:main"
-# bs_bulk_insert = "ddbj_search_converter.biosample.bs_bulk_insert:main"
-# dra_generate_jsonl = "ddbj_search_converter.dra.dra_generate_jsonl:main"
-# dra_bulk_insert = "ddbj_search_converter.dra.dra_bulk_insert:main"
-# jga_generate_jsonl = "ddbj_search_converter.jga.jga_generate_jsonl:main"
-# jga_bulk_insert = "ddbj_search_converter.jga.jga_bulk_insert:main"
-# jga_delete_indexes = "ddbj_search_converter.jga.delete_indexes:main"
 
 [tool.setuptools]
 packages = [
@@ -95,8 +78,6 @@ packages = [
     "ddbj_search_converter.sra",
 ]
 
-# [tool.setuptools.package-data]
-# ddbj_search_converter = ["es_mappings/*.json"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"
@@ -121,6 +102,8 @@ disable = [
     "R0913", # Too many arguments
     "R0917", # Too many positional arguments
     "R0914", # Too many local variables
+    "R0915", # Too many statements
+    "R1702", # Too many nested blocks
     "R1705", # Unnecessary "else" after "return"
     "W0511", # Fixme
     "W0718", # Broad exception caught

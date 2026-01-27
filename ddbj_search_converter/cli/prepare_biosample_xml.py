@@ -18,7 +18,7 @@ from typing import List
 from ddbj_search_converter.config import (DDBJ_BIOSAMPLE_XML,
                                           NCBI_BIOSAMPLE_XML, Config,
                                           get_config)
-from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
+from ddbj_search_converter.logging.logger import log_info, run_logger
 from ddbj_search_converter.xml_utils import (extract_gzip, get_tmp_xml_dir,
                                              split_xml)
 

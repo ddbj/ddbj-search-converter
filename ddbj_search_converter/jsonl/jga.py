@@ -124,7 +124,7 @@ def extract_title(entry: Dict[str, Any], index_name: IndexName) -> Optional[str]
     """JGA エントリからタイトルを抽出する。"""
     title: Any = None
     if index_name == "jga-study":
-        title = entry.get("DESCRIPTOR", {}).get("STUDY_TITLE")
+        title = (entry.get("DESCRIPTOR") or {}).get("STUDY_TITLE")
     elif index_name in ("jga-dataset", "jga-policy"):
         title = entry.get("TITLE")
     return str(title) if title is not None else None
@@ -134,7 +134,7 @@ def extract_description(entry: Dict[str, Any], index_name: IndexName) -> Optiona
     """JGA エントリから説明を抽出する。"""
     description: Any = None
     if index_name == "jga-study":
-        description = entry.get("DESCRIPTOR", {}).get("STUDY_ABSTRACT")
+        description = (entry.get("DESCRIPTOR") or {}).get("STUDY_ABSTRACT")
     elif index_name == "jga-dataset":
         description = entry.get("DESCRIPTION")
     return str(description) if description is not None else None

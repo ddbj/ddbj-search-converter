@@ -239,7 +239,7 @@ def process_xml_files_parallel(
                 for acc in file_result.skipped_accessions:
                     log_debug(f"skipping invalid bioproject: {acc}",
                               accession=acc, file=str(xml_path),
-                              debug_category=DebugCategory.INVALID_BIOPROJECT_ID)
+                              debug_category=DebugCategory.INVALID_ACCESSION_ID)
 
             except Exception as e:  # pylint: disable=broad-exception-caught
                 log_error(f"error processing {xml_path.name}: {e}",

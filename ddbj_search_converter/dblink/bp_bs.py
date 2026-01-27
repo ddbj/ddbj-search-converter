@@ -47,8 +47,7 @@ from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 load_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, log_warn,
-                                                  run_logger)
+                                                  log_info, run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.sra_accessions_tab import iter_bp_bs_relations
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir

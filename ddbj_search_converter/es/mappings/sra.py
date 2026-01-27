@@ -1,6 +1,6 @@
 """SRA Elasticsearch mapping definitions for 6 types."""
 
-from typing import Any, Dict, Literal
+from typing import Any, Dict, List, Literal
 
 from ddbj_search_converter.es.mappings.common import (INDEX_SETTINGS,
                                                       get_common_mapping,
@@ -15,7 +15,7 @@ SraIndexType = Literal[
     "sra-analysis",
 ]
 
-SRA_INDEXES: list[SraIndexType] = [
+SRA_INDEXES: List[SraIndexType] = [
     "sra-submission",
     "sra-study",
     "sra-experiment",

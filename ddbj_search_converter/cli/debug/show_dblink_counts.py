@@ -6,7 +6,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import duckdb
 
@@ -17,7 +17,7 @@ def _get_db_path(const_dir: Path) -> Path:
     return const_dir.joinpath("dblink", TMP_DBLINK_DB_FILE_NAME)
 
 
-def get_relation_counts(const_dir: Path) -> list[dict[str, object]]:
+def get_relation_counts(const_dir: Path) -> List[Dict[str, object]]:
     db_path = _get_db_path(const_dir)
     if not db_path.exists():
         print(f"DBLink database not found: {db_path}", file=sys.stderr)

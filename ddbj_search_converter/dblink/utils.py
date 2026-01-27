@@ -5,7 +5,7 @@ from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
                                           BS_BLACKLIST_REL_PATH,
                                           SRA_BLACKLIST_REL_PATH, Config)
 from ddbj_search_converter.dblink.db import IdPairs
-from ddbj_search_converter.logging.logger import log_info, log_warn
+from ddbj_search_converter.logging.logger import log_info
 
 
 def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:

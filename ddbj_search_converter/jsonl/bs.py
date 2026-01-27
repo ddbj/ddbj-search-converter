@@ -32,7 +32,7 @@ DEFAULT_PARALLEL_NUM = 64
 def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
     """BioSample から accession を抽出する。"""
     if is_ddbj:
-        ids = sample.get("Ids", {}).get("Id")
+        ids = (sample.get("Ids") or {}).get("Id")
         if ids is None:
             raise ValueError("No Ids found in BioSample")
         if isinstance(ids, list):
@@ -52,7 +52,7 @@ def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
 def parse_organism(sample: Dict[str, Any], is_ddbj: bool, accession: str = "") -> Optional[Organism]:
     """BioSample から Organism を抽出する。"""
     try:
-        organism_obj = sample.get("Description", {}).get("Organism")
+        organism_obj = (sample.get("Description") or {}).get("Organism")
         if organism_obj is None:
             return None
         if is_ddbj:
@@ -71,7 +71,7 @@ def parse_organism(sample: Dict[str, Any], is_ddbj: bool, accession: str = "") -
 def parse_title(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioSample から title を抽出する。"""
     try:
-        title = sample.get("Description", {}).get("Title")
+        title = (sample.get("Description") or {}).get("Title")
         return str(title) if title is not None else None
     except Exception as e:
         log_warn(f"failed to parse title: {e}", accession=accession)
@@ -81,7 +81,7 @@ def parse_title(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
 def parse_description(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioSample から description を抽出する。"""
     try:
-        comment = sample.get("Description", {}).get("Comment")
+        comment = (sample.get("Description") or {}).get("Comment")
         if comment is None:
             return None
         if isinstance(comment, str):
@@ -102,7 +102,7 @@ def parse_attributes(sample: Dict[str, Any], accession: str = "") -> List[Attrib
     """BioSample から Attributes を抽出する。"""
     attributes: List[Attribute] = []
     try:
-        attrs = sample.get("Attributes", {}).get("Attribute")
+        attrs = (sample.get("Attributes") or {}).get("Attribute")
         if attrs is None:
             return []
         attr_list = attrs if isinstance(attrs, list) else [attrs]
@@ -130,7 +130,7 @@ def parse_model(sample: Dict[str, Any], accession: str = "") -> List[Model]:
     """BioSample から Model を抽出する。"""
     models: List[Model] = []
     try:
-        model_obj = sample.get("Models", {}).get("Model")
+        model_obj = (sample.get("Models") or {}).get("Model")
         if model_obj is None:
             return []
         model_list = model_obj if isinstance(model_obj, list) else [model_obj]
@@ -172,7 +172,7 @@ def parse_same_as(sample: Dict[str, Any], accession: str = "") -> List[Xref]:
     """BioSample から sameAs (SRA ID) を抽出する。"""
     xrefs: List[Xref] = []
     try:
-        ids = sample.get("Ids", {}).get("Id")
+        ids = (sample.get("Ids") or {}).get("Id")
         if ids is None:
             return []
         id_list = ids if isinstance(ids, list) else [ids]
@@ -272,7 +272,7 @@ def _normalize_owner_name(sample: Dict[str, Any]) -> None:
 def _normalize_model(sample: Dict[str, Any]) -> None:
     """Models.Model を正規化する。"""
     try:
-        model = sample.get("Models", {}).get("Model")
+        model = (sample.get("Models") or {}).get("Model")
         if model is None:
             return
         if isinstance(model, str):

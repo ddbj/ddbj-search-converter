@@ -18,8 +18,7 @@ from typing import List, Tuple
 from ddbj_search_converter.config import Config, get_config
 from ddbj_search_converter.es.bulk_insert import (bulk_insert_from_dir,
                                                   bulk_insert_jsonl)
-from ddbj_search_converter.es.index import (ALL_INDEXES, IndexGroup, IndexName,
-                                            create_index, delete_index,
+from ddbj_search_converter.es.index import (create_index, delete_index,
                                             get_indexes_for_group,
                                             list_indexes)
 from ddbj_search_converter.logging.logger import (log_debug, log_error,

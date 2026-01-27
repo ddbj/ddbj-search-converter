@@ -8,7 +8,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List
 
 import duckdb
 
@@ -19,9 +19,9 @@ def _get_db_path(result_dir: Path) -> Path:
     return result_dir.joinpath(LOG_DB_FILE_NAME)
 
 
-def _row_to_dict(timestamp, run_name: str, message: str, extra_json) -> dict:
+def _row_to_dict(timestamp: Any, run_name: str, message: str, extra_json: Any) -> Dict[str, Any]:
     """Convert a log row to a dict for JSONL output."""
-    record: dict = {
+    record: Dict[str, Any] = {
         "timestamp": str(timestamp)[:19] if timestamp else None,
         "run_name": run_name,
         "message": message,
@@ -95,7 +95,7 @@ def main() -> None:
     con = duckdb.connect(str(db_path), read_only=True)
     try:
         conditions = ["run_name = ?", "log_level = 'DEBUG'"]
-        params: list = [parsed.run_name]
+        params: List[Any] = [parsed.run_name]
 
         if parsed.category is not None:
             conditions.append("json_extract_string(extra, '$.debug_category') = ?")
@@ -147,13 +147,13 @@ def _print_jq_examples(run_name: str) -> None:
     cmd = f"show_log_debug --run-name {run_name}"
     print(file=sys.stderr)
     print("jq examples:", file=sys.stderr)
-    print(f"  # Count by category", file=sys.stderr)
+    print("  # Count by category", file=sys.stderr)
     print(f"  {cmd} | jq -s 'group_by(.debug_category) | map({{category: .[0].debug_category, count: length}})'", file=sys.stderr)
-    print(f"  # Filter by category", file=sys.stderr)
+    print("  # Filter by category", file=sys.stderr)
     print(f'  {cmd} | jq \'select(.debug_category == "invalid_biosample_id")\'', file=sys.stderr)
-    print(f"  # Unique accessions", file=sys.stderr)
+    print("  # Unique accessions", file=sys.stderr)
     print(f"  {cmd} | jq -r '.accession // empty' | sort -u", file=sys.stderr)
-    print(f"  # Count per accession", file=sys.stderr)
+    print("  # Count per accession", file=sys.stderr)
     print(f"  {cmd} | jq -r '.accession // empty' | sort | uniq -c | sort -rn | head -20", file=sys.stderr)
     print(file=sys.stderr)
 

@@ -32,7 +32,7 @@ def _dblink_db_path(const_dir: Path) -> Path:
 
 def _dump_summary(result_dir: Path, output_dir: Path) -> None:
     """Dump log summary to summary.txt."""
-    from ddbj_search_converter.cli.debug.show_log_summary import (
+    from ddbj_search_converter.cli.debug.show_log_summary import (  # pylint: disable=import-outside-toplevel
         print_debug_category_summary, print_log_level_summary,
         print_run_status)
 
@@ -70,7 +70,7 @@ def _dump_relation_counts(const_dir: Path, output_dir: Path) -> None:
         return
 
     from ddbj_search_converter.cli.debug.show_dblink_counts import \
-        get_relation_counts
+        get_relation_counts  # pylint: disable=import-outside-toplevel
 
     results = get_relation_counts(const_dir)
 

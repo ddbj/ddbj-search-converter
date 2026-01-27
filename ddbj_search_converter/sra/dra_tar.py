@@ -24,7 +24,7 @@ from ddbj_search_converter.config import (DEFAULT_MARGIN_DAYS, DRA_BASE_PATH,
                                           DRA_LAST_UPDATED_FILE_NAME,
                                           DRA_TAR_FILE_NAME, SRA_TAR_DIR_NAME,
                                           TODAY, Config)
-from ddbj_search_converter.logging.logger import log_info, log_warn
+from ddbj_search_converter.logging.logger import log_info
 
 XML_TYPES = ["submission", "study", "experiment", "run", "sample", "analysis"]
 

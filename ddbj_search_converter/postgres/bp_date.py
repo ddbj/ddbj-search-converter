@@ -5,7 +5,7 @@ DDBJ BioProject の日付は XML に含まれていないため、PostgreSQL か
 """
 from typing import Dict, Iterable, Optional, Set, Tuple
 
-import psycopg2
+import psycopg2  # type: ignore[import-untyped]
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import log_debug

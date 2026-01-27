@@ -41,7 +41,7 @@ from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 load_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
+                                                  run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
 
 TRAD_FILES = [
@@ -80,7 +80,7 @@ def process_assembly_summary_file(
     """cols: [0]=assembly, [1]=bioproject, [2]=biosample, [3]=wgs_master"""
     log_info("streaming assembly_summary_genbank.txt", url=ASSEMBLY_SUMMARY_URL)
 
-    KEY_TO_TYPE: Dict[str, AccessionType] = {
+    key_to_type: Dict[str, AccessionType] = {
         "asm": "insdc-assembly",
         "bp": "bioproject",
         "bs": "biosample",
@@ -121,8 +121,8 @@ def process_assembly_summary_file(
                     if left_val == "na" or right_val == "na":
                         continue
 
-                    left_type = KEY_TO_TYPE[left]
-                    right_type = KEY_TO_TYPE[right]
+                    left_type = key_to_type[left]
+                    right_type = key_to_type[right]
 
                     if not is_valid_accession(left_val, left_type):
                         log_debug(

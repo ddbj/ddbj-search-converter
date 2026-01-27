@@ -19,7 +19,7 @@ SRA/DRA accessions DB から以下の内部関連を抽出する:
 from typing import Set
 
 from ddbj_search_converter.config import Config, get_config
-from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
+from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_sra_pairs_by_blacklist,
                                                 load_sra_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession

@@ -44,7 +44,7 @@ EXTERNAL_LINK_MAP = {
 
 def parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "UmbrellaBioProject"]:
     """BioProject のオブジェクトタイプを判定する。"""
-    if project.get("Project", {}).get("ProjectType", {}).get("ProjectTypeTopAdmin"):
+    if ((project.get("Project") or {}).get("ProjectType") or {}).get("ProjectTypeTopAdmin"):
         return "UmbrellaBioProject"
     return "BioProject"
 
@@ -81,7 +81,7 @@ def parse_organism(project: Dict[str, Any], is_ddbj: bool, accession: str = "") 
 def parse_title(project: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioProject から title を抽出する。"""
     try:
-        title = project.get("Project", {}).get("ProjectDescr", {}).get("Title")
+        title = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Title")
         return str(title) if title is not None else None
     except Exception as e:
         log_warn(f"failed to parse title: {e}", accession=accession)
@@ -91,7 +91,7 @@ def parse_title(project: Dict[str, Any], accession: str = "") -> Optional[str]:
 def parse_description(project: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioProject から description を抽出する。"""
     try:
-        description = project.get("Project", {}).get("ProjectDescr", {}).get("Description")
+        description = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Description")
         return str(description) if description is not None else None
     except Exception as e:
         log_warn(f"failed to parse description: {e}", accession=accession)
@@ -104,17 +104,15 @@ def parse_organization(project: Dict[str, Any], is_ddbj: bool, accession: str = 
     try:
         if is_ddbj:
             organization = (
-                project.get("Submission", {})
-                .get("Submission", {})
-                .get("Description", {})
-                .get("Organization")
-            )
+                ((project.get("Submission") or {})
+                .get("Submission") or {})
+                .get("Description") or {}
+            ).get("Organization")
         else:
             organization = (
-                project.get("Project", {})
-                .get("ProjectDescr", {})
-                .get("Organization")
-            )
+                (project.get("Project") or {})
+                .get("ProjectDescr") or {}
+            ).get("Organization")
         if organization is None:
             return []
 
@@ -151,7 +149,7 @@ def parse_publication(project: Dict[str, Any], accession: str = "") -> List[Publ
     """BioProject から Publication を抽出する。"""
     publications: List[Publication] = []
     try:
-        publication = project.get("Project", {}).get("ProjectDescr", {}).get("Publication")
+        publication = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Publication")
         if publication is None:
             return []
 
@@ -168,7 +166,7 @@ def parse_publication(project: Dict[str, Any], accession: str = "") -> List[Publ
                 dbtype = "ePubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
             publications.append(Publication(
-                title=item.get("StructuredCitation", {}).get("Title"),
+                title=(item.get("StructuredCitation") or {}).get("Title"),
                 date=item.get("date"),
                 Reference=item.get("Reference"),
                 id=id_,
@@ -185,7 +183,7 @@ def parse_grant(project: Dict[str, Any], accession: str = "") -> List[Grant]:
     """BioProject から Grant を抽出する。"""
     grants: List[Grant] = []
     try:
-        grant = project.get("Project", {}).get("ProjectDescr", {}).get("Grant")
+        grant = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Grant")
         if grant is None:
             return []
 
@@ -235,7 +233,7 @@ def parse_external_link(project: Dict[str, Any], accession: str = "") -> List[Ex
 
     links: List[ExternalLink] = []
     try:
-        external_link_obj = project.get("Project", {}).get("ProjectDescr", {}).get("ExternalLink")
+        external_link_obj = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("ExternalLink")
         if external_link_obj is None:
             return []
 
@@ -267,7 +265,7 @@ def parse_same_as(project: Dict[str, Any], accession: str = "") -> List[Xref]:
         )
 
     try:
-        center_obj = project.get("Project", {}).get("ProjectID", {}).get("CenterID")
+        center_obj = ((project.get("Project") or {}).get("ProjectID") or {}).get("CenterID")
         if center_obj is None:
             return []
 
@@ -303,7 +301,7 @@ def parse_accessibility(project: Dict[str, Any], is_ddbj: bool) -> Accessibility
     """
     if is_ddbj:
         return "public-access"
-    access = project.get("Submission", {}).get("Description", {}).get("Access")
+    access = ((project.get("Submission") or {}).get("Description") or {}).get("Access")
     if access == "controlled-access":
         return "controlled-access"
     return "public-access"
@@ -313,9 +311,9 @@ def parse_date_from_xml(
     project: Dict[str, Any]
 ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """XML から日付を抽出する (NCBI 用)。"""
-    date_created = project.get("Submission", {}).get("submitted")
-    date_modified = project.get("Submission", {}).get("last_update")
-    date_published = project.get("Project", {}).get("ProjectDescr", {}).get("ProjectReleaseDate")
+    date_created = (project.get("Submission") or {}).get("submitted")
+    date_modified = (project.get("Submission") or {}).get("last_update")
+    date_published = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("ProjectReleaseDate")
     return date_created, date_modified, date_published
 
 
@@ -335,13 +333,12 @@ def _normalize_biosample_set_id(project: Dict[str, Any]) -> None:
     """BioSampleSet.ID を正規化する。"""
     try:
         bs_set_ids = (
-            project.get("Project", {})
-            .get("ProjectType", {})
-            .get("ProjectTypeSubmission", {})
-            .get("Target", {})
-            .get("BioSampleSet", {})
-            .get("ID")
-        )
+            ((((project.get("Project") or {})
+            .get("ProjectType") or {})
+            .get("ProjectTypeSubmission") or {})
+            .get("Target") or {})
+            .get("BioSampleSet") or {}
+        ).get("ID")
         if bs_set_ids is None:
             return
         if isinstance(bs_set_ids, list):
@@ -357,7 +354,7 @@ def _normalize_biosample_set_id(project: Dict[str, Any]) -> None:
 def _normalize_locus_tag_prefix(project: Dict[str, Any]) -> None:
     """LocusTagPrefix を正規化する。"""
     try:
-        prefix = project.get("Project", {}).get("ProjectDescr", {}).get("LocusTagPrefix")
+        prefix = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("LocusTagPrefix")
         if prefix is None:
             return
         if isinstance(prefix, list):
@@ -373,7 +370,7 @@ def _normalize_locus_tag_prefix(project: Dict[str, Any]) -> None:
 def _normalize_local_id(project: Dict[str, Any]) -> None:
     """LocalID を正規化する。"""
     try:
-        local_id = project.get("Project", {}).get("ProjectID", {}).get("LocalID")
+        local_id = ((project.get("Project") or {}).get("ProjectID") or {}).get("LocalID")
         if local_id is None:
             return
         if isinstance(local_id, list):
@@ -407,13 +404,13 @@ def _normalize_organization_name(project: Dict[str, Any]) -> None:
 
     try:
         # DDBJ case: project["Submission"]["Submission"]["Description"]["Organization"]
-        submission = project.get("Submission", {})
+        submission = project.get("Submission") or {}
         if "Submission" in submission:
-            org = submission.get("Submission", {}).get("Description", {}).get("Organization")
+            org = ((submission.get("Submission") or {}).get("Description") or {}).get("Organization")
             _normalize_org(org)
 
         # NCBI case: project["Project"]["ProjectDescr"]["Organization"]
-        org = project.get("Project", {}).get("ProjectDescr", {}).get("Organization")
+        org = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Organization")
         _normalize_org(org)
     except Exception as e:
         log_debug(f"failed to normalize organization name: {e}", debug_category=DebugCategory.NORMALIZE_ORGANIZATION_NAME)
@@ -422,7 +419,7 @@ def _normalize_organization_name(project: Dict[str, Any]) -> None:
 def _normalize_grant_agency(project: Dict[str, Any]) -> None:
     """Grant.Agency を正規化する。"""
     try:
-        grant = project.get("Project", {}).get("ProjectDescr", {}).get("Grant")
+        grant = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Grant")
         if grant is None:
             return
 

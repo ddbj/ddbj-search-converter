@@ -27,7 +27,7 @@ from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
                                                 load_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
+                                                  run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
 
 

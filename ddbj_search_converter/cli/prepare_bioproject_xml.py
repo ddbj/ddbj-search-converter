@@ -19,7 +19,7 @@ from ddbj_search_converter.config import (BIOPROJECT_WRAPPER_END,
                                           BIOPROJECT_WRAPPER_START,
                                           DDBJ_BIOPROJECT_XML,
                                           NCBI_BIOPROJECT_XML, get_config)
-from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
+from ddbj_search_converter.logging.logger import log_info, run_logger
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir, split_xml
 
 DEFAULT_BATCH_SIZE = 2000

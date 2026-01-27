@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
@@ -118,7 +118,7 @@ class Config(BaseModel):
     debug: bool = False
     result_dir: Path = RESULT_DIR
     const_dir: Path = CONST_DIR
-    postgres_url: str = "postgresql://const:const@at098:54301"  # format is postgresql://{username}:{password}@{host}:{port}
+    postgres_url: str = ""
     es_url: str = "http://ddbj-search-elasticsearch:9200"
 
 
@@ -156,7 +156,7 @@ def get_last_run_path(config: Config) -> Path:
     return config.result_dir / LAST_RUN_FILE_NAME
 
 
-def read_last_run(config: Config) -> dict[DataType, Optional[str]]:
+def read_last_run(config: Config) -> Dict[DataType, Optional[str]]:
     """
     last_run.json を読み込む。
 
