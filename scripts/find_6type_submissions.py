@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""6 type の XML を全て持つ submission を DuckDB + ファイルシステムから探す書き捨てスクリプト。
+"""fixture 用 submission を探す書き捨てスクリプト。
 
 Usage (本番サーバで実行):
     python scripts/find_6type_submissions.py
 
-出力: fetch_test_fixtures.sh にハードコードできる submission リスト
+戦略:
+  DRA/SRA: DuckDB 6 type の先頭 10 件
+  ERA:     DuckDB 5 type を先頭から取り、type の OR (和集合) が 6 type になるまで集める
 """
 
 from pathlib import Path
@@ -12,101 +14,80 @@ from pathlib import Path
 import duckdb
 
 SRA_DB_PATH = Path("/home/w3ddbjld/const/sra/sra_accessions.duckdb")
-XML_BASE = Path("/usr/local/resources/dra/fastq")
-XML_TYPES = ["submission", "study", "experiment", "run", "sample", "analysis"]
+ALL_TYPES = {"SUBMISSION", "STUDY", "EXPERIMENT", "RUN", "SAMPLE", "ANALYSIS"}
 TARGET_COUNT = 10
 
 
-def find_6type_submissions_from_db(db_path: Path) -> list[str]:
-    """DuckDB から 6 type 全てを持つ submission を検索する。"""
+def query_submissions_with_types(
+    db_path: Path, prefix: str, min_types: int,
+) -> list[tuple[str, set[str]]]:
+    """DuckDB から (submission, types set) を type 数降順で取得。"""
     conn = duckdb.connect(str(db_path), read_only=True)
-    rows = conn.execute("""
-        SELECT Submission
+    rows = conn.execute(
+        """
+        SELECT Submission, LIST(DISTINCT Type) as types
         FROM accessions
-        WHERE Submission IS NOT NULL
+        WHERE Submission IS NOT NULL AND Submission LIKE ?
         GROUP BY Submission
-        HAVING COUNT(DISTINCT Type) = 6
-        ORDER BY Submission
-    """).fetchall()
+        HAVING COUNT(DISTINCT Type) >= ?
+        ORDER BY COUNT(DISTINCT Type) DESC, Submission
+        """,
+        [f"{prefix}%", min_types],
+    ).fetchall()
     conn.close()
-    return [r[0] for r in rows]
-
-
-def has_all_xml_files(submission: str) -> bool:
-    """submission ディレクトリに 6 type 全ての XML が存在するか確認する。"""
-    prefix = submission[:6]
-    sub_dir = XML_BASE / prefix / submission
-    return all(
-        (sub_dir / f"{submission}.{xml_type}.xml").exists()
-        for xml_type in XML_TYPES
-    )
+    return [(r[0], set(r[1])) for r in rows]
 
 
 def main() -> None:
-    print(f"=== DuckDB: {SRA_DB_PATH} ===")
     if not SRA_DB_PATH.exists():
-        print(f"ERROR: DB ファイルが見つかりません: {SRA_DB_PATH}")
+        print(f"ERROR: {SRA_DB_PATH} が見つかりません")
         return
 
-    print("6 type 完備の submission を DuckDB から検索中...")
-    all_subs = find_6type_submissions_from_db(SRA_DB_PATH)
-    print(f"  DuckDB 上で 6 type 完備: {len(all_subs)} 件")
+    final: dict[str, list[str]] = {}
 
-    # DRA / SRA / ERA に分類
-    prefixes = {"DRA": [], "SRA": [], "ERA": []}
-    for sub in all_subs:
-        for pfx in prefixes:
-            if sub.startswith(pfx):
-                prefixes[pfx].append(sub)
+    # --- DRA / SRA: 6 type の先頭 10 件 ---
+    for pfx in ["DRA", "SRA"]:
+        subs = query_submissions_with_types(SRA_DB_PATH, pfx, 6)
+        picked = [s for s, _ in subs[:TARGET_COUNT]]
+        print(f"{pfx}: {len(subs)} 件 (6 type) → {len(picked)} 件選択")
+        final[pfx] = picked
+
+    # --- ERA: 5 type 以上を先頭から集め、OR で 6 type カバーするまで ---
+    era_subs = query_submissions_with_types(SRA_DB_PATH, "ERA", 5)
+    print(f"ERA: {len(era_subs)} 件 (5+ type)")
+
+    covered: set[str] = set()
+    picked_era: list[str] = []
+    for sub, types in era_subs:
+        picked_era.append(sub)
+        covered |= types
+        print(f"  {sub}: {sorted(types)} → covered={sorted(covered)}")
+        if len(covered) >= 6 and len(picked_era) >= TARGET_COUNT:
+            break
+
+    # カバーできた後も 10 件まで埋める
+    if len(picked_era) < TARGET_COUNT:
+        for sub, _ in era_subs[len(picked_era):]:
+            picked_era.append(sub)
+            if len(picked_era) >= TARGET_COUNT:
                 break
 
-    for pfx, subs in prefixes.items():
-        print(f"  {pfx}: {len(subs)} 件 (DuckDB)")
+    missing = ALL_TYPES - covered
+    if missing:
+        print(f"  WARNING: カバーできなかった type: {sorted(missing)}")
+    else:
+        print(f"  OK: 全 6 type カバー ({len(picked_era)} 件)")
 
-    # XML ファイル存在確認
+    final["ERA"] = picked_era
+
+    # --- 結果 ---
     print()
-    print("=== XML ファイル存在確認 ===")
-    results: dict[str, list[str]] = {"DRA": [], "SRA": [], "ERA": []}
-
+    print("=== bash ===")
     for pfx in ["DRA", "SRA", "ERA"]:
-        subs = prefixes[pfx]
-        found = 0
-        checked = 0
-        for sub in subs:
-            if found >= TARGET_COUNT:
-                break
-            checked += 1
-            if has_all_xml_files(sub):
-                results[pfx].append(sub)
-                found += 1
-            if checked % 100 == 0:
-                print(f"  {pfx}: checked {checked}, found {found}...")
-
-        print(f"  {pfx}: {found} 件 (XML 6 type 完備, {checked} 件チェック)")
-
-    # 結果出力
-    print()
-    print("=" * 60)
-    print("=== fetch_test_fixtures.sh にハードコードする submission ===")
-    print("=" * 60)
-    for pfx in ["DRA", "SRA", "ERA"]:
-        subs = results[pfx]
-        print(f"\n# {pfx} ({len(subs)} 件)")
-        for sub in subs:
-            print(f"  {sub}")
-
-    # bash 配列形式でも出力
-    print()
-    print("=== bash 配列形式 ===")
-    for pfx in ["DRA", "SRA", "ERA"]:
-        subs = results[pfx]
-        items = " ".join(f'"{s}"' for s in subs)
+        items = " ".join(f'"{s}"' for s in final[pfx])
         print(f'{pfx}_SUBS=({items})')
-
-    # ALL_SUBMISSIONS も出力
-    all_results = results["DRA"] + results["SRA"] + results["ERA"]
-    items = " ".join(f'"{s}"' for s in all_results)
-    print(f'ALL_SUBMISSIONS=({items})')
+    all_subs = final["DRA"] + final["SRA"] + final["ERA"]
+    print(f'ALL_SUBMISSIONS=({" ".join(f"{chr(34)}{s}{chr(34)}" for s in all_subs)})')
 
 
 if __name__ == "__main__":
