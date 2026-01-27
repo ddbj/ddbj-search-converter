@@ -1,6 +1,6 @@
-"""Log show debug CLI.
+"""Log show CLI.
 
-Shows DEBUG logs filtered by date, run_name, and run_id.
+Shows logs filtered by date, run_name, run_id, and optionally log level.
 Output is JSON Lines (default) or human-readable text to stdout.
 Metadata and jq examples are printed to stderr.
 """
@@ -15,6 +15,8 @@ import duckdb
 
 from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME,
                                            TODAY, get_config)
+
+LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 def _get_db_path(result_dir: Path) -> Path:
@@ -138,13 +140,13 @@ def _resolve_run_id(
     return ids_with_ts[idx][0]
 
 
-def _format_raw_record(record: Dict[str, Any]) -> str:
+def _format_raw_record(record: Dict[str, Any], log_level: str) -> str:
     """Format a record as human-readable text."""
     ts = record.get("timestamp", "")
     category = record.get("debug_category", "")
     accession = record.get("accession", "")
 
-    header_parts = [f"[{ts}]"]
+    header_parts = [f"[{ts}]", f"[{log_level}]"]
     if category:
         header_parts.append(f"[{category}]")
     if accession:
@@ -155,35 +157,63 @@ def _format_raw_record(record: Dict[str, Any]) -> str:
     return f"{header}\n  {message}"
 
 
-def _fetch_debug_logs(
+def _fetch_logs(
     con: duckdb.DuckDBPyConnection,
     run_id: str,
+    level: Optional[str],
     limit: int,
 ) -> List[Any]:
-    """Fetch debug log rows for a given run_id."""
+    """Fetch log rows for a given run_id, optionally filtered by level."""
     query = """
-        SELECT timestamp, run_name, message, extra
+        SELECT timestamp, run_name, log_level, message, extra
         FROM log_records
         WHERE run_id = ?
-          AND log_level = 'DEBUG'
-          AND json_extract_string(extra, '$.debug_category') IS NOT NULL
-        ORDER BY timestamp DESC
     """
+    params: List[Any] = [run_id]
+
+    if level is not None:
+        query += " AND log_level = ?"
+        params.append(level)
+
+    query += " ORDER BY timestamp DESC"
+
     if limit > 0:
         query += f" LIMIT {limit}"
 
-    return con.execute(query, [run_id]).fetchall()
+    return con.execute(query, params).fetchall()
+
+
+def _count_logs(
+    con: duckdb.DuckDBPyConnection,
+    run_id: str,
+    level: Optional[str],
+) -> int:
+    """Count log rows for a given run_id, optionally filtered by level."""
+    query = """
+        SELECT COUNT(*) FROM log_records
+        WHERE run_id = ?
+    """
+    params: List[Any] = [run_id]
+
+    if level is not None:
+        query += " AND log_level = ?"
+        params.append(level)
+
+    result = con.execute(query, params).fetchone()
+    return result[0] if result else 0
 
 
 def _print_jq_examples(run_name: str) -> None:
     """Print jq usage examples to stderr."""
-    cmd = f"show_log_debug --run-name {run_name}"
+    cmd = f"show_log --run-name {run_name} --latest"
     print(file=sys.stderr)
     print("jq examples:", file=sys.stderr)
-    print("  # Count by category", file=sys.stderr)
-    print(f"  {cmd} | jq -s 'group_by(.debug_category) | map({{category: .[0].debug_category, count: length}})'", file=sys.stderr)
+    print("  # Count by log_level", file=sys.stderr)
+    print(f"  {cmd} | jq -s 'group_by(.log_level) | map({{level: .[0].log_level, count: length}})'", file=sys.stderr)
+    print("  # Count by category (DEBUG logs)", file=sys.stderr)
+    print(f"  {cmd} --level DEBUG | jq -s 'group_by(.debug_category) | map({{category: .[0].debug_category, count: length}})'", file=sys.stderr)
     print("  # Filter by category", file=sys.stderr)
-    print(f'  {cmd} | jq \'select(.debug_category == "invalid_biosample_id")\'', file=sys.stderr)
+    print(f'  {cmd} --level DEBUG | jq \'select(.debug_category == "invalid_biosample_id")\'', file=sys.stderr)
     print("  # Unique accessions", file=sys.stderr)
     print(f"  {cmd} | jq -r '.accession // empty' | sort -u", file=sys.stderr)
     print("  # Count per accession", file=sys.stderr)
@@ -204,7 +234,7 @@ def _parse_date(value: str) -> date:
 def parse_args(args: List[str]) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Show DEBUG logs as JSON Lines (default) or human-readable text."
+        description="Show logs as JSON Lines (default) or human-readable text."
     )
     parser.add_argument(
         "--date",
@@ -222,6 +252,13 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         action="store_true",
         default=False,
         help="Auto-select the latest run_id when multiple exist for the same date/run_name.",
+    )
+    parser.add_argument(
+        "--level",
+        type=str.upper,
+        choices=LOG_LEVELS,
+        default=None,
+        help="Filter by log level (e.g. DEBUG, INFO). Default: all levels.",
     )
 
     output_group = parser.add_mutually_exclusive_group()
@@ -294,25 +331,16 @@ def main() -> None:
         run_id = _resolve_run_id(con, run_date, run_name, parsed.latest)
 
         # 3. Fetch logs
-        rows = _fetch_debug_logs(con, run_id, parsed.limit)
+        rows = _fetch_logs(con, run_id, parsed.level, parsed.limit)
+        total_count = _count_logs(con, run_id, parsed.level)
 
-        total_result = con.execute(
-            """
-            SELECT COUNT(*) FROM log_records
-            WHERE run_id = ?
-              AND log_level = 'DEBUG'
-              AND json_extract_string(extra, '$.debug_category') IS NOT NULL
-            """,
-            [run_id],
-        ).fetchone()
-        total_count = total_result[0] if total_result else 0
-
+        level_label = f" [{parsed.level}]" if parsed.level else ""
         limit_label = f" (showing first {parsed.limit})" if parsed.limit > 0 else ""
-        print(f"DEBUG logs: {run_name} / run_id={run_id}", file=sys.stderr)
+        print(f"Logs{level_label}: {run_name} / run_id={run_id}", file=sys.stderr)
         print(f"Total: {total_count:,} entries{limit_label}", file=sys.stderr)
 
         if total_count == 0:
-            print("No matching DEBUG logs found.", file=sys.stderr)
+            print("No matching logs found.", file=sys.stderr)
             if parsed.jsonl:
                 _print_jq_examples(run_name)
             return
@@ -321,10 +349,11 @@ def main() -> None:
             _print_jq_examples(run_name)
 
         # 4. Output
-        for timestamp, rn, message, extra_json in rows:
+        for timestamp, rn, log_level, message, extra_json in rows:
             record = _row_to_dict(timestamp, rn, message, extra_json)
+            record["log_level"] = log_level
             if parsed.raw:
-                print(_format_raw_record(record))
+                print(_format_raw_record(record, log_level))
             else:
                 print(json.dumps(record, ensure_ascii=False))
 

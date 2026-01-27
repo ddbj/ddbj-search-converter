@@ -106,7 +106,7 @@ docker compose -f compose.dev.yml exec app bash
 | コマンド | 説明 |
 |---------|------|
 | `show_log_summary` | ログ集計サマリー（run status + debug category 別カウント + ログレベル別カウント） |
-| `show_log_debug` | 指定した run_name と debug_category の DEBUG ログ詳細表示 |
+| `show_log` | 指定した run_name のログ詳細表示 (全レベル対応、--level でフィルタ可) |
 | `show_dblink_counts` | dblink.tmp.duckdb の relation 件数を (src_type, dst_type) ペアごとに JSON 出力 |
 | `dump_debug_report` | 上記を全部まとめて debug_log/ に出力 |
 
@@ -185,7 +185,7 @@ JSONL 生成・Elasticsearch コマンドは `--help` で引数を確認可能�
 show_log_summary --days 7
 
 # 特定の DEBUG ログ詳細を表示
-show_log_debug --run-name create_dblink_bp_bs_relations --category invalid_biosample_id --limit 100
+show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG
 ```
 
 ## Debugging
@@ -203,7 +203,7 @@ DDBJ_SEARCH_CONVERTER_DATE=20260125 init_dblink_db
 | コマンド | 説明 |
 |---------|------|
 | `show_log_summary` | ログ集計サマリー（run status + debug category 別カウント + ログレベル別カウント） |
-| `show_log_debug` | 指定した run_name と debug_category の DEBUG ログ詳細表示 |
+| `show_log` | 指定した run_name のログ詳細表示 (全レベル対応、--level でフィルタ可) |
 | `show_dblink_counts` | dblink.tmp.duckdb の relation 件数を (src_type, dst_type) ペアごとに JSON 出力 |
 | `dump_debug_report` | 上記を全部まとめて debug_log/ に出力 |
 
@@ -212,18 +212,6 @@ DDBJ_SEARCH_CONVERTER_DATE=20260125 init_dblink_db
 dblink パイプラインの各ステップ実行後に確認する手順:
 
 ```bash
-# === ここから container 内 ===
-
-# 1. DBLink パイプライン実行
-init_dblink_db
-create_dblink_bp_bs_relations
-create_dblink_bp_relations
-create_dblink_assembly_and_master_relations
-create_dblink_gea_relations
-create_dblink_metabobank_relations
-create_dblink_jga_relations
-create_dblink_sra_internal_relations
-
 # 2. ログサマリー確認（各ステップの SUCCESS/FAILED を確認）
 show_log_summary --days 1
 
@@ -231,7 +219,7 @@ show_log_summary --days 1
 show_dblink_counts
 
 # 4. 特定のカテゴリの debug ログ詳細確認
-show_log_debug --run-name create_dblink_bp_bs_relations --category invalid_biosample_id
+show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG
 
 # 5. 全 debug 情報をまとめて出力
 dump_debug_report

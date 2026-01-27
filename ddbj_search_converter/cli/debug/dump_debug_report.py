@@ -16,7 +16,7 @@ from typing import List
 
 import duckdb
 
-from ddbj_search_converter.cli.debug.show_log_debug import _row_to_dict
+from ddbj_search_converter.cli.debug.show_log import _row_to_dict
 from ddbj_search_converter.config import (DBLINK_DB_FILE_NAME,
                                            LOG_DB_FILE_NAME,
                                            TMP_DBLINK_DB_FILE_NAME, TODAY,
