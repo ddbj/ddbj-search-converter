@@ -113,38 +113,6 @@ extract_xml_entries_gz() {
     fi
 }
 
-# 6 type の XML を全て持つ submission を検索
-# Usage: find_6type_submissions <acc_tab> <prefix_filter> <xml_src> <count>
-# 出力: submission accession を 1 行ずつ stdout に出力
-find_6type_submissions() {
-    local acc_tab="$1"
-    local prefix_filter="$2"
-    local xml_src="$3"
-    local count="$4"
-
-    local found=0
-    set +o pipefail
-    while IFS= read -r sub; do
-        [ "$found" -ge "$count" ] && break
-        local sub_prefix="${sub:0:6}"
-        local sub_dir="$xml_src/$sub_prefix/$sub"
-
-        local has_all=true
-        for xml_type in submission study experiment run sample analysis; do
-            if [ ! -f "$sub_dir/$sub.$xml_type.xml" ]; then
-                has_all=false
-                break
-            fi
-        done
-
-        if [ "$has_all" = true ]; then
-            echo "$sub"
-            found=$((found + 1))
-        fi
-    done < <(awk -F'\t' '$8 == "ANALYSIS" { print $2 }' "$acc_tab" | grep "^${prefix_filter}" | sort -u)
-    set -o pipefail
-}
-
 # Accessions.tab fixture を構築 (ヘッダ + 選択 submission の全行)
 # Usage: build_accessions_fixture <src> <dst> <label> <submissions...>
 build_accessions_fixture() {
@@ -248,9 +216,9 @@ extract_xml_entries_gz "$BS_SRC/ddbj_biosample_set.xml.gz" "$BS_DST/ddbj_biosamp
     "<BioSample " "</BioSample>" "$BS_WRAPPER_START" "$BS_WRAPPER_END" 10 "DDBJ BioSample"
 
 # === SRA/DRA/ERA ===
-# 全 6 type (submission, study, experiment, run, sample, analysis) を持つ
-# submission を DRA/SRA/ERA それぞれ 10 件ずつ取得
-# XML コピー + Accessions.tab fixture 構築
+# DRA/SRA: 6 type 完備の submission 10 件ずつ
+# ERA: 5 type (ANALYSIS なし) の submission 10 件
+# submission リストは scripts/find_6type_submissions.py で生成
 echo ""
 echo "--- SRA/DRA/ERA ---"
 
@@ -279,32 +247,11 @@ if [ ! -f "$DRA_ACC_FULL" ]; then
     DRA_ACC_FULL="$DRA_ACC_BASE/$dra_date_str.DRA_Accessions.tab"
 fi
 
-# 6 type 完備の submission を検索
-# NOTE: DRA_Accessions.tab は ANALYSIS 情報が不完全なため、
-#       DRA/SRA/ERA 全て SRA_Accessions.tab から検索する
-ALL_SUBMISSIONS=()
-DRA_SUBS=()
-SRA_SUBS=()
-ERA_SUBS=()
-
-if [ -f "$SRA_ACC_FULL" ]; then
-    echo "DRA submissions (6 type) を検索中..."
-    mapfile -t DRA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "DRA" "$SRA_XML_SRC" 10)
-    ALL_SUBMISSIONS+=("${DRA_SUBS[@]}")
-    echo "  DRA: ${#DRA_SUBS[@]} 件"
-
-    echo "SRA submissions (6 type) を検索中..."
-    mapfile -t SRA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "SRA" "$SRA_XML_SRC" 10)
-    ALL_SUBMISSIONS+=("${SRA_SUBS[@]}")
-    echo "  SRA: ${#SRA_SUBS[@]} 件"
-
-    echo "ERA submissions (6 type) を検索中..."
-    mapfile -t ERA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "ERA" "$SRA_XML_SRC" 10)
-    ALL_SUBMISSIONS+=("${ERA_SUBS[@]}")
-    echo "  ERA: ${#ERA_SUBS[@]} 件"
-else
-    echo "  SRA_Accessions.tab: スキップ (ファイルなし)"
-fi
+DRA_SUBS=("DRA000072" "DRA000161" "DRA000195" "DRA000213" "DRA000214" "DRA000311" "DRA000367" "DRA000368" "DRA000378" "DRA000379")
+SRA_SUBS=("SRA000234" "SRA000267" "SRA002148" "SRA009034" "SRA010931" "SRA012004" "SRA012014" "SRA012079" "SRA020842" "SRA020876")
+ERA_SUBS=("ERA000005" "ERA000011" "ERA000012" "ERA000073" "ERA000074" "ERA000075" "ERA000076" "ERA000077" "ERA000078" "ERA000079")
+ALL_SUBMISSIONS=("${DRA_SUBS[@]}" "${SRA_SUBS[@]}" "${ERA_SUBS[@]}")
+echo "  DRA: ${#DRA_SUBS[@]} 件, SRA: ${#SRA_SUBS[@]} 件, ERA: ${#ERA_SUBS[@]} 件"
 
 # XML コピー
 echo "XML ファイルをコピー中..."
