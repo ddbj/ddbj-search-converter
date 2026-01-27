@@ -621,6 +621,54 @@ def iter_updated_submissions(
             yield row[0]
 
 
+def lookup_submissions_for_accessions(
+    config: Config,
+    source: SourceKind,
+    accessions: List[str],
+) -> Dict[str, str]:
+    """
+    Accession から所属 Submission を逆引きする。
+
+    Args:
+        config: Config オブジェクト
+        source: "dra" or "sra"
+        accessions: 逆引き対象の accession のリスト
+
+    Returns:
+        {accession: submission}
+    """
+    if not accessions:
+        return {}
+
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    result: Dict[str, str] = {}
+
+    with duckdb.connect(db_path, read_only=True) as conn:
+        batch_size = 10000
+        for i in range(0, len(accessions), batch_size):
+            batch = accessions[i:i + batch_size]
+            placeholders = ", ".join(["?"] * len(batch))
+            rows = conn.execute(
+                f"""
+                SELECT DISTINCT Accession, Submission
+                FROM accessions
+                WHERE Accession IN ({placeholders})
+                    AND Submission IS NOT NULL
+                """,
+                batch,
+            ).fetchall()
+
+            for acc, sub in rows:
+                result[acc] = sub
+
+    return result
+
+
 def get_submission_accessions(
     config: Config,
     source: SourceKind,

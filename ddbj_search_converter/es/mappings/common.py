@@ -28,17 +28,26 @@ def get_common_mapping() -> Dict[str, Any]:
         },
         "isPartOf": {"type": "keyword"},
         "type": {"type": "keyword"},
-        "name": {"type": "text"},
+        "name": {
+            "type": "text",
+            "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+        },
         "url": {"type": "keyword", "index": False},
         "organism": {
-            "type": "nested",
+            "type": "object",
             "properties": {
                 "identifier": {"type": "keyword"},
                 "name": {"type": "keyword"},
             },
         },
-        "title": {"type": "text"},
-        "description": {"type": "text"},
+        "title": {
+            "type": "text",
+            "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
+        },
+        "description": {
+            "type": "text",
+            "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
+        },
         "dbXrefs": {
             "type": "nested",
             "properties": {
@@ -56,7 +65,7 @@ def get_common_mapping() -> Dict[str, Any]:
             },
         },
         "status": {"type": "keyword"},
-        "visibility": {"type": "keyword"},
+        "accessibility": {"type": "keyword"},
         "dateCreated": {"type": "date"},
         "dateModified": {"type": "date"},
         "datePublished": {"type": "date"},

@@ -27,7 +27,7 @@ class TestCommonMapping:
             "dbXrefs",
             "sameAs",
             "status",
-            "visibility",
+            "accessibility",
             "dateCreated",
             "dateModified",
             "datePublished",
@@ -48,6 +48,23 @@ class TestCommonMapping:
         mapping = get_common_mapping()
         assert mapping["properties"]["type"] == "object"
         assert mapping["properties"]["enabled"] is False
+
+    def test_organism_is_object(self) -> None:
+        """organism should be object type (not nested)."""
+        mapping = get_common_mapping()
+        assert mapping["organism"]["type"] == "object"
+        assert "identifier" in mapping["organism"]["properties"]
+        assert "name" in mapping["organism"]["properties"]
+
+    def test_text_fields_have_keyword_subfield(self) -> None:
+        """text fields should have keyword sub-field for sorting/aggregation."""
+        mapping = get_common_mapping()
+        for field in ["name", "title", "description"]:
+            assert mapping[field]["type"] == "text"
+            assert "fields" in mapping[field]
+            assert "keyword" in mapping[field]["fields"]
+            assert mapping[field]["fields"]["keyword"]["type"] == "keyword"
+            assert "ignore_above" in mapping[field]["fields"]["keyword"]
 
 
 class TestBioProjectMapping:
@@ -77,6 +94,20 @@ class TestBioProjectMapping:
         assert props["grant"]["type"] == "nested"
         assert props["grant"]["properties"]["agency"]["type"] == "nested"
 
+    def test_organization_name_has_keyword_subfield(self) -> None:
+        mapping = get_bioproject_mapping()
+        props = mapping["mappings"]["properties"]
+        name = props["organization"]["properties"]["name"]
+        assert name["type"] == "text"
+        assert name["fields"]["keyword"]["type"] == "keyword"
+
+    def test_publication_title_has_keyword_subfield(self) -> None:
+        mapping = get_bioproject_mapping()
+        props = mapping["mappings"]["properties"]
+        title = props["publication"]["properties"]["title"]
+        assert title["type"] == "text"
+        assert title["fields"]["keyword"]["type"] == "keyword"
+
 
 class TestBioSampleMapping:
     def test_has_settings_and_mappings(self) -> None:
@@ -96,6 +127,13 @@ class TestBioSampleMapping:
         props = mapping["mappings"]["properties"]
         assert props["attributes"]["type"] == "nested"
 
+    def test_attributes_content_has_keyword_subfield(self) -> None:
+        mapping = get_biosample_mapping()
+        props = mapping["mappings"]["properties"]
+        content = props["attributes"]["properties"]["content"]
+        assert content["type"] == "text"
+        assert content["fields"]["keyword"]["type"] == "keyword"
+
 
 class TestSraMapping:
     def test_all_sra_indexes_defined(self) -> None:
@@ -109,47 +147,36 @@ class TestSraMapping:
         ]
         assert list(SRA_INDEXES) == expected
 
-    def test_all_sra_types_have_center_name(self) -> None:
+    def test_all_sra_types_have_common_fields(self) -> None:
         for sra_type in SRA_INDEXES:
             mapping = get_sra_mapping(sra_type)
             props = mapping["mappings"]["properties"]
-            assert "centerName" in props
+            assert "identifier" in props
+            assert "dbXrefs" in props
+            assert "status" in props
 
-    def test_submission_has_lab_name(self) -> None:
-        mapping = get_sra_mapping("sra-submission")
-        props = mapping["mappings"]["properties"]
-        assert "labName" in props
+    def test_all_sra_types_have_download_url(self) -> None:
+        for sra_type in SRA_INDEXES:
+            mapping = get_sra_mapping(sra_type)
+            props = mapping["mappings"]["properties"]
+            assert "downloadUrl" in props
+            assert props["downloadUrl"]["type"] == "nested"
+            assert "type" in props["downloadUrl"]["properties"]
+            assert "url" in props["downloadUrl"]["properties"]
 
-    def test_study_has_study_type(self) -> None:
-        mapping = get_sra_mapping("sra-study")
-        props = mapping["mappings"]["properties"]
-        assert "studyType" in props
-
-    def test_experiment_has_library_fields(self) -> None:
-        mapping = get_sra_mapping("sra-experiment")
-        props = mapping["mappings"]["properties"]
-        assert "instrumentModel" in props
-        assert "libraryStrategy" in props
-        assert "librarySource" in props
-        assert "librarySelection" in props
-        assert "libraryLayout" in props
-
-    def test_run_has_run_fields(self) -> None:
-        mapping = get_sra_mapping("sra-run")
-        props = mapping["mappings"]["properties"]
-        assert "runDate" in props
-        assert "runCenter" in props
-
-    def test_sample_has_attributes(self) -> None:
-        mapping = get_sra_mapping("sra-sample")
-        props = mapping["mappings"]["properties"]
-        assert "attributes" in props
-        assert props["attributes"]["type"] == "nested"
-
-    def test_analysis_has_analysis_type(self) -> None:
-        mapping = get_sra_mapping("sra-analysis")
-        props = mapping["mappings"]["properties"]
-        assert "analysisType" in props
+    def test_sra_no_old_specific_fields(self) -> None:
+        """Removed fields should not be present in any SRA mapping."""
+        removed_fields = [
+            "centerName", "labName", "studyType", "instrumentModel",
+            "libraryStrategy", "librarySource", "librarySelection",
+            "libraryLayout", "runDate", "runCenter", "analysisType",
+        ]
+        for sra_type in SRA_INDEXES:
+            mapping = get_sra_mapping(sra_type)
+            props = mapping["mappings"]["properties"]
+            for field in removed_fields:
+                assert field not in props, \
+                    f"{field} should not be in {sra_type}"
 
 
 class TestJgaMapping:

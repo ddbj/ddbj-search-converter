@@ -43,6 +43,12 @@ ALL_INDEXES: List[IndexName] = [
 
 IndexGroup = Literal["bioproject", "biosample", "sra", "jga", "all"]
 
+ALIASES: Dict[str, List[IndexName]] = {
+    "sra": cast(List[IndexName], list(SRA_INDEXES)),
+    "jga": cast(List[IndexName], list(JGA_INDEXES)),
+    "entries": list(ALL_INDEXES),
+}
+
 
 def get_indexes_for_group(group: IndexGroup) -> List[IndexName]:
     """Get the list of index names for a given group."""
@@ -101,6 +107,11 @@ def create_index(
         es_client.indices.create(index=idx, body=mapping)
         created.append(idx)
 
+    for alias_name, alias_indexes in ALIASES.items():
+        for created_idx in created:
+            if created_idx in alias_indexes:
+                es_client.indices.put_alias(index=created_idx, name=alias_name)
+
     return created
 
 
@@ -133,10 +144,37 @@ def delete_index(
                 continue
             raise Exception(f"Index '{idx}' does not exist.")
 
+        for alias_name, alias_indexes in ALIASES.items():
+            if idx in alias_indexes:
+                try:
+                    es_client.indices.delete_alias(index=idx, name=alias_name)
+                except Exception:
+                    pass
         es_client.indices.delete(index=idx)
         deleted.append(idx)
 
     return deleted
+
+
+def setup_aliases(config: Config) -> List[str]:
+    """Set up aliases for all existing indexes.
+
+    Useful for adding aliases to indexes that were created before
+    alias support was added.
+
+    Returns:
+        List of alias names that were set up
+    """
+    es_client = get_es_client(config)
+    setup: List[str] = []
+
+    for alias_name, alias_indexes in ALIASES.items():
+        for idx in alias_indexes:
+            if check_index_exists(es_client, idx):
+                es_client.indices.put_alias(index=idx, name=alias_name)
+        setup.append(alias_name)
+
+    return setup
 
 
 def list_indexes(config: Config) -> List[Dict[str, Any]]:

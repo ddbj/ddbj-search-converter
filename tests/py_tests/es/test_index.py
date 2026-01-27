@@ -1,6 +1,7 @@
 """Tests for ES index operations."""
 
-from ddbj_search_converter.es.index import (ALL_INDEXES, get_indexes_for_group,
+from ddbj_search_converter.es.index import (ALIASES, ALL_INDEXES,
+                                            get_indexes_for_group,
                                             get_mapping_for_index)
 
 
@@ -87,7 +88,7 @@ class TestGetMappingForIndex:
         ]:
             mapping = get_mapping_for_index(sra_type)  # type: ignore
             props = mapping["mappings"]["properties"]
-            assert "centerName" in props
+            assert "downloadUrl" in props
 
     def test_jga_mappings(self) -> None:
         for jga_type in ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]:
@@ -95,3 +96,33 @@ class TestGetMappingForIndex:
             props = mapping["mappings"]["properties"]
             assert "identifier" in props
             assert "dbXrefs" in props
+
+
+class TestAliases:
+    def test_alias_names(self) -> None:
+        assert "sra" in ALIASES
+        assert "jga" in ALIASES
+        assert "entries" in ALIASES
+
+    def test_sra_alias_contains_all_sra_indexes(self) -> None:
+        sra_indexes = [
+            "sra-submission",
+            "sra-study",
+            "sra-experiment",
+            "sra-run",
+            "sra-sample",
+            "sra-analysis",
+        ]
+        assert ALIASES["sra"] == sra_indexes
+
+    def test_jga_alias_contains_all_jga_indexes(self) -> None:
+        jga_indexes = [
+            "jga-study",
+            "jga-dataset",
+            "jga-dac",
+            "jga-policy",
+        ]
+        assert ALIASES["jga"] == jga_indexes
+
+    def test_entries_alias_contains_all_indexes(self) -> None:
+        assert ALIASES["entries"] == list(ALL_INDEXES)

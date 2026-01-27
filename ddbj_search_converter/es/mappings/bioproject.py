@@ -14,7 +14,10 @@ def get_bioproject_specific_mapping() -> Dict[str, Any]:
         "organization": {
             "type": "nested",
             "properties": {
-                "name": {"type": "text"},
+                "name": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+                },
                 "organizationType": {"type": "keyword"},
                 "role": {"type": "keyword"},
                 "url": {"type": "keyword", "index": False},
@@ -25,7 +28,10 @@ def get_bioproject_specific_mapping() -> Dict[str, Any]:
             "type": "nested",
             "properties": {
                 "id": {"type": "keyword"},
-                "title": {"type": "text"},
+                "title": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
+                },
                 "date": {"type": "keyword"},
                 "Reference": {"type": "keyword"},
                 "url": {"type": "keyword", "index": False},

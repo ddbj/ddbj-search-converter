@@ -16,7 +16,10 @@ def get_biosample_specific_mapping() -> Dict[str, Any]:
                 "attribute_name": {"type": "keyword"},
                 "display_name": {"type": "keyword"},
                 "harmonized_name": {"type": "keyword"},
-                "content": {"type": "text"},
+                "content": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+                },
             },
         },
         "model": {
