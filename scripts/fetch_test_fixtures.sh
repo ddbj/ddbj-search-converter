@@ -132,10 +132,9 @@ build_accessions_fixture() {
     # ヘッダ行
     head -n 1 "$src" > "$dst"
 
-    # Submission 列 (column 2) が一致する行を抽出
-    local pattern
-    pattern=$(printf '%s\n' "${submissions[@]}" | paste -sd '|')
-    awk -F'\t' -v pat="^(${pattern})$" '$2 ~ pat' "$src" >> "$dst"
+    # grep -Fw: 固定文字列 + 単語境界マッチ (awk 正規表現より桁違いに高速)
+    # submission ID は [SDE]RA\d+ 形式で他カラムと重複しないため安全
+    grep -Fw -f <(printf '%s\n' "${submissions[@]}") "$src" >> "$dst"
 
     local rows
     rows=$(wc -l < "$dst")
