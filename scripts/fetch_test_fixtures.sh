@@ -113,6 +113,67 @@ extract_xml_entries_gz() {
     fi
 }
 
+# 6 type の XML を全て持つ submission を検索
+# Usage: find_6type_submissions <acc_tab> <prefix_filter> <xml_src> <count>
+# 出力: submission accession を 1 行ずつ stdout に出力
+find_6type_submissions() {
+    local acc_tab="$1"
+    local prefix_filter="$2"
+    local xml_src="$3"
+    local count="$4"
+
+    local found=0
+    set +o pipefail
+    while IFS= read -r sub; do
+        [ "$found" -ge "$count" ] && break
+        local sub_prefix="${sub:0:6}"
+        local sub_dir="$xml_src/$sub_prefix/$sub"
+
+        local has_all=true
+        for xml_type in submission study experiment run sample analysis; do
+            if [ ! -f "$sub_dir/$sub.$xml_type.xml" ]; then
+                has_all=false
+                break
+            fi
+        done
+
+        if [ "$has_all" = true ]; then
+            echo "$sub"
+            found=$((found + 1))
+        fi
+    done < <(awk -F'\t' '$8 == "ANALYSIS" { print $2 }' "$acc_tab" | grep "^${prefix_filter}" | sort -u)
+    set -o pipefail
+}
+
+# Accessions.tab fixture を構築 (ヘッダ + 選択 submission の全行)
+# Usage: build_accessions_fixture <src> <dst> <label> <submissions...>
+build_accessions_fixture() {
+    local src="$1"
+    local dst="$2"
+    local label="$3"
+    shift 3
+    local submissions=("$@")
+
+    if [ ${#submissions[@]} -eq 0 ]; then
+        echo "  $label: スキップ (対象 submission なし)"
+        return
+    fi
+
+    mkdir -p "$(dirname "$dst")"
+
+    # ヘッダ行
+    head -n 1 "$src" > "$dst"
+
+    # Submission 列 (column 2) が一致する行を抽出
+    local pattern
+    pattern=$(printf '%s\n' "${submissions[@]}" | paste -sd '|')
+    awk -F'\t' -v pat="^(${pattern})$" '$2 ~ pat' "$src" >> "$dst"
+
+    local rows
+    rows=$(wc -l < "$dst")
+    echo "  $label: OK ($rows rows)"
+}
+
 # =============================================================================
 # メイン処理
 # =============================================================================
@@ -186,69 +247,100 @@ extract_xml_entries_gz "$BS_SRC/biosample_set.xml.gz" "$BS_DST/biosample_set.xml
 extract_xml_entries_gz "$BS_SRC/ddbj_biosample_set.xml.gz" "$BS_DST/ddbj_biosample_set.xml.gz" \
     "<BioSample " "</BioSample>" "$BS_WRAPPER_START" "$BS_WRAPPER_END" 10 "DDBJ BioSample"
 
-# === SRA Accessions ===
-# SRA: /mirror/SRA_Accessions/YYYY/MM/SRA_Accessions.tab.YYYYMMDD
-# DRA: /ReleaseData/public/YYYYMMDD.DRA_Accessions.tab
+# === SRA/DRA/ERA ===
+# 全 6 type (submission, study, experiment, run, sample, analysis) を持つ
+# submission を DRA/SRA/ERA それぞれ 10 件ずつ取得
+# XML コピー + Accessions.tab fixture 構築
 echo ""
-echo "--- SRA/DRA Accessions ---"
+echo "--- SRA/DRA/ERA ---"
 
-SRA_BASE="/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
-DRA_BASE="/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
+SRA_XML_SRC="/usr/local/resources/dra/fastq"
+SRA_XML_DST="$FIXTURES_DIR/usr/local/resources/dra/fastq"
 
-# 今日または前日のファイルを取得
-fetch_dated_sra_accessions() {
-    local base="$1"
-    local dst_base="$2"
-    local date_str=$(date +%Y%m%d)
-    local year=$(date +%Y)
-    local month=$(date +%m)
-    local src="$base/$year/$month/SRA_Accessions.tab.$date_str"
+SRA_ACC_BASE="/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
+DRA_ACC_BASE="/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
 
-    # 今日のファイルがなければ前日を試す
-    if [ ! -f "$src" ]; then
-        date_str=$(date -d "yesterday" +%Y%m%d)
-        year=$(date -d "yesterday" +%Y)
-        month=$(date -d "yesterday" +%m)
-        src="$base/$year/$month/SRA_Accessions.tab.$date_str"
+# 本番 Accessions.tab のパス解決 (今日 or 前日)
+sra_date_str=$(date +%Y%m%d)
+sra_year=$(date +%Y)
+sra_month=$(date +%m)
+SRA_ACC_FULL="$SRA_ACC_BASE/$sra_year/$sra_month/SRA_Accessions.tab.$sra_date_str"
+if [ ! -f "$SRA_ACC_FULL" ]; then
+    sra_date_str=$(date -d "yesterday" +%Y%m%d)
+    sra_year=$(date -d "yesterday" +%Y)
+    sra_month=$(date -d "yesterday" +%m)
+    SRA_ACC_FULL="$SRA_ACC_BASE/$sra_year/$sra_month/SRA_Accessions.tab.$sra_date_str"
+fi
+
+dra_date_str=$(date +%Y%m%d)
+DRA_ACC_FULL="$DRA_ACC_BASE/$dra_date_str.DRA_Accessions.tab"
+if [ ! -f "$DRA_ACC_FULL" ]; then
+    dra_date_str=$(date -d "yesterday" +%Y%m%d)
+    DRA_ACC_FULL="$DRA_ACC_BASE/$dra_date_str.DRA_Accessions.tab"
+fi
+
+# 6 type 完備の submission を検索
+ALL_SUBMISSIONS=()
+DRA_SUBS=()
+SRA_SUBS=()
+ERA_SUBS=()
+
+if [ -f "$DRA_ACC_FULL" ]; then
+    echo "DRA submissions (6 type) を検索中..."
+    mapfile -t DRA_SUBS < <(find_6type_submissions "$DRA_ACC_FULL" "DRA" "$SRA_XML_SRC" 10)
+    ALL_SUBMISSIONS+=("${DRA_SUBS[@]}")
+    echo "  DRA: ${#DRA_SUBS[@]} 件"
+else
+    echo "  DRA_Accessions.tab: スキップ (ファイルなし)"
+fi
+
+if [ -f "$SRA_ACC_FULL" ]; then
+    echo "SRA submissions (6 type) を検索中..."
+    mapfile -t SRA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "SRA" "$SRA_XML_SRC" 10)
+    ALL_SUBMISSIONS+=("${SRA_SUBS[@]}")
+    echo "  SRA: ${#SRA_SUBS[@]} 件"
+
+    echo "ERA submissions (6 type) を検索中..."
+    mapfile -t ERA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "ERA" "$SRA_XML_SRC" 10)
+    ALL_SUBMISSIONS+=("${ERA_SUBS[@]}")
+    echo "  ERA: ${#ERA_SUBS[@]} 件"
+else
+    echo "  SRA_Accessions.tab: スキップ (ファイルなし)"
+fi
+
+# XML コピー
+echo "XML ファイルをコピー中..."
+for sub in "${ALL_SUBMISSIONS[@]}"; do
+    sub_prefix="${sub:0:6}"
+    src_dir="$SRA_XML_SRC/$sub_prefix/$sub"
+    if [ -d "$src_dir" ]; then
+        dst_dir="$SRA_XML_DST/$sub_prefix/$sub"
+        mkdir -p "$dst_dir"
+        for xml in "$src_dir"/*.xml; do
+            [ -f "$xml" ] && cp "$xml" "$dst_dir/"
+        done
+        xml_count=$(ls "$dst_dir"/*.xml 2>/dev/null | wc -l)
+        echo "  $sub_prefix/$sub: OK ($xml_count files)"
     fi
+done
 
-    local dst_dir="$dst_base/$year/$month"
-    local dst="$dst_dir/SRA_Accessions.tab.$date_str"
+# Accessions.tab fixture 構築
+echo "Accessions.tab fixture を構築中..."
 
-    mkdir -p "$dst_dir"
-    if [ -f "$src" ]; then
-        head -n 101 "$src" > "$dst"
-        echo "  SRA_Accessions.tab.$date_str: OK (101 rows)"
-    else
-        echo "  SRA_Accessions.tab: スキップ (ファイルなし)"
-    fi
-}
+if [ -f "$SRA_ACC_FULL" ]; then
+    sra_era_subs=("${SRA_SUBS[@]}" "${ERA_SUBS[@]}")
+    build_accessions_fixture "$SRA_ACC_FULL" \
+        "$FIXTURES_DIR$SRA_ACC_BASE/$sra_year/$sra_month/SRA_Accessions.tab.$sra_date_str" \
+        "SRA_Accessions.tab.$sra_date_str" \
+        "${sra_era_subs[@]}"
+fi
 
-fetch_dated_dra_accessions() {
-    local base="$1"
-    local dst_base="$2"
-    local date_str=$(date +%Y%m%d)
-    local src="$base/$date_str.DRA_Accessions.tab"
-
-    # 今日のファイルがなければ前日を試す
-    if [ ! -f "$src" ]; then
-        date_str=$(date -d "yesterday" +%Y%m%d)
-        src="$base/$date_str.DRA_Accessions.tab"
-    fi
-
-    local dst="$dst_base/$date_str.DRA_Accessions.tab"
-
-    mkdir -p "$dst_base"
-    if [ -f "$src" ]; then
-        head -n 101 "$src" > "$dst"
-        echo "  $date_str.DRA_Accessions.tab: OK (101 rows)"
-    else
-        echo "  DRA_Accessions.tab: スキップ (ファイルなし)"
-    fi
-}
-
-fetch_dated_sra_accessions "$SRA_BASE" "$FIXTURES_DIR$SRA_BASE"
-fetch_dated_dra_accessions "$DRA_BASE" "$FIXTURES_DIR$DRA_BASE"
+if [ -f "$DRA_ACC_FULL" ]; then
+    build_accessions_fixture "$DRA_ACC_FULL" \
+        "$FIXTURES_DIR$DRA_ACC_BASE/$dra_date_str.DRA_Accessions.tab" \
+        "$dra_date_str.DRA_Accessions.tab" \
+        "${DRA_SUBS[@]}"
+fi
 
 # === JGA ===
 # 新実装で使用するファイル (config.py, dblink/jga.py 参照):
@@ -372,42 +464,6 @@ if [ -d "$MB_SRC" ]; then
     done
 else
     echo "  MetaboBank: スキップ (ディレクトリなし)"
-fi
-
-# === DRA XML ===
-# DRA_Accessions.tab に含まれる accession の XML をコピー
-# ディレクトリ構造: /dra/fastq/DRA000/DRA000001/DRA000001.*.xml
-echo ""
-echo "--- DRA XML ---"
-DRA_XML_SRC="/usr/local/resources/dra/fastq"
-DRA_XML_DST="$FIXTURES_DIR/usr/local/resources/dra/fastq"
-
-# 取得済みの DRA_Accessions.tab から accession を抽出してコピー
-DRA_ACC_FILE="$FIXTURES_DIR$DRA_BASE"
-DRA_ACC_TAB=$(find "$DRA_ACC_FILE" -name "*.DRA_Accessions.tab" 2>/dev/null | head -1)
-
-if [ -n "$DRA_ACC_TAB" ] && [ -f "$DRA_ACC_TAB" ] && [ -d "$DRA_XML_SRC" ]; then
-    echo "DRA XML を取得中..."
-    # Accessions.tab から Submission (DRA で始まる) accession を抽出 (ヘッダスキップ、重複除去、10個)
-    set +o pipefail
-    mapfile -t dra_accs < <(tail -n +2 "$DRA_ACC_TAB" | cut -f2 | grep "^DRA" | sort -u | head -10)
-    set -o pipefail
-    for acc in "${dra_accs[@]}"; do
-        # DRA000001 -> DRA000/DRA000001
-        prefix="${acc:0:6}"  # DRA000
-        src_dir="$DRA_XML_SRC/$prefix/$acc"
-        if [ -d "$src_dir" ]; then
-            dst_dir="$DRA_XML_DST/$prefix/$acc"
-            mkdir -p "$dst_dir"
-            # XML ファイルをコピー
-            for xml in "$src_dir"/*.xml; do
-                [ -f "$xml" ] && cp "$xml" "$dst_dir/"
-            done
-            echo "  $prefix/$acc: OK"
-        fi
-    done
-else
-    echo "  DRA XML: スキップ (Accessions.tab またはソースディレクトリなし)"
 fi
 
 # === TRAD ===
