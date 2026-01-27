@@ -59,8 +59,10 @@ es_create_index = "ddbj_search_converter.cli.es:main_create_index"
 es_delete_index = "ddbj_search_converter.cli.es:main_delete_index"
 es_bulk_insert = "ddbj_search_converter.cli.es:main_bulk_insert"
 es_list_indexes = "ddbj_search_converter.cli.es:main_list_indexes"
-log_summary = "ddbj_search_converter.cli.log_summary:main"
-log_show_debug = "ddbj_search_converter.cli.log_show_debug:main"
+show_log_summary = "ddbj_search_converter.cli.debug.show_log_summary:main"
+show_log_debug = "ddbj_search_converter.cli.debug.show_log_debug:main"
+show_dblink_counts = "ddbj_search_converter.cli.debug.show_dblink_counts:main"
+dump_debug_report = "ddbj_search_converter.cli.debug.dump_debug_report:main"
 # create_es_index = "ddbj_search_converter.es_mappings.create_es_index:main"
 # create_bp_date_db = "ddbj_search_converter.cache_db.bp_date:main"
 # create_bs_date_db = "ddbj_search_converter.cache_db.bs_date:main"
@@ -83,6 +85,7 @@ log_show_debug = "ddbj_search_converter.cli.log_show_debug:main"
 packages = [
     "ddbj_search_converter",
     "ddbj_search_converter.cli",
+    "ddbj_search_converter.cli.debug",
     "ddbj_search_converter.dblink",
     "ddbj_search_converter.es",
     "ddbj_search_converter.es.mappings",

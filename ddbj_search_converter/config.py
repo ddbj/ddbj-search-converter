@@ -11,7 +11,11 @@ RESULT_DIR = Path.cwd().joinpath("ddbj_search_converter_results")  # Path to dum
 CONST_DIR = Path("/home/w3ddbjld/const")  # Path to store constant/shared resources
 DATE_FORMAT = "%Y%m%d"
 LOCAL_TZ = ZoneInfo("Asia/Tokyo")
-TODAY = datetime.now(LOCAL_TZ).date()
+_date_override = os.environ.get("DDBJ_SEARCH_CONVERTER_DATE")
+if _date_override:
+    TODAY = datetime.strptime(_date_override, DATE_FORMAT).date()
+else:
+    TODAY = datetime.now(LOCAL_TZ).date()
 TODAY_STR = TODAY.strftime(DATE_FORMAT)
 
 BP_BASE_DIR_NAME = "bioproject"
@@ -98,6 +102,9 @@ ASSEMBLY_SUMMARY_URL = "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/as
 # === SRA/DRA tar configuration ===
 # NCBI SRA Metadata tar.gz URLs
 NCBI_SRA_METADATA_BASE_URL = "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata"
+NCBI_SRA_METADATA_LOCAL_PATH = Path(
+    "/lustre9/open/database/ddbj-dbt/dra-private/mirror/Metadata/Metadata"
+)
 
 # tar file names (stored in {const_dir}/sra/)
 SRA_TAR_DIR_NAME = "sra"

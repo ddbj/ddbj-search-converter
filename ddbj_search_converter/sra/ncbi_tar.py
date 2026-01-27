@@ -19,6 +19,7 @@ import httpx
 
 from ddbj_search_converter.config import (NCBI_LAST_MERGED_FILE_NAME,
                                           NCBI_SRA_METADATA_BASE_URL,
+                                          NCBI_SRA_METADATA_LOCAL_PATH,
                                           NCBI_SRA_TAR_FILE_NAME,
                                           SRA_TAR_DIR_NAME, TODAY, Config)
 from ddbj_search_converter.logging.logger import log_info, log_warn
@@ -49,11 +50,32 @@ def get_ncbi_daily_tar_gz_url(date_str: str) -> str:
     return f"{NCBI_SRA_METADATA_BASE_URL}/NCBI_SRA_Metadata_{date_str}.tar.gz"
 
 
-def find_latest_ncbi_full_date(max_days_back: int = 60) -> Optional[str]:
-    """Find the latest available NCBI Full tar.gz by checking URLs.
+def get_ncbi_full_tar_gz_local_path(date_str: str) -> Path:
+    """Get the local mirror path for NCBI SRA Metadata Full tar.gz."""
+    return NCBI_SRA_METADATA_LOCAL_PATH / f"NCBI_SRA_Metadata_Full_{date_str}.tar.gz"
 
+
+def get_ncbi_daily_tar_gz_local_path(date_str: str) -> Path:
+    """Get the local mirror path for NCBI SRA Metadata daily tar.gz."""
+    return NCBI_SRA_METADATA_LOCAL_PATH / f"NCBI_SRA_Metadata_{date_str}.tar.gz"
+
+
+def find_latest_ncbi_full_date(max_days_back: int = 60) -> Optional[str]:
+    """Find the latest available NCBI Full tar.gz.
+
+    First checks the local mirror, then falls back to HTTP HEAD.
     NCBI publishes Full tar.gz approximately once a month.
     """
+    # Try local mirror first
+    for days_back in range(max_days_back):
+        check_date = TODAY - timedelta(days=days_back)
+        date_str = check_date.strftime("%Y%m%d")
+        local_path = get_ncbi_full_tar_gz_local_path(date_str)
+        if local_path.exists():
+            log_info(f"found full tar.gz in local mirror: {local_path}")
+            return date_str
+
+    # Fall back to HTTP HEAD
     for days_back in range(max_days_back):
         check_date = TODAY - timedelta(days=days_back)
         date_str = check_date.strftime("%Y%m%d")
@@ -130,29 +152,37 @@ def _download_with_aria2c(url: str, output_path: Path) -> None:
 def download_full_tar_gz(config: Config, date_str: str) -> None:
     """Download NCBI Full tar.gz and create new tar file.
 
-    Uses aria2c for fast, reliable download, then pigz for decompression.
+    Uses local mirror if available, otherwise aria2c for download.
     """
-    url = get_ncbi_full_tar_gz_url(date_str)
     tar_path = get_ncbi_tar_path(config)
     tar_dir = get_sra_tar_dir(config)
     tar_dir.mkdir(parents=True, exist_ok=True)
 
-    tar_gz_path = tar_dir.joinpath(f"ncbi_full_{date_str}.tar.gz")
+    local_path = get_ncbi_full_tar_gz_local_path(date_str)
 
-    log_info(f"downloading ncbi full tar.gz: {url}")
-    log_info(f"output: {tar_path}")
-
-    try:
-        # Download with aria2c
-        _download_with_aria2c(url, tar_gz_path)
-
-        # Decompress with pigz
+    if local_path.exists():
+        # Use local mirror: decompress directly (avoid copying 15GB+ file)
+        log_info(f"using local mirror: {local_path}")
+        log_info(f"output: {tar_path}")
         log_info("decompressing with pigz...")
-        cmd = f'pigz -d -c "{tar_gz_path}" > "{tar_path}"'
+        cmd = f'pigz -d -c "{local_path}" > "{tar_path}"'
         subprocess.run(cmd, shell=True, check=True)
-    finally:
-        # Clean up .tar.gz file
-        tar_gz_path.unlink(missing_ok=True)
+    else:
+        # Fall back to aria2c download
+        url = get_ncbi_full_tar_gz_url(date_str)
+        tar_gz_path = tar_dir.joinpath(f"ncbi_full_{date_str}.tar.gz")
+
+        log_info(f"downloading ncbi full tar.gz: {url}")
+        log_info(f"output: {tar_path}")
+
+        try:
+            _download_with_aria2c(url, tar_gz_path)
+
+            log_info("decompressing with pigz...")
+            cmd = f'pigz -d -c "{tar_gz_path}" > "{tar_path}"'
+            subprocess.run(cmd, shell=True, check=True)
+        finally:
+            tar_gz_path.unlink(missing_ok=True)
 
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)
@@ -163,45 +193,58 @@ def download_full_tar_gz(config: Config, date_str: str) -> None:
 def append_daily_tar_gz(config: Config, date_str: str) -> bool:
     """Append NCBI daily tar.gz entries to existing tar file.
 
+    Uses local mirror if available, otherwise aria2c for download.
     Returns True if successful, False if daily tar.gz not found.
     """
-    url = get_ncbi_daily_tar_gz_url(date_str)
     tar_path = get_ncbi_tar_path(config)
 
     if not tar_path.exists():
         raise FileNotFoundError(f"NCBI tar file does not exist: {tar_path}")
 
-    # Check if daily tar.gz exists
-    try:
-        with httpx.Client(timeout=10) as client:
-            response = client.head(url)
-            if response.status_code != 200:
-                log_info(f"daily tar.gz not found: {url}")
-                return False
-    except httpx.RequestError as e:
-        log_info(f"failed to check daily tar.gz: {e}")
-        return False
-
-    log_info(f"appending daily tar.gz: {url}")
-
-    tar_gz_path = tar_path.parent.joinpath(f"daily_{date_str}.tar.gz")
+    local_path = get_ncbi_daily_tar_gz_local_path(date_str)
     tmp_tar_path = tar_path.parent.joinpath(f"daily_{date_str}.tar")
 
-    try:
-        # Download with aria2c
-        _download_with_aria2c(url, tar_gz_path)
+    if local_path.exists():
+        # Use local mirror
+        log_info(f"appending daily tar.gz from local mirror: {local_path}")
 
-        # Decompress with pigz
-        cmd = f'pigz -d -c "{tar_gz_path}" > "{tmp_tar_path}"'
-        subprocess.run(cmd, shell=True, check=True)
+        try:
+            cmd = f'pigz -d -c "{local_path}" > "{tmp_tar_path}"'
+            subprocess.run(cmd, shell=True, check=True)
 
-        # Concatenate temp tar to existing tar
-        cmd = f'tar -Af "{tar_path}" "{tmp_tar_path}"'
-        subprocess.run(cmd, shell=True, check=True)
-    finally:
-        # Clean up temp files
-        tar_gz_path.unlink(missing_ok=True)
-        tmp_tar_path.unlink(missing_ok=True)
+            cmd = f'tar -Af "{tar_path}" "{tmp_tar_path}"'
+            subprocess.run(cmd, shell=True, check=True)
+        finally:
+            tmp_tar_path.unlink(missing_ok=True)
+    else:
+        # Fall back to HTTP check + aria2c download
+        url = get_ncbi_daily_tar_gz_url(date_str)
+
+        try:
+            with httpx.Client(timeout=10) as client:
+                response = client.head(url)
+                if response.status_code != 200:
+                    log_info(f"daily tar.gz not found: {url}")
+                    return False
+        except httpx.RequestError as e:
+            log_info(f"failed to check daily tar.gz: {e}")
+            return False
+
+        log_info(f"appending daily tar.gz: {url}")
+
+        tar_gz_path = tar_path.parent.joinpath(f"daily_{date_str}.tar.gz")
+
+        try:
+            _download_with_aria2c(url, tar_gz_path)
+
+            cmd = f'pigz -d -c "{tar_gz_path}" > "{tmp_tar_path}"'
+            subprocess.run(cmd, shell=True, check=True)
+
+            cmd = f'tar -Af "{tar_path}" "{tmp_tar_path}"'
+            subprocess.run(cmd, shell=True, check=True)
+        finally:
+            tar_gz_path.unlink(missing_ok=True)
+            tmp_tar_path.unlink(missing_ok=True)
 
     # Update last_merged file
     last_merged_path = get_ncbi_last_merged_path(config)
@@ -214,12 +257,24 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
 def _check_for_newer_full(config: Config) -> Optional[str]:
     """Check if a newer Full tar.gz is available than last_merged.
 
+    First checks the local mirror, then falls back to HTTP HEAD.
     Returns the date string if a newer Full is found, None otherwise.
     """
     last_merged = _get_last_merged_date(config)
     if last_merged is None:
         return None
 
+    # Try local mirror first
+    current = TODAY
+    while current > last_merged:
+        date_str = current.strftime("%Y%m%d")
+        local_path = get_ncbi_full_tar_gz_local_path(date_str)
+        if local_path.exists():
+            log_info(f"found newer full tar.gz in local mirror: {date_str}")
+            return date_str
+        current -= timedelta(days=1)
+
+    # Fall back to HTTP HEAD
     current = TODAY
     while current > last_merged:
         date_str = current.strftime("%Y%m%d")

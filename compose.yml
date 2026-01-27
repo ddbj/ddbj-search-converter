@@ -13,6 +13,7 @@ services:
       # SRA / DRA Accessions
       - /lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
       - /lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:ro
+      - /lustre9/open/database/ddbj-dbt/dra-private/mirror/Metadata/Metadata:/lustre9/open/database/ddbj-dbt/dra-private/mirror/Metadata/Metadata:ro
       # DBLink 生成物
       - /usr/local/shared_data/dblink:/usr/local/shared_data/dblink:rw
       # 各種リソース
