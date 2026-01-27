@@ -280,21 +280,19 @@ if [ ! -f "$DRA_ACC_FULL" ]; then
 fi
 
 # 6 type 完備の submission を検索
+# NOTE: DRA_Accessions.tab は ANALYSIS 情報が不完全なため、
+#       DRA/SRA/ERA 全て SRA_Accessions.tab から検索する
 ALL_SUBMISSIONS=()
 DRA_SUBS=()
 SRA_SUBS=()
 ERA_SUBS=()
 
-if [ -f "$DRA_ACC_FULL" ]; then
+if [ -f "$SRA_ACC_FULL" ]; then
     echo "DRA submissions (6 type) を検索中..."
-    mapfile -t DRA_SUBS < <(find_6type_submissions "$DRA_ACC_FULL" "DRA" "$SRA_XML_SRC" 10)
+    mapfile -t DRA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "DRA" "$SRA_XML_SRC" 10)
     ALL_SUBMISSIONS+=("${DRA_SUBS[@]}")
     echo "  DRA: ${#DRA_SUBS[@]} 件"
-else
-    echo "  DRA_Accessions.tab: スキップ (ファイルなし)"
-fi
 
-if [ -f "$SRA_ACC_FULL" ]; then
     echo "SRA submissions (6 type) を検索中..."
     mapfile -t SRA_SUBS < <(find_6type_submissions "$SRA_ACC_FULL" "SRA" "$SRA_XML_SRC" 10)
     ALL_SUBMISSIONS+=("${SRA_SUBS[@]}")
@@ -328,14 +326,15 @@ done
 echo "Accessions.tab fixture を構築中..."
 
 if [ -f "$SRA_ACC_FULL" ]; then
-    sra_era_subs=("${SRA_SUBS[@]}" "${ERA_SUBS[@]}")
+    # SRA_Accessions.tab: DRA + SRA + ERA 全 submission の行を含める
     build_accessions_fixture "$SRA_ACC_FULL" \
         "$FIXTURES_DIR$SRA_ACC_BASE/$sra_year/$sra_month/SRA_Accessions.tab.$sra_date_str" \
         "SRA_Accessions.tab.$sra_date_str" \
-        "${sra_era_subs[@]}"
+        "${ALL_SUBMISSIONS[@]}"
 fi
 
 if [ -f "$DRA_ACC_FULL" ]; then
+    # DRA_Accessions.tab: DRA submission の行のみ (フォーマットが異なるため別ソースから構築)
     build_accessions_fixture "$DRA_ACC_FULL" \
         "$FIXTURES_DIR$DRA_ACC_BASE/$dra_date_str.DRA_Accessions.tab" \
         "$dra_date_str.DRA_Accessions.tab" \
