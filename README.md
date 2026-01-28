@@ -48,6 +48,17 @@ finalize_dblink_db
 
 # TSV 出力
 dump_dblink_files
+
+# === JSONL 生成 ===
+
+# 日付キャッシュ構築 (BP/BS の JSONL 生成前に必須)
+build_bp_bs_date_cache
+
+# JSONL 生成
+generate_bp_jsonl --full   # 初回は --full、以降は差分更新
+generate_bs_jsonl --full
+generate_sra_jsonl --full
+generate_jga_jsonl --full
 ```
 
 ### 開発環境での実行
@@ -87,10 +98,12 @@ docker compose -f compose.dev.yml exec app bash
 
 | コマンド | 説明 |
 |---------|------|
+| `build_bp_bs_date_cache` | BP/BS 日付情報を PostgreSQL → DuckDB キャッシュに構築 |
 | `generate_bp_jsonl` | BioProject JSONL 生成 |
 | `generate_bs_jsonl` | BioSample JSONL 生成 |
 | `generate_sra_jsonl` | SRA JSONL 生成（submission/study/experiment/run/sample/analysis） |
 | `generate_jga_jsonl` | JGA JSONL 生成 |
+| `regenerate_jsonl` | 特定 accession の JSONL 再生成（hotfix/debug 用） |
 
 ### Elasticsearch 操作
 
@@ -206,6 +219,62 @@ DDBJ_SEARCH_CONVERTER_DATE=20260125 init_dblink_db
 | `show_log` | 指定した run_name のログ詳細表示 (全レベル対応、--level でフィルタ可) |
 | `show_dblink_counts` | dblink.tmp.duckdb の relation 件数を (src_type, dst_type) ペアごとに JSON 出力 |
 | `dump_debug_report` | 上記を全部まとめて debug_log/ に出力 |
+
+### 特定 accession の JSONL 再生成 + ES 投入
+
+`regenerate_jsonl` は特定の accession ID を指定して JSONL を再生成する hotfix/debug 用コマンド。通常パイプラインとは独立し、`last_run.json` は更新しない。
+
+```bash
+# 基本的な使い方
+regenerate_jsonl --type bioproject --accessions PRJDB12345 PRJDB67890
+regenerate_jsonl --type biosample --accession-file /path/to/accessions.txt
+regenerate_jsonl --type sra --accessions DRR000001 SRR000001
+regenerate_jsonl --type jga --accessions JGAS000123 JGAD000456
+```
+
+**出力先**: `{result_dir}/regenerate/{date}/` (デフォルト)。`--output-dir` で変更可能。
+
+| type | 出力ファイル |
+|------|-------------|
+| `bioproject` | `bioproject.jsonl` |
+| `biosample` | `biosample.jsonl` |
+| `sra` | `submission.jsonl`, `study.jsonl`, `experiment.jsonl`, `run.jsonl`, `sample.jsonl`, `analysis.jsonl` |
+| `jga` | `jga-study.jsonl`, `jga-dataset.jsonl`, `jga-dac.jsonl`, `jga-policy.jsonl` |
+
+SRA / JGA は該当エントリがある type のファイルのみ生成される。
+
+**ES に投入** するには `es_bulk_insert` の `--file` を使う。`_op_type: "index"` のため既存ドキュメントは上書き (upsert 相当) される。
+
+```bash
+# BioProject
+es_bulk_insert --index bioproject \
+  --file ddbj_search_converter_results/regenerate/20260128/bioproject.jsonl
+
+# SRA (entity type ごとに index が異なる)
+es_bulk_insert --index sra-run \
+  --file ddbj_search_converter_results/regenerate/20260128/run.jsonl
+es_bulk_insert --index sra-study \
+  --file ddbj_search_converter_results/regenerate/20260128/study.jsonl
+
+# JGA
+es_bulk_insert --index jga-study \
+  --file ddbj_search_converter_results/regenerate/20260128/jga-study.jsonl
+```
+
+全オプション:
+
+| オプション | 必須 | 説明 |
+|-----------|------|------|
+| `--type` | Yes | `bioproject`, `biosample`, `sra`, `jga` |
+| `--accessions` | No* | accession をスペース区切りで指定 |
+| `--accession-file` | No* | 1行1accession のファイルパス |
+| `--output-dir` | No | 出力先ディレクトリ |
+| `--result-dir` | No | result ベースディレクトリ |
+| `--date` | No | BP/BS の tmp_xml 入力日付 + デフォルト出力ディレクトリ名 |
+| `--jga-base-path` | No | JGA XML/CSV ファイルパス |
+| `--debug` | No | debug mode |
+
+(*) `--accessions` と `--accession-file` は少なくとも1つ必須。両方指定時は union。
 
 ### Debugging ワークフロー
 

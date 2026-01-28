@@ -351,18 +351,21 @@ def iterate_xml_biosamples(xml_path: Path) -> Iterator[bytes]:
 
 
 def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
-    """DDBJ BioSample の日付を PostgreSQL から取得して設定する。"""
-    try:
-        from ddbj_search_converter.postgres.bs_date import \
-            fetch_bs_dates_bulk  # pylint: disable=import-outside-toplevel
-        date_map = fetch_bs_dates_bulk(config, docs.keys())
-        for accession, (date_created, date_modified, date_published) in date_map.items():
-            if accession in docs:
-                docs[accession].dateCreated = date_created
-                docs[accession].dateModified = date_modified
-                docs[accession].datePublished = date_published
-    except ImportError:
-        log_info("psycopg2 not available, skipping date fetch for DDBJ BioSample")
+    """DDBJ BioSample の日付を DuckDB キャッシュから取得して設定する。"""
+    from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
+        date_cache_exists, fetch_bs_dates_from_cache,
+    )
+    if not date_cache_exists(config):
+        raise RuntimeError(
+            "date cache not found. Run build_bp_bs_date_cache first."
+        )
+
+    date_map = fetch_bs_dates_from_cache(config, docs.keys())
+    for acc, (dc, dm, dp) in date_map.items():
+        if acc in docs:
+            docs[acc].dateCreated = dc
+            docs[acc].dateModified = dm
+            docs[acc].datePublished = dp
 
 
 def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool) -> None:
@@ -514,16 +517,17 @@ def generate_bs_jsonl(
             original_since = since
             since = apply_margin(since)
             log_info(f"incremental update mode: since={since} (original={original_since}, margin_days={DEFAULT_MARGIN_DAYS})")
-            # DDBJ: PostgreSQL から対象 accession を取得
-            try:
-                from ddbj_search_converter.postgres.bs_date import \
-                    fetch_bs_accessions_modified_since  # pylint: disable=import-outside-toplevel
-                ddbj_target_accessions = fetch_bs_accessions_modified_since(config, since)
-                log_info(f"ddbj target accessions: {len(ddbj_target_accessions)}")
-            except ImportError:
-                log_info("psycopg2 not available, processing all DDBJ entries")
-            except Exception as e:
-                log_error(f"failed to fetch ddbj target accessions: {e}")
+            # DDBJ: DuckDB キャッシュから対象 accession を取得
+            from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
+                date_cache_exists,
+                fetch_bs_accessions_modified_since_from_cache,
+            )
+            if not date_cache_exists(config):
+                raise RuntimeError(
+                    "date cache not found. Run build_bp_bs_date_cache first."
+                )
+            ddbj_target_accessions = fetch_bs_accessions_modified_since_from_cache(config, since)
+            log_info(f"ddbj target accessions: {len(ddbj_target_accessions)}")
         else:
             log_info("full update mode: no previous run found")
     else:

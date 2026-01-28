@@ -46,6 +46,8 @@ DRA_DB_FILE_NAME = "dra_accessions.duckdb"
 TMP_DRA_DB_FILE_NAME = "dra_accessions.tmp.duckdb"
 DBLINK_DB_FILE_NAME = "dblink.duckdb"
 TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
+DATE_CACHE_DB_FILE_NAME = "bp_bs_date.duckdb"
+TMP_DATE_CACHE_DB_FILE_NAME = "bp_bs_date.tmp.duckdb"
 
 # const_dir relative paths (blacklist, preserved)
 # These are relative to config.const_dir, which can be overridden by env var
