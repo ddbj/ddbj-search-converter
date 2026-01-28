@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET>
+    <RUN accession="DRR000189" center_name="NIID" alias="DRR000189" run_center="NIID" run_date="2009-03-23T09:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000096" refcenter="NIID" refname="DRX000096"/>
+    </RUN>
+</RUN_SET>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="Maruca midgut and salivary gland transcripts" center_name="Purdue University" accession="SRX032895">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX032895</PRIMARY_ID>
+      <SUBMITTER_ID namespace="Purdue University">Maruca midgut and salivary gland transcripts</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Maruca midgut and slaivary gland expressed sequence tags</TITLE>
+    <STUDY_REF accession="SRP002836">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP002836</PRIMARY_ID>
+        <SUBMITTER_ID namespace="Purdue University">Maruca_vitrata_EST_SRA</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION/>
+      <SAMPLE_DESCRIPTOR accession="SRS140290">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS140290</PRIMARY_ID>
+          <SUBMITTER_ID namespace="Purdue University">Maruca midgut and salivary gland transcripts</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Mvit454 library</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

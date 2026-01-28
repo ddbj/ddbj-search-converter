@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="Rice High-throughput genotyping by whole-genome resequencing" center_name="NCGR" accession="ERP000011">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000011</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1981</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="NCGR">Rice High-throughput genotyping by whole-genome resequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Rice High-throughput genotyping by whole-genome resequencing</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_ABSTRACT>Very low whole genome sequence coverage of 150 rice recombinant inbred lines from japonica Nipponbare and indica 93-11</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>Rice Genotyping</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_ATTRIBUTES>
+      <STUDY_ATTRIBUTE>
+        <TAG>number of samples</TAG>
+        <VALUE>150</VALUE>
+      </STUDY_ATTRIBUTE>
+    </STUDY_ATTRIBUTES>
+  </STUDY>
+</STUDY_SET>

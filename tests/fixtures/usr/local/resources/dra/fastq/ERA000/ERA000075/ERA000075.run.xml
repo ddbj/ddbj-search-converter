@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR002801" alias="E7PWMF002_2010920094" run_center="SC" run_date="2008-03-25T00:00:00Z">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002801</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">E7PWMF002_2010920094</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">E7PWMF002_2010920094</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 GS FLX sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX1483939">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX1483939</PRIMARY_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_LABEL>Left Adapter</READ_LABEL>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL_TABLE base_coord="1">
+            <BASECALL>TCAG</BASECALL>
+          </EXPECTED_BASECALL_TABLE>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_LABEL>Forward</READ_LABEL>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002800" alias="E7PWMF001_A130" run_center="SC" run_date="2008-03-25T00:00:00Z">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002800</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">E7PWMF001_A130</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">E7PWMF001_A130</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 GS FLX sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000230" refcenter="SC" refname="Salmonella Typhimurium strain A130">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000230</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Salmonella Typhimurium strain A130</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_LABEL>Left Adapter</READ_LABEL>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL_TABLE base_coord="1">
+            <BASECALL>TCAG</BASECALL>
+          </EXPECTED_BASECALL_TABLE>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_LABEL>Forward</READ_LABEL>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>key_sequence</TAG>
+        <VALUE>TCAG</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>flow_sequence</TAG>
+        <VALUE>TACG</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>flow_count</TAG>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000312" broker_name="DRA" center_name="KAZUSA" alias="DRP000312">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDA59759</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Micro-Tom genome sequencing</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+            <STUDY_ABSTRACT>The tomato is a model plant for the Solanaceae species and for studying fruit development and plant diversification and is thus expected to be a next-generation model plant following Arabidopsis and rice. The NBRP Tomato core facility program focuses on the development of bio-resources using Micro-Tom, a model cultivar of tomato genomics. Micro-Tom is a member of the Solanum lycopersicum species, whose genome draft sequence was obtained using cultivar Heinz 1706. Micro-Tom genome sequence will facilitate the development of a number of DNA markers by comparison with the Heinz 1706 genome, and accelerate the elucidation of genes responsible for phenotypic and metabolic changes by using NBRP tomato bio-resources.
+ In this Micro-Tom genome sequencing project, the Kazusa DNA Research Institute and the Research Organization of Information and Systems collaborate in sequencing by using the Roche Genome Sequencer FLX and Illumina Genome Analyzer IIx, respectively. Reads are assembled, mapped, and provided with annotation using the DDBJ Read Annotation Pipeline. Genome sequence contigs will be readily registered to the DDBJ database. In the near future, Micro-Tome full-length cDNA- and BAC sequences will be integrated into the Micro-Tom genome sequence to accelerate genomics research into tomatoes.</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>Micro-Tom genome 454</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJDA59759</ID>
+                        <LABEL>PRJDA59759</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>59759</ID>
+                        <LABEL>59759</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>none provided</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <URL_LINK>
+                    <LABEL>NBRP</LABEL>
+                    <URL>http://www.nbrp.jp/about/genomeDetail.jsp</URL>
+                </URL_LINK>
+            </STUDY_LINK>
+            <STUDY_LINK>
+                <URL_LINK>
+                    <LABEL>National BioResource Project - Tomato -</LABEL>
+                    <URL>http://tomato.nbrp.jp/indexEn.html</URL>
+                </URL_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+        <STUDY_ATTRIBUTES>
+            <STUDY_ATTRIBUTE>
+                <TAG>grant</TAG>
+                <VALUE>MEXT National BioResource Project</VALUE>
+            </STUDY_ATTRIBUTE>
+        </STUDY_ATTRIBUTES>
+    </STUDY>
+</STUDY_SET>

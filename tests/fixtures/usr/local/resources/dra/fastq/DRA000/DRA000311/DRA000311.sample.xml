@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000416" broker_name="DRA" center_name="KAZUSA" alias="DRS000416">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012915</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Micro-Tom genome DNA</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>4081</TAXON_ID>
+            <SCIENTIFIC_NAME>Solanum lycopersicum</SCIENTIFIC_NAME>
+            <INDIVIDUAL_NAME>TOMJPF00001_T2008_01</INDIVIDUAL_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Micro-Tom plants were grown on culture medium (1/2 MS, 3%(w/v) sucrose, 0.8%(w/v) agar) in sterile condition. Genome DNA was isolated from one-month-old leaves by using DNeasy Plant Mini Kit (QIAGEN, catalog No. 69104) according to user's manual.</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>cultivar</TAG>
+                <VALUE>Micro-Tom</VALUE>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>tomato</VALUE>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

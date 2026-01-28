@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ANALYSIS alias="hea2_with_tags" center_name="AU-DJF" accession="SRZ001000">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ001000</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea2_with_tags</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Sus scrofa RNA heart (HEA) sequences with custom tags</TITLE>
+    <STUDY_REF accession="SRP000532"/>
+    <DESCRIPTION>Data specify sequences with custom tags</DESCRIPTION>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="RUN" accession="SRR011189"/>
+      <TARGET sra_object_type="RUN" accession="SRR011190"/>
+      <TARGET sra_object_type="RUN" accession="SRR011191"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="fbbbc49af039bc01fd46961edba34481" checksum_method="MD5" filename="hea2-1.uaccno.lst" filetype="tab"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="hea2_without_tags" center_name="AU-DJF" accession="SRZ001001">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ001001</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea2_without_tags</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Sus scrofa RNA heart (HEA) sequences without custom tags</TITLE>
+    <STUDY_REF accession="SRP000532"/>
+    <DESCRIPTION>Data specify sequences without custom tags</DESCRIPTION>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="RUN" accession="SRR011189"/>
+      <TARGET sra_object_type="RUN" accession="SRR011190"/>
+      <TARGET sra_object_type="RUN" accession="SRR011191"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="c13aa2753fca65c7b4430046b2d73963" checksum_method="MD5" filename="hea2-2.uaccno.lst" filetype="tab"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="ldo2_with_tags" center_name="AU-DJF" accession="SRZ001002">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ001002</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo2_with_tags</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Sus scrofa RNA longissimus dorsi (LDO) #1 sequences with custom tags</TITLE>
+    <STUDY_REF accession="SRP000532"/>
+    <DESCRIPTION>Data specify sequences with custom tags</DESCRIPTION>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="RUN" accession="SRR011196"/>
+      <TARGET sra_object_type="RUN" accession="SRR011197"/>
+      <TARGET sra_object_type="RUN" accession="SRR011198"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="96fb79f718ea78305c2f19d3d12e0133" checksum_method="MD5" filename="ldo2-1.uaccno.lst" filetype="tab"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="ldo2_without_tags" center_name="AU-DJF" accession="SRZ001003">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ001003</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo2_without_tags</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Sus scrofa RNA longissimus dorsi (LDO) #1 sequences without custom tags</TITLE>
+    <STUDY_REF accession="SRP000532"/>
+    <DESCRIPTION>Data specify sequences without custom tags</DESCRIPTION>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="RUN" accession="SRR011196"/>
+      <TARGET sra_object_type="RUN" accession="SRR011197"/>
+      <TARGET sra_object_type="RUN" accession="SRR011198"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="27d25fd7352c1cf992bf52c434e00f03" checksum_method="MD5" filename="ldo2-2.uaccno.lst" filetype="tab"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+</ANALYSIS_SET>

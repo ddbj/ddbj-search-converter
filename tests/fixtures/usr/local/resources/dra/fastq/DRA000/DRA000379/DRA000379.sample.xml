@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000648" center_name="RIKEN_OSC" alias="DRS000648">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00006373</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Sample 1 Left CA3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10116</TAXON_ID>
+            <SCIENTIFIC_NAME>Rattus norvegicus</SCIENTIFIC_NAME>
+            <COMMON_NAME>Norway rat</COMMON_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Sample 1 Left CA3
+S100201
+No. 1-26; No. 301-310</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>Long Evans</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+    <SAMPLE accession="DRS000649" center_name="RIKEN_OSC" alias="DRS000649">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00006369</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Sample 1 Right CA3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10116</TAXON_ID>
+            <SCIENTIFIC_NAME>Rattus norvegicus</SCIENTIFIC_NAME>
+            <COMMON_NAME>Norway rat</COMMON_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Sample 1 Right CA3
+S100202
+No. 1-26; No. 301-310</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>Long Evans</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+    <SAMPLE accession="DRS000650" center_name="RIKEN_OSC" alias="DRS000650">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00006371</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Sample 2 Left CA3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10116</TAXON_ID>
+            <SCIENTIFIC_NAME>Rattus norvegicus</SCIENTIFIC_NAME>
+            <COMMON_NAME>Norway rat</COMMON_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Sample 2 Left CA3
+S100203
+No. 27-30, No. 101-122, No. 201-211, No. 216-223, No. 231-242</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>Long Evans</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+    <SAMPLE accession="DRS000651" center_name="RIKEN_OSC" alias="DRS000651">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00006374</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Sample 2 Right CA3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10116</TAXON_ID>
+            <SCIENTIFIC_NAME>Rattus norvegicus</SCIENTIFIC_NAME>
+            <COMMON_NAME>Norway rat</COMMON_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Sample 2 Right CA3
+S100204
+No. 27-30, No. 101-122, No. 201-211, No. 216-223, No. 231-242</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>Long Evans</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+    <SAMPLE accession="DRS000652" center_name="RIKEN_OSC" alias="DRS000652">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00006370</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Sample 3 Left CA3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10116</TAXON_ID>
+            <SCIENTIFIC_NAME>Rattus norvegicus</SCIENTIFIC_NAME>
+            <COMMON_NAME>Norway rat</COMMON_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Sample 3 Left CA3
+S100205
+No. 311-344</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>Long Evans</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+    <SAMPLE accession="DRS000653" center_name="RIKEN_OSC" alias="DRS000653">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00006372</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Sample 3 Right CA3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10116</TAXON_ID>
+            <SCIENTIFIC_NAME>Rattus norvegicus</SCIENTIFIC_NAME>
+            <COMMON_NAME>Norway rat</COMMON_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Sample 3 Right CA3
+S100206
+No. 311-344</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>common name</TAG>
+                <VALUE>Long Evans</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

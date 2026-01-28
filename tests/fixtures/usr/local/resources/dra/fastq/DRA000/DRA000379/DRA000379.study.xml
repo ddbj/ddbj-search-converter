@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000384" center_name="RIKEN_BSI" alias="DRP000384">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>miRNA profiling of bilateral rat hippocampal CA3 by deep sequencing</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Transcriptome Sequencing"/>
+            <STUDY_ABSTRACT>small RNA cDNA library was made and read by deep sequencing.
+cross-mapping procedure was applied 
+miRNA pofiling of male rat hippocampal CA3 was performed by deep sequencing. 
+The hippocampus is a part of the brain critically involved in memory formation and spatial navigation. 
+Shinohara et al. (2011,) used deep sequencing for microRNA (miRNA) profiling of multiple samples of 
+the mature male rat hippocampal CA3 region. According to their study, the let-7 family miRNA represents about 
+half of the small RNA cDNA library. Major let-7 family miRNAs are let-7c (23%), let-7a (9%), let-7f (9%), and let-7b (7%).
+The authors found miR134, a miRNA previously reported to be related to synaptic plasticity and morphology, 
+only modestly expressed (~0.05%). The miRNA profiles of the left and right hippocampi were similar. 
+The sequence data derived from 3 pooled data sets and each data set contained corresponding left and right 
+hippocampal CA3 samples. This study is one of the fewest studies in which miRNA expression profiles were quantitatively 
+assessed in a specific region of the brain.</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>miRNAs of dorsal P5wks rat HPC CA3</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJDA66059</ID>
+                        <LABEL>PRJDA66059</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>66059</ID>
+                        <LABEL>66059</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>none provided</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <XREF_LINK>
+                    <DB>pubmed</DB>
+                    <ID>21575607</ID>
+                </XREF_LINK>
+            </STUDY_LINK>
+            <STUDY_LINK>
+                <URL_LINK>
+                    <LABEL>Linked publication</LABEL>
+                    <URL>http://dx.doi.org/10.1016/j.bbrc.2011.05.004</URL>
+                </URL_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+    </STUDY>
+</STUDY_SET>

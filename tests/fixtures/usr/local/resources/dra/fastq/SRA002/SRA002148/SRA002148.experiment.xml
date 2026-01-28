@@ -1,0 +1,664 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT accession="SRX001179" center_name="BI" alias="647125080827-2-P">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX001179</PRIMARY_ID>
+      <SUBMITTER_ID namespace="BI">647125080827-2-P</SUBMITTER_ID>
+      <UUID>f4e9a2d9-ffdc-4542-9981-ec2d65bcf0ef</UUID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Brucella abortus bv. 6 str. 870 genomic paired-end library</TITLE>
+    <STUDY_REF accession="SRP019355">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP019355</PRIMARY_ID>
+        <EXTERNAL_ID namespace="bioproject">PRJNA33025</EXTERNAL_ID>
+        <EXTERNAL_ID namespace="Broad Institute" label="Brucella abortus bv. 6 str. 870">Biovar 6 reference strain Brucella_abortus_bv_str_870_ltp_BAAG_WGS_Monoisolate</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>15X sequence coverage from a standard library and 30X physical coverage from a jumping library on 454.</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000909">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000909</PRIMARY_ID>
+          <SUBMITTER_ID namespace="BI">BROAD:SEQUENCING_SAMPLE:24608.0</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>454-1374</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="361"/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_LABEL>key_sequence</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE default_length="4" base_coord="1">
+              <BASECALL min_match="4" max_mismatch="0" match_edge="full">TCAG</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>forward</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>pe_linker</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Linker</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL min_match="40" max_mismatch="5" match_edge="full">GTTGGAACCGAAAGGGTTTGAATTCAAACCCTTTCGGTTCCAAC</BASECALL>
+              <BASECALL min_match="38" max_mismatch="5" match_edge="full">TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG</BASECALL>
+              <BASECALL min_match="38" max_mismatch="5" match_edge="full">CGTAATAACTTCGTATAGCATACATTATACGAAGTTATACGA</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>3</READ_INDEX>
+            <READ_LABEL>reverse</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="2"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING>
+      <PIPELINE>
+        <PIPE_SECTION section_name="base caller">
+          <STEP_INDEX>2008-08-28 08:48:51.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>454BaseCaller</PROGRAM>
+          <VERSION>2.0.00.17</VERSION>
+        </PIPE_SECTION>
+      </PIPELINE>
+    </PROCESSING>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gssr_id</TAG>
+        <VALUE>24608.2</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>lsid</TAG>
+        <VALUE>BROAD:SEQUENCING_SAMPLE:24608.2</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>material_type</TAG>
+        <VALUE>Genomic DNA</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>project</TAG>
+        <VALUE>G1579</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>work_request</TAG>
+        <VALUE>17128</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="SRX001180" center_name="BI" alias="2735.WR17105.454-1362.642700080812.S">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX001180</PRIMARY_ID>
+      <SUBMITTER_ID namespace="BI">2735.WR17105.454-1362.642700080812.S</SUBMITTER_ID>
+      <UUID>5bb2fbdd-35b2-4421-8601-0560a3f8edc0</UUID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Brucella abortus bv. 6 str. 870 genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP019355">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP019355</PRIMARY_ID>
+        <EXTERNAL_ID namespace="bioproject">PRJNA33025</EXTERNAL_ID>
+        <EXTERNAL_ID namespace="Broad Institute" label="Brucella abortus bv. 6 str. 870">Biovar 6 reference strain Brucella_abortus_bv_str_870_ltp_BAAG_WGS_Monoisolate</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>15X sequence coverage from a standard library and 30X physical coverage from a jumping library on 454.</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000909">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000909</PRIMARY_ID>
+          <SUBMITTER_ID namespace="BI">BROAD:SEQUENCING_SAMPLE:24608.0</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>454-1362</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_LABEL>key_sequence</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE default_length="4" base_coord="1">
+              <BASECALL min_match="4" max_mismatch="0" match_edge="full">TCAG</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE default_length="7" base_coord="5">
+              <BASECALL min_match="7" max_mismatch="0" match_edge="full">CCAGGAC</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>forward</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>12</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING>
+      <PIPELINE>
+        <PIPE_SECTION section_name="base caller">
+          <STEP_INDEX>2008-08-12 23:40:47.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>454BaseCaller</PROGRAM>
+          <VERSION>1.1.03.24</VERSION>
+        </PIPE_SECTION>
+      </PIPELINE>
+    </PROCESSING>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gssr_id</TAG>
+        <VALUE>24608.1</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>lsid</TAG>
+        <VALUE>BROAD:SEQUENCING_SAMPLE:24608.1</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>material_type</TAG>
+        <VALUE>Genomic DNA</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>project</TAG>
+        <VALUE>G1579</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>work_request</TAG>
+        <VALUE>17105</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="SRX095660" center_name="BI" alias="470817.WR25794.Sage-66870.D03MRACXX110629.P">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX095660</PRIMARY_ID>
+      <SUBMITTER_ID namespace="BI">470817.WR25794.Sage-66870.D03MRACXX110629.P</SUBMITTER_ID>
+      <UUID>41236305-094f-419d-bcb1-898fbc357459</UUID>
+    </IDENTIFIERS>
+    <TITLE>Genome Sequencing and Assembly of E. coli O104:H4 strains</TITLE>
+    <STUDY_REF accession="SRP000285">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000285</PRIMARY_ID>
+        <EXTERNAL_ID namespace="bioproject">PRJNA68153</EXTERNAL_ID>
+        <EXTERNAL_ID namespace="Broad Institute" label="Escherichia coli O104:H4 str. C227-11">Escherichia coli O104H4 str C227 11 Genome sequencing ltp_EUAG_WGS_Monoisolate</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Fragment library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS259611">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS259611</PRIMARY_ID>
+          <SUBMITTER_ID namespace="BI">PRJNA68153.C227-11_Tube 2_A</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Sage-66870</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="186" NOMINAL_SDEV="31.3864"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Illumina</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>202</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_LABEL>forward</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>reverse</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>102</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina HiSeq 2000</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING>
+      <PIPELINE>
+        <PIPE_SECTION section_name="base caller">
+          <STEP_INDEX>2011-07-03 09:52:48.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>GAPipeline</PROGRAM>
+          <VERSION>RTA1.12.4.1</VERSION>
+          <NOTES>Sequencer Application 1.4.5</NOTES>
+        </PIPE_SECTION>
+      </PIPELINE>
+    </PROCESSING>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gssr_id</TAG>
+        <VALUE>110032.0</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>lsid</TAG>
+        <VALUE>broadinstitute.org:bsp.prod.sample:22PTY</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>material_type</TAG>
+        <VALUE>DNA:DNA Somatic</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>project</TAG>
+        <VALUE>G14230</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>root_sample_id</TAG>
+        <VALUE>SM-21X6Z</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>sample_id</TAG>
+        <VALUE>SM-22PTY</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>work_request</TAG>
+        <VALUE>25794</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="SRX095661" center_name="BI" alias="470817.WR25801.Solexa-66845.D03MRACXX110629.P">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX095661</PRIMARY_ID>
+      <SUBMITTER_ID namespace="BI">470817.WR25801.Solexa-66845.D03MRACXX110629.P</SUBMITTER_ID>
+      <UUID>bcc5d423-5785-4a68-b1f1-b367b604f111</UUID>
+    </IDENTIFIERS>
+    <TITLE>Genome Sequencing and Assembly of E. coli O104:H4 strains</TITLE>
+    <STUDY_REF accession="SRP000285">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000285</PRIMARY_ID>
+        <EXTERNAL_ID namespace="bioproject">PRJNA68153</EXTERNAL_ID>
+        <EXTERNAL_ID namespace="Broad Institute" label="Escherichia coli O104:H4 str. C227-11">Escherichia coli O104H4 str C227 11 Genome sequencing ltp_EUAG_WGS_Monoisolate</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>3-5kb genomic insert library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS259611">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS259611</PRIMARY_ID>
+          <SUBMITTER_ID namespace="BI">PRJNA68153.C227-11_Tube 2_A</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Solexa-66845</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="751" NOMINAL_SDEV="1576.15721"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Illumina</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>202</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_LABEL>forward</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>reverse</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>102</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina HiSeq 2000</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING>
+      <PIPELINE>
+        <PIPE_SECTION section_name="base caller">
+          <STEP_INDEX>2011-07-03 09:52:48.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>GAPipeline</PROGRAM>
+          <VERSION>RTA1.12.4.1</VERSION>
+          <NOTES>Sequencer Application 1.4.5</NOTES>
+        </PIPE_SECTION>
+      </PIPELINE>
+    </PROCESSING>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gssr_id</TAG>
+        <VALUE>110029.0</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>lsid</TAG>
+        <VALUE>broadinstitute.org:bsp.prod.sample:22PTR</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>material_type</TAG>
+        <VALUE>DNA:DNA Somatic</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>project</TAG>
+        <VALUE>G14230</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>root_sample_id</TAG>
+        <VALUE>SM-21X6Z</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>sample_id</TAG>
+        <VALUE>SM-22PTR</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>work_request</TAG>
+        <VALUE>25801</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="SRX100643" center_name="BI" alias="470817.WR25745.LR_98_Ecoli.06302011_AM_2cell.S">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX100643</PRIMARY_ID>
+      <SUBMITTER_ID namespace="BI">470817.WR25745.LR_98_Ecoli.06302011_AM_2cell.S</SUBMITTER_ID>
+      <UUID>2b30f1be-1c41-4389-a7b5-00257aaa0a52</UUID>
+    </IDENTIFIERS>
+    <TITLE>Genome Sequencing and Assembly of E. coli O104:H4 strains</TITLE>
+    <STUDY_REF accession="SRP000285">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000285</PRIMARY_ID>
+        <EXTERNAL_ID namespace="bioproject">PRJNA68153</EXTERNAL_ID>
+        <EXTERNAL_ID namespace="Broad Institute" label="Escherichia coli O104:H4 str. C227-11">Escherichia coli O104H4 str C227 11 Genome sequencing ltp_EUAG_WGS_Monoisolate</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Fragment library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS259611">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS259611</PRIMARY_ID>
+          <SUBMITTER_ID namespace="BI">PRJNA68153.C227-11_Tube 2_A</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>LR_98_Ecoli</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Pacific Biosciences</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_LABEL>Standard</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <PACBIO_SMRT>
+        <INSTRUMENT_MODEL>PacBio RS</INSTRUMENT_MODEL>
+      </PACBIO_SMRT>
+    </PLATFORM>
+    <PROCESSING>
+      <PIPELINE>
+        <PIPE_SECTION>
+          <STEP_INDEX>2011-06-30 14:07:15.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>Instrument Control Version</PROGRAM>
+          <VERSION>1.2.1.0.87716</VERSION>
+        </PIPE_SECTION>
+        <PIPE_SECTION section_name="base caller">
+          <STEP_INDEX>2011-06-30 14:30:10.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>Primary Analysis</PROGRAM>
+          <VERSION>NRT@172.31.128.10:8082, SwVer=1210.87716, HwVer=1.0</VERSION>
+        </PIPE_SECTION>
+      </PIPELINE>
+    </PROCESSING>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gssr_id</TAG>
+        <VALUE>109823.0</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>lsid</TAG>
+        <VALUE>broadinstitute.org:bsp.prod.sample:22NVG</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>material_type</TAG>
+        <VALUE>DNA:DNA Somatic</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_binding_kit</TAG>
+        <VALUE>DNA/Polymerase Binding Kit 1.0 (24 rxn)</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_binding_kit_barcode</TAG>
+        <VALUE>110125001359802061511</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_template_prep_kit</TAG>
+        <VALUE>DNA Template Prep Kit 1.0 (10 ug)</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_template_prep_kit_barcode</TAG>
+        <VALUE>110128001322716102811</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>project</TAG>
+        <VALUE>G14216</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>root_sample_id</TAG>
+        <VALUE>SM-21X6Z</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>sample_id</TAG>
+        <VALUE>SM-22NVG</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>sequencing_protocol</TAG>
+        <VALUE>Standard Sequencing</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>template_preparation_adaptor_sequence</TAG>
+        <VALUE>ATCTCTCTCttttcctcctcctccgttgttgttgttGAGAGAGAT</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>template_preparation_kit_insert_size</TAG>
+        <VALUE>3000</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>used_binding_kit_control</TAG>
+        <VALUE>true</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>work_request</TAG>
+        <VALUE>25745</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="SRX101297" center_name="BI" alias="470817.WR25745.LR_98_Ecoli.06202011_8cell.S">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX101297</PRIMARY_ID>
+      <SUBMITTER_ID namespace="BI">470817.WR25745.LR_98_Ecoli.06202011_8cell.S</SUBMITTER_ID>
+      <UUID>f882372f-d25a-4de7-8f7f-e944f21f8534</UUID>
+    </IDENTIFIERS>
+    <TITLE>Genome Sequencing and Assembly of E. coli O104:H4 strains</TITLE>
+    <STUDY_REF accession="SRP000285">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000285</PRIMARY_ID>
+        <EXTERNAL_ID namespace="bioproject">PRJNA68153</EXTERNAL_ID>
+        <EXTERNAL_ID namespace="Broad Institute" label="Escherichia coli O104:H4 str. C227-11">Escherichia coli O104H4 str C227 11 Genome sequencing ltp_EUAG_WGS_Monoisolate</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Fragment library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS259611">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS259611</PRIMARY_ID>
+          <SUBMITTER_ID namespace="BI">PRJNA68153.C227-11_Tube 2_A</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>LR_98_Ecoli</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Pacific Biosciences</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_LABEL>Standard</READ_LABEL>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <PACBIO_SMRT>
+        <INSTRUMENT_MODEL>PacBio RS</INSTRUMENT_MODEL>
+      </PACBIO_SMRT>
+    </PLATFORM>
+    <PROCESSING>
+      <PIPELINE>
+        <PIPE_SECTION>
+          <STEP_INDEX>2011-06-20 09:56:32.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>Instrument Control Version</PROGRAM>
+          <VERSION>1.2.1.0.87716</VERSION>
+        </PIPE_SECTION>
+        <PIPE_SECTION section_name="base caller">
+          <STEP_INDEX>2011-06-20 16:05:54.0</STEP_INDEX>
+          <PREV_STEP_INDEX>N/A</PREV_STEP_INDEX>
+          <PROGRAM>Primary Analysis</PROGRAM>
+          <VERSION>NRT@172.31.128.10:8082, SwVer=1210.87716, HwVer=1.0</VERSION>
+        </PIPE_SECTION>
+      </PIPELINE>
+    </PROCESSING>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gssr_id</TAG>
+        <VALUE>109823.0</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>lsid</TAG>
+        <VALUE>broadinstitute.org:bsp.prod.sample:22NVG</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>material_type</TAG>
+        <VALUE>DNA:DNA Somatic</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_binding_kit</TAG>
+        <VALUE>DNA/Polymerase Binding Kit 1.0 (24 rxn)</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_binding_kit_barcode</TAG>
+        <VALUE>110125001359802061511</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_template_prep_kit</TAG>
+        <VALUE>DNA Template Prep Kit 1.0 (10 ug)</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>pacbio_rs_template_prep_kit_barcode</TAG>
+        <VALUE>110128001322716102811</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>project</TAG>
+        <VALUE>G14216</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>root_sample_id</TAG>
+        <VALUE>SM-21X6Z</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>sample_id</TAG>
+        <VALUE>SM-22NVG</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>sequencing_protocol</TAG>
+        <VALUE>Standard Sequencing</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>template_preparation_adaptor_sequence</TAG>
+        <VALUE>ATCTCTCTCttttcctcctcctccgttgttgttgttGAGAGAGAT</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>template_preparation_kit_insert_size</TAG>
+        <VALUE>3000</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>used_binding_kit_control</TAG>
+        <VALUE>true</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>work_request</TAG>
+        <VALUE>25745</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

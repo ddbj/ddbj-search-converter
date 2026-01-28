@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET xmlns:ns2="SRA.annotation">
+    <RUN accession="DRR000996" center_name="RIKEN_BSI" alias="DRR000996" run_center="RIKEN_OSC" run_date="2010-05-25T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000640" refcenter="RIKEN_OSC" refname="DRX000640"/>
+    </RUN>
+    <RUN accession="DRR000997" center_name="RIKEN_BSI" alias="DRR000997" run_center="RIKEN_OSC" run_date="2010-05-25T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000641" refcenter="RIKEN_OSC" refname="DRX000641"/>
+    </RUN>
+    <RUN accession="DRR000998" center_name="RIKEN_BSI" alias="DRR000998" run_center="RIKEN_OSC" run_date="2010-05-25T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000642" refcenter="RIKEN_OSC" refname="DRX000642"/>
+    </RUN>
+    <RUN accession="DRR000999" center_name="RIKEN_BSI" alias="DRR000999" run_center="RIKEN_OSC" run_date="2010-05-25T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000643" refcenter="RIKEN_OSC" refname="DRX000643"/>
+    </RUN>
+    <RUN accession="DRR001000" center_name="RIKEN_BSI" alias="DRR001000" run_center="RIKEN_OSC" run_date="2010-05-25T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000644" refcenter="RIKEN_OSC" refname="DRX000644"/>
+    </RUN>
+    <RUN accession="DRR001001" center_name="RIKEN_BSI" alias="DRR001001" run_center="RIKEN_OSC" run_date="2010-05-25T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000645" refcenter="RIKEN_OSC" refname="DRX000645"/>
+    </RUN>
+</RUN_SET>

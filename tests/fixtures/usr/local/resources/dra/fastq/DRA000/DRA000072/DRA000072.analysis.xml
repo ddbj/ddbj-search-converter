@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000001" center_name="NIID" alias="DRZ000001" analysis_center="NIID">
+        <TITLE>Whole genome analysis of Streptococcus salivarius</TITLE>
+        <STUDY_REF accession="PRJDA43375" refname="PRJDA43375">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA43375</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>de novo assembly by Euler-SR v1.0 using 50 mer short reads.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <DE_NOVO_ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Euler-SR</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </DE_NOVO_ASSEMBLY>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="4d9cbbb337fac9b936c1b3e725bd3aef" checksum_method="MD5" filetype="fasta" filename="Ssalivarius-50mer.filt.fasta.contig"/>
+            </FILES>
+        </DATA_BLOCK>
+        <ANALYSIS_ATTRIBUTES>
+            <ANALYSIS_ATTRIBUTE>
+                <TAG>assembly_program</TAG>
+                <VALUE>Euler-SR</VALUE>
+            </ANALYSIS_ATTRIBUTE>
+            <ANALYSIS_ATTRIBUTE>
+                <TAG>assembly_program_version</TAG>
+                <VALUE>1.0</VALUE>
+            </ANALYSIS_ATTRIBUTE>
+        </ANALYSIS_ATTRIBUTES>
+    </ANALYSIS>
+</ANALYSIS_SET>

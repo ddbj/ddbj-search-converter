@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ANALYSIS alias="CD4-unphos-PolII" center_name="NHLBI-LMI" accession="SRZ008399">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008399</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">CD4-unphos-PolII</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000170"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="146f8ff63bbd1fc8aac71c523c14326a" checksum_method="MD5" filename="CD4-unphos-PolII.bed" filetype="bed"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="CD4-H3-chip" center_name="NHLBI-LMI" accession="SRZ008400">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008400</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">CD4-H3-chip</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000167"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="274404680ed2057ebfb28aa8b218bfb2" checksum_method="MD5" filename="CD4-H3-chip.bed" filetype="BED"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="Act-CD4-unphos-PolII" center_name="NHLBI-LMI" accession="SRZ008401">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008401</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Act-CD4-unphos-PolII</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000164"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="30fff700f8c4f0b67829c35bebfc7472" checksum_method="MD5" filename="Act-CD4-unphos-PolII.bed" filetype="BED"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="Act-CD4-Ser5-PolII" center_name="NHLBI-LMI" accession="SRZ008402">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008402</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Act-CD4-Ser5-PolII</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000165"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="4c49c4a2c43763a612b63b2da2f3569d" checksum_method="MD5" filename="Act-CD4-Ser5-PolII.bed" filetype="BED"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="CD4-Nucleosomes" center_name="NHLBI-LMI" accession="SRZ008403">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008403</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">CD4-Nucleosomes</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000168"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="569c2427880f3f952c280ae19a937a48" checksum_method="MD5" filename="CD4-Nucleosomes.bed" filetype="BED"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="Act-CD4-Nucleosomes" center_name="NHLBI-LMI" accession="SRZ008404">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008404</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Act-CD4-Nucleosomes</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000166"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="697ff6d501c72dfc42153da99e7bd65a" checksum_method="MD5" filename="Act-CD4-Nucleosomes.bed" filetype="BED"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+  <ANALYSIS alias="CD4-Ser5-PolII" center_name="NHLBI-LMI" accession="SRZ008405">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ008405</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">CD4-Ser5-PolII</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Alignment Supplement to 'Dynamic regulation of nucleosome positioning in the human genome'(submitted as SRA000298)</TITLE>
+    <STUDY_REF accession="SRP000105">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX000169"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="dc9b723c81b7e4ee563f55a991989028" checksum_method="MD5" filename="CD4-Ser5-PolII.bed" filetype="BED"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+</ANALYSIS_SET>

@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT accession="ERX000005" alias="sgrp-sc-SK1-S_cerevisiae-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000005</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-SK1-S_cerevisiae-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain SK1 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000002" refname="Solexa sequencing of Saccharomyces cerevisiae strain SK1 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000002</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces cerevisiae strain SK1 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-SK1-S_cerevisiae-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>64</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>33</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000010" alias="sgrp-sc-Y8.5-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000010</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Y8.5-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y8.5 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000009" refname="Solexa sequencing of Saccharomyces paradoxus strain Y8.5 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000009</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Y8.5 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Y8.5-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>58</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>30</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000011" alias="sgrp-sc-Y9.6-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000011</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Y9.6-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y9.6 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000010" refname="Solexa sequencing of Saccharomyces paradoxus strain Y9.6 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000010</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Y9.6 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Y9.6-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>60</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>31</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000001" alias="sgrp-sc-Q31.4-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000001</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Q31.4-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Q31.4 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000004" refname="Solexa sequencing of Saccharomyces paradoxus strain Q31.4 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000004</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Q31.4 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Q31.4-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>76</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>39</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000006" alias="sgrp-sc-W303-S_cerevisiae-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000006</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-W303-S_cerevisiae-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000003" refname="Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000003</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-W303-S_cerevisiae-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>64</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>33</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000007" alias="sgrp-sc-W7-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000007</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-W7-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain W7 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000011" refname="Solexa sequencing of Saccharomyces paradoxus strain W7 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000011</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain W7 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-W7-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>72</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>37</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000003" alias="sgrp-sc-Q74.4-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000003</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Q74.4-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Q74.4 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000006" refname="Solexa sequencing of Saccharomyces paradoxus strain Q74.4 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000006</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Q74.4 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Q74.4-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>60</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>31</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000008" alias="sgrp-sc-Y55-S_cerevisiae-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000008</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Y55-S_cerevisiae-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y55 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000007" refname="Solexa sequencing of Saccharomyces paradoxus strain Y55 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000007</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Y55 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Y55-S_cerevisiae-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>64</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>33</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000012" alias="sgrp-sc-Z1-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000012</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Z1-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Z1 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000012" refname="Solexa sequencing of Saccharomyces paradoxus strain Z1 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000012</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Z1 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Z1-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>58</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>30</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000002" alias="sgrp-sc-Q69.8-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000002</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Q69.8-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Q69.8 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000005" refname="Solexa sequencing of Saccharomyces paradoxus strain Q69.8 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000005</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Q69.8 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Q69.8-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>76</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>39</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000004" alias="sgrp-sc-S288c-S_cerevisiae-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000004</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-S288c-S_cerevisiae-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain S288c random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000001" refname="Solexa sequencing of Saccharomyces cerevisiae strain S288c random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000001</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces cerevisiae strain S288c random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-S288c-S_cerevisiae-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>64</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>33</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000009" alias="sgrp-sc-Y8.1-S_paradoxus-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000009</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sgrp-sc-Y8.1-S_paradoxus-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000001" refname="SGRP" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y8.1 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000008" refname="Solexa sequencing of Saccharomyces paradoxus strain Y8.1 random 200 bp library" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000008</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Solexa sequencing of Saccharomyces paradoxus strain Y8.1 random 200 bp library</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sgrp-sc-Y8.1-S_paradoxus-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="200" NOMINAL_SDEV="0.0E0"/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>58</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>30</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

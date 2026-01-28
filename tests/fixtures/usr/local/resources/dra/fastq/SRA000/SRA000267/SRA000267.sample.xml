@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="AU-DJF" alias="Sus scrofa RNA heart (HEA) #1" accession="SRS002005">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS002005</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00001511</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Sus scrofa</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9823</TAXON_ID>
+      <SCIENTIFIC_NAME>Sus scrofa</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Tissue sample of heart (HEA) prepared by pooling from five healthy Hampshire gilts at age four to six months. Total-RNA extraction was performed using RNeasy Maxi Kit (Qiagen). </DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="AU-DJF" alias="Sus scrofa RNA longissimus dorsi (LDO) #1" accession="SRS002006">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS002006</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00001512</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Sus scrofa</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9823</TAXON_ID>
+      <SCIENTIFIC_NAME>Sus scrofa</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Tissue sample of Longissimus dorsi (LDO) prepared by pooling from five healthy Hampshire gilts at age four to six months. Total-RNA extraction was performed using RNeasy Maxi Kit (Qiagen). </DESCRIPTION>
+  </SAMPLE>
+</SAMPLE_SET>

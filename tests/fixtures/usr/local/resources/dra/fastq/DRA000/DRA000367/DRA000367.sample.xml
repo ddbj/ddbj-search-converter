@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000623" center_name="NIID" alias="DRS000623">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00002684</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>WHole genome analysis of Salmonella Typhimurium L-3553</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>996633</TAXON_ID>
+            <SCIENTIFIC_NAME>Salmonella enterica subsp. enterica serovar Typhimurium str. L-3553</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Extended-spectrum cephalosporin (ESC) resistant Salmonella enterica serovar Typhimurium (ST) has been isolated from cattle in Hokkaido, Japan since 2004.</DESCRIPTION>
+    </SAMPLE>
+</SAMPLE_SET>

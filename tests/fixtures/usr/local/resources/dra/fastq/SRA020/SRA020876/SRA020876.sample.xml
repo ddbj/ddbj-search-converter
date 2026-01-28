@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="Purdue University" alias="Maruca midgut and salivary gland transcripts" accession="SRS140290">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS140290</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00139507</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Maruca midgut salivary expressed sequence tags</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>497515</TAXON_ID>
+      <SCIENTIFIC_NAME>Maruca vitrata</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Midgut and Salivary gland cDNA SRA</DESCRIPTION>
+  </SAMPLE>
+</SAMPLE_SET>

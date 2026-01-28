@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="S. typhimurium A130 short-read sequencing" center_name="SC" accession="ERP000008">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000008</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1978</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SC">S. typhimurium A130 short-read sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Epidemic multiple drug resistant Salmonella Typhimurium causing invasive disease in Sub-Saharan Africa have a distinct genotype and exhibit evidence of genome degradation</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_ABSTRACT>Whereas most Salmonella Typhimurium are associated with gastroenteritis there has been a dramatic increase in Typhimurium-associated invasive disease in Sub-Saharan Africa. Further analysis of epidemic ST313 isolates from Malawi and Kenya using draft whole-genome sequencing provided evidence for micro-evolution at key chromosomal loci and clonal replacement in the field.</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME/>
+    </DESCRIPTOR>
+    <STUDY_LINKS>
+      <STUDY_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>19901036</ID>
+        </XREF_LINK>
+      </STUDY_LINK>
+    </STUDY_LINKS>
+  </STUDY>
+</STUDY_SET>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000303" broker_name="DRA" center_name="NIES" alias="DRS000303">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00009890</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Botryococcus braunii (strain BOT88-2)</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>38881</TAXON_ID>
+            <SCIENTIFIC_NAME>Botryococcus braunii</SCIENTIFIC_NAME>
+            <ANONYMIZED_NAME></ANONYMIZED_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>This strain of Botryococcus braunii, isolated from Lake Saiko in Yamanashi, Japan on September 24th, 2004, produces liquid hydrocarbons derived from very long-chain fatty acids.</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>strain</TAG>
+                <VALUE>BOT88-2</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>lat_lon</TAG>
+                <VALUE>35.50 N 138.69 E</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>collection_date</TAG>
+                <VALUE>24-SEP-2004</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

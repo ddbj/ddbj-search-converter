@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ion torrent fasta/qual test" accession="SRR3107261">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR3107261</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCBI-TEST">ion torrent fasta/qual test</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX1535545"/>
+  </RUN>
+  <RUN alias="ION_TORRENT fastq test" accession="SRR1659097" center_name="NCBI-TEST">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR1659097</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCBI-TEST">ION_TORRENT fastq test</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX765373"/>
+  </RUN>
+  <RUN alias="sdfhsfhsfghdsfghsfghsfgh" accession="SRR2125841">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR2125841</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCBI-TEST">sdfhsfhsfghdsfghsfghsfgh</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX273387"/>
+  </RUN>
+</RUN_SET>

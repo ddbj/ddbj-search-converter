@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000006" center_name="NIID" alias="DRZ000006" analysis_date="2011-03-10T00:00:00+09:00" analysis_center="NIID">
+        <TITLE>Paired-end de novo assembly with ABySS-pe v1.2.5</TITLE>
+        <STUDY_REF accession="PRJDA63645" refname="PRJDA63645">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA63645</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>80mer paired-end reads were assembled by ABySS-pe v1.2.5</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <DE_NOVO_ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>ABySS-pe</PROGRAM>
+                            <VERSION>1.2.5</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </DE_NOVO_ASSEMBLY>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="S_Typhimurium-L3553_80mer-PE_abyss125_k40n70c50-contigs">
+            <FILES>
+                <FILE checksum="015de614abdb960715fa6282ed0ac4f8" checksum_method="MD5" filetype="fasta" filename="S_Typhimurium-L3553_80mer-PE_abyss125_k40n70c50-contigs.fa"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

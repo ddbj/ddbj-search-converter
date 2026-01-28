@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT accession="ERX000234" alias="RIL1" center_name="NCGR">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000234</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000011" refname="Rice High-throughput genotyping by whole-genome resequencing" refcenter="NCGR">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000011</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">Rice High-throughput genotyping by whole-genome resequencing</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Rice Nipponbare 93-11 recombinant inbred line random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000027" refname="RIL_100" refcenter="NCGR">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000027</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NCGR">RIL_100</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>RIL1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>36</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>NCGR</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

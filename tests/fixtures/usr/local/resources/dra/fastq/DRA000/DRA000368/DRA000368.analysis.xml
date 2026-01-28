@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000010" center_name="RIKEN_OSC" alias="DRZ000010" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>HeLa.Std.5000ng.3rd_20100614.Riken2.fc2.ch7.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="HeLa.Std.5000ng.3rd_20100614.Riken2.fc2.ch7.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="720cdbd342819a88bdc6ffb83ae1c9eb" checksum_method="MD5" filetype="bed" filename="HeLa.Std.5000ng.3rd_20100614.Riken2.fc2.ch7.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000024" center_name="RIKEN_OSC" alias="DRZ000024" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.ActinomycinD_conc2.2nd.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.ActinomycinD_conc2.2nd.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="28c230f186616babebe8629f0c66e7d2" checksum_method="MD5" filetype="bed" filename="THP1.ActinomycinD_conc2.2nd.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000020" center_name="RIKEN_OSC" alias="DRZ000020" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.Std.5000ng.3rd_20100614.Riken2.fc2.ch22.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.Std.5000ng.3rd_20100614.Riken2.fc2.ch22.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="51a98a3d04794778a1b0b1a3fd46d843" checksum_method="MD5" filetype="bed" filename="THP1.Std.5000ng.3rd_20100614.Riken2.fc2.ch22.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000028" center_name="RIKEN_OSC" alias="DRZ000028" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.Std.5th.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.Std.5th.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="bc7130fe7eb6d72d7c58ab0f6bcde000" checksum_method="MD5" filetype="bed" filename="THP1.Std.5th.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000022" center_name="RIKEN_OSC" alias="DRZ000022" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.ActinomycinD_conc1.2nd.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.ActinomycinD_conc1.2nd.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="3998e8c1b8ba3c712c90bd2d12b10a35" checksum_method="MD5" filetype="bed" filename="THP1.ActinomycinD_conc1.2nd.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000013" center_name="RIKEN_OSC" alias="DRZ000013" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.100ng.1st_20100527.Riken4.fc1.ch9.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.100ng.1st_20100527.Riken4.fc1.ch9.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="ec3cd3f04858e9c40eea0be2f4363ba4" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.100ng.1st_20100527.Riken4.fc1.ch9.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000009" center_name="RIKEN_OSC" alias="DRZ000009" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>HeLa.Std.5000ng.2nd_20100614.Riken2.fc1.ch9.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="HeLa.Std.5000ng.2nd_20100614.Riken2.fc1.ch9.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="07aea13dcdb1289df28ec8149a05f608" checksum_method="MD5" filetype="bed" filename="HeLa.Std.5000ng.2nd_20100614.Riken2.fc1.ch9.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000016" center_name="RIKEN_OSC" alias="DRZ000016" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.500ng.1st_20100527.Riken4.fc1.ch2.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.500ng.1st_20100527.Riken4.fc1.ch2.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="b15a3df3942c7c8c7bf1d47a9100b3ee" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.500ng.1st_20100527.Riken4.fc1.ch2.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000026" center_name="RIKEN_OSC" alias="DRZ000026" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.ActinomycinD_conc3.2nd.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.ActinomycinD_conc3.2nd.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="71e1085c0b3d3c01d0b211495d38e390" checksum_method="MD5" filetype="bed" filename="THP1.ActinomycinD_conc3.2nd.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000008" center_name="RIKEN_OSC" alias="DRZ000008" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>HeLa.Std.5000ng.1st_20100614.Riken2.fc1.ch8.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="HeLa.Std.5000ng.1st_20100614.Riken2.fc1.ch8.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="a2b58c5647fdca8ad9e5784c992a30b7" checksum_method="MD5" filetype="bed" filename="HeLa.Std.5000ng.1st_20100614.Riken2.fc1.ch8.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000011" center_name="RIKEN_OSC" alias="DRZ000011" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.1000ng.1st_20100527.Riken4.fc1.ch8.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.1000ng.1st_20100527.Riken4.fc1.ch8.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="09564f3fac94be233b30f12bfea4b58f" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.1000ng.1st_20100527.Riken4.fc1.ch8.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000018" center_name="RIKEN_OSC" alias="DRZ000018" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.Std.5000ng.1st_20100614.Riken2.fc1.ch23.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.Std.5000ng.1st_20100614.Riken2.fc1.ch23.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="afada408062edc2fbe98a2709c20cc01" checksum_method="MD5" filetype="bed" filename="THP1.Std.5000ng.1st_20100614.Riken2.fc1.ch23.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000021" center_name="RIKEN_OSC" alias="DRZ000021" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.ActinomycinD_conc1.1st.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.ActinomycinD_conc1.1st.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="034908d418789a1bef5991c6beffe19a" checksum_method="MD5" filetype="bed" filename="THP1.ActinomycinD_conc1.1st.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000012" center_name="RIKEN_OSC" alias="DRZ000012" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.1000ng.2nd_20100527.Riken4.fc1.ch5.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.1000ng.2nd_20100527.Riken4.fc1.ch5.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="b50cfcbf0c49e00bce883b47ad75e0e3" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.1000ng.2nd_20100527.Riken4.fc1.ch5.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000025" center_name="RIKEN_OSC" alias="DRZ000025" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.ActinomycinD_conc3.1st.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.ActinomycinD_conc3.1st.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="7f1538a85b714d82b0b58b92b166cab2" checksum_method="MD5" filetype="bed" filename="THP1.ActinomycinD_conc3.1st.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000019" center_name="RIKEN_OSC" alias="DRZ000019" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.Std.5000ng.2nd_20100614.Riken2.fc1.ch24.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.Std.5000ng.2nd_20100614.Riken2.fc1.ch24.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="52ab2f2d35b0aed9941083bef70c62a8" checksum_method="MD5" filetype="bed" filename="THP1.Std.5000ng.2nd_20100614.Riken2.fc1.ch24.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000023" center_name="RIKEN_OSC" alias="DRZ000023" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.ActinomycinD_conc2.1st.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.ActinomycinD_conc2.1st.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="c4d9eb5d0ccd0c810b2672f642d02cf3" checksum_method="MD5" filetype="bed" filename="THP1.ActinomycinD_conc2.1st.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000017" center_name="RIKEN_OSC" alias="DRZ000017" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.500ng.2nd_20100527.Riken4.fc1.ch24.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.500ng.2nd_20100527.Riken4.fc1.ch24.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="a5fa1c216babf1df6e6f31b46fb865ba" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.500ng.2nd_20100527.Riken4.fc1.ch24.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000027" center_name="RIKEN_OSC" alias="DRZ000027" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.Std.4th.filtered.align_sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.Std.4th.filtered.align_sb.bed.gz">
+            <FILES>
+                <FILE checksum="41fa0a38aa9463ebe431aea824c98782" checksum_method="MD5" filetype="bed" filename="THP1.Std.4th.filtered.align_sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000014" center_name="RIKEN_OSC" alias="DRZ000014" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.200ng.1st_20100527.Riken4.fc1.ch18.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.200ng.1st_20100527.Riken4.fc1.ch18.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="9e2e574a6e3af12bc59aa63b17a7944a" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.200ng.1st_20100527.Riken4.fc1.ch18.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000015" center_name="RIKEN_OSC" alias="DRZ000015" analysis_date="2011-04-07T00:00:00+09:00" analysis_center="RIKEN_OSC">
+        <TITLE>THP1.LqDynal.200ng.2nd_20100527.Riken4.fc1.ch15.filtered.sb.bed.gz</TITLE>
+        <STUDY_REF accession="PRJDB2229" refname="PRJDB2229">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>the raw reads are filtered by filterSMS and aligned to the human genome (hg18). IndexDPgenomic is used for the alignment, and selected only the single hits with the bset score.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <STANDARD short_name="HG18"/>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>HeliSphere</PROGRAM>
+                            <VERSION>1.0.389.154</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="THP1.LqDynal.200ng.2nd_20100527.Riken4.fc1.ch15.filtered.sb.bed.gz">
+            <FILES>
+                <FILE checksum="49168d5e2e4930ccca317cd00ced0efc" checksum_method="MD5" filetype="bed" filename="THP1.LqDynal.200ng.2nd_20100527.Riken4.fc1.ch15.filtered.sb.bed.gz"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

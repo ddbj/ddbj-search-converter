@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="NHLBI-LMI" alias="Resting Unphosphorylated Pol II" accession="SRS000337">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000337</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000106</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Unphosphorylated Pol II identified by ChIP-Seq in human resting CD4+ T cells</DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="NHLBI-LMI" alias="Resting Ser5 phosphorylated Pol II" accession="SRS000336">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000336</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000105</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Ser5 phosphorylated Pol II identified by ChIP-Seq in human resting CD4+ T cells</DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="NHLBI-LMI" alias="Resting Nucleosome" accession="SRS000335">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000335</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000104</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Nucleosomes identified by MNase digestion followed by direct sequencing in human resting CD4+ T cells</DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="NHLBI-LMI" alias="Resting Histone H3" accession="SRS000334">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000334</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000103</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Histone protein H3 identified by ChIP-Seq in human resting CD4+ T cells</DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="NHLBI-LMI" alias="Activated Unphosphorylated Pol II" accession="SRS000333">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000333</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000102</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Unphosphorylated Pol II identified by ChIP-Seq in human CD4+ T cells activated with anti-CD3 and anti-CD28 antibodies for 18 hr.</DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="NHLBI-LMI" alias="Activated Ser5 phosphorylated Pol II" accession="SRS000332">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000332</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000101</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Ser5 phorylated Pol II identified by ChIP-Seq in human CD4+ T cells activated with anti-CD3 and anti-CD28 antibodies for 18 hr.</DESCRIPTION>
+  </SAMPLE>
+  <SAMPLE center_name="NHLBI-LMI" alias="Activated Nucleosome" accession="SRS000331">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000331</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00000100</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Homo sapiens</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Nucleosomes identified by Mnase digestion followed by direct sequencing in human CD+ T cells activated with anti-CD3 and anti-CD28 antibodies for 18 hr.</DESCRIPTION>
+  </SAMPLE>
+</SAMPLE_SET>

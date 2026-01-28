@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="SAMEA774460" accession="ERS000024">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000024</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA774460</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>589366</TAXON_ID>
+      <SCIENTIFIC_NAME>Salmonella enterica subsp. enterica serovar Typhimurium str. 5579</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Genomic DNA from Salmonella enterica serovar Typhimurium strain 5579, isolated from the blood of a patient with invasive NTS disease in Nairobi, Kenya, 2003. The data includes sequence from at least two plasmids, one of which is similar to the virulence plasmid pSLT of S. Typhimurium LT2.</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:44:03Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:59:16Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA774460</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:44:03Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:59:16Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Salmonella enterica subsp. enterica serovar Typhimurium str. 5579</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Salmonella enterica subsp. enterica serovar Typhimurium str. 5579</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Salmonella enterica subsp. enterica serovar Typhimurium str. 5579</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>5579</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>serovar</TAG>
+        <VALUE>Typhimurium</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sub_species</TAG>
+        <VALUE>enterica</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

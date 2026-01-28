@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ANALYSIS alias="MvitrataAssembledContigs" center_name="Purdue University" accession="SRZ003492">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ003492</PRIMARY_ID>
+      <SUBMITTER_ID namespace="Purdue University">MvitrataAssembledContigs</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Mvitrata Assembled Contigs</TITLE>
+    <STUDY_REF accession="SRP002836"/>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>Newbler</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="RUN" accession="SRR074950"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="aacf13c71a01a810a499adf68947a93f" checksum_method="MD5" filename="454AlignmentInfo.tsv" filetype="tab"/>
+        <FILE checksum="c6051609afc77b4175eff570ec602291" checksum_method="MD5" filename="454Contigs.ace" filetype="ace"/>
+        <FILE checksum="ceccf269c5970aee48ca59ff381bdad1" checksum_method="MD5" filename="MvitrataAssembledContigs.fasta" filetype="fasta"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+</ANALYSIS_SET>

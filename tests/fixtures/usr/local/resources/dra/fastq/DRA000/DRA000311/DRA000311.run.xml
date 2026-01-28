@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET>
+    <RUN accession="DRR000730" broker_name="DRA" center_name="KAZUSA" alias="DRR000730" run_center="KAZUSA" run_date="2010-09-17T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000732" broker_name="DRA" center_name="KAZUSA" alias="DRR000732" run_center="KAZUSA" run_date="2010-09-22T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000738" broker_name="DRA" center_name="KAZUSA" alias="DRR000738" run_center="KAZUSA" run_date="2010-10-26T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000731" broker_name="DRA" center_name="KAZUSA" alias="DRR000731" run_center="KAZUSA" run_date="2010-09-21T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000778" center_name="KAZUSA" alias="DRR000778" run_center="KAZUSA" run_date="2010-11-15T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000786" center_name="KAZUSA" alias="DRR000786" run_center="KAZUSA" run_date="2010-12-21T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000785" center_name="KAZUSA" alias="DRR000785" run_center="KAZUSA" run_date="2010-12-20T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000784" center_name="KAZUSA" alias="DRR000784" run_center="KAZUSA" run_date="2010-12-09T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000782" center_name="KAZUSA" alias="DRR000782" run_center="KAZUSA" run_date="2010-11-29T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000734" broker_name="DRA" center_name="KAZUSA" alias="DRR000734" run_center="KAZUSA" run_date="2010-09-30T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000779" center_name="KAZUSA" alias="DRR000779" run_center="KAZUSA" run_date="2010-11-16T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000735" broker_name="DRA" center_name="KAZUSA" alias="DRR000735" run_center="KAZUSA" run_date="2010-10-05T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000733" broker_name="DRA" center_name="KAZUSA" alias="DRR000733" run_center="KAZUSA" run_date="2010-09-29T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000736" broker_name="DRA" center_name="KAZUSA" alias="DRR000736" run_center="KAZUSA" run_date="2010-10-06T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000725" broker_name="DRA" center_name="KAZUSA" alias="DRR000725" run_center="KAZUSA" run_date="2010-08-27T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000739" broker_name="DRA" center_name="KAZUSA" alias="DRR000739" run_center="KAZUSA" run_date="2010-10-27T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000737" broker_name="DRA" center_name="KAZUSA" alias="DRR000737" run_center="KAZUSA" run_date="2010-10-23T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000783" center_name="KAZUSA" alias="DRR000783" run_center="KAZUSA" run_date="2010-12-07T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000741" broker_name="DRA" center_name="KAZUSA" alias="DRR000741" run_center="NIG" run_date="2010-09-19T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA Illumina paired</TITLE>
+        <EXPERIMENT_REF accession="DRX000455" refcenter="KAZUSA" refname="DRX000455"/>
+    </RUN>
+    <RUN accession="DRR000724" broker_name="DRA" center_name="KAZUSA" alias="DRR000724" run_center="KAZUSA" run_date="2010-08-19T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000780" center_name="KAZUSA" alias="DRR000780" run_center="KAZUSA" run_date="2010-11-24T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000977" center_name="KAZUSA" alias="DRR000977" run_center="NIG" run_date="2011-03-24T00:00:00+09:00">
+        <TITLE>NBRP tomato mate-pair 3kb-350-500</TITLE>
+        <EXPERIMENT_REF accession="DRX000627" refcenter="KAZUSA" refname="DRX000627"/>
+    </RUN>
+    <RUN accession="DRR000978" center_name="KAZUSA" alias="DRR000978" run_center="NIG" run_date="2011-03-24T00:00:00+09:00">
+        <TITLE>NBRP tomato mate-pair 3kb-450-650</TITLE>
+        <EXPERIMENT_REF accession="DRX000628" refcenter="KAZUSA" refname="DRX000628"/>
+    </RUN>
+    <RUN accession="DRR000740" broker_name="DRA" center_name="KAZUSA" alias="DRR000740" run_center="KAZUSA" run_date="2010-10-28T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000729" broker_name="DRA" center_name="KAZUSA" alias="DRR000729" run_center="KAZUSA" run_date="2010-09-16T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000781" center_name="KAZUSA" alias="DRR000781" run_center="KAZUSA" run_date="2010-11-25T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single 2</TITLE>
+        <EXPERIMENT_REF accession="DRX000482" refcenter="KAZUSA" refname="DRX000482"/>
+    </RUN>
+    <RUN accession="DRR000727" broker_name="DRA" center_name="KAZUSA" alias="DRR000727" run_center="KAZUSA" run_date="2010-09-08T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000728" broker_name="DRA" center_name="KAZUSA" alias="DRR000728" run_center="KAZUSA" run_date="2010-09-14T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+    <RUN accession="DRR000726" broker_name="DRA" center_name="KAZUSA" alias="DRR000726" run_center="KAZUSA" run_date="2010-08-31T00:00:00+09:00">
+        <TITLE>Micro-Tom genome DNA 454 single</TITLE>
+        <EXPERIMENT_REF accession="DRX000454" refcenter="KAZUSA" refname="DRX000454"/>
+    </RUN>
+</RUN_SET>

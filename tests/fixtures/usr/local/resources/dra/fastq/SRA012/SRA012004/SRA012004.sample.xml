@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="HS0896" accession="SRS405609">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS405609</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00008919</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="dbGaP" label="Sample name">533-HS0896</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="phs000533" label="submitted sample id">HS0896</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Tumor DNA sample from LYMPH NODE of a human female participant in the dbGaP study "CGCI: Non-Hodgkin Lymphoma - Follicular Lymphoma (NHL - FL)"</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_accession</TAG>
+        <VALUE>phs000533</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_parent_phs</TAG>
+        <VALUE>phs000235</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitter handle</TAG>
+        <VALUE>CGCI</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biospecimen repository</TAG>
+        <VALUE>CGCI</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>study name</TAG>
+        <VALUE>CGCI: Non-Hodgkin Lymphoma - Follicular Lymphoma (NHL - FL)</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>study design</TAG>
+        <VALUE>Tumor vs. Matched-Normal</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biospecimen repository sample id</TAG>
+        <VALUE>HS0896</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitted sample id</TAG>
+        <VALUE>HS0896</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitted subject id</TAG>
+        <VALUE>06-12968</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_sample_id</TAG>
+        <VALUE>188660</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_subject_id</TAG>
+        <VALUE>241660</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>female</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>body site</TAG>
+        <VALUE>LYMPH NODE</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>histological type</TAG>
+        <VALUE>FL</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>analyte type</TAG>
+        <VALUE>DNA</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>is tumor</TAG>
+        <VALUE>Yes</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_consent_code</TAG>
+        <VALUE>1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_consent_short_name</TAG>
+        <VALUE>DS-CA-MDS</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="HS0804" accession="SRS8800202">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS8800202</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN05182455</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="dbGaP" label="Sample name">532-HS0804</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="phs000532" label="submitted sample id">HS0804</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Tumor RNA sample from LYMPH NODE of a human female participant in the dbGaP study "National Cancer Institute (NCI) Cancer Genome Characterization Initiative (CGCI): Non-Hodgkin Lymphoma"</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_accession</TAG>
+        <VALUE>phs000532</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_parent_phs</TAG>
+        <VALUE>phs000235</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitter handle</TAG>
+        <VALUE>CGCI</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biospecimen repository</TAG>
+        <VALUE>CGCI</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>study name</TAG>
+        <VALUE>National Cancer Institute (NCI) Cancer Genome Characterization Initiative (CGCI): Non-Hodgkin Lymphoma</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>study design</TAG>
+        <VALUE>Tumor vs. Matched-Normal</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biospecimen repository sample id</TAG>
+        <VALUE>HS0804</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitted sample id</TAG>
+        <VALUE>HS0804</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitted subject id</TAG>
+        <VALUE>06-12968</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_sample_id</TAG>
+        <VALUE>188662</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_subject_id</TAG>
+        <VALUE>241660</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>female</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>body site</TAG>
+        <VALUE>LYMPH NODE</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>histological type</TAG>
+        <VALUE>FL</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>analyte type</TAG>
+        <VALUE>RNA</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>is tumor</TAG>
+        <VALUE>Yes</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_consent_code</TAG>
+        <VALUE>1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_consent_short_name</TAG>
+        <VALUE>DS-CA-MDS</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="HS0896" accession="SRS8800203">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS8800203</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN05182453</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="dbGaP" label="Sample name">532-HS0896</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="phs000532" label="submitted sample id">HS0896</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Tumor DNA sample from LYMPH NODE of a human female participant in the dbGaP study "National Cancer Institute (NCI) Cancer Genome Characterization Initiative (CGCI): Non-Hodgkin Lymphoma"</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9606</TAXON_ID>
+      <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_accession</TAG>
+        <VALUE>phs000532</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_parent_phs</TAG>
+        <VALUE>phs000235</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitter handle</TAG>
+        <VALUE>CGCI</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biospecimen repository</TAG>
+        <VALUE>CGCI</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>study name</TAG>
+        <VALUE>National Cancer Institute (NCI) Cancer Genome Characterization Initiative (CGCI): Non-Hodgkin Lymphoma</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>study design</TAG>
+        <VALUE>Tumor vs. Matched-Normal</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biospecimen repository sample id</TAG>
+        <VALUE>HS0896</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitted sample id</TAG>
+        <VALUE>HS0896</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>submitted subject id</TAG>
+        <VALUE>06-12968</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_sample_id</TAG>
+        <VALUE>188660</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_subject_id</TAG>
+        <VALUE>241660</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>female</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>body site</TAG>
+        <VALUE>LYMPH NODE</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>histological type</TAG>
+        <VALUE>FL</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>analyte type</TAG>
+        <VALUE>DNA</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>is tumor</TAG>
+        <VALUE>Yes</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_consent_code</TAG>
+        <VALUE>1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>gap_consent_short_name</TAG>
+        <VALUE>DS-CA-MDS</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

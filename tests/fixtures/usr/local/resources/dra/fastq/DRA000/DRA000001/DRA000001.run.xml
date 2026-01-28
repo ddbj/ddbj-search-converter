@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<RUN_SET xmlns:ns2="SRA.annotation">
-    <RUN accession="DRR000001" center_name="KEIO" alias="DRR000001" run_center="NIG" run_date="2008-09-13T01:27:27+09:00">
-        <EXPERIMENT_REF accession="DRX000001" refcenter="KEIO" refname="DRX000001"/>
-    </RUN>
-</RUN_SET>

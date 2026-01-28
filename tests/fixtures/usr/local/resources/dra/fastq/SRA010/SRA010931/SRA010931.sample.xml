@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="USDA-ARS" alias="Pooled male WCR" accession="SRS011787">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS011787</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00009514</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Striacosta albicosta</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>437490</TAXON_ID>
+      <SCIENTIFIC_NAME>Striacosta albicosta</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>A pool of 16 adult male Striacosta albicosta, collected using sex pheromone-baited Hartstack traps in north-east Colorado, USA, 21st-22nd July 2008.</DESCRIPTION>
+  </SAMPLE>
+</SAMPLE_SET>

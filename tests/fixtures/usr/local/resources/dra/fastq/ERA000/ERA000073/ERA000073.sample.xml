@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="SAMEA868692" accession="ERS000016">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000016</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA868692</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>ggo-sc-2010-05-07-2833</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>9595</TAXON_ID>
+      <SCIENTIFIC_NAME>Gorilla gorilla gorilla</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Alias</TAG>
+        <VALUE>ggo-sc-2010-05-07-2833</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center alias</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>Wellcome Sanger Institute</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:40Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-08T15:24:36Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>SRA accession</TAG>
+        <VALUE>ERS000016</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Sample Name</TAG>
+        <VALUE>ERS000016</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Title</TAG>
+        <VALUE>Gorilla gorilla gorilla</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sub_species</TAG>
+        <VALUE>gorilla</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="SAMEA949241" accession="ERS000027">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000027</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA949241</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>4530</TAXON_ID>
+      <SCIENTIFIC_NAME>Oryza sativa</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Rice Nipponbare 93-11 recombinant inbred line No.100</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:44:04Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-08T15:49:32Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA949241</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Generation</TAG>
+        <VALUE>F12</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>NCGR</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:44:04Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-08T15:49:32Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>RIL_100</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>common name</TAG>
+        <VALUE>rice</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>RIL_100</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Oryza sativa</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

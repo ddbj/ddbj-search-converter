@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR002804" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_1" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002804</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002805" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_2" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002805</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002806" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_3" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002806</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_3</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002807" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_4" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002807</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_4</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002808" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_5" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002808</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_5</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002809" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_6" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002809</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_6</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002810" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_7" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002810</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_7</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002811" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_8" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002811</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_8</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002812" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_9" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002812</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_9</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_9</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002813" alias="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_10" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002813</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_10</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0_10</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000233" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000233</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_CAST_2-Chromosome_17_CAST_2_1-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002814" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_1" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002814</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002815" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_2" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002815</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002816" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_3" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002816</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_3</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002817" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_4" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002817</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_4</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002818" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_5" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002818</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_5</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002819" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_6" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002819</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_6</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002820" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_7" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002820</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_7</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002821" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_8" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002821</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_8</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002822" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_9" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002822</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_9</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_9</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002823" alias="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_10" run_center="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002823</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_10</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0_10</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>unspecified paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000232" refcenter="SC" refname="Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000232</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Mouse_resequencing_pilot-Chromosome_17_A_J-Chromosome_17_A_J-36-0</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

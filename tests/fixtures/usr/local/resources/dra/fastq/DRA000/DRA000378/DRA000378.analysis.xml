@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000056" center_name="UT-METAB" accession="DRZ000056">
+        <TITLE>H3K4me3 ChIP-seq 3T3-L1 day 8</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of H3K4me3 in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="H3K4me3 ChIP-seq 3T3-L1 day 8 wig">
+            <FILES>
+                <FILE filename="HW_H3K4me3_ChIP_3T3L1_8d.wig" filetype="wig" checksum_method="MD5" checksum="87f7f089db9b613ab04b7985ec877941"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="H3K4me3 ChIP-seq 3T3-L1 day 8 peaks bed">
+            <FILES>
+                <FILE filename="HW_H3K4me3_ChIP_3T3L1_8d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="5e299fafcebe545d2249c0401b298cb2"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000053" center_name="UT-METAB" accession="DRZ000053">
+        <TITLE>CTCF ChIP-seq 3T3-L1 day 0</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of CTCF binding sites in 3T3-L1 adipocytes (on day 0 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 0 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="CTCF ChIP-seq 3T3-L1 day 0 wig">
+            <FILES>
+                <FILE filename="HW_CTCF_ChIP_3T3L1_0d.wig" filetype="wig" checksum_method="MD5" checksum="26259341f19982e5ec378f316f353051"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="CTCF ChIP-seq 3T3-L1 day 0 peaks bed">
+            <FILES>
+                <FILE filename="HW_CTCF_ChIP_3T3L1_0d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="10bfdc4549b6a808049ae66060cbcefe"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000035" center_name="UT-METAB" accession="DRZ000035">
+        <TITLE>RXRa ChIP-seq 3T3-L1 day 8</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of RXRa binding sites in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="RXRa ChIP-seq 3T3-L1 day 8 wig">
+            <FILES>
+                <FILE filename="HW_RxRa_ChIP_3T3L1_8d.wig" filetype="wig" checksum_method="MD5" checksum="671B9BA029266F057A1D0EF5E1C4620D"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="RXRa ChIP-seq 3T3-L1 day 8 peaks bed">
+            <FILES>
+                <FILE filename="HW_RxRa_ChIP_3T3L1_8d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="3DB9D58A26DEA7863F4B436260110A3E"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000032" center_name="UT-METAB" accession="DRZ000032">
+        <TITLE>PPARg ChIP-seq 3T3-L1 36h</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of PPARg binding sites in 3T3-L1 adipocytes (on 36 hours of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, 36h of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="PPARg ChIP-seq 3T3-L1 36h wig">
+            <FILES>
+                <FILE filename="HW_PPARr_ChIP_3T3L1_36h.wig" filetype="wig" checksum_method="MD5" checksum="45FC7E60E3757870E30570FC174DC69C"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="PPARg ChIP-seq 3T3-L1 36h peaks bed">
+            <FILES>
+                <FILE filename="HW_PPARr_ChIP_3T3L1_36h_peaks.bed" filetype="bed" checksum_method="MD5" checksum="C821F3394F63F40CBCD119486B9F3111"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000030" center_name="UT-METAB" accession="DRZ000030">
+        <TITLE>FAIRE-seq 3T3-L1 day 8</TITLE>
+        <STUDY_REF refname="PRJDB2467" accession="PRJDB2467">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2467</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of open chromatin sites in 3T3-L1 adipocytes (on day 8 of differentiation) using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq).
+source:3T3-L1 cells, day 8 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="FAIRE-seq 3T3-L1 day 8 wig">
+            <FILES>
+                <FILE filename="HW_FAIRE_3T3L1_8d.wig" filetype="wig" checksum_method="MD5" checksum="C2CD2F1D5084E70ABFA47DEC6C5D6706"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="FAIRE-seq 3T3-L1 day 8 peaks bed">
+            <FILES>
+                <FILE filename="HW_FAIRE_3T3L1_8d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="2B699B878CCF88F593963C4F29F7840B"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000034" center_name="UT-METAB" accession="DRZ000034">
+        <TITLE>RXRa ChIP-seq 3T3-L1 36h</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of RXRa binding sites in 3T3-L1 adipocytes (on 36 hours of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, 36h of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="RXRa ChIP-seq 3T3-L1 36h wig">
+            <FILES>
+                <FILE filename="HW_RxRa_ChIP_3T3L1_36h.wig" filetype="wig" checksum_method="MD5" checksum="5C2EA7692CFF6A9C88379BF2371A3235"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="RXRa ChIP-seq 3T3-L1 36h peaks bed">
+            <FILES>
+                <FILE filename="HW_RxRa_ChIP_3T3L1_36h_peaks.bed" filetype="bed" checksum_method="MD5" checksum="2C598051B08160A3126A4CBCBFD50BB3"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000033" center_name="UT-METAB" accession="DRZ000033">
+        <TITLE>PPARg ChIP-seq 3T3-L1 day 8</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of PPARg binding sites in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="PPARg ChIP-seq 3T3-L1 day 8 wig">
+            <FILES>
+                <FILE filename="HW_PPARr_ChIP_3T3L1_8d.wig" filetype="wig" checksum_method="MD5" checksum="6C9F4057EB492DB46DBF9A5AC8C30574"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="PPARg ChIP-seq 3T3-L1 day 8 peaks bed">
+            <FILES>
+                <FILE filename="HW_PPARr_ChIP_3T3L1_8d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="57D4B9B7AEA8285214F118B5B64A5401"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000055" center_name="UT-METAB" accession="DRZ000055">
+        <TITLE>H3K4me3 ChIP-seq 3T3-L1 day 0</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of H3K4me3 in 3T3-L1 adipocytes (on day 0 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 0 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="H3K4me3 ChIP-seq 3T3-L1 day 0 wig">
+            <FILES>
+                <FILE filename="HW_H3K4me3_ChIP_3T3L1_0d.wig" filetype="wig" checksum_method="MD5" checksum="799a024193f5c618ffee00fd509e27aa"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="H3K4me3 ChIP-seq 3T3-L1 day 0 peaks bed">
+            <FILES>
+                <FILE filename="HW_H3K4me3_ChIP_3T3L1_0d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="cd30ca097a9ae22fe9989ef5f70450c8"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000029" center_name="UT-METAB" accession="DRZ000029">
+        <TITLE>FAIRE-seq 3T3-L1 day 0</TITLE>
+        <STUDY_REF refname="PRJDB2467" accession="PRJDB2467">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2467</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of open chromatin sites in 3T3-L1 fibroblasts (on day 0 of differentiation) using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq).
+source:3T3-L1 cells, day 0 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="FAIRE-seq 3T3-L1 day 0 wig">
+            <FILES>
+                <FILE filename="HW_FAIRE_3T3L1_0d.wig" filetype="wig" checksum_method="MD5" checksum="1B37B16FB6E092952F45679433436383"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="FAIRE-seq 3T3-L1 day 0 peaks bed">
+            <FILES>
+                <FILE filename="HW_FAIRE_3T3L1_0d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="0C4D502690582BDDC0BDD96C43A346A9"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000031" center_name="UT-METAB" accession="DRZ000031">
+        <TITLE>FAIRE-seq NIH-3T3</TITLE>
+        <STUDY_REF refname="PRJDB2467" accession="PRJDB2467">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2467</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of open chromatin sites in NIH3T3 fibroblasts using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq).
+source:NIH-3T3 cells.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="FAIRE-seq NIH-3T3 wig">
+            <FILES>
+                <FILE filename="HW_FAIRE_NIH3T3.wig" filetype="wig" checksum_method="MD5" checksum="B0A10DD0DCACF8C29B7D98AD5FC9541C"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="FAIRE-seq NIH-3T3 peaks bed">
+            <FILES>
+                <FILE filename="HW_FAIRE_NIH3T3_peaks.bed" filetype="bed" checksum_method="MD5" checksum="19F9B02A34AD73209AC5804941F99A88"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS analysis_center="UT-METAB" analysis_date="2011-04-18T00:00:00+09:00" alias="DRZ000054" center_name="UT-METAB" accession="DRZ000054">
+        <TITLE>CTCF ChIP-seq 3T3-L1 day 8</TITLE>
+        <STUDY_REF refname="PRJDB2466" accession="PRJDB2466">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Genome-wide maps of CTCF binding sites in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA IIx) (Illumina) . In short, we repaired ends of DNA samples, created 3'-dA overhang, ligated Illumina adaptors, size-fractioned the samples by gel extraction and amplified them with 8 cycles of PCR according to the manufacturer's instructions. We then purified the DNA and performed cluster generation and 36 cycles of sequencing on an Illumina cluster station and 1G analyzer following the manufacturer's instructions. Sequences were mapped to the reference murine genome, NCBI build 37 (mm9) using ELAND algorithm(GAPipeline-1.4.0). Peak detection was performed using Findpeaks 3.1.9.2 with a false discovery rate (FDR) cut-off of 1x10-4.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Findpeaks</PROGRAM>
+                            <VERSION>3.1.9.2</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK name="CTCF ChIP-seq 3T3-L1 day 8 wig">
+            <FILES>
+                <FILE filename="HW_CTCF_ChIP_3T3L1_8d.wig" filetype="wig" checksum_method="MD5" checksum="2e41d966dfa7a0b480e3bdce35b84fc8"/>
+            </FILES>
+        </DATA_BLOCK>
+        <DATA_BLOCK name="CTCF ChIP-seq 3T3-L1 day 8 peaks bed">
+            <FILES>
+                <FILE filename="HW_CTCF_ChIP_3T3L1_8d_peaks.bed" filetype="bed" checksum_method="MD5" checksum="bcf6598d43c3d4fd8f28404805f883cc"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

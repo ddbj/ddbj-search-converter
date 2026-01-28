@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000003" broker_name="DRA" center_name="NIID" alias="DRZ000003" analysis_date="2012-06-11T16:14:57.524+09:00" analysis_center="NIID">
+        <TITLE>de novo assembly of T000240</TITLE>
+        <STUDY_REF accession="PRJNA45951" refname="PRJNA45951">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJNA45951</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>de novo assembly of 50-mer short reads by Euler-SR v1 with vertex 25.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <DE_NOVO_ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>Euler-SR</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </DE_NOVO_ASSEMBLY>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="e8f5d5b805f94d11bad4ac0c802927ce" checksum_method="MD5" filetype="fasta" filename="Typhimurium-000240-50mer.trimmed.contig"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

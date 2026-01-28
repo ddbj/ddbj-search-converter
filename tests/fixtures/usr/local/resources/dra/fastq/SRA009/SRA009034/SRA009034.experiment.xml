@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="454 transcriptome sequencing" center_name="Liverpool School of " accession="SRX006189">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX006189</PRIMARY_ID>
+      <SUBMITTER_ID namespace="Liverpool School of ">454 transcriptome sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Transcriptome sequencing of Anopheles funestus</TITLE>
+    <STUDY_REF accession="SRP000923">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000923</PRIMARY_ID>
+        <SUBMITTER_ID namespace="Liverpool School of ">Anopheles funestus transcriptome sequencing</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>The two cDNA libraries were constructed according to GS FLX DNA library preparation protocol</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS003493">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS003493</PRIMARY_ID>
+          <SUBMITTER_ID namespace="Liverpool School of ">Anopheles funestus from field Kela (Mali) and FUMOZ-R (a lab pyrethroid resistant strain)</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>An funestus library</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>FL-cDNA</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

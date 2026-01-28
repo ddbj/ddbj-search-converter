@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="Salmonella enterica serovar Paratyphi A whole genome sequence" center_name="SC" accession="ERP000002">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000002</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1974</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SC">Salmonella enterica serovar Paratyphi A whole genome sequence</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Complete Genome of a Clinical Isolate of Salmonella enterica serovar Paratyphi A</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_ABSTRACT>The 4.5 Mb genome of a clinical isolate of Salmonella enterica serovar Paratyphi A was completely sequenced using capillary techniques and subsequently checked using Illumina/Solexa re-sequencing. Annotation and sequence comparison with other serovar Paratyphi A and Typhi genomes identified several pseudogenes that had been overlooked in prior genome annotations, and showed that 66 pseudogenes are common to both serovars by virtue of conservation (38), recent recombination (6) and independent mutation (22), highlighting distinct mechanisms that may have contributed to the phenotypic convergence of these genetically distinct human-restricted pathogens.</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>Salmonella enterica serovar Paratyphi A strain AKU12601 whole genome</CENTER_PROJECT_NAME>
+      <STUDY_DESCRIPTION>The 4.5 Mb genome of a clinical isolate of Salmonella enterica serovar Paratyphi A was completely sequenced using capillary techniques and subsequently checked using Illumina/Solexa re-sequencing. Annotation and sequence comparison with other serovar Paratyphi A and Typhi genomes identified several pseudogenes that had been overlooked in prior genome annotations, and showed that 66 pseudogenes are common to both serovars by virtue of conservation (38), recent recombination (6) and independent mutation (22), highlighting distinct mechanisms that may have contributed to the phenotypic convergence of these genetically distinct human-restricted pathogens.</STUDY_DESCRIPTION>
+    </DESCRIPTOR>
+  </STUDY>
+</STUDY_SET>

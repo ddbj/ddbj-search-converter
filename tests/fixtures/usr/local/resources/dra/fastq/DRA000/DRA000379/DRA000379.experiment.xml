@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EXPERIMENT_SET>
+    <EXPERIMENT accession="DRX000640" center_name="RIKEN_OSC" alias="DRX000640">
+        <TITLE>Sample 1 Left CA1 small RNA cDNA library</TITLE>
+        <STUDY_REF accession="DRP000384" refcenter="RIKEN_BSI" refname="DRP000384">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>F10-DA
+</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000648" refcenter="RIKEN_OSC" refname="DRS000648">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00006373</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>F10-DA</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CTS</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>M. Kawano, C. Kawazu, M. Lizio, H. Kawaji, P. Carninci, H. Suzuki, and Y. Hayashizaki, Reduction of non-insert sequence reads by dimer eliminator LNA oligonucleotide for small RNA deep sequencing, Biotechniques 49 (2010) 751-755.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>50</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>BarCode</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>1</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <RELATIVE_ORDER precedes_read_index="2" follows_read_index="0"/>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>2</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>Linker</READ_TYPE>
+                        <RELATIVE_ORDER follows_read_index="1"/>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA 1.6.47.1</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000641" center_name="RIKEN_OSC" alias="DRX000641">
+        <TITLE>Sample 1 Right CA1 small RNA cDNA library</TITLE>
+        <STUDY_REF accession="DRP000384" refcenter="RIKEN_BSI" refname="DRP000384">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>F11-DA
+</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000649" refcenter="RIKEN_OSC" refname="DRS000649">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00006369</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>F11-DA</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CTS</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>M. Kawano, C. Kawazu, M. Lizio, H. Kawaji, P. Carninci, H. Suzuki, and Y. Hayashizaki, Reduction of non-insert sequence reads by dimer eliminator LNA oligonucleotide for small RNA deep sequencing, Biotechniques 49 (2010) 751-755.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>50</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>BarCode</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>1</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <RELATIVE_ORDER precedes_read_index="2" follows_read_index="0"/>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>2</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>Linker</READ_TYPE>
+                        <RELATIVE_ORDER follows_read_index="1"/>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA 1.6.47.1</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000642" center_name="RIKEN_OSC" alias="DRX000642">
+        <TITLE>Sample 2 Left CA1 small RNA cDNA library</TITLE>
+        <STUDY_REF accession="DRP000384" refcenter="RIKEN_BSI" refname="DRP000384">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>F12-DA
+</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000650" refcenter="RIKEN_OSC" refname="DRS000650">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00006371</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>F12-DA</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CTS</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>M. Kawano, C. Kawazu, M. Lizio, H. Kawaji, P. Carninci, H. Suzuki, and Y. Hayashizaki, Reduction of non-insert sequence reads by dimer eliminator LNA oligonucleotide for small RNA deep sequencing, Biotechniques 49 (2010) 751-755.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>50</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>BarCode</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>1</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <RELATIVE_ORDER precedes_read_index="2" follows_read_index="0"/>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>2</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>Linker</READ_TYPE>
+                        <RELATIVE_ORDER follows_read_index="1"/>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA 1.6.47.1</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000643" center_name="RIKEN_OSC" alias="DRX000643">
+        <TITLE>Sample 2 Right CA1 small RNA cDNA library</TITLE>
+        <STUDY_REF accession="DRP000384" refcenter="RIKEN_BSI" refname="DRP000384">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>F13-DA
+</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000651" refcenter="RIKEN_OSC" refname="DRS000651">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00006374</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>F13-DA</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CTS</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>M. Kawano, C. Kawazu, M. Lizio, H. Kawaji, P. Carninci, H. Suzuki, and Y. Hayashizaki, Reduction of non-insert sequence reads by dimer eliminator LNA oligonucleotide for small RNA deep sequencing, Biotechniques 49 (2010) 751-755.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>50</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>BarCode</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>1</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <RELATIVE_ORDER precedes_read_index="2" follows_read_index="0"/>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>2</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>Linker</READ_TYPE>
+                        <RELATIVE_ORDER follows_read_index="1"/>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA 1.6.47.1</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000644" center_name="RIKEN_OSC" alias="DRX000644">
+        <TITLE>Sample 3 Left CA1 small RNA cDNA library</TITLE>
+        <STUDY_REF accession="DRP000384" refcenter="RIKEN_BSI" refname="DRP000384">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>F14-DA
+</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000652" refcenter="RIKEN_OSC" refname="DRS000652">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00006370</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>F14-DA</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CTS</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>M. Kawano, C. Kawazu, M. Lizio, H. Kawaji, P. Carninci, H. Suzuki, and Y. Hayashizaki, Reduction of non-insert sequence reads by dimer eliminator LNA oligonucleotide for small RNA deep sequencing, Biotechniques 49 (2010) 751-755.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>50</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>BarCode</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>1</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <RELATIVE_ORDER precedes_read_index="2" follows_read_index="0"/>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>2</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>Linker</READ_TYPE>
+                        <RELATIVE_ORDER follows_read_index="1"/>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA 1.6.47.1</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000645" center_name="RIKEN_OSC" alias="DRX000645">
+        <TITLE>Sample 3 Right CA1 small RNA cDNA library</TITLE>
+        <STUDY_REF accession="DRP000384" refcenter="RIKEN_BSI" refname="DRP000384">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>F15-DA
+</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000653" refcenter="RIKEN_OSC" refname="DRS000653">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00006372</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>F15-DA</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CTS</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>M. Kawano, C. Kawazu, M. Lizio, H. Kawaji, P. Carninci, H. Suzuki, and Y. Hayashizaki, Reduction of non-insert sequence reads by dimer eliminator LNA oligonucleotide for small RNA deep sequencing, Biotechniques 49 (2010) 751-755.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>50</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>BarCode</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>1</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <RELATIVE_ORDER precedes_read_index="2" follows_read_index="0"/>
+                    </READ_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>2</READ_INDEX>
+                        <READ_CLASS>Technical Read</READ_CLASS>
+                        <READ_TYPE>Linker</READ_TYPE>
+                        <RELATIVE_ORDER follows_read_index="1"/>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>illumina RTA 1.6.47.1</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+</EXPERIMENT_SET>

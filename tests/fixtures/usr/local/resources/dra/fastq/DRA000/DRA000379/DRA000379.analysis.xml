@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000040" center_name="RIKEN_BSI" alias="DRZ000040" analysis_date="2011-04-20T00:00:00+09:00" analysis_center="RIKEN_BSI">
+        <TITLE>Sample 3 Left CA3 - crossmapped results</TITLE>
+        <STUDY_REF accession="PRJDA66059" refname="PRJDA66059">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Cross-Mapping:
+1) Cross-mapping correction, to add a weight to each mapping location for multi-mapping RNAs;
+2) Annotation, where we compare each mapping location to genome annotation;
+3) Expression calculation, where we calculate the expression for each feature (miRNA, tRNA, and so on) in the genome annotation.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>OP-sRNA-analysis-v1.0</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </SEQUENCE_ANNOTATION>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="2411449bdac9d40045ff2522bb6e517b" checksum_method="MD5" filetype="bam" filename="F14-DA.bam"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000041" center_name="RIKEN_BSI" alias="DRZ000041" analysis_date="2011-04-20T00:00:00+09:00" analysis_center="RIKEN_BSI">
+        <TITLE>Sample 3 Right CA3 - crossmapped results</TITLE>
+        <STUDY_REF accession="PRJDA66059" refname="PRJDA66059">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Cross-Mapping:
+1) Cross-mapping correction, to add a weight to each mapping location for multi-mapping RNAs;
+2) Annotation, where we compare each mapping location to genome annotation;
+3) Expression calculation, where we calculate the expression for each feature (miRNA, tRNA, and so on) in the genome annotation.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>OP-sRNA-analysis-v1.0</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </SEQUENCE_ANNOTATION>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="bba31c020c99ce11c83b7996ca8f10cc" checksum_method="MD5" filetype="bam" filename="F15-DA.bam"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000037" center_name="RIKEN_BSI" alias="DRZ000037" analysis_date="2011-04-20T00:00:00+09:00" analysis_center="RIKEN_BSI">
+        <TITLE>Sample 1 Right CA3 - crossmapped results</TITLE>
+        <STUDY_REF accession="PRJDA66059" refname="PRJDA66059">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Cross-Mapping:
+1) Cross-mapping correction, to add a weight to each mapping location for multi-mapping RNAs;
+2) Annotation, where we compare each mapping location to genome annotation;
+3) Expression calculation, where we calculate the expression for each feature (miRNA, tRNA, and so on) in the genome annotation.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>OP-sRNA-analysis-v1.0</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </SEQUENCE_ANNOTATION>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="d16adbe6519c26f0ec4a9e3c2e4aba02" checksum_method="MD5" filetype="bam" filename="F11-DA.bam"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000038" center_name="RIKEN_BSI" alias="DRZ000038" analysis_date="2011-04-20T00:00:00+09:00" analysis_center="RIKEN_BSI">
+        <TITLE>Sample 2 Left CA3 - crossmapped results</TITLE>
+        <STUDY_REF accession="PRJDA66059" refname="PRJDA66059">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Cross-Mapping:
+1) Cross-mapping correction, to add a weight to each mapping location for multi-mapping RNAs;
+2) Annotation, where we compare each mapping location to genome annotation;
+3) Expression calculation, where we calculate the expression for each feature (miRNA, tRNA, and so on) in the genome annotation.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>OP-sRNA-analysis-v1.0</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </SEQUENCE_ANNOTATION>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="c7b58e8556ede85b359ff75495902211" checksum_method="MD5" filetype="bam" filename="F12-DA.bam"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000036" center_name="RIKEN_BSI" alias="DRZ000036" analysis_date="2011-04-20T00:00:00+09:00" analysis_center="RIKEN_BSI">
+        <TITLE>Sample 1 Left CA3 - crossmapped results</TITLE>
+        <STUDY_REF accession="PRJDA66059" refname="PRJDA66059">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Cross-Mapping:
+1) Cross-mapping correction, to add a weight to each mapping location for multi-mapping RNAs;
+2) Annotation, where we compare each mapping location to genome annotation;
+3) Expression calculation, where we calculate the expression for each feature (miRNA, tRNA, and so on) in the genome annotation.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>OP-sRNA-analysis-v1.0</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </SEQUENCE_ANNOTATION>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="59c3435a232063a7731fbe164b4ce44c" checksum_method="MD5" filetype="bam" filename="F10-DA.bam"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+    <ANALYSIS accession="DRZ000039" center_name="RIKEN_BSI" alias="DRZ000039" analysis_date="2011-04-20T00:00:00+09:00" analysis_center="RIKEN_BSI">
+        <TITLE>Sample 2 Right CA3 - crossmapped results</TITLE>
+        <STUDY_REF accession="PRJDA66059" refname="PRJDA66059">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA66059</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Cross-Mapping:
+1) Cross-mapping correction, to add a weight to each mapping location for multi-mapping RNAs;
+2) Annotation, where we compare each mapping location to genome annotation;
+3) Expression calculation, where we calculate the expression for each feature (miRNA, tRNA, and so on) in the genome annotation.</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM>OP-sRNA-analysis-v1.0</PROGRAM>
+                            <VERSION>1.0</VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </SEQUENCE_ANNOTATION>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="57fddeff533b88efab9ff7885ef2d660" checksum_method="MD5" filetype="bam" filename="F13-DA.bam"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

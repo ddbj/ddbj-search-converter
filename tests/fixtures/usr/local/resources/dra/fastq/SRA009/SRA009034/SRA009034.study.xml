@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY center_name="Liverpool School of" alias="Anopheles funestus transcriptome sequencing" accession="SRP000923">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP000923</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject" label="primary">PRJNA39255</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="Liverpool School of">Anopheles funestus transcriptome sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Anopheles funestus transcriptome project</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Other"/>
+      <CENTER_PROJECT_NAME>Anopheles funestus strain:FUMOZ/KELA</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_LINKS>
+      <STUDY_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>21364769</ID>
+        </XREF_LINK>
+      </STUDY_LINK>
+    </STUDY_LINKS>
+  </STUDY>
+</STUDY_SET>

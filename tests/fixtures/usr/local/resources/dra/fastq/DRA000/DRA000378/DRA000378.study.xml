@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY alias="DRP000383" center_name="UT-METAB" accession="DRP000383">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Genome-wide profiling of PPARg and RXRa and CTCF and H3K4me3 in Adipocytes</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Epigenetics"/>
+            <STUDY_ABSTRACT>Genome-wide maps of PPARg and RXRa in 3T3-L1 adipocytes (on 36 hours and day 8 of differentiation), CTCF and H3K4me3 in 3T3-L1 adipocytes (on day 0 and day 8 of differentiation), using ChIP-seq.</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>301DMK-Waki-FAIRE-Adipocytes</CENTER_PROJECT_NAME>
+            <STUDY_DESCRIPTION>We generated genome-wide maps of open chromatin sites in 3T3-L1 adipocytes (on day 0 and day 8 of differentiation) and NIH-3T3 fibroblasts using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq). FAIRE peaks at the promoter were associated with active transcription and histone modifications of H3K4me3 and H3K27ac. Non-promoter FAIRE peaks were characterized by H3K4me1+/me3-, the signature of enhancers, and were largely located in distal regions. The non-promoter FAIRE peaks showed dynamic change during differentiation while the promoter FAIRE peaks were relatively constant. Functionally, the adipocyte- and preadipocyte-specific non-promoter FAIRE peaks were, respectively, associated with genes up-regulated and down-regulated by differentiation. Among the adipocyte-specific FAIRE peaks, 45.3% and 11.7% overlapped binding sites for, respectively, PPARg and C/EBPÎ±, the master regulators of adipocyte differentiation. The adipocyte-specific FAIRE peaks were not evenly distributed in the genome but tended to form clusters. Genes highly up-regulated during differentiation were associated with multiple clustered adipocyte-specific FAIRE peaks. Neighboring genes were often co-regulated during differentiation. Our study demonstrates the utility of FAIRE-seq in providing a global view of cell-type-specific cis-regulatory elements in the genome and in identifying transcriptional regulators of adipocyte differentiation.</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <XREF_LINK>
+                    <DB>pubmed</DB>
+                    <ID>22028663</ID>
+                </XREF_LINK>
+            </STUDY_LINK>
+            <STUDY_LINK>
+                <URL_LINK>
+                    <LABEL>Linked publication</LABEL>
+                    <URL>http://dx.doi.org/10.1371/journal.pgen.1002311</URL>
+                </URL_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+        <STUDY_ATTRIBUTES>
+            <STUDY_ATTRIBUTE>
+                <TAG>Submitters</TAG>
+                <VALUE>Hironori Waki, Masahiro Nakamura, Toshimasa Yamauchi, Ken-ichi Wakabayashi</VALUE>
+            </STUDY_ATTRIBUTE>
+            <STUDY_ATTRIBUTE>
+                <TAG>Contributors</TAG>
+                <VALUE>Hironori Waki, Masahiro Nakamura, Toshimasa Yamauchi, Ken-ichi Wakabayashi, Jing Yu, Kazumi Take, Masato Iwabu, Miki Okada-Iwabu, Takanori Fujita, Lisa Hirose Yotsuya, Shuichi Tsutsumi, Tatsuhiko Kodama, Juro Sakai, Hiroyuki Aburatani and Takashi Kadowaki</VALUE>
+            </STUDY_ATTRIBUTE>
+        </STUDY_ATTRIBUTES>
+    </STUDY>
+</STUDY_SET>

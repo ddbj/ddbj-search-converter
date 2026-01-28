@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET>
+    <RUN accession="DRR000362" broker_name="DRA" center_name="NIG" alias="DRR000362" run_center="Hokkaido System Science" run_date="2010-04-08T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000199" refcenter="NIG" refname="DRX000199"/>
+    </RUN>
+    <RUN accession="DRR000360" broker_name="DRA" center_name="NIG" alias="DRR000360" run_center="Hokkaido System Science" run_date="2010-04-02T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000197" refcenter="NIG" refname="DRX000197"/>
+    </RUN>
+    <RUN accession="DRR000359" broker_name="DRA" center_name="NIG" alias="DRR000359" run_center="Hokkaido System Science" run_date="2010-04-02T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000196" refcenter="NIG" refname="DRX000196"/>
+    </RUN>
+    <RUN accession="DRR000361" broker_name="DRA" center_name="NIG" alias="DRR000361" run_center="Hokkaido System Science" run_date="2010-04-02T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000198" refcenter="NIG" refname="DRX000198"/>
+    </RUN>
+</RUN_SET>

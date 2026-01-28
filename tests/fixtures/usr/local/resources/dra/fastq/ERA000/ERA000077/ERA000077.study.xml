@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="Mouse resequencing pilot" center_name="SC" accession="ERP000010">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000010</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1980</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SC">Mouse resequencing pilot</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Mouse resequencing pilot, submitted by SC on 20-MAY-13</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_ABSTRACT>Mouse resequencing pilot, submitted by SC on 20-MAY-13</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>Mouse_resequencing_pilot</CENTER_PROJECT_NAME>
+      <STUDY_DESCRIPTION>Mouse resequencing pilot, submitted by SC on 20-MAY-13</STUDY_DESCRIPTION>
+    </DESCRIPTOR>
+  </STUDY>
+</STUDY_SET>

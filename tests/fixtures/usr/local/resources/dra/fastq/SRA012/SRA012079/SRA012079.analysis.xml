@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ANALYSIS alias="Maize W22 BETC" center_name="UFBPGC" accession="SRZ009049">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ009049</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UFBPGC">Maize W22 BETC</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Discovery of Genes Expressed In Basal Endosperm Transfer Cells in Maize Using 454 Transcriptome Sequencing</TITLE>
+    <STUDY_REF accession="SRP002025"/>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ANNOTATION>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </SEQUENCE_ANNOTATION>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="RUN" accession="SRR036929"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="54a8f9e88cb04b71d80f1afbd8b3a8d3" checksum_method="MD5" filename="SRA012079.tsa.ace" filetype="ace"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+</ANALYSIS_SET>

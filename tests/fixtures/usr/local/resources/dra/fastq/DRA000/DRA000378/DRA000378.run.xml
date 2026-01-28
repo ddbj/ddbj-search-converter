@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET>
+    <RUN run_date="2008-07-18T00:00:00+09:00" run_center="UT-METAB" alias="DRR000987" center_name="UT-METAB" accession="DRR000987">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 36h)</TITLE>
+        <EXPERIMENT_REF refname="DRX000636" refcenter="UT-METAB" accession="DRX000636"/>
+    </RUN>
+    <RUN run_date="2008-07-18T00:00:00+09:00" run_center="UT-METAB" alias="DRR000991" center_name="UT-METAB" accession="DRR000991">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 36h)</TITLE>
+        <EXPERIMENT_REF refname="DRX000638" refcenter="UT-METAB" accession="DRX000638"/>
+    </RUN>
+    <RUN run_date="2009-02-20T00:00:00+09:00" run_center="UT-METAB" alias="DRR001865" center_name="UT-METAB" accession="DRR001865">
+        <TITLE>Genome-wide profiling of CTCF in Adipocytes (3T3-L1 0d)</TITLE>
+        <EXPERIMENT_REF refname="DRX001328" refcenter="UT-METAB" accession="DRX001328"/>
+    </RUN>
+    <RUN run_date="2009-11-06T00:00:00+09:00" run_center="UT-METAB" alias="DRR000984" center_name="UT-METAB" accession="DRR000984">
+        <TITLE>Mapping of Open Chromatin in Adipocytes by FAIRE-seq (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000634" refcenter="UT-METAB" accession="DRX000634"/>
+    </RUN>
+    <RUN run_date="2008-07-03T00:00:00+09:00" run_center="UT-METAB" alias="DRR000990" center_name="UT-METAB" accession="DRR000990">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000637" refcenter="UT-METAB" accession="DRX000637"/>
+    </RUN>
+    <RUN run_date="2008-09-30T00:00:00+09:00" run_center="UT-METAB" alias="DRR001868" center_name="UT-METAB" accession="DRR001868">
+        <TITLE>Genome-wide profiling of H3K4me3 in Adipocytes (3T3-L1 8d)</TITLE>
+        <EXPERIMENT_REF refname="DRX001331" refcenter="UT-METAB" accession="DRX001331"/>
+    </RUN>
+    <RUN run_date="2008-07-03T00:00:00+09:00" run_center="UT-METAB" alias="DRR000995" center_name="UT-METAB" accession="DRR000995">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000639" refcenter="UT-METAB" accession="DRX000639"/>
+    </RUN>
+    <RUN run_date="2009-12-04T00:00:00+09:00" run_center="UT-METAB" alias="DRR000985" center_name="UT-METAB" accession="DRR000985">
+        <TITLE>Mapping of Open Chromatin in Fibroblasts by FAIRE-seq (NIH-3T3)</TITLE>
+        <EXPERIMENT_REF refname="DRX000635" refcenter="UT-METAB" accession="DRX000635"/>
+    </RUN>
+    <RUN run_date="2009-10-29T00:00:00+09:00" run_center="UT-METAB" alias="DRR000983" center_name="UT-METAB" accession="DRR000983">
+        <TITLE>Mapping of Open Chromatin in Fibroblasts by FAIRE-seq (3T3-L1 day 0)</TITLE>
+        <EXPERIMENT_REF refname="DRX000633" refcenter="UT-METAB" accession="DRX000633"/>
+    </RUN>
+    <RUN run_date="2008-06-13T00:00:00+09:00" run_center="UT-METAB" alias="DRR000993" center_name="UT-METAB" accession="DRR000993">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000639" refcenter="UT-METAB" accession="DRX000639"/>
+    </RUN>
+    <RUN run_date="2008-06-27T00:00:00+09:00" run_center="UT-METAB" alias="DRR000989" center_name="UT-METAB" accession="DRR000989">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000637" refcenter="UT-METAB" accession="DRX000637"/>
+    </RUN>
+    <RUN run_date="2009-02-20T00:00:00+09:00" run_center="UT-METAB" alias="DRR001866" center_name="UT-METAB" accession="DRR001866">
+        <TITLE>Genome-wide profiling of CTCF in Adipocytes (3T3-L1 8d)</TITLE>
+        <EXPERIMENT_REF refname="DRX001329" refcenter="UT-METAB" accession="DRX001329"/>
+    </RUN>
+    <RUN run_date="2008-06-13T00:00:00+09:00" run_center="UT-METAB" alias="DRR000988" center_name="UT-METAB" accession="DRR000988">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000637" refcenter="UT-METAB" accession="DRX000637"/>
+    </RUN>
+    <RUN run_date="2008-07-18T00:00:00+09:00" run_center="UT-METAB" alias="DRR000986" center_name="UT-METAB" accession="DRR000986">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 36h)</TITLE>
+        <EXPERIMENT_REF refname="DRX000636" refcenter="UT-METAB" accession="DRX000636"/>
+    </RUN>
+    <RUN run_date="2008-07-18T00:00:00+09:00" run_center="UT-METAB" alias="DRR000992" center_name="UT-METAB" accession="DRR000992">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 36h)</TITLE>
+        <EXPERIMENT_REF refname="DRX000638" refcenter="UT-METAB" accession="DRX000638"/>
+    </RUN>
+    <RUN run_date="2008-06-27T00:00:00+09:00" run_center="UT-METAB" alias="DRR000994" center_name="UT-METAB" accession="DRR000994">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 day 8)</TITLE>
+        <EXPERIMENT_REF refname="DRX000639" refcenter="UT-METAB" accession="DRX000639"/>
+    </RUN>
+    <RUN run_date="2008-09-30T00:00:00+09:00" run_center="UT-METAB" alias="DRR001867" center_name="UT-METAB" accession="DRR001867">
+        <TITLE>Genome-wide profiling of H3K4me3 in Adipocytes (3T3-L1 0d)</TITLE>
+        <EXPERIMENT_REF refname="DRX001330" refcenter="UT-METAB" accession="DRX001330"/>
+    </RUN>
+</RUN_SET>

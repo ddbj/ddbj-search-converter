@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="Illumina paired end test 45689" accession="SRX273387" center_name="NCBI-TEST">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX273387</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCBI-TEST">Illumina paired end test 45689</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>tester</TITLE>
+    <STUDY_REF accession="SRP000281">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000281</PRIMARY_ID>
+        <SUBMITTER_ID namespace="BI">E_coli_UTI_Defensins</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION/>
+      <SAMPLE_DESCRIPTOR accession="SRS084840">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS084840</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NCBI-TEST">454 test sample</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME/>
+        <LIBRARY_STRATEGY>RNA-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <PAIRED NOMINAL_LENGTH="150"/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>150</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Reverse</READ_TYPE>
+            <BASE_COORD>76</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+  </EXPERIMENT>
+  <EXPERIMENT alias="ION_TORRENT fastq test" accession="SRX765373" center_name="NCBI-TEST">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX765373</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCBI-TEST">ION_TORRENT fastq test</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Effects of nitrate addition on rumen fermentation, bacterial biodiversity and abundance</TITLE>
+    <STUDY_REF accession="SRP002810">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP002810</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION/>
+      <SAMPLE_DESCRIPTOR accession="SRS084840">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS084840</PRIMARY_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME/>
+        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>METAGENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>0</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ION_TORRENT>
+        <INSTRUMENT_MODEL>Ion Torrent PGM</INSTRUMENT_MODEL>
+      </ION_TORRENT>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT alias="New Ion Torrent test" accession="SRX1535545">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX1535545</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCBI-TEST">New Ion Torrent test</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Ion torrent fasta/qual</TITLE>
+    <STUDY_REF accession="SRP000281">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000281</PRIMARY_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION/>
+      <SAMPLE_DESCRIPTOR accession="SRS084840">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS084840</PRIMARY_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME/>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>0</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ION_TORRENT>
+        <INSTRUMENT_MODEL>Ion Torrent PGM</INSTRUMENT_MODEL>
+      </ION_TORRENT>
+    </PLATFORM>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

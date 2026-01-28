@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="1/16 regions of a single 454 GS-FLX sequencing run" center_name="UFBPGC" accession="SRR036929">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR036929</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UFBPGC">1/16 regions of a single 454 GS-FLX sequencing run</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX017211">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX017211</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UFBPGC">Maize BETC 454 sequencing</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+</RUN_SET>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000002" broker_name="DRA" center_name="NIG" alias="DRZ000002" analysis_date="2014-03-07T10:29:07.458+09:00" analysis_center="NIG">
+        <TITLE>mapping data of RNA-IP 1, RNA-IP 2, small RNA 3 and small RNA 4</TITLE>
+        <STUDY_REF accession="PRJDA47137" refname="PRJDA47137">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA47137</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>for annotation analysis</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <REFERENCE_ALIGNMENT>
+                <ASSEMBLY>
+                    <CUSTOM>
+                        <REFERENCE_SOURCE>
+                            <XREF_LINK>
+                                <DB></DB>
+                                <ID></ID>
+                            </XREF_LINK>
+                        </REFERENCE_SOURCE>
+                    </CUSTOM>
+                </ASSEMBLY>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX>0</STEP_INDEX>
+                            <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                            <PROGRAM></PROGRAM>
+                            <VERSION></VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                    <DIRECTIVES>
+                        <alignment_includes_unaligned_reads>false</alignment_includes_unaligned_reads>
+                        <alignment_marks_duplicate_reads>false</alignment_marks_duplicate_reads>
+                        <alignment_includes_failed_reads>false</alignment_includes_failed_reads>
+                    </DIRECTIVES>
+                </PROCESSING>
+            </REFERENCE_ALIGNMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="e8f85130a618e0076919f59a613871d7" checksum_method="MD5" filetype="tab" filename="RNA-IP_1_soap_out"/>
+                <FILE checksum="7939707c9bbd88379050231b71a2bf5c" checksum_method="MD5" filetype="tab" filename="RNA-IP_2_soap_out"/>
+                <FILE checksum="9da8023787c87bc5657be1534fd2e8d2" checksum_method="MD5" filetype="tab" filename="small_RNA_3_soap"/>
+                <FILE checksum="76ecba500995ca138ac04bb036b70c52" checksum_method="MD5" filetype="tab" filename="small_RNA_4_mel1_soap_out"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

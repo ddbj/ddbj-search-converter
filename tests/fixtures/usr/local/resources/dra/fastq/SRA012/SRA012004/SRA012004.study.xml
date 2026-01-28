@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY center_name="dbGaP" alias="phs000235" accession="SRP001599">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP001599</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject" label="primary">PRJNA74797</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="dbGaP">phs000235</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>The Cancer Genome Characterization Initiative</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Other"/>
+      <STUDY_ABSTRACT>The Office of Cancer Genomics at the National Cancer Institute sponsored a series of studies as part of the Cancer Genome Characterization Initiative (CGCI) to assess novel emerging sequencing technologies in cancer. The CGCI program included comprehensive characterization of the genetic aberrations found in different pediatric and/or adult tumors. CGCI characterized a number of B-cell non-Hodgkin lymphomas (including diffuse large B-cell lymphoma (DLBCL) from patients with and without HIV+ infection, follicular lymphoma (FL), as well as adult and pediatric Burkitt lymphomas), and additional HIV-associated tumors (including DLBCL, lung, and cervical cancers). All data from these projects is available at the NCI Genomic Data Commons. Individual project descriptions are available by... (for more see dbGaP study page.)</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>bp_data_submission_phs000235</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_ATTRIBUTES>
+      <STUDY_ATTRIBUTE>
+        <TAG>parent_bioproject</TAG>
+        <VALUE>PRJNA74795</VALUE>
+      </STUDY_ATTRIBUTE>
+    </STUDY_ATTRIBUTES>
+  </STUDY>
+  <STUDY center_name="dbGaP" alias="phs000533" accession="SRP020238">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP020238</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject" label="primary">PRJNA172564</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="dbGaP">phs000533</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>CGCI: Non-Hodgkin Lymphoma (NHL) – Follicular Lymphoma (FL)</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Other"/>
+      <STUDY_ABSTRACT>The Office of Cancer Genomics (OCG) at the National Cancer Institute is sponsoring a series of studies as part of the Cancer Genome Characterization Initiative (CGCI) to assess novel emerging sequencing technologies in cancer. The CGCI program includes comprehensive characterization of the genetic aberrations found in different pediatric and/or adult tumors. CGCI is currently characterizing a number of B-cell non-Hodgkin lymphomas (including diffuse large B-cell lymphoma (DLBCL), follicular lymphoma (FL), and adult and pediatric Burkitt lymphomas).  In combination, the lymphoid cancers (non-Hodgkin lymphoma, Hodgkin lymphoma, myeloma and chronic lymphocytic leukemia), constitute the fourth most common malignancy in both men and women in North America. Lymphomas typically have characteristic abnormal chromosomes, including translocations, indicating the relevance of mutations to how NHLs develop and behave. This project uses detailed analysis on a specific... (for more see dbGaP study page.)</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>CGCI: Non-Hodgkin Lymphoma (NHL) – Follicular Lymphoma (FL)</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_ATTRIBUTES>
+      <STUDY_ATTRIBUTE>
+        <TAG>parent_gap_accession</TAG>
+        <VALUE>phs000235</VALUE>
+      </STUDY_ATTRIBUTE>
+      <STUDY_ATTRIBUTE>
+        <TAG>parent_bioproject</TAG>
+        <VALUE>PRJNA74795</VALUE>
+      </STUDY_ATTRIBUTE>
+    </STUDY_ATTRIBUTES>
+  </STUDY>
+</STUDY_SET>

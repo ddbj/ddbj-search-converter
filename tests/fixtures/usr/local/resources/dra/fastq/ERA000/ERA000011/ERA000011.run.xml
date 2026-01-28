@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR000013" alias="ILIL2_22_4_1_222" center_name="Wellcome Sanger Institute" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000013</PRIMARY_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">ILIL2_22_4_1_222</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000001" refcenter="SC" refname="sgrp-sc-Q31.4-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q31.4-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <SPOT_LENGTH>76</SPOT_LENGTH>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Reverse</READ_TYPE>
+          <BASE_COORD>39</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>022</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>41</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2021-10-05</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>loader</TAG>
+        <VALUE>fastq-load.py</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000003" alias="IL2_30_4_1_864_588" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000003</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL2_30_4_1_864_588</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL2_30_4_1_864_588</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000001" refcenter="SC" refname="sgrp-sc-Q31.4-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q31.4-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>38</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>030</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000008" alias="IL2_30_3_1_746_516" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000008</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL2_30_3_1_746_516</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL2_30_3_1_746_516</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000002" refcenter="SC" refname="sgrp-sc-Q69.8-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000002</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q69.8-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>38</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>030</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000014" alias="slxa_0006_1_0001_1" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000014</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">slxa_0006_1_0001_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">slxa_0006_1_0001_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000005" refcenter="SC" refname="sgrp-sc-SK1-S_cerevisiae-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-SK1-S_cerevisiae-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>006</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>32</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000004" alias="slxa_0006_2_0001_1" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000004</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">slxa_0006_2_0001_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">slxa_0006_2_0001_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000004" refcenter="SC" refname="sgrp-sc-S288c-S_cerevisiae-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000004</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-S288c-S_cerevisiae-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>32</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>006</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000009" alias="slxa_0007_1_0001_1" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000009</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">slxa_0007_1_0001_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">slxa_0007_1_0001_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000006" refcenter="SC" refname="sgrp-sc-W303-S_cerevisiae-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000006</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-W303-S_cerevisiae-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>007</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>32</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000015" alias="slxa_0007_2_0001_1" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000015</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">slxa_0007_2_0001_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">slxa_0007_2_0001_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000008" refcenter="SC" refname="sgrp-sc-Y55-S_cerevisiae-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000008</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Y55-S_cerevisiae-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>007</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>32</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000005" alias="IL2_45_6_1_565_342" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000005</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL2_45_6_1_565_342</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL2_45_6_1_565_342</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000003" refcenter="SC" refname="sgrp-sc-Q74.4-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000003</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q74.4-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>30</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>045</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000010" alias="IL1_41_4_1_608_618" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000010</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL1_41_4_1_608_618</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL1_41_4_1_608_618</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000009" refcenter="SC" refname="sgrp-sc-Y8.1-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000009</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Y8.1-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>041</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000011" alias="slxa_0014_3_0001_1" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000011</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">slxa_0014_3_0001_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">slxa_0014_3_0001_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000002" refcenter="SC" refname="sgrp-sc-Q69.8-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000002</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q69.8-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>014</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>32</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000016" alias="IL1_41_3_1_702_745" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000016</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL1_41_3_1_702_745</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL1_41_3_1_702_745</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000012" refcenter="SC" refname="sgrp-sc-Z1-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000012</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Z1-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>041</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000001" alias="IL2_62_3_1_346_881" run_center="SC" run_date="2007-12-04T00:00:00Z">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000001</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL2_62_3_1_346_881</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL2_62_3_1_346_881</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000007" refcenter="SC" refname="sgrp-sc-W7-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000007</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-W7-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>062</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>36</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000006" alias="slxa_0014_4_0001_1" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000006</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">slxa_0014_4_0001_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">slxa_0014_4_0001_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000001" refcenter="SC" refname="sgrp-sc-Q31.4-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000001</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q31.4-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>32</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>014</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000012" alias="ILIL2_22_3_1_517" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000012</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">ILIL2_22_3_1_517</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">ILIL2_22_3_1_517</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000002" refcenter="SC" refname="sgrp-sc-Q69.8-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000002</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Q69.8-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <SPOT_LENGTH>76</SPOT_LENGTH>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Reverse</READ_TYPE>
+          <BASE_COORD>39</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>022</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>41</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000002" alias="IL2_45_5_1_733_174" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000002</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL2_45_5_1_733_174</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL2_45_5_1_733_174</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000011" refcenter="SC" refname="sgrp-sc-Y9.6-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000011</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Y9.6-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>045</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>30</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR000007" alias="IL1_41_5_1_948_742" run_center="SC" run_date="2007-07-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000007</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL1_41_5_1_948_742</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL1_41_5_1_948_742</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer paired end sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000010" refcenter="SC" refname="sgrp-sc-Y8.5-S_paradoxus-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000010</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sgrp-sc-Y8.5-S_paradoxus-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>041</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

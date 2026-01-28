@@ -1,0 +1,3050 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN alias="run10_lane1" center_name="NHLBI-LMI" run_center="NHLBI-LMI" accession="SRR000711">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000711</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run10_lane1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run10_lane2" run_date="2007-04-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000712">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000712</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run10_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run10_lane3" run_date="2007-04-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000713">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000713</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run10_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run10_lane4" run_date="2007-04-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000714">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000714</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run10_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run11_lane1" run_date="2007-04-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000715">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000715</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run11_lane1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run11_lane2" run_date="2007-04-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000716">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000716</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run11_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run11_lane3" run_date="2007-04-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000717">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000717</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run11_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run11_lane4" run_date="2007-04-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000718">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000718</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run11_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run11_lane5" run_date="2007-04-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000719">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000719</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run11_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run12_lane4" run_date="2007-04-30T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000720">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000720</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run12_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>12</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run12_lane5" run_date="2007-04-30T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000721">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000721</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run12_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>12</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run12_lane6" run_date="2007-04-30T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000722">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000722</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run12_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>12</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run12_lane7" run_date="2007-04-30T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000723">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000723</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run12_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>12</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run12_lane8" run_date="2007-04-30T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000724">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000724</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run12_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>12</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run13_lane6" run_date="2007-05-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000725">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000725</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run13_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>13</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run13_lane7" run_date="2007-05-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000726">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000726</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run13_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>13</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run13_lane8" run_date="2007-05-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000727">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000727</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run13_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>13</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run14_lane6" run_date="2007-05-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000728">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000728</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run14_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run14_lane7" run_date="2007-05-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000729">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000729</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run14_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run14_lane8" run_date="2007-05-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000730">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000730</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run14_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run15_lane1" run_date="2007-11-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000731">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000731</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run15_lane1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>15</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run15_lane2" run_date="2007-11-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000732">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000732</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run15_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>15</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run15_lane3" run_date="2007-11-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000733">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000733</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run15_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>15</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane1" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000734">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000734</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane2" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000735">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000735</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane3" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000736">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000736</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane4" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000737">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000737</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane5" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000738">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000738</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane6" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000739">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000739</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run17_lane7" run_date="2007-12-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000740">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000740</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run17_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>17</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane1" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000741">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000741</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane2" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000742">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000742</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane3" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000743">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000743</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane4" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000744">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000744</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane5" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000745">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000745</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane6" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000746">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000746</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane7" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000747">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000747</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run18_lane8" run_date="2007-12-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000748">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000748</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run18_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000167" refname="Resting Histone H3">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000167</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>18</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run19_lane4" run_date="2007-08-16T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000749">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000749</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run19_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>19</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run19_lane5" run_date="2007-08-16T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000750">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000750</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run19_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>19</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run19_lane6" run_date="2007-08-16T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000751">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000751</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run19_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>19</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run1_lane2" run_date="2007-02-23T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000752">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000752</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run1_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>1</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run1_lane3" run_date="2007-02-23T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000753">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000753</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run1_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>1</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run1_lane4" run_date="2007-02-23T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000754">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000754</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run1_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>1</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run1_lane5" run_date="2007-02-23T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000755">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000755</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run1_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>1</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run1_lane6" run_date="2007-02-23T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000756">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000756</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run1_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>1</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run1_lane7" run_date="2007-02-23T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000757">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000757</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run1_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>1</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run20_lane4" run_date="2007-08-20T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000758">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000758</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run20_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <SPOT_LENGTH>25</SPOT_LENGTH>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>20</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run20_lane5" run_date="2007-08-20T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000759">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000759</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run20_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>20</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run20_lane6" run_date="2007-08-20T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000760">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000760</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run20_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>20</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run20_lane7" run_date="2007-08-20T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000761">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000761</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run20_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>20</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run21_lane3" run_date="2007-08-22T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000762">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000762</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run21_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>21</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run21_lane4" run_date="2007-08-22T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000763">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000763</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run21_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>21</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run21_lane5" run_date="2007-08-22T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000764">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000764</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run21_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>21</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run21_lane6" run_date="2007-08-22T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000765">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000765</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run21_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>21</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run22_lane3" run_date="2007-08-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000766">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000766</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run22_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>22</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run22_lane4" run_date="2007-08-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000767">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000767</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run22_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>22</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run22_lane5" run_date="2007-08-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000768">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000768</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run22_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>22</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run22_lane6" run_date="2007-08-24T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000769">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000769</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run22_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>22</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run23_lane2" run_date="2007-08-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000770">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000770</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run23_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>23</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run23_lane3" run_date="2007-08-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000771">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000771</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run23_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>23</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run23_lane4" run_date="2007-08-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000772">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000772</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run23_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>23</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run23_lane5" run_date="2007-08-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000773">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000773</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run23_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>23</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run23_lane6" run_date="2007-08-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000774">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000774</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run23_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>23</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run23_lane7" run_date="2007-08-27T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000775">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000775</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run23_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>23</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run24_lane2" run_date="2007-09-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000776">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000776</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run24_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>24</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run24_lane3" run_date="2007-09-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000777">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000777</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run24_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>24</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run24_lane4" run_date="2007-09-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000778">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000778</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run24_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>24</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run24_lane5" run_date="2007-09-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000779">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000779</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run24_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>24</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run24_lane6" run_date="2007-09-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000780">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000780</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run24_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>24</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run24_lane7" run_date="2007-09-03T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000781">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000781</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run24_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>24</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run25_lane3" run_date="2007-09-07T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000782">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000782</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run25_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>25</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run25_lane4" run_date="2007-09-07T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000783">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000783</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run25_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>25</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run25_lane5" run_date="2007-09-07T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000784">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000784</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run25_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>25</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run25_lane6" run_date="2007-09-07T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000785">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000785</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run25_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>25</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run25_lane7" run_date="2007-09-07T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000786">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000786</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run25_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>25</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run26_lane2" run_date="2007-09-10T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000787">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000787</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run26_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>26</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run26_lane3" run_date="2007-09-10T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000788">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000788</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run26_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>26</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run26_lane4" run_date="2007-09-10T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000789">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000789</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run26_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>26</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run26_lane5" run_date="2007-09-10T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000790">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000790</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run26_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>26</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run26_lane6" run_date="2007-09-10T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000791">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000791</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run26_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>26</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run26_lane7" run_date="2007-09-10T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000792">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000792</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run26_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>26</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane1" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000793">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000793</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane2" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000794">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000794</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane3" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000795">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000795</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane4" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000796">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000796</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane5" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000797">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000797</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane6" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000798">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000798</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run27_lane7" run_date="2007-09-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000799">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000799</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run27_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>27</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run28_lane2" run_date="2007-09-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000800">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000800</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run28_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>28</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run28_lane3" run_date="2007-09-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000801">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000801</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run28_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>28</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run28_lane4" run_date="2007-09-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000802">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000802</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run28_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>28</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run28_lane5" run_date="2007-09-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000803">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000803</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run28_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>28</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run28_lane6" run_date="2007-09-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000804">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000804</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run28_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>28</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run28_lane7" run_date="2007-09-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000805">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000805</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run28_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000164" refname="Activated Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000164</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>28</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run29_lane2" run_date="2007-12-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000806">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000806</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run29_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000170" refname="Resting Unphosphorylated Pol II">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000170</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Unphosphorylated Pol II</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run29_lane3" run_date="2007-12-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000807">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000807</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run29_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000169" refname="Resting Ser5 phosphorylated Pol II">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000169</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Ser5 phosphorylated Pol II</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run29_lane5" run_date="2007-12-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000808">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000808</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run29_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000166" refname="Activated Unphosphorylated Pol II">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000166</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Unphosphorylated Pol II</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run29_lane6" run_date="2007-12-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000809">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000809</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run29_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000165" refname="Activated Ser5 phosphorylated Pol II">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000165</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Activated Ser5 phosphorylated Pol II</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>29</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run2_lane8" run_date="2007-03-13T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000810">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000810</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run2_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>2</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run3_lane7" run_date="2007-03-19T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000811">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000811</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run3_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>3</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run3_lane8" run_date="2007-03-19T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000812">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000812</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run3_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>25</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>3</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run4_lane8" run_date="2007-04-06T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000813">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000813</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run4_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>4</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run5_lane5" run_date="2007-04-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000814">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000814</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run5_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>5</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run5_lane6" run_date="2007-04-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000815">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000815</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run5_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>5</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run5_lane7" run_date="2007-04-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000816">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000816</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run5_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>5</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run5_lane8" run_date="2007-04-09T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000817">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000817</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run5_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>5</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run6_lane3" run_date="2007-04-12T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000818">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000818</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run6_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>6</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run6_lane4" run_date="2007-04-12T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000819">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000819</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run6_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>6</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run6_lane5" run_date="2007-04-12T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000820">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000820</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run6_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>6</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run6_lane6" run_date="2007-04-12T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000821">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000821</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run6_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>6</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run6_lane7" run_date="2007-04-12T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000822">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000822</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run6_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>6</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run6_lane8" run_date="2007-04-12T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000823">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000823</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run6_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>6</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane2" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000824">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000824</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane3" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000825">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000825</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane4" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000826">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000826</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane5" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000827">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000827</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane6" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000828">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000828</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane7" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000829">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000829</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run7_lane8" run_date="2007-04-14T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000830">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000830</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run7_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run8_lane4" run_date="2007-04-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000831">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000831</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run8_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run8_lane5" run_date="2007-04-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000832">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000832</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run8_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run8_lane6" run_date="2007-04-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000833">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000833</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run8_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run8_lane7" run_date="2007-04-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000834">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000834</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run8_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run8_lane8" run_date="2007-04-17T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000835">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000835</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run8_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane2" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000836">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000836</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane3" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000837">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000837</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane4" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000838">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000838</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane5" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000839">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000839</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane6" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000840">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000840</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane7" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000841">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000841</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN alias="run9_lane8" run_date="2007-04-21T12:00:00Z" run_center="NHLBI-LMI" center_name="NHLBI-LMI" accession="SRR000842">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR000842</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">run9_lane8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX000168" refname="Resting Nucleosome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX000168</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length </TAG>
+        <VALUE>24</VALUE>
+        <UNITS>bp</UNITS>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

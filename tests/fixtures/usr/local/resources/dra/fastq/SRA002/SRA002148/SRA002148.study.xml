@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY center_name="BI" alias="E_coli_O104_H4_HUS_Outbreak_C227_11" accession="SRP000285">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP000285</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject" label="primary">PRJNA68153</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="BI">E_coli_O104_H4_HUS_Outbreak_C227_11</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Escherichia coli O104:H4 str. C227-11 Genome sequencing and assembly</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <CENTER_PROJECT_NAME>Escherichia coli O104:H4 str. C227-11</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_LINKS>
+      <STUDY_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>22315421</ID>
+        </XREF_LINK>
+      </STUDY_LINK>
+    </STUDY_LINKS>
+  </STUDY>
+  <STUDY center_name="BioProject" alias="PRJNA33025" accession="SRP019355">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP019355</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject" label="primary">PRJNA33025</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Biovar 6 reference strain</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_ABSTRACT>&lt;b&gt;&lt;i&gt;Brucella abortus&lt;/i&gt; bv. 6 str. 870&lt;/B&gt;. &lt;i&gt;Brucella abortus&lt;/i&gt; bv. 6 str. 870 is a well studied reference strain and will be used for comparative analysis.</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>Brucella abortus bv. 6 str. 870</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_ATTRIBUTES>
+      <STUDY_ATTRIBUTE>
+        <TAG>parent_bioproject</TAG>
+        <VALUE>PRJNA47689</VALUE>
+      </STUDY_ATTRIBUTE>
+    </STUDY_ATTRIBUTES>
+  </STUDY>
+</STUDY_SET>

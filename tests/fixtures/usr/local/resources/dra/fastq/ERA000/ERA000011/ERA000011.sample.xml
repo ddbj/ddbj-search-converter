@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="SAMEA749878" accession="ERS000001">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000001</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749878</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>559292</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces cerevisiae S288C</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain S288c random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:41Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:52:14Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749878</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:41Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:52:14Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces cerevisiae strain S288c random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces cerevisiae strain S288c random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces cerevisiae S288c</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>S288c</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749877" accession="ERS000006">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000006</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749877</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580231</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Q74.4</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Q74.4 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:41Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:49Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749877</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:41Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:49Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Q74.4 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Q74.4 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Q74.4</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Q74.4</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749882" accession="ERS000010">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000010</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749882</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580235</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Y9.6</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y9.6 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:39Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749882</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:39Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y9.6 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y9.6 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Y9.6</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Y9.6</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749874" accession="ERS000005">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000005</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749874</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580238</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Q69.8</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Q69.8 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:39Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:52:14Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749874</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:39Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:52:14Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Q69.8 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Q69.8 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Q69.8</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Q69.8</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749883" accession="ERS000011">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000011</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749883</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580234</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus W7</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain W7 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:41Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:59:42Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749883</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:41Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:59:42Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain W7 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain W7 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus W7</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>W7</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749872" accession="ERS000009">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000009</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749872</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580236</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Y8.5</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y8.5 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:37Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749872</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:37Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y8.5 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y8.5 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Y8.5</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Y8.5</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749875" accession="ERS000004">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000004</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749875</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580237</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Q31.4</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Q31.4 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:37Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749875</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:37Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Q31.4 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Q31.4 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Q31.4</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Q31.4</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749873" accession="ERS000008">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000008</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749873</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580232</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Y8.1</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y8.1 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:35Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:59:42Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749873</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:35Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:59:42Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y8.1 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y8.1 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Y8.1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Y8.1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749880" accession="ERS000003">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000003</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749880</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580240</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces cerevisiae W303</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:35Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749880</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:35Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces cerevisiae strain W303 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces cerevisiae W303</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>W303</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749876" accession="ERS000007">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000007</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749876</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580230</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Y55</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Y55 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:19Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749876</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:19Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y55 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Y55 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Y55</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Y55</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749881" accession="ERS000002">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000002</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749881</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580239</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces cerevisiae SK1</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces cerevisiae strain SK1 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:18Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749881</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:18Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:51:48Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces cerevisiae strain SK1 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces cerevisiae strain SK1 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces cerevisiae SK1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>SK1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="SAMEA749879" accession="ERS000012">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000012</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA749879</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>580233</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces paradoxus Z1</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Solexa sequencing of Saccharomyces paradoxus strain Z1 random 200 bp library</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:42:59Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:59:42Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA749879</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:42:59Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:59:42Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Z1 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Solexa sequencing of Saccharomyces paradoxus strain Z1 random 200 bp library</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Saccharomyces paradoxus Z1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>Z1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>
