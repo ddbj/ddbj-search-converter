@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE alias="DRS000643" center_name="UT-METAB" accession="DRS000643">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012135</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HW_3T3L1_day0</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10090</TAXON_ID>
+            <SCIENTIFIC_NAME>Mus musculus</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>source:3T3-L1 cells, day 0 of differentiation
+growth_protocol:3T3-L1 cells were maintained in DMEM, supplemented with 10% FBS.</DESCRIPTION>
+    </SAMPLE>
+    <SAMPLE alias="DRS000644" center_name="UT-METAB" accession="DRS000644">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012134</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HW_3T3L1_day8</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10090</TAXON_ID>
+            <SCIENTIFIC_NAME>Mus musculus</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>source:3T3-L1 cells, day 8 of differentiation
+growth_protocol:3T3-L1 cells were maintained in DMEM, supplemented with 10% FBS. For adipocyte differentiation, two days after confluence, 3T3-L1 cells were treated with dexamethasone (1 uM), IBMX (0.5 mM), and insulin (5 ug/ml) (DMI) for 48 hours, followed by treatment with insulin alone, with medium replacement every two days thereafter.</DESCRIPTION>
+    </SAMPLE>
+    <SAMPLE alias="DRS000645" center_name="UT-METAB" accession="DRS000645">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012133</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HW_NIH3T3</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10090</TAXON_ID>
+            <SCIENTIFIC_NAME>Mus musculus</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>source:NIH-3T3 fibroblasts
+growth_protocol:NIH-3T3 cells were maintained in DMEM, supplemented with 10% FBS.</DESCRIPTION>
+    </SAMPLE>
+    <SAMPLE alias="DRS000646" center_name="UT-METAB" accession="DRS000646">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012136</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HW_3T3L1_36h_for_CHIP</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10090</TAXON_ID>
+            <SCIENTIFIC_NAME>Mus musculus</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>source:3T3-L1 cells, 36h of differentiation
+growth_protocol:3T3-L1 cells were maintained in DMEM, supplemented with 10% FBS.
+For adipocyte differentiation, two days after confluence, 3T3-L1 cells were treated with dexamethasone (1 uM), IBMX (0.5 mM), and insulin (5 ug/ml) (DMI) for 48 hours, followed by treatment with insulin alone, with medium replacement every two days thereafter.</DESCRIPTION>
+    </SAMPLE>
+    <SAMPLE alias="DRS000647" center_name="UT-METAB" accession="DRS000647">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012138</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HW_3T3L1_day8_for_ChIP</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10090</TAXON_ID>
+            <SCIENTIFIC_NAME>Mus musculus</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>source:3T3-L1 cells, day 8 of differentiation
+growth_protocol:3T3-L1 cells were maintained in DMEM, supplemented with 10% FBS.
+For adipocyte differentiation, two days after confluence, 3T3-L1 cells were treated with dexamethasone (1 uM), IBMX (0.5 mM), and insulin (5 ug/ml) (DMI) for 48 hours, followed by treatment with insulin alone, with medium replacement every two days thereafter.</DESCRIPTION>
+    </SAMPLE>
+    <SAMPLE alias="DRS001284" center_name="UT-METAB" accession="DRS001284">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012137</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HW_3T3L1_day0_for_ChIP</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>10090</TAXON_ID>
+            <SCIENTIFIC_NAME>Mus musculus</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>source:3T3-L1 cells, day 0 of differentiation
+growth_protocol:3T3-L1 cells were maintained in DMEM, supplemented with 10% FBS.</DESCRIPTION>
+    </SAMPLE>
+</SAMPLE_SET>

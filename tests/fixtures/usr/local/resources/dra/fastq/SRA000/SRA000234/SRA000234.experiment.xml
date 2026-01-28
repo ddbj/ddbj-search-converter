@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="Activated Nucleosome" center_name="NHLBI-LMI" accession="SRX000164">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000164</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Activated Nucleosome genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           CD4+ T cells were purified from human blood as described in Barski et al., Cell, 2007. Incubating with anti-CD3 and anti-CD28 antibodies for 18 hr activated the cells. To prepare mononucleosomes, the activated T cells were treated with MNase to generate approximately 80% mononucleosomes and 20% dinucleosomes. The DNA fragments of approximately 150 bp were isolated from agarose gel, blunt-ended, ligated to the Solexa adaptors, and sequenced using the Illumina 1G Genome Analyzer as described in Barski et al., Cell, 2007.         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000331" refname="Activated Nucleosome">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000331</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Activated Nucleosome</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Activated Nucleosome</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>MNase-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>MNase</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+  <EXPERIMENT alias="Activated Ser5 phosphorylated Pol II" center_name="NHLBI-LMI" accession="SRX000165">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000165</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Activated Ser5 phosphorylated Pol II</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Activated Ser5 phosphorylated Pol II genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           Libraries were prepared as described in Barski et al., Cell, 2007. Incubating with anti-CD3 and anti-CD28 antibodies for 18 hr activated the cells. Ser 5 phosphorylated Pol II was targeted using Abcam antibody AB1791         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000332" refname="Activated Ser5 phosphorylated Pol II">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000332</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Activated Ser5 phosphorylated Pol II</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Activated Ser5 phosphorylated Pol II</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+  <EXPERIMENT alias="Activated Unphosphorylated Pol II" center_name="NHLBI-LMI" accession="SRX000166">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000166</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Activated Unphosphorylated Pol II</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Activated Unphosphorylated Pol II genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           Libraries were prepared as described in Barski et al., Cell, 2007. Incubating with anti-CD3 and anti-CD28 antibodies for 18 hr activated the cells. Unphosphorylated Pol II was targeted using Abcam antibody AB817         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000333" refname="Activated Unphosphorylated Pol II">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000333</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Activated Unphosphorylated Pol II</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Activated Unphosphorylated Pol II</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+  <EXPERIMENT alias="Resting Histone H3" center_name="NHLBI-LMI" accession="SRX000167">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000167</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Resting Histone H3 genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           Libraries were prepared as described in Barski et al., Cell, 2007.  Histone H3 proteins were targeted using Abcam antibody AB1791         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000334" refname="Resting Histone H3">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000334</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Resting Histone H3</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Resting Histone H3</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+  <EXPERIMENT alias="Resting Nucleosome" center_name="NHLBI-LMI" accession="SRX000168">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000168</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Resting Nucleosome genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           CD4+ T cells were purified from human blood as described in Barski et al., Cell, 2007. To prepare mononucleosomes, the resting T cells were treated with MNase to generate approximately 80% mononucleosomes and 20% dinucleosomes. The DNA fragments of approximately 150 bp were isolated from agarose gel, blunt-ended, ligated to the Solexa adaptors, and sequenced using the Illumina 1G Genome Analyzer as described in Barski et al., Cell, 2007.         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000335" refname="Resting Nucleosome">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000335</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Resting Nucleosome</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Resting Nucleosome</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>MNase-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>MNase</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>25</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+  <EXPERIMENT alias="Resting Ser5 phosphorylated Pol II" center_name="NHLBI-LMI" accession="SRX000169">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000169</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Resting Ser5 phosphorylated Pol II</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Resting Ser5 phosphorylated Pol II genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           Libraries were prepared as described in Barski et al., Cell, 2007. Ser 5 phosphorylated Pol II was targeted using Abcam antibody AB1791         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000336" refname="Resting Ser5 phosphorylated Pol II">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000336</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Resting Ser5 phosphorylated Pol II</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Resting Ser5 phosphorylated Pol II</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+  <EXPERIMENT alias="Resting Unphosphorylated Pol II" center_name="NHLBI-LMI" accession="SRX000170">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX000170</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NHLBI-LMI">Resting Unphosphorylated Pol II</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina sequencing of Human Resting Unphosphorylated Pol II genomic fragment library</TITLE>
+    <STUDY_REF accession="SRP000105" refname="Nucleosome positioning in the human genome">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000105</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NHLBI-LMI">Nucleosome positioning in the human genome</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>           Libraries were prepared as described in Barski et al., Cell, 2007.  Unphosphorylated Pol II was targeted using Abcam antibody AB817         </DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS000337" refname="Resting Unphosphorylated Pol II">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS000337</PRIMARY_ID>
+          <SUBMITTER_ID namespace="NHLBI-LMI">Resting Unphosphorylated Pol II</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Resting Unphosphorylated Pol II</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>17512414</ID>
+        </XREF_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

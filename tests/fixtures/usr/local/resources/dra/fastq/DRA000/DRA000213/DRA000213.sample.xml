@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000302" broker_name="DRA" center_name="NIES" alias="DRS000302">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00012326</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>Botryococcus braunii (strain BOT22)</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>38881</TAXON_ID>
+            <SCIENTIFIC_NAME>Botryococcus braunii</SCIENTIFIC_NAME>
+            <ANONYMIZED_NAME></ANONYMIZED_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>This strain of Botryococcus braunii, isolated from the Kanna Dam in Okinawa, Japan on April 22nd, 2004, produces terpenoid-derived liquid hydrocarbons.</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>strain</TAG>
+                <VALUE>BOT22</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>lat_lon</TAG>
+                <VALUE>26.48 N 127.95 E</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>collection_date</TAG>
+                <VALUE>22-APR-2004</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

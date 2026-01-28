@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="SAMEA857145" accession="ERS000028">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000028</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA857145</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>fluke.sample1</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>6192</TAXON_ID>
+      <SCIENTIFIC_NAME>Fasciola hepatica</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Alias</TAG>
+        <VALUE>fluke.sample1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Broker name</TAG>
+        <VALUE>Bioinvestigation Index</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Description</TAG>
+        <VALUE>A single adult fluke derived from a sheep from an abattoir in north Wales</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center alias</TAG>
+        <VALUE>SBSUL</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>School of Biological Sciences, University of Liverpool</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:44:02Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-08T15:24:36Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>SRA accession</TAG>
+        <VALUE>ERS000028</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Sample Name</TAG>
+        <VALUE>ERS000028</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Title</TAG>
+        <VALUE>Fasciola hepatica</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biotic relation</TAG>
+        <VALUE>pathogen</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>habitat</TAG>
+        <VALUE>animal-associated habitat</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>host</TAG>
+        <VALUE>Ovis aries (Sheep)</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>host class</TAG>
+        <VALUE>natural host</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>host health disease status</TAG>
+        <VALUE>alive</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sampling date</TAG>
+        <VALUE>2007</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>trophic quality</TAG>
+        <VALUE>heterotrophy</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

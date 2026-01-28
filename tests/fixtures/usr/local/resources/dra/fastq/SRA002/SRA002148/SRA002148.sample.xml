@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="BI" alias="PRJNA173773.Plasmodium falciparum Th021.09" accession="SRS107432">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS107432</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00103517</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Plasmodium falciparum SenT021.09</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>1107495</TAXON_ID>
+      <SCIENTIFIC_NAME>Plasmodium falciparum SenT021.09</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Sample name</TAG>
+        <VALUE>Plasmodium falciparum Th021.09</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geographic location (country and/or sea, region)</TAG>
+        <VALUE>missing</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>isolation source</TAG>
+        <VALUE>missing</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>SenT021.09</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="PRJNA68153.C227-11_Tube 2_A" accession="SRS259611">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS259611</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample" label="primary">SAMN00715316</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN02596703</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Escherichia coli O104:H4 str. C227-11</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>1048254</TAXON_ID>
+      <SCIENTIFIC_NAME>Escherichia coli O104:H4 str. C227-11</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Sample name</TAG>
+        <VALUE>C227-11_Tube 2_A</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geographic location (country and/or sea,region)</TAG>
+        <VALUE>missing</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>isolation source</TAG>
+        <VALUE>missing</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>C227-11</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE accession="SRS000911" center_name="BI" alias="482042.12326.Genomic DNA.Escherichia coli 11-02281">
+    <IDENTIFIERS>
+      <PRIMARY_ID label="sra">SRS000911</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00001735</EXTERNAL_ID>
+      <UUID>6681c685-c56e-411a-bd0e-361cc116289a</UUID>
+    </IDENTIFIERS>
+    <TITLE>E. coli 11-02281 Genomic DNA sample Escherichia coli 11-02281</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>1240772</TAXON_ID>
+      <SCIENTIFIC_NAME>Escherichia coli O104:H4 str. 11-02281</SCIENTIFIC_NAME>
+      <COMMON_NAME>E. coli 11-02281</COMMON_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>collaborator_sample_id</TAG>
+        <VALUE>Escherichia coli 11-02281</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample_type</TAG>
+        <VALUE>Genomic DNA</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>Other</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>11-02281</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE accession="SRS000910" center_name="BI" alias="PRJNA174567.Cryptococcus neoformans AD1_7a">
+    <IDENTIFIERS>
+      <PRIMARY_ID label="sra">SRS000910</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00001734</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Cryptococcus neoformans var. grubii AD1-7a</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>1230056</TAXON_ID>
+      <SCIENTIFIC_NAME>Cryptococcus neoformans var. grubii AD1-7a</SCIENTIFIC_NAME>
+      <COMMON_NAME>n/a</COMMON_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Sample name</TAG>
+        <VALUE>Cryptococcus neoformans AD1_7a</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geographic location (country and/or sea,region)</TAG>
+        <VALUE>missing</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>isolation source</TAG>
+        <VALUE>missing</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>AD1_7a</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="BROAD:SEQUENCING_SAMPLE:24608.0" accession="SRS000909">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS000909</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00102846</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Brucella abortus bv. 6 str. 870 Genomic DNA sample 24608.0</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>520454</TAXON_ID>
+      <SCIENTIFIC_NAME>Brucella abortus bv. 6 str. 870</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>BI GSSR sample ID</TAG>
+        <VALUE>24608.0</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>BI GSSR sample LSID</TAG>
+        <VALUE>BROAD:SEQUENCING_SAMPLE:24608.0</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>BI GSSR sample type</TAG>
+        <VALUE>Genomic DNA</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>Other</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>str. 870</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>biovar</TAG>
+        <VALUE>6</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+  <SAMPLE alias="470817.10527.Genomic DNA.C227-11_Tube 2_A" accession="SRS259236">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS259236</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00715016</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>E. coli C227-11 Genomic DNA sample C227-11_Tube 2_A</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>1048254</TAXON_ID>
+      <SCIENTIFIC_NAME>Escherichia coli O104:H4 str. C227-11</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>C227-11</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample ID</TAG>
+        <VALUE>C227-11_Tube 2_A</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample type</TAG>
+        <VALUE>Genomic DNA</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

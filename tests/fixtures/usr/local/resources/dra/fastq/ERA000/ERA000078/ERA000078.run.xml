@@ -1,0 +1,4812 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR002870" alias="RIL_47" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002870</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_47</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_47</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002943" alias="RIL_120" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002943</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_120</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_120</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002840" alias="RIL_17" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002840</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_17</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_17</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002874" alias="RIL_51" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002874</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_51</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_51</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002915" alias="RIL_92" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002915</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_92</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_92</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002945" alias="RIL_122" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002945</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_122</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_122</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002932" alias="RIL_109" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002932</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_109</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_109</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002842" alias="RIL_19" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002842</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_19</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_19</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002916" alias="RIL_93" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002916</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_93</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_93</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002946" alias="RIL_123" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002946</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_123</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_123</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002936" alias="RIL_113" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002936</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_113</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_113</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002913" alias="RIL_90" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002913</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_90</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_90</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002926" alias="RIL_103" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002926</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_103</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_103</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002972" alias="RIL_149" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002972</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_149</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_149</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002944" alias="RIL_121" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002944</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_121</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_121</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002939" alias="RIL_116" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002939</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_116</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_116</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002928" alias="RIL_105" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002928</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_105</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_105</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002968" alias="RIL_145" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002968</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_145</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_145</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002942" alias="RIL_119" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002942</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_119</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_119</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002961" alias="RIL_138" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002961</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_138</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_138</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002910" alias="RIL_87" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002910</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_87</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_87</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002824" alias="RIL_1" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002824</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002878" alias="RIL_55" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002878</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_55</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_55</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002827" alias="RIL_4" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002827</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_4</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002962" alias="RIL_139" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002962</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_139</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_139</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002971" alias="RIL_148" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002971</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_148</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_148</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002933" alias="RIL_110" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002933</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_110</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_110</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002837" alias="RIL_14" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002837</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_14</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_14</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002843" alias="RIL_20" run_center="NCGR" run_date="2008-05-23T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002843</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_20</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_20</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>36</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002924" alias="RIL_101" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002924</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_101</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_101</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002906" alias="RIL_83" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002906</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_83</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_83</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002884" alias="RIL_61" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002884</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_61</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_61</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002841" alias="RIL_18" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002841</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_18</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_18</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002865" alias="RIL_42" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002865</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_42</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_42</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002896" alias="RIL_73" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002896</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_73</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_73</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002872" alias="RIL_49" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002872</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_49</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_49</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002967" alias="RIL_144" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002967</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_144</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_144</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002920" alias="RIL_97" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002920</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_97</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_97</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002966" alias="RIL_143" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002966</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_143</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_143</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002889" alias="RIL_66" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002889</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_66</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_66</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002831" alias="RIL_8" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002831</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_8</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_8</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002825" alias="RIL_2" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002825</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002914" alias="RIL_91" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002914</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_91</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_91</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002891" alias="RIL_68" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002891</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_68</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_68</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002958" alias="RIL_135" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002958</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_135</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_135</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002833" alias="RIL_10" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002833</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_10</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_10</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002908" alias="RIL_85" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002908</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_85</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_85</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002909" alias="RIL_86" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002909</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_86</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_86</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002898" alias="RIL_75" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002898</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_75</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_75</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002858" alias="RIL_35" run_center="NCGR" run_date="2008-05-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002858</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_35</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_35</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002960" alias="RIL_137" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002960</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_137</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_137</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002947" alias="RIL_124" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002947</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_124</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_124</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002868" alias="RIL_45" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002868</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_45</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_45</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002918" alias="RIL_95" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002918</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_95</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_95</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002882" alias="RIL_59" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002882</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_59</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_59</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002844" alias="RIL_21" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002844</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_21</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_21</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002953" alias="RIL_130" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002953</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_130</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_130</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002905" alias="RIL_82" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002905</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_82</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_82</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002894" alias="RIL_71" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002894</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_71</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_71</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002893" alias="RIL_70" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002893</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_70</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_70</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002938" alias="RIL_115" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002938</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_115</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_115</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002888" alias="RIL_65" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002888</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_65</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_65</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002871" alias="RIL_48" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002871</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_48</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_48</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002900" alias="RIL_77" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002900</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_77</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_77</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002931" alias="RIL_108" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002931</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_108</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_108</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002830" alias="RIL_7" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002830</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_7</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_7</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002899" alias="RIL_76" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002899</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_76</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_76</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002876" alias="RIL_53" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002876</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_53</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_53</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002835" alias="RIL_12" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002835</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_12</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_12</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002866" alias="RIL_43" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002866</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_43</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_43</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002845" alias="RIL_22" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002845</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_22</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_22</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002867" alias="RIL_44" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002867</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_44</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_44</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002848" alias="RIL_25" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002848</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_25</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_25</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002834" alias="RIL_11" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002834</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_11</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_11</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002937" alias="RIL_114" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002937</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_114</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_114</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002869" alias="RIL_46" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002869</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_46</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_46</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002919" alias="RIL_96" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002919</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_96</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_96</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002917" alias="RIL_94" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002917</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_94</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_94</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002941" alias="RIL_118" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002941</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_118</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_118</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002903" alias="RIL_80" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002903</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_80</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_80</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002951" alias="RIL_128" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002951</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_128</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_128</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002929" alias="RIL_106" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002929</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_106</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_106</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002864" alias="RIL_41" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002864</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_41</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_41</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002886" alias="RIL_63" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002886</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_63</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_63</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002952" alias="RIL_129" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002952</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_129</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_129</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002895" alias="RIL_72" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002895</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_72</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_72</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002839" alias="RIL_16" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002839</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_16</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_16</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002957" alias="RIL_134" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002957</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_134</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_134</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002925" alias="RIL_102" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002925</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_102</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_102</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002847" alias="RIL_24" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002847</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_24</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_24</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002911" alias="RIL_88" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002911</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_88</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_88</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002846" alias="RIL_23" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002846</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_23</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_23</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002854" alias="RIL_31" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002854</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_31</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_31</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002935" alias="RIL_112" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002935</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_112</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_112</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002850" alias="RIL_27" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002850</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_27</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_27</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002849" alias="RIL_26" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002849</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_26</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_26</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002875" alias="RIL_52" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002875</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_52</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_52</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002927" alias="RIL_104" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002927</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_104</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_104</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002973" alias="RIL_150" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002973</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_150</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_150</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002859" alias="RIL_36" run_center="NCGR" run_date="2008-05-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002859</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_36</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_36</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002970" alias="RIL_147" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002970</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_147</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_147</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002890" alias="RIL_67" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002890</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_67</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_67</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002853" alias="RIL_30" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002853</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_30</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_30</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002879" alias="RIL_56" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002879</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_56</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_56</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002877" alias="RIL_54" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002877</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_54</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_54</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002857" alias="RIL_34" run_center="NCGR" run_date="2008-05-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002857</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_34</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_34</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002883" alias="RIL_60" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002883</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_60</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_60</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002855" alias="RIL_32" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002855</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_32</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_32</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002897" alias="RIL_74" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002897</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_74</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_74</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002873" alias="RIL_50" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002873</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_50</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_50</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002904" alias="RIL_81" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002904</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_81</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_81</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002829" alias="RIL_6" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002829</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_6</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002832" alias="RIL_9" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002832</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_9</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_9</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002838" alias="RIL_15" run_center="NCGR" run_date="2008-05-23T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002838</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_15</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_15</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>36</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002955" alias="RIL_132" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002955</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_132</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_132</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002851" alias="RIL_28" center_name="National Center for Gene Research, Chinese Academy of Sciences" run_center="NCGR" run_date="2008-05-23T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002851</PRIMARY_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_28</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>36</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>7</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002940" alias="RIL_117" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002940</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_117</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_117</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002948" alias="RIL_125" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002948</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_125</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_125</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002856" alias="RIL_33" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002856</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_33</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_33</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002826" alias="RIL_3" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002826</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_3</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002963" alias="RIL_140" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002963</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_140</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_140</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002863" alias="RIL_40" run_center="NCGR" run_date="2008-05-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002863</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_40</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_40</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002887" alias="RIL_64" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002887</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_64</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_64</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002969" alias="RIL_146" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002969</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_146</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_146</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002912" alias="RIL_89" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002912</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_89</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_89</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002880" alias="RIL_57" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002880</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_57</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_57</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002964" alias="RIL_141" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002964</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_141</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_141</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002934" alias="RIL_111" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002934</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_111</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_111</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002965" alias="RIL_142" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002965</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_142</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_142</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002852" alias="RIL_29" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002852</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_29</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_29</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002881" alias="RIL_58" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002881</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_58</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_58</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002930" alias="RIL_107" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002930</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_107</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_107</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002860" alias="RIL_37" run_center="NCGR" run_date="2008-05-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002860</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_37</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_37</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002885" alias="RIL_62" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002885</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_62</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_62</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002954" alias="RIL_131" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002954</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_131</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_131</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002892" alias="RIL_69" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002892</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_69</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_69</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002922" alias="RIL_99" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002922</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_99</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_99</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002907" alias="RIL_84" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002907</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_84</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_84</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002828" alias="RIL_5" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002828</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_5</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002836" alias="RIL_13" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002836</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_13</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_13</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002923" alias="RIL_100" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002923</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_100</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_100</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002862" alias="RIL_39" center_name="National Center for Gene Research, Chinese Academy of Sciences" run_center="NCGR" run_date="2008-03-20T00:00:00Z">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002862</PRIMARY_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_39</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <SPOT_LENGTH>36</SPOT_LENGTH>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>2</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>36</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002902" alias="RIL_79" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002902</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_79</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_79</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002950" alias="RIL_127" run_center="NCGR" run_date="2008-07-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002950</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_127</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_127</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>11</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002956" alias="RIL_133" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002956</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_133</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_133</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002921" alias="RIL_98" run_center="NCGR" run_date="2008-06-22T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002921</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_98</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_98</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>10</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002901" alias="RIL_78" run_center="NCGR" run_date="2008-06-06T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002901</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_78</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_78</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>9</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002861" alias="RIL_38" run_center="NCGR" run_date="2008-05-29T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002861</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_38</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_38</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>8</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002949" alias="RIL_126" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002949</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_126</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_126</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002959" alias="RIL_136" run_center="NCGR" run_date="2008-09-27T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002959</PRIMARY_ID>
+      <SUBMITTER_ID namespace="NCGR">RIL_136</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="National Center for Gene Research, Chinese Academy of Sciences">RIL_136</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000234" refcenter="NCGR" refname="RIL1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000234</PRIMARY_ID>
+        <SUBMITTER_ID namespace="NCGR">RIL1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>33</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>14</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

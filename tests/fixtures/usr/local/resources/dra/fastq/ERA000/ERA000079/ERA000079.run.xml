@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR002974" alias="fluke.scan1" broker_name="Bioinvestigation Index" center_name="School of Biological Sciences, University of Liverpool" run_center="SBSUL" run_date="2008-02-13T00:00:00Z">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002974</PRIMARY_ID>
+      <SUBMITTER_ID namespace="School of Biological Sciences, University of Liverpool">fluke.scan1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 GS FLX sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000235" refcenter="SBSUL" refname="fluke.assay1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000235</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SBSUL">fluke.assay1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_LABEL>Left Adapter</READ_LABEL>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL_TABLE base_coord="1">
+            <BASECALL>TCAG</BASECALL>
+          </EXPECTED_BASECALL_TABLE>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_LABEL>Forward</READ_LABEL>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>BioInvestigation Index submission identifier</TAG>
+        <VALUE>BII-S-4</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002975" alias="fluke.scan2" broker_name="Bioinvestigation Index" center_name="School of Biological Sciences, University of Liverpool" run_center="SBSUL" run_date="2008-02-13T00:00:00Z">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002975</PRIMARY_ID>
+      <SUBMITTER_ID namespace="School of Biological Sciences, University of Liverpool">fluke.scan2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 GS FLX sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000235" refcenter="SBSUL" refname="fluke.assay1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000235</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SBSUL">fluke.assay1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_LABEL>Left Adapter</READ_LABEL>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL_TABLE base_coord="1">
+            <BASECALL>TCAG</BASECALL>
+          </EXPECTED_BASECALL_TABLE>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_LABEL>Forward</READ_LABEL>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>BioInvestigation Index submission identifier</TAG>
+        <VALUE>BII-S-4</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

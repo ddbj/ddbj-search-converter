@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="HEA1b lib" center_name="AU-DJF" accession="SRX002430">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX002430</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">HEA1b lib</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Sus scrofa heart transcript fragment library</TITLE>
+    <STUDY_REF accession="SRP000532" refname="454 pig HeaLdo">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000532</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>PolyA+ RNA was purified from ~200 micro g Sus scrofa heart (HEA) Total-RNA using Oligotex mRNA Mini Kit (Qiagen). The poly A+ RNA isolate was used as template in synthesis of high quality double-stranded cDNA with oligo(dT)12-18-priming of the first strand cDNA (SuperScriptTM Doubled-Stranded cDNA Synthesis Kit, Invitrogen). Final purification of the synthesized cDNA was performed on MinElute PCR Purification column (Qiagen), and an average cDNA fragment size of 300-400 bp was obtained by applying 45 psi (= 3 bar) of nitrogen for 50-60 seconds on 2.7-4.7 micro g starting material. Subsequently, the distribution of fragments was profiled on a BioAnalyzer DNA 1000 LabChip (Agilent Technologies). As a part of the library preparation, the ends of the sheared cDNA fragments were polished by treatment with T4 DNA Polymerase and T4 Polynecleotide Kinase prior to ligation of sequencing adaptors (Margulies et al. 2005). The fragments were immobilized on streptavidin beads, following nick repair with Bst DNA Polymerase, and the sstDNA libraries were eluted by alkali denaturation. Finally, the qualities and quantities of the libraries were assayed on Bioanalyzer RNA 6000 Pico LabChip (Agilent Technologies).</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS002005" refname="Sus scrofa RNA heart (HEA) #1">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS002005</PRIMARY_ID>
+          <SUBMITTER_ID namespace="AU-DJF">Sus scrofa RNA heart (HEA) #1</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>HEA1b lib</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS 20</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT alias="HEA2 lib" center_name="AU-DJF" accession="SRX002431">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX002431</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">HEA2 lib</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Sus scrofa heart transcript fragment library</TITLE>
+    <STUDY_REF accession="SRP000532" refname="454 pig HeaLdo">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000532</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>PolyA+ RNA was purified from ~200 micro g Sus scrofa heart (HEA) Total-RNA using Oligotex mRNA Mini Kit (Qiagen). The poly A+ RNA isolate was used as template in synthesis of high quality double-stranded cDNA with oligo(dT)12-18-priming of the first strand cDNA (SuperScriptTM Doubled-Stranded cDNA Synthesis Kit, Invitrogen). Final purification of the synthesized cDNA was performed on MinElute PCR Purification column (Qiagen), and an average cDNA fragment size of 300-400 bp was obtained by applying 45 psi (= 3 bar) of nitrogen for 50-60 seconds on 2.7-4.7 micro g starting material. Subsequently, the distribution of fragments was profiled on a BioAnalyzer DNA 1000 LabChip (Agilent Technologies). As a part of the library preparation, the ends of the sheared cDNA fragments were polished by treatment with T4 DNA Polymerase and T4 Polynecleotide Kinase (Margulies et al. 2005). **Custom decamer tags were ligated prior to addition of sequencing adaptors (Anderson et al., manuscript in preparation).**  The fragments were immobilized on streptavidin beads, following nick repair with Bst DNA Polymerase, and the sstDNA libraries were eluted by alkali denaturation. Finally, the qualities and quantities of the libraries were assayed on Bioanalyzer RNA 6000 Pico LabChip (Agilent Technologies).</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS002005" refname="Sus scrofa RNA heart (HEA) #1">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS002005</PRIMARY_ID>
+          <SUBMITTER_ID namespace="AU-DJF">Sus scrofa RNA heart (HEA) #1</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>HEA2 lib</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS 20</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT alias="HEA3 lib" center_name="AU-DJF" accession="SRX002432">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX002432</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">HEA3 lib</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Sus scrofa heart transcript fragment library</TITLE>
+    <STUDY_REF accession="SRP000532" refname="454 pig HeaLdo">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000532</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>PolyA+ RNA was purified from ~200 micro g Sus scrofa heart (HEA) Total-RNA using Oligotex mRNA Mini Kit (Qiagen). The poly A+ RNA isolate was used as template in synthesis of high quality double-stranded cDNA with oligo(dT)12-18-priming of the first strand cDNA (SuperScriptTM Doubled-Stranded cDNA Synthesis Kit, Invitrogen). Final purification of the synthesized cDNA was performed on MinElute PCR Purification column (Qiagen), and an average cDNA fragment size of 300-400 bp was obtained by applying 45 psi (= 3 bar) of nitrogen for 50-60 seconds on 2.7-4.7 micro g starting material. Subsequently, the distribution of fragments was profiled on a BioAnalyzer DNA 1000 LabChip (Agilent Technologies). As a part of the library preparation, the ends of the sheared cDNA fragments were polished by treatment with T4 DNA Polymerase and T4 Polynecleotide Kinase prior to ligation of sequencing adaptors (Margulies et al. 2005). The fragments were immobilized on streptavidin beads, following nick repair with Bst DNA Polymerase, and the sstDNA libraries were eluted by alkali denaturation. Finally, the qualities and quantities of the libraries were assayed on Bioanalyzer RNA 6000 Pico LabChip (Agilent Technologies).</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS002005" refname="Sus scrofa RNA heart (HEA) #1">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS002005</PRIMARY_ID>
+          <SUBMITTER_ID namespace="AU-DJF">Sus scrofa RNA heart (HEA) #1</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>HEA3 lib</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS 20</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT alias="LDO1b lib" center_name="AU-DJF" accession="SRX002433">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX002433</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">LDO1b lib</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Sus scrofa longissimus dorsi (LDO) #1 transcript fragment library</TITLE>
+    <STUDY_REF accession="SRP000532" refname="454 pig HeaLdo">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000532</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>PolyA+ RNA was purified from ~200 µg Sus scrofa longissimus dorsi (LDO) Total-RNA using Oligotex mRNA Mini Kit (Qiagen). The poly A+ RNA isolate was used as template in synthesis of high quality double-stranded cDNA with oligo(dT)12-18-priming of the first strand cDNA (SuperScriptTM Doubled-Stranded cDNA Synthesis Kit, Invitrogen). Final purification of the synthesized cDNA was performed on MinElute PCR Purification column (Qiagen), and an average cDNA fragment size of 300-400 bp was obtained by applying 45 psi (= 3 bar) of nitrogen for 50-60 seconds on 2.7-4.7 µg starting material. Subsequently, the distribution of fragments was profiled on a BioAnalyzer DNA 1000 LabChip (Agilent Technologies). As a part of the library preparation, the ends of the sheared cDNA fragments were polished by treatment with T4 DNA Polymerase and T4 Polynecleotide Kinase prior to ligation of sequencing adaptors (Margulies et al. 2005). The fragments were immobilized on streptavidin beads, following nick repair with Bst DNA Polymerase, and the sstDNA libraries were eluted by alkali denaturation. Finally, the qualities and quantities of the libraries were assayed on Bioanalyzer RNA 6000 Pico LabChip (Agilent Technologies).</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS002006" refname="Sus scrofa RNA longissimus dorsi (LDO) #1">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS002006</PRIMARY_ID>
+          <SUBMITTER_ID namespace="AU-DJF">Sus scrofa RNA longissimus dorsi (LDO) #1</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>LDO1b lib</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS 20</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT alias="LDO2 lib" center_name="AU-DJF" accession="SRX002434">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX002434</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">LDO2 lib</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Sus scrofa longissimus dorsi (LDO) #1 transcript fragment library</TITLE>
+    <STUDY_REF accession="SRP000532" refname="454 pig HeaLdo">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000532</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>PolyA+ RNA was purified from ~200 micro g Sus scrofa longissimus dorsi (LDO) Total-RNA using Oligotex mRNA Mini Kit (Qiagen). The poly A+ RNA isolate was used as template in synthesis of high quality double-stranded cDNA with oligo(dT)12-18-priming of the first strand cDNA (SuperScriptTM Doubled-Stranded cDNA Synthesis Kit, Invitrogen). Final purification of the synthesized cDNA was performed on MinElute PCR Purification column (Qiagen), and an average cDNA fragment size of 300-400 bp was obtained by applying 45 psi (= 3 bar) of nitrogen for 50-60 seconds on 2.7-4.7 micro g starting material. Subsequently, the distribution of fragments was profiled on a BioAnalyzer DNA 1000 LabChip (Agilent Technologies). As a part of the library preparation, the ends of the sheared cDNA fragments were polished by treatment with T4 DNA Polymerase and T4 Polynecleotide Kinase (Margulies et al. 2005). **Custom decamer tags were ligated prior to addition of sequencing adaptors (Anderson et al., manuscript in preparation).**  The fragments were immobilized on streptavidin beads, following nick repair with Bst DNA Polymerase, and the sstDNA libraries were eluted by alkali denaturation. Finally, the qualities and quantities of the libraries were assayed on Bioanalyzer RNA 6000 Pico LabChip (Agilent Technologies).</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS002006" refname="Sus scrofa RNA longissimus dorsi (LDO) #1">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS002006</PRIMARY_ID>
+          <SUBMITTER_ID namespace="AU-DJF">Sus scrofa RNA longissimus dorsi (LDO) #1</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>LDO2 lib</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS 20</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT alias="LDO3 lib" center_name="AU-DJF" accession="SRX002435">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX002435</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">LDO3 lib</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>454 sequencing of Sus scrofa longissimus dorsi (LDO) #1 transcript fragment library</TITLE>
+    <STUDY_REF accession="SRP000532" refname="454 pig HeaLdo">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP000532</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>PolyA+ RNA was purified from ~200 micro g Sus scrofa longissimus dorsi (LDO) Total-RNA using Oligotex mRNA Mini Kit (Qiagen). The poly A+ RNA isolate was used as template in synthesis of high quality double-stranded cDNA with oligo(dT)12-18-priming of the first strand cDNA (SuperScriptTM Doubled-Stranded cDNA Synthesis Kit, Invitrogen). Final purification of the synthesized cDNA was performed on MinElute PCR Purification column (Qiagen), and an average cDNA fragment size of 300-400 bp was obtained by applying 45 psi (= 3 bar) of nitrogen for 50-60 seconds on 2.7-4.7 micro g starting material. Subsequently, the distribution of fragments was profiled on a BioAnalyzer DNA 1000 LabChip (Agilent Technologies). As a part of the library preparation, the ends of the sheared cDNA fragments were polished by treatment with T4 DNA Polymerase and T4 Polynecleotide Kinase prior to ligation of sequencing adaptors (Margulies et al. 2005). The fragments were immobilized on streptavidin beads, following nick repair with Bst DNA Polymerase, and the sstDNA libraries were eluted by alkali denaturation. Finally, the qualities and quantities of the libraries were assayed on Bioanalyzer RNA 6000 Pico LabChip (Agilent Technologies).</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS002006" refname="Sus scrofa RNA longissimus dorsi (LDO) #1">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS002006</PRIMARY_ID>
+          <SUBMITTER_ID namespace="AU-DJF">Sus scrofa RNA longissimus dorsi (LDO) #1</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>LDO3 lib</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS 20</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

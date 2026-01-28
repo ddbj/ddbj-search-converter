@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT accession="ERX000231" alias="Salmonella Typhimurium strain 5579" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000231</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">Salmonella Typhimurium strain 5579</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000009" refname="S. typhimurium 5579 short-read sequencing" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000009</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">S. typhimurium 5579 short-read sequencing</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>454 Sequencing of Salmonella Typhimurium strain 5579 genome</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000024" refname="Salmonella enterica subsp. enterica serovar Typhimurium str. 5579" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000024</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Salmonella enterica subsp. enterica serovar Typhimurium str. 5579</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>FC2RF8X</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>none provided</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

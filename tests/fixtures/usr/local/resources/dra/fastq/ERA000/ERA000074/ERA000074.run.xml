@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR002795" alias="H3K4me3_run2" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002795</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">H3K4me3_run2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">H3K4me3_run2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000226" refcenter="UU" refname="H3K4me3_ChIP_MNaseFrag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000226</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">H3K4me3_ChIP_MNaseFrag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002797" alias="Input_run2" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002797</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">Input_run2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">Input_run2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000227" refcenter="UU" refname="Input_300Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000227</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">Input_300Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002794" alias="H3K4me3_run1" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002794</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">H3K4me3_run1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">H3K4me3_run1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000226" refcenter="UU" refname="H3K4me3_ChIP_MNaseFrag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000226</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">H3K4me3_ChIP_MNaseFrag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002790" alias="FOXA3_run3" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002790</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_run3</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA3_run3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000225" refcenter="UU" refname="FOXA3_ChIP_300Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000225</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA3_ChIP_300Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002786" alias="FOXA1_run1" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002786</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA1_run1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA1_run1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System 2.0 sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000221" refcenter="UU" refname="FOXA1_ChIP_250Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000221</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA1_ChIP_250Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>50</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002793" alias="FOXA3_run6" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002793</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_run6</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA3_run6</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000225" refcenter="UU" refname="FOXA3_ChIP_300Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000225</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA3_ChIP_300Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002791" alias="FOXA3_run4" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002791</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_run4</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA3_run4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000223" refcenter="UU" refname="FOXA3_ChIP_200Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000223</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA3_ChIP_200Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002789" alias="FOXA3_run2" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002789</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_run2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA3_run2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000224" refcenter="UU" refname="FOXA3_ChIP_250Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000224</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA3_ChIP_250Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002792" alias="FOXA3_run5" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002792</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_run5</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA3_run5</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000224" refcenter="UU" refname="FOXA3_ChIP_250Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000224</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA3_ChIP_250Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002796" alias="Input_run1" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002796</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">Input_run1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">Input_run1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000227" refcenter="UU" refname="Input_300Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000227</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">Input_300Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002788" alias="FOXA3_run1" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002788</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_run1</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA3_run1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000223" refcenter="UU" refname="FOXA3_ChIP_200Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000223</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA3_ChIP_200Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>35</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+  <RUN accession="ERR002787" alias="FOXA1_run2" run_center="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR002787</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA1_run2</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Uppsala University">FOXA1_run2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>AB SOLiD System 2.0 sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000222" refcenter="UU" refname="FOXA1_ChIP_300Frag">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000222</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">FOXA1_ChIP_300Frag</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>50</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

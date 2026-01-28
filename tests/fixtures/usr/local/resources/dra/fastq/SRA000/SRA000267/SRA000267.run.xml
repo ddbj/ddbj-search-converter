@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea1.41-1" center_name="AU-DJF" accession="SRR011187">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011187</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea1.41-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002430">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002430</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA1b lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea1.42-1" center_name="AU-DJF" accession="SRR011188">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011188</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea1.42-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002430">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002430</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA1b lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea2.44-1" center_name="AU-DJF" accession="SRR011189">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011189</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea2.44-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002431">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002431</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA2 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea2.44-2" center_name="AU-DJF" accession="SRR011190">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011190</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea2.44-2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002431">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002431</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA2 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea2.45-1" center_name="AU-DJF" accession="SRR011191">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011191</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea2.45-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002431">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002431</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA2 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea3.39-2" center_name="AU-DJF" accession="SRR011192">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011192</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea3.39-2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002432">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002432</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA3 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="hea3.40-2" center_name="AU-DJF" accession="SRR011193">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011193</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">hea3.40-2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002432">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002432</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">HEA3 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ldo1.41-2" center_name="AU-DJF" accession="SRR011194">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011194</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo1.41-2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002433">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002433</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO1b lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ldo1.42-2" center_name="AU-DJF" accession="SRR011195">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011195</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo1.42-2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002433">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002433</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO1b lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ldo2.44-3" center_name="AU-DJF" accession="SRR011196">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011196</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo2.44-3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002434">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002434</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO2 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ldo2.44-4" center_name="AU-DJF" accession="SRR011197">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011197</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo2.44-4</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002434">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002434</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO2 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ldo2.45-2" center_name="AU-DJF" accession="SRR011198">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011198</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo2.45-2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002434">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002434</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO2 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="ldo3.39-1" center_name="AU-DJF" accession="SRR011199">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011199</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">ldo3.39-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002435">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002435</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO3 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="1ldo3.40-1" center_name="AU-DJF" accession="SRR011200">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR011200</PRIMARY_ID>
+      <SUBMITTER_ID namespace="AU-DJF">1ldo3.40-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX002435">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX002435</PRIMARY_ID>
+        <SUBMITTER_ID namespace="AU-DJF">LDO3 lib</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <SPOT_DESCRIPTOR>
+      <SPOT_DECODE_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <BASE_COORD>1</BASE_COORD>
+        </READ_SPEC>
+        <READ_SPEC>
+          <READ_INDEX>1</READ_INDEX>
+          <READ_CLASS>Application Read</READ_CLASS>
+          <READ_TYPE>Forward</READ_TYPE>
+          <BASE_COORD>5</BASE_COORD>
+        </READ_SPEC>
+      </SPOT_DECODE_SPEC>
+    </SPOT_DESCRIPTOR>
+  </RUN>
+</RUN_SET>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="An initial characterisation of the Fasciola hepatica transcriptome using 454-FLX sequencing" center_name="SBSUL" broker_name="BIOINV" accession="ERP000012">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000012</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1982</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SBSUL">An initial characterisation of the Fasciola hepatica transcriptome using 454-FLX sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>An initial characterisation of the Fasciola hepatica transcriptome using 454-FLX sequencing</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Transcriptome Analysis"/>
+      <STUDY_ABSTRACT>A transcriptomic survey of Fasciola hepatica with the aim of increasing the amount of sequence information about this organism's transcriptome.</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>Transcriptomic survey of Fasciola hepatica</CENTER_PROJECT_NAME>
+      <STUDY_DESCRIPTION>A transcriptomic survey of Fasciola hepatica with the aim of increasing the amount of sequence information about this organism's transcriptome.</STUDY_DESCRIPTION>
+    </DESCRIPTOR>
+    <STUDY_ATTRIBUTES>
+      <STUDY_ATTRIBUTE>
+        <TAG>Submission Route</TAG>
+        <VALUE>ISAcreator and ISA-TAB format via EBI BioInvestigationIndex</VALUE>
+      </STUDY_ATTRIBUTE>
+      <STUDY_ATTRIBUTE>
+        <TAG>Sequence Provider</TAG>
+        <VALUE>Advanced Genomics Facility, University of Liverpool</VALUE>
+      </STUDY_ATTRIBUTE>
+      <STUDY_ATTRIBUTE>
+        <TAG>Funding Agency</TAG>
+        <VALUE>Natural Environment Research Council (NERC)</VALUE>
+      </STUDY_ATTRIBUTE>
+      <STUDY_ATTRIBUTE>
+        <TAG>&gt;Submitter</TAG>
+        <VALUE>NERC Environmental Bioinformatics Centre</VALUE>
+      </STUDY_ATTRIBUTE>
+      <STUDY_ATTRIBUTE>
+        <TAG>Principal Investigator</TAG>
+        <VALUE>Steve Paterson</VALUE>
+      </STUDY_ATTRIBUTE>
+    </STUDY_ATTRIBUTES>
+  </STUDY>
+</STUDY_SET>

@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT accession="ERX000227" alias="Input_300Frag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000227</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">Input_300Frag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of Input DNA, 300bp fragments</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000020" refname="Input" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000020</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">Input</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>Input_300Frag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>MNase</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>35</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000226" alias="H3K4me3_ChIP_MNaseFrag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000226</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">H3K4me3_ChIP_MNaseFrag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of H3K4me3 ChIP DNA, MNase treated</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000019" refname="H3K4me3_ChIP" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000019</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">H3K4me3_ChIP</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>H3K4me3_ChIP_MNaseFrag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>MNase-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>35</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000225" alias="FOXA3_ChIP_300Frag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000225</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_ChIP_300Frag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of FOXA3 ChIP DNA, 300bp fragments</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000018" refname="FOXA3_ChIP" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000018</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">FOXA3_ChIP</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>FOXA3_ChIP_300Frag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>35</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000224" alias="FOXA3_ChIP_250Frag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000224</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_ChIP_250Frag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of FOXA3 ChIP DNA, 250bp fragments</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000018" refname="FOXA3_ChIP" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000018</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">FOXA3_ChIP</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>FOXA3_ChIP_250Frag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>35</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000222" alias="FOXA1_ChIP_300Frag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000222</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA1_ChIP_300Frag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of FOXA1 ChIP DNA, 300bp fragments</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000017" refname="FOXA1_ChIP" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000017</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">FOXA1_ChIP</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>FOXA1_ChIP_300Frag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>50</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System 2.0</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000221" alias="FOXA1_ChIP_250Frag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000221</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA1_ChIP_250Frag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of FOXA1 ChIP DNA, 250bp fragments</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000017" refname="FOXA1_ChIP" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000017</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">FOXA1_ChIP</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>FOXA1_ChIP_250Frag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>50</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System 2.0</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+  <EXPERIMENT accession="ERX000223" alias="FOXA3_ChIP_200Frag" center_name="UU">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000223</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UU">FOXA3_ChIP_200Frag</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000005" refname="UU_HepG2_ChIP-seq_SOLiD" refcenter="UU">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000005</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UU">UU_HepG2_ChIP-seq_SOLiD</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>SOLiD sequencing of FOXA3 ChIP DNA, 200bp fragments</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000018" refname="FOXA3_ChIP" refcenter="UU">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000018</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UU">FOXA3_ChIP</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>FOXA3_ChIP_200Frag</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>cDNA</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>SOLiD system 2.0 fragment libraray protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>35</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ABI_SOLID>
+        <INSTRUMENT_MODEL>AB SOLiD System</INSTRUMENT_MODEL>
+      </ABI_SOLID>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

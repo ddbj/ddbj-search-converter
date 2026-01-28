@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="SGRP" center_name="SC" accession="ERP000001">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000001</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1973</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SC">SGRP</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Population genomics of domestic and wild yeasts.</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <STUDY_ABSTRACT>Since the completion of the genome sequence of Saccharomyces cerevisiae in 1996 (refs 1, 2), there has been a large increase in complete genome sequences, accompanied by great advances in our understanding of genome evolution. Although little is known about the natural and life histories of yeasts in the wild, there are an increasing number of studies looking at ecological and geographic distributions, population structure and sexual versus asexual reproduction. Less well understood at the whole genome level are the evolutionary processes acting within populations and species that lead to adaptation to different environments, phenotypic differences and reproductive isolation. Here we present one- to fourfold or more coverage of the genome sequences of over seventy isolates of the baker's yeast S. cerevisiae and its closest relative, Saccharomyces paradoxus. We examine variation in gene content, single nucleotide polymorphisms, nucleotide insertions and deletions, copy numbers and transposable elements. We find that phenotypic variation broadly correlates with global genome-wide phylogenetic relationships. S. paradoxus populations are well delineated along geographic boundaries, whereas the variation among worldwide S. cerevisiae isolates shows less differentiation and is comparable to a single S. paradoxus population. Rather than one or two domestication events leading to the extant baker's yeasts, the population structure of S. cerevisiae consists of a few well-defined, geographically isolated lineages and many different mosaics of these lineages, supporting the idea that human influence provided the opportunity for cross-breeding and production of new combinations of pre-existing variations.</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>SGRP</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_ATTRIBUTES>
+      <STUDY_ATTRIBUTE>
+        <TAG>PUBMED_ID</TAG>
+        <VALUE>19212322</VALUE>
+      </STUDY_ATTRIBUTE>
+    </STUDY_ATTRIBUTES>
+  </STUDY>
+</STUDY_SET>

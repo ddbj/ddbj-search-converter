@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000161" broker_name="DRA" center_name="NIG" alias="DRP000161">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDA47137</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>small RNAs associated with MEL1</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Transcriptome Analysis"/>
+            <STUDY_ABSTRACT>small RNAs associated with MEL1</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>MEL1 function of germe line cells</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJDA47137</ID>
+                        <LABEL>PRJDA47137</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>47137</ID>
+                        <LABEL>47137</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>none provided</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <URL_LINK>
+                    <LABEL>Linked publication</LABEL>
+                    <URL>http://dx.doi.org/10.1111/tpj.12483</URL>
+                </URL_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+    </STUDY>
+</STUDY_SET>

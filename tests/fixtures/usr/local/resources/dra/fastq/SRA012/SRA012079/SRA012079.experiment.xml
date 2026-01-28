@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="Maize BETC 454 sequencing" center_name="UFBPGC" accession="SRX017211">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX017211</PRIMARY_ID>
+      <SUBMITTER_ID namespace="UFBPGC">Maize BETC 454 sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Discovery of Genes Expressed In Basal Endosperm Transfer Cells in Maize Using 454 Transcriptome Sequencing</TITLE>
+    <STUDY_REF accession="SRP002025">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP002025</PRIMARY_ID>
+        <SUBMITTER_ID namespace="UFBPGC">Maize BETC 454 sequencing</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Total RNA was extracted from the isolated BETCs using the Picopure RNA isolation kit (Arcturus, Part #: KIT0204).  DNase (Qiagen, catalog#: 79254) digestion was performed as directed by the kit. RNA quality was evaluated by using an Agilent (Palo Alto, CA) 2100 Bioanalyzer. We employed the Smart Technology [38] of cDNA construction (Evrogen, Mint-Universal kit, Cat #: SK002; http://www.evrogen.com) to prepare cDNA of BETCs.  Basically, the experiment followed the directions shown in the kit manual. Briefly, the adapter pair CDS-1 (5'-AAGCAGTGGTATCAACGCAGAGTAC(T)30V N-3') (10 uM)  and PlugOligo-1 (5'-AAGCAGTGGTATCAACGCAGAGTACGGGGGP-3') (15 uM) were used for synthesis of cDNA (protocol I , Section VI of the the kit manual). Reverse transcription was carried out on 1 ug total RNA of BETCs. 1 ug total RNA and 1 ul of each CDS-1 and PlugOligo-1 were mixed in 5 ul final volume adjusted by water.  The mix was incubated at 70 degrees C for 2 min and then 42 degrees C for 3 min.  First-strand cDNA synthesis was then initiated by the addition of RT Master Mix (First-Strand Buffer, DTT, dNTP, Mint reverse transcriptase) in a final volume of 10 ul.  The final concentration included: 1X First-Strand Buffer, 2 mM DTT, 1 mM of each dNTP.  The mixed solution was incubated at 42 degrees C for 30 min and again for 1.5 hr after addition of 5 ul IP-solution and then cooled on ice.  1 ul first-strand cDNA was taken to perform ds cDNA synthesis in a final volume of 50 ul, which contains 1X Encyclo PCR Buffer, 0.2 mM of each dNTP, 0.4 uM PCR Primer M1 (5'-AAGCAGTGGTATCAACGCAGAGT-3'), 1X Encyclo Polymerase Mix. We performed 21 cycles with the parameters 95 degrees C for 15 sec, 66 degrees C for 20 sec, and 72 degrees C for 3 min for ds cDNA synthesis by PCR amplification. Amplified cDNA PCR product was purified using QIAquick PCR Purification Kit (QIAGEN, CA), and the final concentration is 55 ng/ul</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS011756">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS011756</PRIMARY_ID>
+          <SUBMITTER_ID namespace="UFBPGC">Maize W22 BETC</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>W22BETC12DAP</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>FL-cDNA</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>unspecified</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>5</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

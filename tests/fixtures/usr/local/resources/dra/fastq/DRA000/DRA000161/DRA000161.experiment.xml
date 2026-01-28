@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EXPERIMENT_SET>
+    <EXPERIMENT accession="DRX000196" broker_name="DRA" center_name="NIG" alias="DRX000196">
+        <TITLE>RNA-IP in WT</TITLE>
+        <STUDY_REF accession="DRP000161" refcenter="NIG" refname="DRP000161">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA47137</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>none provided</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000202" refcenter="NIG" refname="DRS000202">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012940</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>RNA-IP in WT</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CLONE</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>none provided</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>51</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer II</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>Solexa primary analysis</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000197" broker_name="DRA" center_name="NIG" alias="DRX000197">
+        <TITLE>RNA-IP in mel1</TITLE>
+        <STUDY_REF accession="DRP000161" refcenter="NIG" refname="DRP000161">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA47137</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>none provided</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000202" refcenter="NIG" refname="DRS000202">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012940</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>RNA-IP in mel1</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CLONE</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>none provided</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>51</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer II</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>Solexa primary analysis</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000198" broker_name="DRA" center_name="NIG" alias="DRX000198">
+        <TITLE>small RNAs in WT</TITLE>
+        <STUDY_REF accession="DRP000161" refcenter="NIG" refname="DRP000161">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA47137</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>none provided</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000202" refcenter="NIG" refname="DRS000202">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012940</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>small RNAs in WT</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CLONE</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>none provided</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>51</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer II</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>Solexa primary analysis</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000199" broker_name="DRA" center_name="NIG" alias="DRX000199">
+        <TITLE>small RNAs in mel1</TITLE>
+        <STUDY_REF accession="DRP000161" refcenter="NIG" refname="DRP000161">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA47137</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>none provided</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000202" refcenter="NIG" refname="DRS000202">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012940</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>small RNAs in mel1</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>CLONE</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>none provided</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>51</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer II</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>Solexa primary analysis</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+</EXPERIMENT_SET>

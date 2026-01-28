@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY center_name="AU-DJF" alias="454 pig HeaLdo" accession="SRP000532">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP000532</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject" label="primary">PRJNA79405</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="AU-DJF">454 pig HeaLdo</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Sus scrofa transcriptome study</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Other"/>
+      <STUDY_ABSTRACT>BACKGROUND:    The recent development within high-throughput technologies for expression profiling has allowed for parallel analysis of transcriptomes and proteomes in biological systems such as comparative analysis of transcript and protein levels of tissue regulated genes. Until now, such studies of have only included microarray or short length sequence tags for transcript profiling. Furthermore, most comparisons of transcript and protein levels have been based on absolute expression values from within the same tissue and not relative expression values based on tissue ratios.  RESULTS:    Presented here is a novel study of two porcine tissues based on integrative analysis of data from expression profiling of identical samples using cDNA microarray, 454-sequencing and iTRAQ-based proteomics. Sequence homology identified 2.541 unique transcripts that are detectable by both microarray hybridizations and 454-sequencing of 1.2 million cDNA tags. Both transcript-based technologies showed high reproducibility between sample replicates of the same tissue, but the correlation across these two technologies was modest. Thousands of genes being differentially expressed were identified with microarray. Out of the 306 differentially expressed genes, identified by 454-sequencing, 198 (65%) were also found by microarray. The relationship between the regulation of transcript and protein levels was analyzed by integrating iTRAQ-based proteomics data. Protein expression ratios were determined for 354 genes, of which 148 could be mapped to both microarray and 454-sequencing data. A comparison of the expression ratios from the three technologies revealed that differences in transcript and protein levels across heart and muscle tissues are positively correlated.  CONCLUSION:    We show that the reproducibility within cDNA microarray and 454-sequencing is high, but that the agreement across these two technologies is modest. We demonstrate that the regulation of transcript and protein levels across identical tissue samples is positively correlated when the tissue expression ratios are used for comparison. The results presented are of interest in systems biology research in terms of integration and analysis of high-throughput expression data from mammalian tissues.</STUDY_ABSTRACT>
+      <CENTER_PROJECT_NAME>Sus scrofa</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>
+    <STUDY_LINKS>
+      <STUDY_LINK>
+        <XREF_LINK>
+          <DB>pubmed</DB>
+          <ID>19152685</ID>
+        </XREF_LINK>
+      </STUDY_LINK>
+    </STUDY_LINKS>
+  </STUDY>
+</STUDY_SET>

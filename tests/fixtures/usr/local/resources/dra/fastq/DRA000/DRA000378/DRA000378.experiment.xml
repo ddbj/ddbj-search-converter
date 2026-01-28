@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EXPERIMENT_SET>
+    <EXPERIMENT alias="DRX000633" center_name="UT-METAB" accession="DRX000633">
+        <TITLE>Mapping of Open Chromatin in Fibroblasts by FAIRE-seq (3T3-L1 day 0)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of open chromatin sites in 3T3-L1 adipocytes (on day 0 of differentiation) using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq).
+source:3T3-L1 cells, day 0 of differentiation. BioProject of this experiment was changed from PRJDB2467 to PRJDB2466.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000643" refcenter="UT-METAB" accession="DRS000643">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012135</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_FAIRE_3T3L1_day0_FAIRE-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>FAIRE experiments were performed based on a protocol published by Giresi PG, Lieb JD et al [Methods 2009;48:233-239.]. 
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX000634" center_name="UT-METAB" accession="DRX000634">
+        <TITLE>Mapping of Open Chromatin in Adipocytes by FAIRE-seq (3T3-L1 day 8)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of open chromatin sites in 3T3-L1 adipocytes (on day 8 of differentiation) using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq).
+source:3T3-L1 cells, day 8 of differentiation. BioProject of this experiment was changed from PRJDB2467 to PRJDB2466.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000644" refcenter="UT-METAB" accession="DRS000644">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012134</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_FAIRE_3T3L1_day8_FAIRE-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>FAIRE experiments were performed based on a protocol published by Giresi PG, Lieb JD et al [Methods 2009;48:233-239.]. 
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX000635" center_name="UT-METAB" accession="DRX000635">
+        <TITLE>Mapping of Open Chromatin in Fibroblasts by FAIRE-seq (NIH-3T3)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of open chromatin sites in NIH-3T3 fibroblasts using formaldehyde-assisted isolation of regulatory elements coupled with high-throughput sequencing (FAIRE-seq).
+source:NIH-3T3 cells. BioProject of this experiment was changed from PRJDB2467 to PRJDB2466.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000645" refcenter="UT-METAB" accession="DRS000645">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012133</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_FAIRE_NIH3T3_FAIRE-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>FAIRE experiments were performed based on a protocol published by Giresi PG, Lieb JD et al [Methods 2009;48:233-239.]. 
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX000636" center_name="UT-METAB" accession="DRX000636">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 36h)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of PPARg binding sites in 3T3-L1 adipocytes (on 36 hours of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, 36h of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000646" refcenter="UT-METAB" accession="DRS000646">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012136</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_PPARg_3T3L1_36h_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP &amp; Generation of characterization of antibodies for human PPARg and human RXRa was performed as descried previously [Wakabayashi K et al. , 2009, Mol Cell Biol 29:3544-3555]. For ChIP using anti-PPARg, RXRa antibodies, 3T3-L1 cells were cross-linked with 1% formaldehyde for ten minutes at room temperature and were prepared for ChIP as described previously.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX000637" center_name="UT-METAB" accession="DRX000637">
+        <TITLE>Genome-wide profiling of PPARg in Adipocytes (3T3-L1 day 8)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of PPARg binding sites in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000647" refcenter="UT-METAB" accession="DRS000647">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012138</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_PPARg_3T3L1_day8_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP &amp; Generation of characterization of antibodies for human PPARg and human RXRa was performed as descried previously [Wakabayashi K et al. , 2009, Mol Cell Biol 29:3544-3555]. For ChIP using anti-PPARg, RXRa antibodies, 3T3-L1 cells were cross-linked with 1% formaldehyde for ten minutes at room temperature and were prepared for ChIP as described previously.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX000638" center_name="UT-METAB" accession="DRX000638">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 36h)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of RXRa binding sites in 3T3-L1 adipocytes (on 36 hours of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, 36h of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000646" refcenter="UT-METAB" accession="DRS000646">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012136</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_RXRa_3T3L1_36h_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP &amp; Generation of characterization of antibodies for human PPARg and human RXRa was performed as descried previously [Wakabayashi K et al. , 2009, Mol Cell Biol 29:3544-3555]. For ChIP using anti-PPARg, RXRa antibodies, 3T3-L1 cells were cross-linked with 1% formaldehyde for ten minutes at room temperature and were prepared for ChIP as described previously.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX000639" center_name="UT-METAB" accession="DRX000639">
+        <TITLE>Genome-wide profiling of RXRa in Adipocytes (3T3-L1 day 8)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of RXRa binding sites in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000647" refcenter="UT-METAB" accession="DRS000647">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012138</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_RXRa_3T3L1_day8_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP &amp; Generation of characterization of antibodies for human PPARg and human RXRa was performed as descried previously [Wakabayashi K et al. , 2009, Mol Cell Biol 29:3544-3555]. For ChIP using anti-PPARg, RXRa antibodies, 3T3-L1 cells were cross-linked with 1% formaldehyde for ten minutes at room temperature and were prepared for ChIP as described previously.
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline-1.4.0</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX001328" center_name="UT-METAB" accession="DRX001328">
+        <TITLE>Genome-wide profiling of CTCF in Adipocytes (3T3-L1 0d)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of CTCF binding sites in 3T3-L1 adipocytes (on day 0 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 0 of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS001284" refcenter="UT-METAB" accession="DRS001284">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012137</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_CTCF_3T3L1_day0_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP
+antibody:anti-CTCF from Upstate (#07-729)
+For ChIP using anti-CTCF antibodies, 3T3-L1 cells were cross-linked with 1% formaldehyde for ten minutes at room temperature and were prepared for ChIP as described previously.[Wakabayashi K et al. Mol Cell Biol 29:3544-3555, 2009.].  
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION section_name="NIL">
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline</PROGRAM>
+                    <VERSION>1.4.0</VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX001329" center_name="UT-METAB" accession="DRX001329">
+        <TITLE>Genome-wide profiling of CTCF in Adipocytes (3T3-L1 8d)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of CTCF binding sites in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000647" refcenter="UT-METAB" accession="DRS000647">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012138</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_CTCF_3T3L1_day8_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP
+antibody:anti-CTCF from Upstate (#07-729)
+For ChIP using anti-CTCF antibodies, 3T3-L1 cells were cross-linked with 1% formaldehyde for ten minutes at room temperature and were prepared for ChIP as described previously.[Wakabayashi K et al. Mol Cell Biol 29:3544-3555, 2009.].  
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION section_name="NIL">
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline</PROGRAM>
+                    <VERSION>1.4.0</VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX001330" center_name="UT-METAB" accession="DRX001330">
+        <TITLE>Genome-wide profiling of H3K4me3 in Adipocytes (3T3-L1 0d)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of H3K4me3 in 3T3-L1 adipocytes (on day 0 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 0 of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS001284" refcenter="UT-METAB" accession="DRS001284">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012137</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_H3K4me3_3T3L1_day0_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP
+antibody:Rabbit polyclonal anti-histone H3 trimethyl K4 (ab8580) from Abcam
+For ChIP using anti-H3K4me3 antibody, the nuclei of 3T3-L1 cells were prepared by centrifugation through a sucrose gradient and were digested with MNase (TaKaRa). After centrifugation, the supernatant was used for ChIP as described previously.[Wakabayashi K et al. Mol Cell Biol 29:3544-3555, 2009.].  
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION section_name="NIL">
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline</PROGRAM>
+                    <VERSION>1.4.0</VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT alias="DRX001331" center_name="UT-METAB" accession="DRX001331">
+        <TITLE>Genome-wide profiling of H3K4me3 in Adipocytes (3T3-L1 8d)</TITLE>
+        <STUDY_REF refname="DRP000383" refcenter="UT-METAB" accession="DRP000383">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2466</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>Genome-wide maps of H3K4me3 in 3T3-L1 adipocytes (on day 8 of differentiation) using ChIP with high-throughput sequencing (ChIP-seq).
+source:3T3-L1 cells, day 8 of differentiation.</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR refname="DRS000647" refcenter="UT-METAB" accession="DRS000647">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00012138</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>HW_H3K4me3_3T3L1_day8_ChIP-seq</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>ChIP-Seq</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>ChIP</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>extraction_protocol:ChIP
+antibody:Rabbit polyclonal anti-histone H3 trimethyl K4 (ab8580) from Abcam
+For ChIP using anti-H3K4me3 antibody, the nuclei of 3T3-L1 cells were prepared by centrifugation through a sucrose gradient and were digested with MNase (TaKaRa). After centrifugation, the supernatant was used for ChIP as described previously.[Wakabayashi K et al. Mol Cell Biol 29:3544-3555, 2009.].  
+High-throughput sequencing was performed by using the Genome Analyzer System (GA II) (Illumina) as recommended by the manufacturer.</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <SPOT_LENGTH>36</SPOT_LENGTH>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <ILLUMINA>
+                <INSTRUMENT_MODEL>Illumina Genome Analyzer IIx</INSTRUMENT_MODEL>
+            </ILLUMINA>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION section_name="NIL">
+                    <STEP_INDEX>1</STEP_INDEX>
+                    <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+                    <PROGRAM>GAPipeline</PROGRAM>
+                    <VERSION>1.4.0</VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+</EXPERIMENT_SET>

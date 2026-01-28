@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000095" center_name="NIID" alias="DRS000095">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00013807</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>DRS000095</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>709531</TAXON_ID>
+            <SCIENTIFIC_NAME>Streptococcus salivarius HT9R</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>HT9R strain</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>strain</TAG>
+                <VALUE>HT9R</VALUE>
+                <UNITS></UNITS>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

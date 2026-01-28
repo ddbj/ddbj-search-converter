@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000072" center_name="NIID" alias="DRP000072">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJDA43375</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Whole genome analysis of Streptococcus salivarius</STUDY_TITLE>
+            <STUDY_TYPE new_study_type="" existing_study_type="Whole Genome Sequencing"/>
+            <STUDY_ABSTRACT>Whole genome analysis of Streptococcus salivarius</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>Whole genome analysis of Streptococcus salivarius</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJDA43375</ID>
+                        <LABEL>PRJDA43375</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>43375</ID>
+                        <LABEL>43375</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>Whole genome analysis of Streptococcus salivarius</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+    </STUDY>
+</STUDY_SET>

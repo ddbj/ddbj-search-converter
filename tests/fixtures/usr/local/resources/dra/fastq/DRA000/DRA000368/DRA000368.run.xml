@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET>
+    <RUN run_date="2010-06-14T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000945" center_name="RIKEN_OSC" accession="DRR000945">
+        <EXPERIMENT_REF refname="DRX000595" refcenter="RIKEN_OSC" accession="DRX000595"/>
+    </RUN>
+    <RUN run_date="2010-06-14T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000946" center_name="RIKEN_OSC" accession="DRR000946">
+        <EXPERIMENT_REF refname="DRX000596" refcenter="RIKEN_OSC" accession="DRX000596"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000948" center_name="RIKEN_OSC" accession="DRR000948">
+        <EXPERIMENT_REF refname="DRX000598" refcenter="RIKEN_OSC" accession="DRX000598"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000949" center_name="RIKEN_OSC" accession="DRR000949">
+        <EXPERIMENT_REF refname="DRX000599" refcenter="RIKEN_OSC" accession="DRX000599"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000950" center_name="RIKEN_OSC" accession="DRR000950">
+        <EXPERIMENT_REF refname="DRX000600" refcenter="RIKEN_OSC" accession="DRX000600"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000951" center_name="RIKEN_OSC" accession="DRR000951">
+        <EXPERIMENT_REF refname="DRX000601" refcenter="RIKEN_OSC" accession="DRX000601"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000952" center_name="RIKEN_OSC" accession="DRR000952">
+        <EXPERIMENT_REF refname="DRX000602" refcenter="RIKEN_OSC" accession="DRX000602"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000953" center_name="RIKEN_OSC" accession="DRR000953">
+        <EXPERIMENT_REF refname="DRX000603" refcenter="RIKEN_OSC" accession="DRX000603"/>
+    </RUN>
+    <RUN run_date="2010-05-27T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000954" center_name="RIKEN_OSC" accession="DRR000954">
+        <EXPERIMENT_REF refname="DRX000604" refcenter="RIKEN_OSC" accession="DRX000604"/>
+    </RUN>
+    <RUN run_date="2010-06-14T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000955" center_name="RIKEN_OSC" accession="DRR000955">
+        <EXPERIMENT_REF refname="DRX000605" refcenter="RIKEN_OSC" accession="DRX000605"/>
+    </RUN>
+    <RUN run_date="2010-06-14T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000956" center_name="RIKEN_OSC" accession="DRR000956">
+        <EXPERIMENT_REF refname="DRX000606" refcenter="RIKEN_OSC" accession="DRX000606"/>
+    </RUN>
+    <RUN run_date="2010-06-14T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000957" center_name="RIKEN_OSC" accession="DRR000957">
+        <EXPERIMENT_REF refname="DRX000607" refcenter="RIKEN_OSC" accession="DRX000607"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000958" center_name="RIKEN_OSC" accession="DRR000958">
+        <EXPERIMENT_REF refname="DRX000608" refcenter="RIKEN_OSC" accession="DRX000608"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000959" center_name="RIKEN_OSC" accession="DRR000959">
+        <EXPERIMENT_REF refname="DRX000609" refcenter="RIKEN_OSC" accession="DRX000609"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000960" center_name="RIKEN_OSC" accession="DRR000960">
+        <EXPERIMENT_REF refname="DRX000610" refcenter="RIKEN_OSC" accession="DRX000610"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000961" center_name="RIKEN_OSC" accession="DRR000961">
+        <EXPERIMENT_REF refname="DRX000611" refcenter="RIKEN_OSC" accession="DRX000611"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000962" center_name="RIKEN_OSC" accession="DRR000962">
+        <EXPERIMENT_REF refname="DRX000612" refcenter="RIKEN_OSC" accession="DRX000612"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000963" center_name="RIKEN_OSC" accession="DRR000963">
+        <EXPERIMENT_REF refname="DRX000613" refcenter="RIKEN_OSC" accession="DRX000613"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000964" center_name="RIKEN_OSC" accession="DRR000964">
+        <EXPERIMENT_REF refname="DRX000614" refcenter="RIKEN_OSC" accession="DRX000614"/>
+    </RUN>
+    <RUN run_date="2010-12-02T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR000965" center_name="RIKEN_OSC" accession="DRR000965">
+        <EXPERIMENT_REF refname="DRX000615" refcenter="RIKEN_OSC" accession="DRX000615"/>
+    </RUN>
+    <RUN run_date="2010-06-14T00:00:00+09:00" run_center="RIKEN_OSC" alias="DRR002075" center_name="RIKEN_OSC" accession="DRR002075">
+        <EXPERIMENT_REF refname="DRX000597" refcenter="RIKEN_OSC" accession="DRX000597"/>
+    </RUN>
+</RUN_SET>

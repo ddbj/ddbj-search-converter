@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT accession="ERX000013" alias="sal-sc-AKU_12601-Salmonella_enterica_serovar_Paratyphi_A-1" center_name="SC">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERX000013</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">sal-sc-AKU_12601-Salmonella_enterica_serovar_Paratyphi_A-1</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE/>
+    <STUDY_REF accession="ERP000002" refname="Salmonella enterica serovar Paratyphi A whole genome sequence" refcenter="SC">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERP000002</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">Salmonella enterica serovar Paratyphi A whole genome sequence</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Solexa sequencing of Human HapMap individual AKU_12601 random 200 bp library</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="ERS000013" refname="Salmonella enterica subsp. enterica serovar Paratyphi A str. AKU_12601 whole genome" refcenter="SC">
+        <IDENTIFIERS>
+          <PRIMARY_ID>ERS000013</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">Salmonella enterica subsp. enterica serovar Paratyphi A str. AKU_12601 whole genome</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>sal-sc-AKU_12601-Salmonella_enterica_serovar_Paratyphi_A-1</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Standard Solexa protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <SPOT_LENGTH>36</SPOT_LENGTH>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>center_name</TAG>
+        <VALUE>SC</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>expected_number_bases</TAG>
+        <VALUE>7200</VALUE>
+        <UNITS>MB</UNITS>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

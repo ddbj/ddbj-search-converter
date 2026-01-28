@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT alias="WBC cDNA Illumina" center_name="USDA-ARS" accession="SRX017236">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRX017236</PRIMARY_ID>
+      <SUBMITTER_ID namespace="USDA-ARS">WBC cDNA Illumina</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Striacosta albicosta adult male normalized cDNA</TITLE>
+    <STUDY_REF accession="SRP002038">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRP002038</PRIMARY_ID>
+        <SUBMITTER_ID namespace="USDA-ARS">WBC transcriptome sequencing</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </STUDY_REF>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Total RNA was extracted using TRIzol reagent (Invitrogen), from which mRNA was purified using a Poly(A)Purist kit (Ambion). Normalized cDNA was prepared using MINT and TRIMMER kits (Evrogen). The sequencing library was prepared using an Illumina Genomic DNA Sample Prep kit, following the standard protocol.</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR accession="SRS011787">
+        <IDENTIFIERS>
+          <PRIMARY_ID>SRS011787</PRIMARY_ID>
+          <SUBMITTER_ID namespace="USDA-ARS">Pooled male WCR</SUBMITTER_ID>
+        </IDENTIFIERS>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>WBC-cDNA</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>EST</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <BASE_COORD>1</BASE_COORD>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina Genome Analyzer</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+    <PROCESSING/>
+  </EXPERIMENT>
+</EXPERIMENT_SET>

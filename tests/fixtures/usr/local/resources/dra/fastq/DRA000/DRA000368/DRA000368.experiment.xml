@@ -1,0 +1,1200 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EXPERIMENT_SET>
+    <EXPERIMENT accession="DRX000595" center_name="RIKEN_OSC" alias="DRX000595">
+        <TITLE>HeLa.Std.5000ng.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>HeLa total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000624" refcenter="RIKEN_OSC" refname="DRS000624">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009391</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10338</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>HeLa total RNA profiles with standard HeliScopeCAGE protocol (5ug start)</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000596" center_name="RIKEN_OSC" alias="DRX000596">
+        <TITLE>HeLa.Std.5000ng.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>HeLa total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000624" refcenter="RIKEN_OSC" refname="DRS000624">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009391</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10346</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>HeLa total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000597" center_name="RIKEN_OSC" alias="DRX000597">
+        <TITLE>HeLa.Std.5000ng.3rd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>HeLa total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 3</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000624" refcenter="RIKEN_OSC" refname="DRS000624">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009391</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10354</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>HeLa total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 3</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000598" center_name="RIKEN_OSC" alias="DRX000598">
+        <TITLE>THP1.LqDynal.1000ng.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (1000ng start), replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10378</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (1000ng start), replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000599" center_name="RIKEN_OSC" alias="DRX000599">
+        <TITLE>THP1.LqDynal.1000ng.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (1000ng start), replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10379</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (1000ng start), replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000600" center_name="RIKEN_OSC" alias="DRX000600">
+        <TITLE>THP1.LqDynal.100ng.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (100ng start), replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10386</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (100ng start), replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000601" center_name="RIKEN_OSC" alias="DRX000601">
+        <TITLE>THP1.LqDynal.200ng.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (200ng start), replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10383</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (200ng start), replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000602" center_name="RIKEN_OSC" alias="DRX000602">
+        <TITLE>THP1.LqDynal.200ng.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (200ng start), replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10384</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (200ng start), replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000603" center_name="RIKEN_OSC" alias="DRX000603">
+        <TITLE>THP1.LqDynal.500ng.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (500ng start), replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10380</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (500ng start), replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000604" center_name="RIKEN_OSC" alias="DRX000604">
+        <TITLE>THP1.LqDynal.500ng.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (500ng start), replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10381</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with low quantity version of HeliScopeCAGE protocol (500ng start), replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000605" center_name="RIKEN_OSC" alias="DRX000605">
+        <TITLE>THP1.Std.5000ng.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10333</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000606" center_name="RIKEN_OSC" alias="DRX000606">
+        <TITLE>THP1.Std.5000ng.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10341</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000607" center_name="RIKEN_OSC" alias="DRX000607">
+        <TITLE>THP1.Std.5000ng.3rd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 3</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs10349</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 3</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000608" center_name="RIKEN_OSC" alias="DRX000608">
+        <TITLE>THP1.ActinomycinD_conc1.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.1 mg/mL) addition at RT reaction step. replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11665</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.1 mg/mL) addition at RT reaction step. replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000609" center_name="RIKEN_OSC" alias="DRX000609">
+        <TITLE>THP1.ActinomycinD_conc1.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.1 mg/mL) addition at RT reaction step. replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11666</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.1 mg/mL) addition at RT reaction step. replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000610" center_name="RIKEN_OSC" alias="DRX000610">
+        <TITLE>THP1.ActinomycinD_conc2.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.2 mg/mL) addition at RT reaction step. replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11667</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.2 mg/mL) addition at RT reaction step. replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000611" center_name="RIKEN_OSC" alias="DRX000611">
+        <TITLE>THP1.ActinomycinD_conc2.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.2 mg/mL) addition at RT reaction step. replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11669</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.2 mg/mL) addition at RT reaction step. replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000612" center_name="RIKEN_OSC" alias="DRX000612">
+        <TITLE>THP1.ActinomycinD_conc3.1st</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.4 mg/mL) addition at RT reaction step. replicate 1</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11670</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.4 mg/mL) addition at RT reaction step. replicate 1</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000613" center_name="RIKEN_OSC" alias="DRX000613">
+        <TITLE>THP1.ActinomycinD_conc3.2nd</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.4 mg/mL) addition at RT reaction step. replicate 2</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11674</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), except for Actinomycin D (0.4 mg/mL) addition at RT reaction step. replicate 2</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000614" center_name="RIKEN_OSC" alias="DRX000614">
+        <TITLE>THP1.Std.5000ng.4th</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 4</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11678</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 4</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+    <EXPERIMENT accession="DRX000615" center_name="RIKEN_OSC" alias="DRX000615">
+        <TITLE>THP1.Std.5000ng.5th</TITLE>
+        <STUDY_REF accession="DRP000372" refcenter="RIKEN_OSC" refname="DRP000372">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDB2229</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESIGN>
+            <DESIGN_DESCRIPTION>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 5</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR accession="DRS000625" refcenter="RIKEN_OSC" refname="DRS000625">
+                <IDENTIFIERS>
+                    <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+                </IDENTIFIERS>
+            </SAMPLE_DESCRIPTOR>
+            <LIBRARY_DESCRIPTOR>
+                <LIBRARY_NAME>CNhs11679</LIBRARY_NAME>
+                <LIBRARY_STRATEGY>OTHER</LIBRARY_STRATEGY>
+                <LIBRARY_SOURCE>TRANSCRIPTOMIC</LIBRARY_SOURCE>
+                <LIBRARY_SELECTION>CAGE</LIBRARY_SELECTION>
+                <LIBRARY_LAYOUT>
+                    <SINGLE/>
+                </LIBRARY_LAYOUT>
+                <LIBRARY_CONSTRUCTION_PROTOCOL>THP-1 total RNA profiles with standard HeliScopeCAGE protocol (5ug start), replicate 5</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+                <SPOT_DECODE_SPEC>
+                    <READ_SPEC>
+                        <READ_INDEX>0</READ_INDEX>
+                        <READ_CLASS>Application Read</READ_CLASS>
+                        <READ_TYPE>Forward</READ_TYPE>
+                        <BASE_COORD>1</BASE_COORD>
+                    </READ_SPEC>
+                </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+        </DESIGN>
+        <PLATFORM>
+            <HELICOS>
+                <INSTRUMENT_MODEL>Helicos HeliScope</INSTRUMENT_MODEL>
+            </HELICOS>
+        </PLATFORM>
+        <PROCESSING>
+            <PIPELINE>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>Helicos Basecaller</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+                <PIPE_SECTION>
+                    <STEP_INDEX></STEP_INDEX>
+                    <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                    <PROGRAM>none</PROGRAM>
+                    <VERSION></VERSION>
+                </PIPE_SECTION>
+            </PIPELINE>
+        </PROCESSING>
+    </EXPERIMENT>
+</EXPERIMENT_SET>

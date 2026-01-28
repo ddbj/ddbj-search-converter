@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="Liverpool School of" alias="Anopheles funestus from field Kela (Mali) and FUMOZ-R (a lab pyrethroid resistant strain)" accession="SRS003493">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS003493</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00002682</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Anopheles funestus</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>62324</TAXON_ID>
+      <SCIENTIFIC_NAME>Anopheles funestus</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Total RNA was extracted from different life-stages of two strains of An. funestus, FUMOZ-R a laboratory strain resistant to pyrethroids and a field collected pyrethroid susceptible sample from Kela, a village in Mali.</DESCRIPTION>
+  </SAMPLE>
+</SAMPLE_SET>

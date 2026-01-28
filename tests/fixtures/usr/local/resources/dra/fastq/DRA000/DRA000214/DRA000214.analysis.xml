@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ANALYSIS_SET>
+    <ANALYSIS accession="DRZ000005" broker_name="DRA" center_name="NIES" alias="DRZ000005" analysis_center="NIES">
+        <TITLE>Partial mRNA sequences</TITLE>
+        <STUDY_REF accession="PRJDA50791" refname="PRJDA50791">
+            <IDENTIFIERS>
+                <PRIMARY_ID label="BioProject ID">PRJDA50791</PRIMARY_ID>
+            </IDENTIFIERS>
+        </STUDY_REF>
+        <DESCRIPTION>Partial mRNA sequences obtained by assembling cDNA reads generated via 454 pyrosequencing. We used the Paracel TranscriptAssemblerTM Version 2.6 software (Paracel) for the filtering, clustering and assembling of the 454 reads.
+In the filtering process, (i) poly A/T sequences detected in 5?- and 3?-ends of the cDNA reads by the HASTE algorithm and (ii) repetitive sequences detected by the DUST algorithm were marked not to be used in the clustering process.  Terminal sequences with low quality values, the adaptor sequences, and short sequences of less than 50 bases were removed.  The parameters used in the filtering process were as following: ATAIL (PolyDist=30, Threshold=8, Action=annot); DUST (Threshold=22, Action=annot); VECTOR (Reference file=SMART adaptor sequence, Threshold=20); QUALCLEAN (Threshold=15); MINLEN (Threshold=50).
+In the clustering process, the filtered sequences were grouped into clusters locally sharing common sequences detected by one-to-one comparisons.  The parameters used in the clustering process were as following: compare_matrix=dna.p1m6.l.mat, WordLen=12, cluster_threshold=50.
+The sequences within each cluster were subjected to the assembling procedure to retrieve non-redundant sequences based on global similarity detected by the CAP4 algorithm.  The parameters used in the assembling process were as following: InOverfhand=30, EndOverhang=30, ClipQual=10, QualSumLim=300, PenalizeN=0, IgnorePolyMaskChars=on, KeepDups=on.
+</DESCRIPTION>
+        <ANALYSIS_TYPE>
+            <ABUNDANCE_MEASUREMENT>
+                <PROCESSING>
+                    <PIPELINE>
+                        <PIPE_SECTION>
+                            <STEP_INDEX></STEP_INDEX>
+                            <PREV_STEP_INDEX></PREV_STEP_INDEX>
+                            <PROGRAM></PROGRAM>
+                            <VERSION></VERSION>
+                        </PIPE_SECTION>
+                    </PIPELINE>
+                </PROCESSING>
+            </ABUNDANCE_MEASUREMENT>
+        </ANALYSIS_TYPE>
+        <DATA_BLOCK>
+            <FILES>
+                <FILE checksum="5DE601D4BFCAC64928497518717C8C55" checksum_method="MD5" filetype="fasta" filename="BOT88-2.fasta"/>
+            </FILES>
+        </DATA_BLOCK>
+    </ANALYSIS>
+</ANALYSIS_SET>

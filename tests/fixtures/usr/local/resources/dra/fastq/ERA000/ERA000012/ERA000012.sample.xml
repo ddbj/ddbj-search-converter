@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE alias="SAMEA712817" accession="ERS000013">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS000013</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA712817</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <SAMPLE_NAME>
+      <TAXON_ID>554290</TAXON_ID>
+      <SCIENTIFIC_NAME>Salmonella enterica subsp. enterica serovar Paratyphi A str. AKU_12601</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>Genomic DNA from Salmonella enterica serovar Paratyphi A strain AKU12601, isolated from a paratyphoid patient in Karachi, Pakistan, 2002. The data includes sequence from an IncHI1 multidrug-resistance IncHI1 plasmid present in the strain (pAKU_1), along with the chromosomal sequence. This strain (chromosome and plasmid) has also been capillary sequenced and finished at the Sanger Institute (EMBL:FM200053, EMBL:AM412236).</DESCRIPTION>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26T10:43:11Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-03-09T09:52:14Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>External Id</TAG>
+        <VALUE>SAMEA712817</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC center name</TAG>
+        <VALUE>SC</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC first public</TAG>
+        <VALUE>2010-02-26T10:43:11Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC last update</TAG>
+        <VALUE>2018-03-09T09:52:14Z</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>INSDC status</TAG>
+        <VALUE>public</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Submitter Id</TAG>
+        <VALUE>Salmonella enterica subsp. enterica serovar Paratyphi A str. AKU_12601 whole genome</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sample name</TAG>
+        <VALUE>Salmonella enterica subsp. enterica serovar Paratyphi A str. AKU_12601 whole genome</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>scientific_name</TAG>
+        <VALUE>Salmonella enterica subsp. enterica serovar Paratyphi A str. AKU_12601</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>AKU12601</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>serovar</TAG>
+        <VALUE>Paratyphi A</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sub_species</TAG>
+        <VALUE>enterica</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>

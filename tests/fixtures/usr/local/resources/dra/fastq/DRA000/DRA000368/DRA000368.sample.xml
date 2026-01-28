@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000624" center_name="RIKEN_OSC" alias="DRS000624">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00009391</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>HeLa total RNA</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>9606</TAXON_ID>
+            <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>total RNA prepared from HeLa cells</DESCRIPTION>
+    </SAMPLE>
+    <SAMPLE accession="DRS000625" center_name="RIKEN_OSC" alias="DRS000625">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00009392</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>THP-1 total RNA</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>9606</TAXON_ID>
+            <SCIENTIFIC_NAME>Homo sapiens</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>total RNA prepared from THP-1 cells</DESCRIPTION>
+    </SAMPLE>
+</SAMPLE_SET>

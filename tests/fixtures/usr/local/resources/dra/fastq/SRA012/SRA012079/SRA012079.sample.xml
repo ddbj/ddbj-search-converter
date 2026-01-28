@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="UFBPGC" alias="Maize W22 BETC" accession="SRS011756">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS011756</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00009461</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>Generic sample from Zea mays</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>4577</TAXON_ID>
+      <SCIENTIFIC_NAME>Zea mays</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+  </SAMPLE>
+</SAMPLE_SET>

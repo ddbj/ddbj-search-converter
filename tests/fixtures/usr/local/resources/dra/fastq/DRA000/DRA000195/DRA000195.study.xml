@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<STUDY_SET>
+    <STUDY accession="DRP000195" broker_name="DRA" center_name="NIID" alias="DRP000195">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioProject ID">PRJNA45951</PRIMARY_ID>
+        </IDENTIFIERS>
+        <DESCRIPTOR>
+            <STUDY_TITLE>Whole genome analysis of S.Typhimurium T000240</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+            <STUDY_ABSTRACT>Whole genome analysis of Salmonella enterica serovar Typhimuriu T000240</STUDY_ABSTRACT>
+            <CENTER_PROJECT_NAME>Whole genome analysis of Salmonella enterica serovar Typhimurium T000240</CENTER_PROJECT_NAME>
+            <RELATED_STUDIES>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>bioproject</DB>
+                        <ID>PRJNA45951</ID>
+                        <LABEL>PRJNA45951</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>true</IS_PRIMARY>
+                </RELATED_STUDY>
+                <RELATED_STUDY>
+                    <RELATED_LINK>
+                        <DB>genomeprj</DB>
+                        <ID>45951</ID>
+                        <LABEL>45951</LABEL>
+                    </RELATED_LINK>
+                    <IS_PRIMARY>false</IS_PRIMARY>
+                </RELATED_STUDY>
+            </RELATED_STUDIES>
+            <STUDY_DESCRIPTION>Whole genome analysis of Salmonella enterica serovar Typhimurium T000240</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+        <STUDY_LINKS>
+            <STUDY_LINK>
+                <XREF_LINK>
+                    <DB>pubmed</DB>
+                    <ID>21098248</ID>
+                </XREF_LINK>
+            </STUDY_LINK>
+        </STUDY_LINKS>
+        <STUDY_ATTRIBUTES>
+            <STUDY_ATTRIBUTE>
+                <TAG>Project Collaborators</TAG>
+                <VALUE>Center_name = NITE; Institute = National Institute of Technology and Evaluation; Country = Japan;</VALUE>
+            </STUDY_ATTRIBUTE>
+        </STUDY_ATTRIBUTES>
+    </STUDY>
+</STUDY_SET>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SAMPLE_SET>
+    <SAMPLE accession="DRS000257" broker_name="DRA" center_name="NIID" alias="DRS000257">
+        <IDENTIFIERS>
+            <PRIMARY_ID label="BioSample ID">SAMD00000683</PRIMARY_ID>
+        </IDENTIFIERS>
+        <TITLE>T000240-genome</TITLE>
+        <SAMPLE_NAME>
+            <TAXON_ID>718274</TAXON_ID>
+            <SCIENTIFIC_NAME>Salmonella enterica subsp. enterica serovar Typhimurium str. T000240</SCIENTIFIC_NAME>
+        </SAMPLE_NAME>
+        <DESCRIPTION>Salmonella enterica subsp. enterica serovar Typhimurium str. T000240</DESCRIPTION>
+        <SAMPLE_ATTRIBUTES>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>subsp.</TAG>
+                <VALUE>enterica</VALUE>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>serovar</TAG>
+                <VALUE>Typhimurium</VALUE>
+            </SAMPLE_ATTRIBUTE>
+            <SAMPLE_ATTRIBUTE>
+                <TAG>strain</TAG>
+                <VALUE>T000240</VALUE>
+            </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>
+    </SAMPLE>
+</SAMPLE_SET>

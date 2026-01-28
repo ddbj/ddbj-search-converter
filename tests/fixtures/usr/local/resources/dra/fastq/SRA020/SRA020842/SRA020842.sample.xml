@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SAMPLE center_name="Test Institute" alias="454 test sample" accession="SRS084840">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS084840</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN00016865</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="Test Institute" label="Sample name">454 test sample</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>454 test sample</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>32644</TAXON_ID>
+      <SCIENTIFIC_NAME>unidentified</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+  </SAMPLE>
+  <SAMPLE alias="DCW2 sample" accession="SRS371587">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRS371587</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMN01773508</EXTERNAL_ID>
+    </IDENTIFIERS>
+    <TITLE>DCW2 test</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>765312</TAXON_ID>
+      <SCIENTIFIC_NAME>Saccharomyces cerevisiae A364A</SCIENTIFIC_NAME>
+    </SAMPLE_NAME>
+    <DESCRIPTION>change</DESCRIPTION>
+  </SAMPLE>
+</SAMPLE_SET>

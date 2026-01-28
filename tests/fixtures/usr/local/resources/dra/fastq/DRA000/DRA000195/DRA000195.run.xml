@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RUN_SET xmlns:ns2="SRA.annotation">
+    <RUN accession="DRR000467" broker_name="DRA" center_name="NIID" alias="DRR000467" run_center="NIID" run_date="2009-07-27T00:00:00+09:00">
+        <EXPERIMENT_REF accession="DRX000261" refcenter="NIID" refname="DRX000261"/>
+    </RUN>
+</RUN_SET>

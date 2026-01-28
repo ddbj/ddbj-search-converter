@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN accession="ERR000017" alias="IL6_554" run_center="SC" run_date="2008-04-16T00:00:00+01:00">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERR000017</PRIMARY_ID>
+      <SUBMITTER_ID namespace="SC">IL6_554</SUBMITTER_ID>
+      <SUBMITTER_ID namespace="Wellcome Sanger Institute">IL6_554</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Illumina Genome Analyzer sequencing</TITLE>
+    <EXPERIMENT_REF accession="ERX000013" refcenter="SC" refname="sal-sc-AKU_12601-Salmonella_enterica_serovar_Paratyphi_A-1">
+      <IDENTIFIERS>
+        <PRIMARY_ID>ERX000013</PRIMARY_ID>
+        <SUBMITTER_ID namespace="SC">sal-sc-AKU_12601-Salmonella_enterica_serovar_Paratyphi_A-1</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+    <RUN_ATTRIBUTES>
+      <RUN_ATTRIBUTE>
+        <TAG>actual_read_length</TAG>
+        <VALUE>36</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>run</TAG>
+        <VALUE>554</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-FIRST-PUBLIC</TAG>
+        <VALUE>2010-02-26</VALUE>
+      </RUN_ATTRIBUTE>
+      <RUN_ATTRIBUTE>
+        <TAG>ENA-LAST-UPDATE</TAG>
+        <VALUE>2018-11-16</VALUE>
+      </RUN_ATTRIBUTE>
+    </RUN_ATTRIBUTES>
+  </RUN>
+</RUN_SET>

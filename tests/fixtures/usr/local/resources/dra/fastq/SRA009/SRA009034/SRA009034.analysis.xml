@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ANALYSIS alias="Anopheles funestus transcriptome sequencing" center_name="Liverpool School of " accession="SRZ006890">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRZ006890</PRIMARY_ID>
+      <SUBMITTER_ID namespace="Liverpool School of ">Anopheles funestus transcriptome sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Anopheles funestus transcriptome sequencing</TITLE>
+    <STUDY_REF accession="SRP000923"/>
+    <DESCRIPTION/>
+    <ANALYSIS_TYPE>
+      <DE_NOVO_ASSEMBLY>
+        <PROCESSING>
+          <PIPELINE>
+            <PIPE_SECTION>
+              <STEP_INDEX>0</STEP_INDEX>
+              <PREV_STEP_INDEX>NIL</PREV_STEP_INDEX>
+              <PROGRAM>unknown</PROGRAM>
+              <VERSION>unknown</VERSION>
+            </PIPE_SECTION>
+          </PIPELINE>
+        </PROCESSING>
+      </DE_NOVO_ASSEMBLY>
+    </ANALYSIS_TYPE>
+    <TARGETS>
+      <TARGET sra_object_type="EXPERIMENT" accession="SRX006189"/>
+    </TARGETS>
+    <DATA_BLOCK>
+      <FILES>
+        <FILE checksum="c66245d68cd845d14afee7524c476b80" checksum_method="MD5" filename="SRA009034.ace" filetype="ace"/>
+      </FILES>
+    </DATA_BLOCK>
+  </ANALYSIS>
+</ANALYSIS_SET>

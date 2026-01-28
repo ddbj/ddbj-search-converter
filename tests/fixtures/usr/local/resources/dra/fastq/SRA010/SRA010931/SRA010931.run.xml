@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="427AK_2" center_name="USDA-ARS" accession="SRR037002">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR037002</PRIMARY_ID>
+      <SUBMITTER_ID namespace="USDA-ARS">427AK_2</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX017236">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX017236</PRIMARY_ID>
+        <SUBMITTER_ID namespace="USDA-ARS">WBC cDNA Illumina</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+  </RUN>
+  <RUN xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" alias="427AK_3" center_name="USDA-ARS" accession="SRR037003">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRR037003</PRIMARY_ID>
+      <SUBMITTER_ID namespace="USDA-ARS">427AK_3</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <EXPERIMENT_REF accession="SRX017236">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRX017236</PRIMARY_ID>
+        <SUBMITTER_ID namespace="USDA-ARS">WBC cDNA Illumina</SUBMITTER_ID>
+      </IDENTIFIERS>
+    </EXPERIMENT_REF>
+  </RUN>
+</RUN_SET>

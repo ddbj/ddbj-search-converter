@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="Gorilla short-read sequencing" center_name="SC" accession="ERP000004">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERP000004</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJEB1976</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SC">Gorilla short-read sequencing</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <DESCRIPTOR>
+      <STUDY_TITLE>Whole Genome Sequencing of Gorilla gorilla gorilla</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+      <CENTER_PROJECT_NAME>Whole Genome Sequencing of Gorilla gorilla gorilla</CENTER_PROJECT_NAME>
+      <STUDY_DESCRIPTION>Whole Genome Sequencing of Gorilla gorilla gorilla. This data is part of a pre-publication release. For information on the proper use of pre-publication data shared by the Wellcome Trust Sanger Institute (including details of any publication moratoria), please see http://www.sanger.ac.uk/datasharing/</STUDY_DESCRIPTION>
+    </DESCRIPTOR>
+  </STUDY>
+</STUDY_SET>
