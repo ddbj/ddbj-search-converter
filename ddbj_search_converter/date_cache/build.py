@@ -23,6 +23,7 @@ BP_QUERY = """
     SELECT s.accession, p.create_date, p.modified_date, p.release_date
     FROM mass.bioproject_summary s
     INNER JOIN mass.project p ON s.submission_id = p.submission_id
+    WHERE s.accession IS NOT NULL
 """
 
 BS_QUERY = """
@@ -34,6 +35,7 @@ BS_QUERY = """
         FROM mass.sample
         ORDER BY submission_id
     ) p ON s.submission_id = p.submission_id
+    WHERE s.accession_id IS NOT NULL
 """
 
 
