@@ -105,7 +105,7 @@ def parse_organization(project: Dict[str, Any], is_ddbj: bool, accession: str = 
         if is_ddbj:
             organization = (
                 ((project.get("Submission") or {})
-                .get("Submission") or {})
+                 .get("Submission") or {})
                 .get("Description") or {}
             ).get("Organization")
         else:
@@ -334,9 +334,9 @@ def _normalize_biosample_set_id(project: Dict[str, Any]) -> None:
     try:
         bs_set_ids = (
             ((((project.get("Project") or {})
-            .get("ProjectType") or {})
-            .get("ProjectTypeSubmission") or {})
-            .get("Target") or {})
+               .get("ProjectType") or {})
+              .get("ProjectTypeSubmission") or {})
+             .get("Target") or {})
             .get("BioSampleSet") or {}
         ).get("ID")
         if bs_set_ids is None:
@@ -454,13 +454,13 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
         distribution=[Distribution(
             type="DataDownload",
             encodingFormat="JSON",
-            contentUrl=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}.json",
+            contentUrl=f"https://ddbj.nig.ac.jp/search/entries/bioproject/{accession}.json",
         )],
         isPartOf="BioProject",
         type="bioproject",
         objectType=parse_object_type(project),
         name=None,
-        url=f"https://ddbj.nig.ac.jp/search/entry/bioproject/{accession}",
+        url=f"https://ddbj.nig.ac.jp/search/entries/bioproject/{accession}",
         organism=parse_organism(project, is_ddbj, accession),
         title=parse_title(project, accession),
         description=parse_description(project, accession),
@@ -506,8 +506,7 @@ def iterate_xml_packages(xml_path: Path) -> Iterator[bytes]:
 def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioProject]) -> None:
     """DDBJ BioProject の日付を DuckDB キャッシュから取得して設定する。"""
     from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
-        date_cache_exists, fetch_bp_dates_from_cache,
-    )
+        date_cache_exists, fetch_bp_dates_from_cache)
     if not date_cache_exists(config):
         raise RuntimeError(
             "date cache not found. Run build_bp_bs_date_cache first."
@@ -673,8 +672,7 @@ def generate_bp_jsonl(
             # DDBJ: DuckDB キャッシュから対象 accession を取得
             from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
                 date_cache_exists,
-                fetch_bp_accessions_modified_since_from_cache,
-            )
+                fetch_bp_accessions_modified_since_from_cache)
             if not date_cache_exists(config):
                 raise RuntimeError(
                     "date cache not found. Run build_bp_bs_date_cache first."

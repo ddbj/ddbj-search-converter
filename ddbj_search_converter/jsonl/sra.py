@@ -6,7 +6,8 @@ DRA (DDBJ) と NCBI SRA の XML を tar ファイルから読み込み、
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, cast
+from typing import (Any, Callable, Dict, List, Literal, Optional, Set, Tuple,
+                    cast)
 
 import xmltodict
 
@@ -36,8 +37,38 @@ XML_TYPES: List[SraXmlType] = [
     "submission", "study", "experiment", "run", "sample", "analysis"
 ]
 
+# SRA type -> entry type
+SraEntryType = Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"]
+
+SRA_TYPE_MAP: Dict[SraXmlType, SraEntryType] = {
+    "submission": "sra-submission",
+    "study": "sra-study",
+    "experiment": "sra-experiment",
+    "run": "sra-run",
+    "sample": "sra-sample",
+    "analysis": "sra-analysis",
+}
+
 
 # === Parse functions ===
+
+
+def _parse_xml(xml_bytes: bytes) -> Dict[str, Any]:
+    """XML bytes を dict にパースする。"""
+    return xmltodict.parse(
+        xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
+    )
+
+
+def _get_entries(parsed: Dict[str, Any], set_key: str, entry_key: str) -> List[Dict[str, Any]]:
+    """SET から entry のリストを取得する。"""
+    entry_set = parsed.get(set_key) or {}
+    entries = entry_set.get(entry_key)
+    if entries is None:
+        return []
+    if not isinstance(entries, list):
+        return [entries]
+    return entries
 
 
 def _get_text(d: Any, key: str) -> Optional[str]:
@@ -101,16 +132,13 @@ def _normalize_accessibility(accessibility: Optional[str]) -> Accessibility:
     return "public-access"
 
 
-def parse_submission(  # pylint: disable=unused-argument
+def parse_submission(
     xml_bytes: bytes,
-    is_dra: bool,
     accession: str,
 ) -> Optional[Dict[str, Any]]:
     """submission XML をパースする。"""
     try:
-        parsed = xmltodict.parse(
-            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
+        parsed = _parse_xml(xml_bytes)
         submission = parsed.get("SUBMISSION")
         if submission is None:
             return None
@@ -118,10 +146,7 @@ def parse_submission(  # pylint: disable=unused-argument
         return {
             "accession": submission.get("accession"),
             "title": _get_text(submission, "TITLE"),
-            "center_name": submission.get("center_name"),
-            "lab_name": submission.get("lab_name"),
-            "submission_comment": submission.get("submission_comment"),
-            "submission_date": submission.get("submission_date"),
+            "description": submission.get("submission_comment") or None,
             "properties": parsed,
         }
     except Exception as e:
@@ -129,35 +154,22 @@ def parse_submission(  # pylint: disable=unused-argument
         return None
 
 
-def parse_study(  # pylint: disable=unused-argument
+def parse_study(
     xml_bytes: bytes,
-    is_dra: bool,
     accession: str,
 ) -> List[Dict[str, Any]]:
     """study XML をパースする。複数の STUDY を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = xmltodict.parse(
-            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
-        study_set = parsed.get("STUDY_SET", {})
-        studies = study_set.get("STUDY")
-        if studies is None:
-            return []
-
-        if not isinstance(studies, list):
-            studies = [studies]
+        parsed = _parse_xml(xml_bytes)
+        studies = _get_entries(parsed, "STUDY_SET", "STUDY")
 
         for study in studies:
-            descriptor = study.get("DESCRIPTOR", {})
-            study_type = descriptor.get("STUDY_TYPE", {})
-
+            descriptor = (study.get("DESCRIPTOR") or {})
             results.append({
                 "accession": study.get("accession"),
                 "title": _get_text(descriptor, "STUDY_TITLE"),
                 "description": _get_text(descriptor, "STUDY_ABSTRACT") or _get_text(descriptor, "STUDY_DESCRIPTION"),
-                "study_type": study_type.get("existing_study_type") if isinstance(study_type, dict) else None,
-                "center_name": study.get("center_name"),
                 "properties": {"STUDY_SET": {"STUDY": study}},
             })
     except Exception as e:
@@ -165,56 +177,22 @@ def parse_study(  # pylint: disable=unused-argument
     return results
 
 
-def parse_experiment(  # pylint: disable=unused-argument
+def parse_experiment(
     xml_bytes: bytes,
-    is_dra: bool,
     accession: str,
 ) -> List[Dict[str, Any]]:
     """experiment XML をパースする。複数の EXPERIMENT を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = xmltodict.parse(
-            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
-        experiment_set = parsed.get("EXPERIMENT_SET", {})
-        experiments = experiment_set.get("EXPERIMENT")
-        if experiments is None:
-            return []
-
-        if not isinstance(experiments, list):
-            experiments = [experiments]
+        parsed = _parse_xml(xml_bytes)
+        experiments = _get_entries(parsed, "EXPERIMENT_SET", "EXPERIMENT")
 
         for exp in experiments:
-            design = exp.get("DESIGN", {})
-            library_desc = design.get("LIBRARY_DESCRIPTOR", {})
-            platform = exp.get("PLATFORM", {})
-
-            # プラットフォーム情報を取得
-            instrument_model = None
-            for platform_name in platform.values():
-                if isinstance(platform_name, dict):
-                    instrument_model = platform_name.get("INSTRUMENT_MODEL")
-                    break
-
-            # library layout を取得
-            library_layout = library_desc.get("LIBRARY_LAYOUT", {})
-            layout = None
-            if library_layout:
-                if "PAIRED" in library_layout:
-                    layout = "PAIRED"
-                elif "SINGLE" in library_layout:
-                    layout = "SINGLE"
-
+            design = (exp.get("DESIGN") or {})
             results.append({
                 "accession": exp.get("accession"),
                 "title": _get_text(exp, "TITLE"),
                 "description": _get_text(design, "DESIGN_DESCRIPTION"),
-                "instrument_model": instrument_model,
-                "library_strategy": library_desc.get("LIBRARY_STRATEGY"),
-                "library_source": library_desc.get("LIBRARY_SOURCE"),
-                "library_selection": library_desc.get("LIBRARY_SELECTION"),
-                "library_layout": layout,
-                "center_name": exp.get("center_name"),
                 "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
             })
     except Exception as e:
@@ -222,33 +200,21 @@ def parse_experiment(  # pylint: disable=unused-argument
     return results
 
 
-def parse_run(  # pylint: disable=unused-argument
+def parse_run(
     xml_bytes: bytes,
-    is_dra: bool,
     accession: str,
 ) -> List[Dict[str, Any]]:
     """run XML をパースする。複数の RUN を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = xmltodict.parse(
-            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
-        run_set = parsed.get("RUN_SET", {})
-        runs = run_set.get("RUN")
-        if runs is None:
-            return []
-
-        if not isinstance(runs, list):
-            runs = [runs]
+        parsed = _parse_xml(xml_bytes)
+        runs = _get_entries(parsed, "RUN_SET", "RUN")
 
         for run in runs:
             results.append({
                 "accession": run.get("accession"),
                 "title": _get_text(run, "TITLE"),
                 "description": None,
-                "run_date": run.get("run_date"),
-                "run_center": run.get("run_center"),
-                "center_name": run.get("center_name"),
                 "properties": {"RUN_SET": {"RUN": run}},
             })
     except Exception as e:
@@ -256,27 +222,18 @@ def parse_run(  # pylint: disable=unused-argument
     return results
 
 
-def parse_sample(  # pylint: disable=unused-argument
+def parse_sample(
     xml_bytes: bytes,
-    is_dra: bool,
     accession: str,
 ) -> List[Dict[str, Any]]:
     """sample XML をパースする。複数の SAMPLE を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = xmltodict.parse(
-            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
-        sample_set = parsed.get("SAMPLE_SET", {})
-        samples = sample_set.get("SAMPLE")
-        if samples is None:
-            return []
-
-        if not isinstance(samples, list):
-            samples = [samples]
+        parsed = _parse_xml(xml_bytes)
+        samples = _get_entries(parsed, "SAMPLE_SET", "SAMPLE")
 
         for sample in samples:
-            sample_name = sample.get("SAMPLE_NAME", {})
+            sample_name = (sample.get("SAMPLE_NAME") or {})
             organism = None
             tax_id = sample_name.get("TAXON_ID")
             sci_name = sample_name.get("SCIENTIFIC_NAME")
@@ -291,7 +248,6 @@ def parse_sample(  # pylint: disable=unused-argument
                 "title": _get_text(sample, "TITLE"),
                 "description": _get_text(sample, "DESCRIPTION"),
                 "organism": organism,
-                "center_name": sample.get("center_name"),
                 "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
             })
     except Exception as e:
@@ -299,41 +255,21 @@ def parse_sample(  # pylint: disable=unused-argument
     return results
 
 
-def parse_analysis(  # pylint: disable=unused-argument
+def parse_analysis(
     xml_bytes: bytes,
-    is_dra: bool,
     accession: str,
 ) -> List[Dict[str, Any]]:
     """analysis XML をパースする。複数の ANALYSIS を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = xmltodict.parse(
-            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
-        analysis_set = parsed.get("ANALYSIS_SET", {})
-        analyses = analysis_set.get("ANALYSIS")
-        if analyses is None:
-            return []
-
-        if not isinstance(analyses, list):
-            analyses = [analyses]
+        parsed = _parse_xml(xml_bytes)
+        analyses = _get_entries(parsed, "ANALYSIS_SET", "ANALYSIS")
 
         for analysis in analyses:
-            # 分析タイプを取得
-            analysis_type_obj = analysis.get("ANALYSIS_TYPE", {})
-            analysis_type = None
-            if analysis_type_obj:
-                # ANALYSIS_TYPE の子要素のキーが分析タイプ
-                for key in analysis_type_obj.keys():
-                    analysis_type = key
-                    break
-
             results.append({
                 "accession": analysis.get("accession"),
                 "title": _get_text(analysis, "TITLE"),
                 "description": _get_text(analysis, "DESCRIPTION"),
-                "analysis_type": analysis_type,
-                "center_name": analysis.get("center_name"),
                 "properties": {"ANALYSIS_SET": {"ANALYSIS": analysis}},
             })
     except Exception as e:
@@ -349,16 +285,17 @@ def _make_distribution(entry_type: str, identifier: str) -> List[Distribution]:
     return [Distribution(
         type="DataDownload",
         encodingFormat="JSON",
-        contentUrl=f"https://ddbj.nig.ac.jp/search/entry/{entry_type}/{identifier}.json",
+        contentUrl=f"https://ddbj.nig.ac.jp/search/entries/{entry_type}/{identifier}.json",
     )]
 
 
 def _make_url(entry_type: str, identifier: str) -> str:
     """URL を作成する。"""
-    return f"https://ddbj.nig.ac.jp/search/entry/{entry_type}/{identifier}"
+    return f"https://ddbj.nig.ac.jp/search/entries/{entry_type}/{identifier}"
 
 
-def create_submission(
+def create_sra_entry(
+    sra_type: SraXmlType,
     parsed: Dict[str, Any],
     status: Status,
     accessibility: Accessibility,
@@ -366,177 +303,18 @@ def create_submission(
     date_modified: Optional[str],
     date_published: Optional[str],
 ) -> SRA:
-    """SRA (submission) を作成する。"""
+    """SRA エントリを作成する。"""
+    entry_type = SRA_TYPE_MAP[sra_type]
     identifier = parsed["accession"]
     return SRA(
         identifier=identifier,
         properties=parsed["properties"],
-        distribution=_make_distribution("sra-submission", identifier),
+        distribution=_make_distribution(entry_type, identifier),
         isPartOf="sra",
-        type="sra-submission",
+        type=entry_type,
         name=None,
-        url=_make_url("sra-submission", identifier),
-        organism=None,
-        title=parsed.get("title"),
-        description=parsed.get("submission_comment"),
-        dbXrefs=[],
-        sameAs=[],
-        downloadUrl=[],
-        status=status,
-        accessibility=accessibility,
-        dateCreated=date_created,
-        dateModified=date_modified,
-        datePublished=date_published,
-    )
-
-
-def create_study(
-    parsed: Dict[str, Any],
-    status: Status,
-    accessibility: Accessibility,
-    date_created: Optional[str],
-    date_modified: Optional[str],
-    date_published: Optional[str],
-) -> SRA:
-    """SRA (study) を作成する。"""
-    identifier = parsed["accession"]
-    return SRA(
-        identifier=identifier,
-        properties=parsed["properties"],
-        distribution=_make_distribution("sra-study", identifier),
-        isPartOf="sra",
-        type="sra-study",
-        name=None,
-        url=_make_url("sra-study", identifier),
-        organism=None,
-        title=parsed.get("title"),
-        description=parsed.get("description"),
-        dbXrefs=[],
-        sameAs=[],
-        downloadUrl=[],
-        status=status,
-        accessibility=accessibility,
-        dateCreated=date_created,
-        dateModified=date_modified,
-        datePublished=date_published,
-    )
-
-
-def create_experiment(
-    parsed: Dict[str, Any],
-    status: Status,
-    accessibility: Accessibility,
-    date_created: Optional[str],
-    date_modified: Optional[str],
-    date_published: Optional[str],
-) -> SRA:
-    """SRA (experiment) を作成する。"""
-    identifier = parsed["accession"]
-    return SRA(
-        identifier=identifier,
-        properties=parsed["properties"],
-        distribution=_make_distribution("sra-experiment", identifier),
-        isPartOf="sra",
-        type="sra-experiment",
-        name=None,
-        url=_make_url("sra-experiment", identifier),
-        organism=None,
-        title=parsed.get("title"),
-        description=parsed.get("description"),
-        dbXrefs=[],
-        sameAs=[],
-        downloadUrl=[],
-        status=status,
-        accessibility=accessibility,
-        dateCreated=date_created,
-        dateModified=date_modified,
-        datePublished=date_published,
-    )
-
-
-def create_run(
-    parsed: Dict[str, Any],
-    status: Status,
-    accessibility: Accessibility,
-    date_created: Optional[str],
-    date_modified: Optional[str],
-    date_published: Optional[str],
-) -> SRA:
-    """SRA (run) を作成する。"""
-    identifier = parsed["accession"]
-    return SRA(
-        identifier=identifier,
-        properties=parsed["properties"],
-        distribution=_make_distribution("sra-run", identifier),
-        isPartOf="sra",
-        type="sra-run",
-        name=None,
-        url=_make_url("sra-run", identifier),
-        organism=None,
-        title=parsed.get("title"),
-        description=parsed.get("description"),
-        dbXrefs=[],
-        sameAs=[],
-        downloadUrl=[],
-        status=status,
-        accessibility=accessibility,
-        dateCreated=date_created,
-        dateModified=date_modified,
-        datePublished=date_published,
-    )
-
-
-def create_sample(
-    parsed: Dict[str, Any],
-    status: Status,
-    accessibility: Accessibility,
-    date_created: Optional[str],
-    date_modified: Optional[str],
-    date_published: Optional[str],
-) -> SRA:
-    """SRA (sample) を作成する。"""
-    identifier = parsed["accession"]
-    return SRA(
-        identifier=identifier,
-        properties=parsed["properties"],
-        distribution=_make_distribution("sra-sample", identifier),
-        isPartOf="sra",
-        type="sra-sample",
-        name=None,
-        url=_make_url("sra-sample", identifier),
+        url=_make_url(entry_type, identifier),
         organism=parsed.get("organism"),
-        title=parsed.get("title"),
-        description=parsed.get("description"),
-        dbXrefs=[],
-        sameAs=[],
-        downloadUrl=[],
-        status=status,
-        accessibility=accessibility,
-        dateCreated=date_created,
-        dateModified=date_modified,
-        datePublished=date_published,
-    )
-
-
-def create_analysis(
-    parsed: Dict[str, Any],
-    status: Status,
-    accessibility: Accessibility,
-    date_created: Optional[str],
-    date_modified: Optional[str],
-    date_published: Optional[str],
-) -> SRA:
-    """SRA (analysis) を作成する。"""
-    identifier = parsed["accession"]
-    return SRA(
-        identifier=identifier,
-        properties=parsed["properties"],
-        distribution=_make_distribution("sra-analysis", identifier),
-        isPartOf="sra",
-        type="sra-analysis",
-        name=None,
-        url=_make_url("sra-analysis", identifier),
-        organism=None,
         title=parsed.get("title"),
         description=parsed.get("description"),
         dbXrefs=[],
@@ -552,11 +330,20 @@ def create_analysis(
 
 # === Submission processing ===
 
+# parse 関数ディスパッチ
+_PARSE_FNS: Dict[SraXmlType, Callable[..., Any]] = {
+    "submission": parse_submission,
+    "study": parse_study,
+    "experiment": parse_experiment,
+    "run": parse_run,
+    "sample": parse_sample,
+    "analysis": parse_analysis,
+}
 
-def process_submission_xml(  # pylint: disable=unused-argument
+
+def process_submission_xml(
     tar_reader: TarXMLReader,
     submission: str,
-    is_dra: bool,
     config: Config,
     blacklist: Set[str],
     accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]],
@@ -567,7 +354,6 @@ def process_submission_xml(  # pylint: disable=unused-argument
     Args:
         tar_reader: TarXMLReader
         submission: submission accession
-        is_dra: DRA かどうか
         config: Config
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
@@ -575,87 +361,30 @@ def process_submission_xml(  # pylint: disable=unused-argument
     Returns:
         {xml_type: [model_instance, ...]}
     """
-    results: Dict[SraXmlType, List[Any]] = {
-        "submission": [],
-        "study": [],
-        "experiment": [],
-        "run": [],
-        "sample": [],
-        "analysis": [],
-    }
+    results: Dict[SraXmlType, List[Any]] = {t: [] for t in XML_TYPES}
 
-    # submission XML を処理
-    xml_bytes = tar_reader.read_xml(submission, "submission")
-    if xml_bytes:
-        parsed = parse_submission(xml_bytes, is_dra, submission)
-        if parsed and parsed.get("accession"):
-            acc = parsed["accession"]
-            if acc not in blacklist:
-                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
-                status = _normalize_status(info[0])
-                accessibility = _normalize_accessibility(info[1])
-                submission_entry = create_submission(parsed, status, accessibility, info[2], info[3], info[4])
-                results["submission"].append(submission_entry)
+    for xml_type in XML_TYPES:
+        xml_bytes = tar_reader.read_xml(submission, xml_type)
+        if not xml_bytes:
+            continue
 
-    # study XML を処理
-    xml_bytes = tar_reader.read_xml(submission, "study")
-    if xml_bytes:
-        for parsed in parse_study(xml_bytes, is_dra, submission):
-            acc = parsed.get("accession")
-            if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
-                status = _normalize_status(info[0])
-                accessibility = _normalize_accessibility(info[1])
-                study_entry = create_study(parsed, status, accessibility, info[2], info[3], info[4])
-                results["study"].append(study_entry)
+        parse_fn = _PARSE_FNS[xml_type]
 
-    # experiment XML を処理
-    xml_bytes = tar_reader.read_xml(submission, "experiment")
-    if xml_bytes:
-        for parsed in parse_experiment(xml_bytes, is_dra, submission):
-            acc = parsed.get("accession")
-            if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
-                status = _normalize_status(info[0])
-                accessibility = _normalize_accessibility(info[1])
-                experiment_entry = create_experiment(parsed, status, accessibility, info[2], info[3], info[4])
-                results["experiment"].append(experiment_entry)
+        if xml_type == "submission":
+            parsed = parse_fn(xml_bytes, submission)
+            parsed_list = [parsed] if parsed and parsed.get("accession") else []
+        else:
+            parsed_list = parse_fn(xml_bytes, submission)
 
-    # run XML を処理
-    xml_bytes = tar_reader.read_xml(submission, "run")
-    if xml_bytes:
-        for parsed in parse_run(xml_bytes, is_dra, submission):
-            acc = parsed.get("accession")
-            if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
-                status = _normalize_status(info[0])
-                accessibility = _normalize_accessibility(info[1])
-                run_entry = create_run(parsed, status, accessibility, info[2], info[3], info[4])
-                results["run"].append(run_entry)
-
-    # sample XML を処理
-    xml_bytes = tar_reader.read_xml(submission, "sample")
-    if xml_bytes:
-        for parsed in parse_sample(xml_bytes, is_dra, submission):
-            acc = parsed.get("accession")
-            if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
-                status = _normalize_status(info[0])
-                accessibility = _normalize_accessibility(info[1])
-                sample_entry = create_sample(parsed, status, accessibility, info[2], info[3], info[4])
-                results["sample"].append(sample_entry)
-
-    # analysis XML を処理
-    xml_bytes = tar_reader.read_xml(submission, "analysis")
-    if xml_bytes:
-        for parsed in parse_analysis(xml_bytes, is_dra, submission):
-            acc = parsed.get("accession")
-            if acc and acc not in blacklist:
-                info = accession_info.get(acc, ("live", "public", None, None, None, ""))
-                status = _normalize_status(info[0])
-                accessibility = _normalize_accessibility(info[1])
-                analysis_entry = create_analysis(parsed, status, accessibility, info[2], info[3], info[4])
-                results["analysis"].append(analysis_entry)
+        for entry in parsed_list:
+            acc = entry.get("accession")
+            if not acc or acc in blacklist:
+                continue
+            info = accession_info.get(acc, ("live", "public", None, None, None, ""))
+            status = _normalize_status(info[0])
+            accessibility = _normalize_accessibility(info[1])
+            sra_entry = create_sra_entry(xml_type, entry, status, accessibility, info[2], info[3], info[4])
+            results[xml_type].append(sra_entry)
 
     return results
 
@@ -737,29 +466,33 @@ def process_source(
                 xml_bytes = tar_reader.read_xml(sub, xml_type)
                 if xml_bytes:
                     try:
-                        parsed = xmltodict.parse(
-                            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-                        )
-                        # SET の中から accession を抽出
+                        parsed = _parse_xml(xml_bytes)
                         set_key = f"{xml_type.upper()}_SET"
                         entry_key = xml_type.upper()
-                        entries_data = (parsed.get(set_key) or {}).get(entry_key)
-                        if entries_data:
-                            if not isinstance(entries_data, list):
-                                entries_data = [entries_data]
-                            for entry_data in entries_data:
-                                acc = entry_data.get("accession")
-                                if acc:
-                                    sub_accessions.append(acc)
+                        for entry_data in _get_entries(parsed, set_key, entry_key):
+                            acc = entry_data.get("accession")
+                            if acc:
+                                sub_accessions.append(acc)
                     except Exception as e:
-                        log_debug(f"failed to collect accessions from {xml_type} xml: {e}", accession=sub, debug_category=DebugCategory.XML_ACCESSION_COLLECT_FAILED)
+                        log_debug(f"failed to collect accessions from {xml_type} xml: {e}", accession=sub,
+                                  debug_category=DebugCategory.XML_ACCESSION_COLLECT_FAILED)
 
             # Accessions DB から情報を取得
             accession_info = get_accession_info_bulk(config, source, sub_accessions)
 
+            # DRA は Received (dateCreated) が常に空なので SRA 側から補完
+            if is_dra:
+                missing_received = [acc for acc, info in accession_info.items() if info[2] is None]
+                if missing_received:
+                    sra_info = get_accession_info_bulk(config, "sra", missing_received)
+                    for acc in missing_received:
+                        if acc in sra_info and sra_info[acc][2] is not None:
+                            dra = accession_info[acc]
+                            accession_info[acc] = (dra[0], dra[1], sra_info[acc][2], dra[3], dra[4], dra[5])
+
             # submission を処理
             results = process_submission_xml(
-                tar_reader, sub, is_dra, config, blacklist, accession_info
+                tar_reader, sub, config, blacklist, accession_info
             )
 
             for xml_type in XML_TYPES:

@@ -64,7 +64,6 @@ es_list_indexes = "ddbj_search_converter.cli.es:main_list_indexes"
 show_log_summary = "ddbj_search_converter.cli.debug.show_log_summary:main"
 show_log = "ddbj_search_converter.cli.debug.show_log:main"
 show_dblink_counts = "ddbj_search_converter.cli.debug.show_dblink_counts:main"
-dump_debug_report = "ddbj_search_converter.cli.debug.dump_debug_report:main"
 
 [tool.setuptools]
 packages = [

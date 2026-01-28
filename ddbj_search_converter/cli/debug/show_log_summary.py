@@ -1,157 +1,250 @@
 """Log summary CLI.
 
-Shows summary of logs: run status, debug categories by CLI, and log level counts.
+Shows per-run_name summary for a given date: status, duration, and log level counts.
 """
 import argparse
+import json
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional
 
 import duckdb
 
-from ddbj_search_converter.config import LOG_DB_FILE_NAME, TODAY, get_config
+from ddbj_search_converter.config import DATE_FORMAT, LOG_DB_FILE_NAME, TODAY, get_config
+
+
+def _parse_date(value: str) -> date:
+    """Validate and return a date object from YYYYMMDD string."""
+    try:
+        return datetime.strptime(value, DATE_FORMAT).date()
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            f"Invalid date format: {value!r} (expected YYYYMMDD)"
+        ) from exc
+
+
+def _run_date(parsed_date: Optional[date]) -> date:
+    """Return the run_date from parsed arg or TODAY."""
+    if parsed_date is not None:
+        return parsed_date
+    return TODAY
 
 
 def _get_db_path(result_dir: Path) -> Path:
     return result_dir.joinpath(LOG_DB_FILE_NAME)
 
 
-def _format_date_range(days: int) -> Tuple[date, date]:
-    """Get date range for the query."""
-    end_date = TODAY
-    start_date = TODAY - timedelta(days=days - 1)
-    return start_date, end_date
-
-
-def print_run_status(con: duckdb.DuckDBPyConnection, start_date: date, end_date: date) -> None:
-    """Print recent run status (SUCCESS/FAILED)."""
-    print("Run Status:")
-    print("-" * 70)
-
-    # Get runs with their lifecycle status
+def _fetch_run_ids(
+    con: duckdb.DuckDBPyConnection, run_date: date
+) -> Dict[str, List[str]]:
+    """Fetch run_name -> list of run_ids (latest first) for the given date."""
     rows = con.execute(
         """
-        WITH run_lifecycle AS (
-            SELECT
-                run_date,
-                run_name,
-                run_id,
-                MAX(CASE WHEN json_extract_string(extra, '$.lifecycle') = 'end' THEN 1 ELSE 0 END) as has_end,
-                MAX(CASE WHEN json_extract_string(extra, '$.lifecycle') = 'failed' THEN 1 ELSE 0 END) as has_failed
-            FROM log_records
-            WHERE run_date >= ? AND run_date <= ?
-            GROUP BY run_date, run_name, run_id
-        )
-        SELECT
-            run_date,
-            run_name,
-            CASE
-                WHEN has_end = 1 THEN 'SUCCESS'
-                WHEN has_failed = 1 THEN 'FAILED'
-                ELSE 'IN_PROGRESS'
-            END as status
-        FROM run_lifecycle
-        ORDER BY run_date DESC, run_name
-        LIMIT 30
-        """,
-        [start_date.isoformat(), end_date.isoformat()],
-    ).fetchall()
-
-    if not rows:
-        print("  No runs found in the specified period.")
-    else:
-        for run_date, run_name, status in rows:
-            status_mark = "✓" if status == "SUCCESS" else ("✗" if status == "FAILED" else "⋯")
-            print(f"  {run_date}  {run_name:<45}  {status_mark} {status}")
-
-    print()
-
-
-def print_debug_category_summary(con: duckdb.DuckDBPyConnection, start_date: date, end_date: date) -> None:
-    """Print debug category counts by CLI."""
-    print("Debug Category by CLI:")
-    print("-" * 70)
-    print(f"  {'run_name':<40} {'category':<25} {'count':>8}")
-    print("  " + "-" * 75)
-
-    rows = con.execute(
-        """
-        SELECT
-            run_name,
-            json_extract_string(extra, '$.debug_category') as category,
-            COUNT(*) as cnt
+        SELECT run_name, run_id, MAX(timestamp) AS last_ts
         FROM log_records
-        WHERE run_date >= ? AND run_date <= ?
-          AND log_level = 'DEBUG'
-          AND json_extract_string(extra, '$.debug_category') IS NOT NULL
-        GROUP BY run_name, category
-        ORDER BY run_name, cnt DESC
+        WHERE run_date = ?
+        GROUP BY run_name, run_id
+        ORDER BY run_name, last_ts DESC
         """,
-        [start_date.isoformat(), end_date.isoformat()],
+        [run_date],
     ).fetchall()
 
-    if not rows:
-        print("  No DEBUG logs with debug_category found.")
-    else:
-        for run_name, category, cnt in rows:
-            print(f"  {run_name:<40} {category:<25} {cnt:>8,}")
-
-    print()
+    result: Dict[str, List[str]] = {}
+    for run_name, run_id, _ in rows:
+        result.setdefault(str(run_name), []).append(str(run_id))
+    return result
 
 
-def print_log_level_summary(con: duckdb.DuckDBPyConnection, start_date: date, end_date: date) -> None:
-    """Print log level counts."""
-    print("Log Level Summary:")
-    print("-" * 70)
-
-    rows = con.execute(
+def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> Dict[str, Any]:
+    """Fetch lifecycle info and log level counts for a single run_id."""
+    row = con.execute(
         """
         SELECT
-            log_level,
-            COUNT(*) as cnt
+            MAX(CASE WHEN json_extract_string(extra, '$.lifecycle') = 'start'
+                THEN timestamp END) AS start_time,
+            MAX(CASE WHEN json_extract_string(extra, '$.lifecycle') IN ('end', 'failed')
+                THEN timestamp END) AS end_time,
+            MAX(CASE WHEN json_extract_string(extra, '$.lifecycle') = 'end'
+                THEN 1 ELSE 0 END) AS has_end,
+            MAX(CASE WHEN json_extract_string(extra, '$.lifecycle') = 'failed'
+                THEN 1 ELSE 0 END) AS has_failed,
+            COUNT(CASE WHEN log_level = 'DEBUG' THEN 1 END) AS debug_count,
+            COUNT(CASE WHEN log_level = 'INFO' THEN 1 END) AS info_count,
+            COUNT(CASE WHEN log_level = 'WARNING' THEN 1 END) AS warning_count,
+            COUNT(CASE WHEN log_level = 'ERROR' THEN 1 END) AS error_count,
+            COUNT(CASE WHEN log_level = 'CRITICAL' THEN 1 END) AS critical_count
         FROM log_records
-        WHERE run_date >= ? AND run_date <= ?
-        GROUP BY log_level
-        ORDER BY
-            CASE log_level
-                WHEN 'CRITICAL' THEN 1
-                WHEN 'ERROR' THEN 2
-                WHEN 'WARNING' THEN 3
-                WHEN 'INFO' THEN 4
-                WHEN 'DEBUG' THEN 5
-            END
+        WHERE run_id = ?
         """,
-        [start_date.isoformat(), end_date.isoformat()],
-    ).fetchall()
+        [run_id],
+    ).fetchone()
 
-    if not rows:
-        print("  No logs found in the specified period.")
+    if row is None:
+        return {}
+
+    (start_time, end_time, has_end, has_failed,
+     debug_count, info_count, warning_count, error_count, critical_count) = row
+
+    if has_failed:
+        status = "FAILED"
+    elif has_end:
+        status = "SUCCESS"
     else:
-        for log_level, cnt in rows:
-            print(f"  {log_level:<10}: {cnt:>10,}")
+        status = "IN_PROGRESS"
 
+    start_str = str(start_time)[:19] if start_time else None
+    end_str = str(end_time)[:19] if end_time else None
+
+    duration_seconds: Optional[int] = None
+    if start_time and end_time:
+        try:
+            st = datetime.fromisoformat(str(start_time)[:19])
+            et = datetime.fromisoformat(str(end_time)[:19])
+            duration_seconds = int((et - st).total_seconds())
+        except (ValueError, TypeError):
+            pass
+
+    return {
+        "status": status,
+        "start_time": start_str,
+        "end_time": end_str,
+        "duration_seconds": duration_seconds,
+        "log_levels": {
+            "DEBUG": debug_count,
+            "INFO": info_count,
+            "WARNING": warning_count,
+            "ERROR": error_count,
+            "CRITICAL": critical_count,
+        },
+    }
+
+
+def _build_summary(con: duckdb.DuckDBPyConnection, run_date: date) -> Dict[str, Any]:
+    """Build the full summary dict for the given date."""
+    run_ids_map = _fetch_run_ids(con, run_date)
+
+    runs: List[Dict[str, Any]] = []
+    for run_name, run_id_list in run_ids_map.items():
+        latest_run_id = run_id_list[0]
+        summary = _fetch_run_summary(con, latest_run_id)
+        runs.append({
+            "run_name": run_name,
+            "status": summary.get("status", "IN_PROGRESS"),
+            "latest_run_id": latest_run_id,
+            "all_run_ids": run_id_list,
+            "start_time": summary.get("start_time"),
+            "end_time": summary.get("end_time"),
+            "duration_seconds": summary.get("duration_seconds"),
+            "log_levels": summary.get("log_levels", {}),
+        })
+
+    return {
+        "date": run_date.isoformat(),
+        "runs": runs,
+    }
+
+
+def _format_duration(seconds: Optional[int]) -> str:
+    """Format seconds as human-readable duration string."""
+    if seconds is None:
+        return "-"
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    s = seconds % 60
+    parts = []
+    if h > 0:
+        parts.append(f"{h}h")
+    if m > 0:
+        parts.append(f"{m}m")
+    parts.append(f"{s}s")
+    return " ".join(parts)
+
+
+def _print_raw(summary: Dict[str, Any]) -> None:
+    """Print summary in human-readable format."""
     print()
+    print(f"=== Log Summary ({summary['date']}) ===")
+    print()
+
+    runs = summary["runs"]
+    if not runs:
+        print("No runs found.")
+        return
+
+    for run in runs:
+        run_name = run["run_name"]
+        status = run["status"]
+        print(f"{run_name}  [{status}]")
+
+        print(f"  run_id (latest): {run['latest_run_id']}")
+
+        all_ids = run["all_run_ids"]
+        if len(all_ids) > 1:
+            print("  all run_ids:")
+            for i, rid in enumerate(all_ids):
+                label = " (latest)" if i == 0 else ""
+                print(f"    - {rid}{label}")
+
+        start = run["start_time"] or "-"
+        end = run["end_time"] or "-"
+        duration = _format_duration(run["duration_seconds"])
+        print(f"  start:    {start}")
+        print(f"  end:      {end}")
+        print(f"  duration: {duration}")
+
+        levels = run.get("log_levels", {})
+        print("  log levels:")
+        for level_name in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+            count = levels.get(level_name, 0)
+            print(f"    {level_name:<10}: {count:>10,}")
+
+        print()
+
+
+def _print_json(summary: Dict[str, Any]) -> None:
+    """Print summary as JSON."""
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 
 def parse_args(args: List[str]) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Show log summary (run status, debug categories, log levels)."
+        description="Show per-run_name log summary (status, duration, log level counts)."
     )
     parser.add_argument(
-        "--days",
-        type=int,
-        default=7,
-        help="Number of days to include in summary. Default: 7",
-    )
-    parser.add_argument(
-        "--result-dir",
-        help="Result directory containing log.duckdb. Default: from config",
+        "--date",
+        type=_parse_date,
         default=None,
+        help="Filter by date (YYYYMMDD). Default: today.",
     )
 
-    return parser.parse_args(args)
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument(
+        "--raw",
+        action="store_true",
+        default=False,
+        help="Human-readable text output.",
+    )
+    output_group.add_argument(
+        "--json",
+        action="store_true",
+        default=True,
+        help="JSON output (default).",
+    )
+
+    parser.add_argument(
+        "--result-dir",
+        default=None,
+        help="Result directory containing log.duckdb. Default: from config",
+    )
+
+    parsed = parser.parse_args(args)
+
+    if parsed.raw:
+        parsed.json = False
+
+    return parsed
 
 
 def main() -> None:
@@ -165,20 +258,19 @@ def main() -> None:
     db_path = _get_db_path(config.result_dir)
 
     if not db_path.exists():
-        print(f"Log database not found: {db_path}")
+        print(f"Log database not found: {db_path}", file=sys.stderr)
         sys.exit(1)
 
-    start_date, end_date = _format_date_range(parsed.days)
-
-    print()
-    print(f"=== Log Summary ({start_date} ~ {end_date}) ===")
-    print()
+    run_date = _run_date(parsed.date)
 
     con = duckdb.connect(str(db_path), read_only=True)
     try:
-        print_run_status(con, start_date, end_date)
-        print_debug_category_summary(con, start_date, end_date)
-        print_log_level_summary(con, start_date, end_date)
+        summary = _build_summary(con, run_date)
+
+        if parsed.raw:
+            _print_raw(summary)
+        else:
+            _print_json(summary)
     finally:
         con.close()
 

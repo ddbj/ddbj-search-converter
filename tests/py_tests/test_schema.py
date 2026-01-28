@@ -58,12 +58,12 @@ class TestXref:
         xref = Xref(
             identifier="JGAS000001",
             type="jga-study",
-            url="https://ddbj.nig.ac.jp/search/entry/jga-study/JGAS000001",
+            url="https://ddbj.nig.ac.jp/search/entries/jga-study/JGAS000001",
         )
 
         assert xref.identifier == "JGAS000001"
         assert xref.type_ == "jga-study"
-        assert xref.url == "https://ddbj.nig.ac.jp/search/entry/jga-study/JGAS000001"
+        assert xref.url == "https://ddbj.nig.ac.jp/search/entries/jga-study/JGAS000001"
 
     def test_xref_json_alias(self) -> None:
         """JSON 出力時に type_ が type になる。"""
@@ -96,7 +96,7 @@ class TestJGA:
             isPartOf="jga",
             type="jga-study",
             name="Test Study",
-            url="https://ddbj.nig.ac.jp/search/entry/jga-study/JGAS000001",
+            url="https://ddbj.nig.ac.jp/search/entries/jga-study/JGAS000001",
             organism=Organism(identifier="9606", name="Homo sapiens"),
             title="Test Title",
             description="Test Description",

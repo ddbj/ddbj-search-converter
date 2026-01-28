@@ -1,22 +1,73 @@
 """Tests for ddbj_search_converter.jsonl.sra module."""
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 import pytest
 
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
-from ddbj_search_converter.jsonl.sra import (_normalize_accessibility,
+from ddbj_search_converter.jsonl.sra import (SRA_TYPE_MAP,
+                                             _normalize_accessibility,
                                              _normalize_status,
-                                             create_analysis,
-                                             create_experiment, create_run,
-                                             create_sample, create_study,
-                                             create_submission, parse_analysis,
+                                             create_sra_entry, parse_analysis,
                                              parse_args, parse_experiment,
                                              parse_run, parse_sample,
                                              parse_study, parse_submission)
 from ddbj_search_converter.jsonl.utils import write_jsonl
 from ddbj_search_converter.logging.logger import run_logger
 from ddbj_search_converter.schema import SRA, Organism
+from ddbj_search_converter.sra.tar_reader import SraXmlType
+
+# === Fixture discovery ===
+
+FIXTURE_BASE = Path(__file__).resolve().parent.parent.parent / "fixtures" / "usr" / "local" / "resources" / "dra" / "fastq"
+
+_XML_TYPE_SUFFIXES: Dict[str, str] = {
+    "submission": ".submission.xml",
+    "study": ".study.xml",
+    "experiment": ".experiment.xml",
+    "run": ".run.xml",
+    "sample": ".sample.xml",
+    "analysis": ".analysis.xml",
+}
+
+
+def _discover_fixture_xmls(xml_type: str) -> List[Tuple[str, Path]]:
+    """指定された XML タイプの全フィクスチャファイルを探索する。"""
+    suffix = _XML_TYPE_SUFFIXES[xml_type]
+    results: List[Tuple[str, Path]] = []
+    if not FIXTURE_BASE.exists():
+        return results
+    for xml_path in sorted(FIXTURE_BASE.rglob(f"*{suffix}")):
+        submission_id = xml_path.name.replace(suffix, "")
+        results.append((submission_id, xml_path))
+    return results
+
+
+# === Parse function map ===
+
+_PARSE_FNS: Dict[str, Any] = {
+    "submission": parse_submission,
+    "study": parse_study,
+    "experiment": parse_experiment,
+    "run": parse_run,
+    "sample": parse_sample,
+    "analysis": parse_analysis,
+}
+
+
+def _parse_fixture(xml_type: str, xml_path: Path) -> List[Dict[str, Any]]:
+    """フィクスチャ XML をパースして結果リストを返す。"""
+    xml_bytes = xml_path.read_bytes()
+    submission_id = xml_path.stem.split(".")[0]
+    parse_fn = _PARSE_FNS[xml_type]
+
+    if xml_type == "submission":
+        result = parse_fn(xml_bytes, submission_id)
+        return [result] if result and result.get("accession") else []
+    return parse_fn(xml_bytes, submission_id)
+
+
+# === Normalize tests ===
 
 
 class TestNormalizeStatus:
@@ -113,6 +164,9 @@ class TestLoadSraBlacklist:
             assert result == {"DRA000001", "DRA000002", "DRA000003"}
 
 
+# === Parse function unit tests ===
+
+
 class TestParseSubmission:
     """Tests for parse_submission function."""
 
@@ -123,14 +177,12 @@ class TestParseSubmission:
     <TITLE>Test Title</TITLE>
 </SUBMISSION>
 """
-        result = parse_submission(xml, is_dra=True, accession="DRA000001")
+        result = parse_submission(xml, accession="DRA000001")
 
         assert result is not None
         assert result["accession"] == "DRA000001"
         assert result["title"] == "Test Title"
-        assert result["center_name"] == "KEIO"
-        assert result["lab_name"] == "Bioinformatics Lab."
-        assert result["submission_comment"] == "Test comment"
+        assert result["description"] == "Test comment"
 
     def test_returns_none_for_missing_submission(self) -> None:
         """SUBMISSION 要素がない場合は None を返す。"""
@@ -139,8 +191,19 @@ class TestParseSubmission:
     <OTHER/>
 </ROOT>
 """
-        result = parse_submission(xml, is_dra=True, accession="test")
+        result = parse_submission(xml, accession="test")
         assert result is None
+
+    def test_empty_submission_comment_returns_none(self) -> None:
+        """空の submission_comment は None を返す。"""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION accession="DRA000001" submission_comment="">
+    <TITLE>Test</TITLE>
+</SUBMISSION>
+"""
+        result = parse_submission(xml, accession="DRA000001")
+        assert result is not None
+        assert result["description"] is None
 
 
 class TestParseStudy:
@@ -159,14 +222,12 @@ class TestParseStudy:
     </STUDY>
 </STUDY_SET>
 """
-        results = parse_study(xml, is_dra=True, accession="DRA000001")
+        results = parse_study(xml, accession="DRA000001")
 
         assert len(results) == 1
         assert results[0]["accession"] == "DRP000001"
         assert results[0]["title"] == "Whole genome sequencing"
         assert results[0]["description"] == "Test abstract"
-        assert results[0]["study_type"] == "Whole Genome Sequencing"
-        assert results[0]["center_name"] == "KEIO"
 
     def test_parses_multiple_studies(self) -> None:
         """複数の study をパースする。"""
@@ -176,7 +237,7 @@ class TestParseStudy:
     <STUDY accession="DRP000002" center_name="CENTER2"/>
 </STUDY_SET>
 """
-        results = parse_study(xml, is_dra=True, accession="test")
+        results = parse_study(xml, accession="test")
         assert len(results) == 2
 
     def test_returns_empty_for_missing_study_set(self) -> None:
@@ -186,8 +247,23 @@ class TestParseStudy:
     <OTHER/>
 </ROOT>
 """
-        results = parse_study(xml, is_dra=True, accession="test")
+        results = parse_study(xml, accession="test")
         assert results == []
+
+    def test_falls_back_to_study_description(self) -> None:
+        """STUDY_ABSTRACT がない場合は STUDY_DESCRIPTION にフォールバックする。"""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET>
+    <STUDY accession="DRP000001">
+        <DESCRIPTOR>
+            <STUDY_TITLE>Title</STUDY_TITLE>
+            <STUDY_DESCRIPTION>Fallback description</STUDY_DESCRIPTION>
+        </DESCRIPTOR>
+    </STUDY>
+</STUDY_SET>
+"""
+        results = parse_study(xml, accession="test")
+        assert results[0]["description"] == "Fallback description"
 
 
 class TestParseExperiment:
@@ -218,17 +294,29 @@ class TestParseExperiment:
     </EXPERIMENT>
 </EXPERIMENT_SET>
 """
-        results = parse_experiment(xml, is_dra=True, accession="DRA000001")
+        results = parse_experiment(xml, accession="DRA000001")
 
         assert len(results) == 1
         assert results[0]["accession"] == "DRX000001"
         assert results[0]["title"] == "B. subtilis genome sequencing"
         assert results[0]["description"] == "Random fragmentation"
-        assert results[0]["instrument_model"] == "Illumina Genome Analyzer II"
-        assert results[0]["library_strategy"] == "WGS"
-        assert results[0]["library_source"] == "GENOMIC"
-        assert results[0]["library_selection"] == "RANDOM"
-        assert results[0]["library_layout"] == "PAIRED"
+
+    def test_empty_title_element(self) -> None:
+        """空 TITLE 要素を正しく処理する (ERA パターン)。"""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET>
+    <EXPERIMENT accession="ERX000001">
+        <TITLE/>
+        <DESIGN>
+            <DESIGN_DESCRIPTION/>
+        </DESIGN>
+    </EXPERIMENT>
+</EXPERIMENT_SET>
+"""
+        results = parse_experiment(xml, accession="test")
+        assert len(results) == 1
+        assert results[0]["title"] is None
+        assert results[0]["description"] is None
 
 
 class TestParseRun:
@@ -243,13 +331,11 @@ class TestParseRun:
     </RUN>
 </RUN_SET>
 """
-        results = parse_run(xml, is_dra=True, accession="DRA000001")
+        results = parse_run(xml, accession="DRA000001")
 
         assert len(results) == 1
         assert results[0]["accession"] == "DRR000001"
-        assert results[0]["run_date"] == "2008-09-13T01:27:27+09:00"
-        assert results[0]["run_center"] == "NIG"
-        assert results[0]["center_name"] == "KEIO"
+        assert results[0]["description"] is None
 
 
 class TestParseSample:
@@ -275,7 +361,7 @@ class TestParseSample:
     </SAMPLE>
 </SAMPLE_SET>
 """
-        results = parse_sample(xml, is_dra=True, accession="DRA000001")
+        results = parse_sample(xml, accession="DRA000001")
 
         assert len(results) == 1
         assert results[0]["accession"] == "DRS000001"
@@ -302,30 +388,31 @@ class TestParseAnalysis:
     </ANALYSIS>
 </ANALYSIS_SET>
 """
-        results = parse_analysis(xml, is_dra=True, accession="DRA000001")
+        results = parse_analysis(xml, accession="DRA000001")
 
         assert len(results) == 1
         assert results[0]["accession"] == "DRZ000001"
         assert results[0]["title"] == "Analysis Title"
         assert results[0]["description"] == "Analysis description"
-        assert results[0]["analysis_type"] == "REFERENCE_ALIGNMENT"
 
 
-class TestCreateSubmission:
-    """Tests for create_submission function."""
+# === Create function tests ===
+
+
+class TestCreateSraEntry:
+    """Tests for create_sra_entry function."""
 
     def test_creates_submission(self) -> None:
-        """SraSubmission インスタンスを作成する。"""
-        parsed = {
+        """SRA submission インスタンスを作成する。"""
+        parsed: Dict[str, Any] = {
             "accession": "DRA000001",
             "title": "Test Submission",
-            "submission_comment": "Test comment",
-            "center_name": "KEIO",
-            "lab_name": "Lab",
+            "description": "Test comment",
             "properties": {"SUBMISSION": {}},
         }
 
-        result = create_submission(
+        result = create_sra_entry(
+            "submission",
             parsed,
             status="live",
             accessibility="public-access",
@@ -345,22 +432,17 @@ class TestCreateSubmission:
         assert result.type_ == "sra-submission"
         assert result.isPartOf == "sra"
 
-
-class TestCreateStudy:
-    """Tests for create_study function."""
-
     def test_creates_study(self) -> None:
-        """SraStudy インスタンスを作成する。"""
-        parsed = {
+        """SRA study インスタンスを作成する。"""
+        parsed: Dict[str, Any] = {
             "accession": "DRP000001",
             "title": "Study Title",
             "description": "Study description",
-            "study_type": "Whole Genome Sequencing",
-            "center_name": "KEIO",
             "properties": {},
         }
 
-        result = create_study(
+        result = create_sra_entry(
+            "study",
             parsed,
             status="live",
             accessibility="public-access",
@@ -372,6 +454,72 @@ class TestCreateStudy:
         assert result.identifier == "DRP000001"
         assert result.title == "Study Title"
         assert result.type_ == "sra-study"
+
+    def test_creates_sample_with_organism(self) -> None:
+        """Sample のみ organism が設定される。"""
+        parsed: Dict[str, Any] = {
+            "accession": "DRS000001",
+            "title": "Sample",
+            "description": None,
+            "organism": Organism(identifier="9606", name="Homo sapiens"),
+            "properties": {},
+        }
+
+        result = create_sra_entry(
+            "sample",
+            parsed,
+            status="live",
+            accessibility="public-access",
+            date_created=None,
+            date_modified=None,
+            date_published=None,
+        )
+
+        assert result.organism is not None
+        assert result.organism.identifier == "9606"
+        assert result.organism.name == "Homo sapiens"
+
+    def test_non_sample_has_no_organism(self) -> None:
+        """Sample 以外は organism が None。"""
+        parsed: Dict[str, Any] = {
+            "accession": "DRR000001",
+            "title": "Run",
+            "description": None,
+            "properties": {},
+        }
+
+        result = create_sra_entry(
+            "run",
+            parsed,
+            status="live",
+            accessibility="public-access",
+            date_created=None,
+            date_modified=None,
+            date_published=None,
+        )
+
+        assert result.organism is None
+
+    def test_all_sra_types(self) -> None:
+        """全 SRA タイプのエントリを作成できる。"""
+        for sra_type, entry_type in SRA_TYPE_MAP.items():
+            parsed: Dict[str, Any] = {
+                "accession": f"TEST_{sra_type}",
+                "title": None,
+                "description": None,
+                "properties": {},
+            }
+            result = create_sra_entry(
+                sra_type,
+                parsed,
+                status="live",
+                accessibility="public-access",
+                date_created=None,
+                date_modified=None,
+                date_published=None,
+            )
+            assert result.type_ == entry_type
+            assert result.identifier == f"TEST_{sra_type}"
 
 
 class TestWriteJsonl:
@@ -444,3 +592,339 @@ class TestParseArgs:
         monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
         config, output_dir, parallel_num, full = parse_args(["--date", "20260115"])
         assert "20260115" in str(output_dir)
+
+
+# === Fixture-based parametrized tests ===
+
+
+class TestFixtureSubmission:
+    """Fixture-based tests for submission XML parsing."""
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("submission"),
+        ids=[t[0] for t in _discover_fixture_xmls("submission")],
+    )
+    def test_parses_without_error(self, submission_id: str, xml_path: Path) -> None:
+        """フィクスチャ XML がエラーなくパースできる。"""
+        results = _parse_fixture("submission", xml_path)
+        for entry in results:
+            assert entry["accession"] is not None
+            assert isinstance(entry["properties"], dict)
+            assert entry["title"] is None or isinstance(entry["title"], str)
+            assert entry["description"] is None or isinstance(entry["description"], str)
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("submission"),
+        ids=[t[0] for t in _discover_fixture_xmls("submission")],
+    )
+    def test_creates_sra_instance(self, submission_id: str, xml_path: Path) -> None:
+        """パース結果から SRA インスタンスを生成できる。"""
+        results = _parse_fixture("submission", xml_path)
+        for entry in results:
+            sra = create_sra_entry(
+                "submission", entry,
+                status="live", accessibility="public-access",
+                date_created=None, date_modified=None, date_published=None,
+            )
+            assert isinstance(sra, SRA)
+            assert sra.type_ == "sra-submission"
+
+
+class TestFixtureStudy:
+    """Fixture-based tests for study XML parsing."""
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("study"),
+        ids=[t[0] for t in _discover_fixture_xmls("study")],
+    )
+    def test_parses_without_error(self, submission_id: str, xml_path: Path) -> None:
+        """フィクスチャ XML がエラーなくパースできる。"""
+        results = _parse_fixture("study", xml_path)
+        assert len(results) >= 1
+        for entry in results:
+            assert entry["accession"] is not None
+            assert isinstance(entry["properties"], dict)
+            assert entry["title"] is None or isinstance(entry["title"], str)
+            assert entry["description"] is None or isinstance(entry["description"], str)
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("study"),
+        ids=[t[0] for t in _discover_fixture_xmls("study")],
+    )
+    def test_creates_sra_instance(self, submission_id: str, xml_path: Path) -> None:
+        """パース結果から SRA インスタンスを生成できる。"""
+        results = _parse_fixture("study", xml_path)
+        for entry in results:
+            sra = create_sra_entry(
+                "study", entry,
+                status="live", accessibility="public-access",
+                date_created=None, date_modified=None, date_published=None,
+            )
+            assert isinstance(sra, SRA)
+            assert sra.type_ == "sra-study"
+
+
+class TestFixtureExperiment:
+    """Fixture-based tests for experiment XML parsing."""
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("experiment"),
+        ids=[t[0] for t in _discover_fixture_xmls("experiment")],
+    )
+    def test_parses_without_error(self, submission_id: str, xml_path: Path) -> None:
+        """フィクスチャ XML がエラーなくパースできる。"""
+        results = _parse_fixture("experiment", xml_path)
+        assert len(results) >= 1
+        for entry in results:
+            assert entry["accession"] is not None
+            assert isinstance(entry["properties"], dict)
+            assert entry["title"] is None or isinstance(entry["title"], str)
+            assert entry["description"] is None or isinstance(entry["description"], str)
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("experiment"),
+        ids=[t[0] for t in _discover_fixture_xmls("experiment")],
+    )
+    def test_creates_sra_instance(self, submission_id: str, xml_path: Path) -> None:
+        """パース結果から SRA インスタンスを生成できる。"""
+        results = _parse_fixture("experiment", xml_path)
+        for entry in results:
+            sra = create_sra_entry(
+                "experiment", entry,
+                status="live", accessibility="public-access",
+                date_created=None, date_modified=None, date_published=None,
+            )
+            assert isinstance(sra, SRA)
+            assert sra.type_ == "sra-experiment"
+
+
+class TestFixtureRun:
+    """Fixture-based tests for run XML parsing."""
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("run"),
+        ids=[t[0] for t in _discover_fixture_xmls("run")],
+    )
+    def test_parses_without_error(self, submission_id: str, xml_path: Path) -> None:
+        """フィクスチャ XML がエラーなくパースできる。"""
+        results = _parse_fixture("run", xml_path)
+        assert len(results) >= 1
+        for entry in results:
+            assert entry["accession"] is not None
+            assert isinstance(entry["properties"], dict)
+            assert entry["title"] is None or isinstance(entry["title"], str)
+            assert entry["description"] is None
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("run"),
+        ids=[t[0] for t in _discover_fixture_xmls("run")],
+    )
+    def test_creates_sra_instance(self, submission_id: str, xml_path: Path) -> None:
+        """パース結果から SRA インスタンスを生成できる。"""
+        results = _parse_fixture("run", xml_path)
+        for entry in results:
+            sra = create_sra_entry(
+                "run", entry,
+                status="live", accessibility="public-access",
+                date_created=None, date_modified=None, date_published=None,
+            )
+            assert isinstance(sra, SRA)
+            assert sra.type_ == "sra-run"
+
+
+class TestFixtureSample:
+    """Fixture-based tests for sample XML parsing."""
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("sample"),
+        ids=[t[0] for t in _discover_fixture_xmls("sample")],
+    )
+    def test_parses_without_error(self, submission_id: str, xml_path: Path) -> None:
+        """フィクスチャ XML がエラーなくパースできる。"""
+        results = _parse_fixture("sample", xml_path)
+        assert len(results) >= 1
+        for entry in results:
+            assert entry["accession"] is not None
+            assert isinstance(entry["properties"], dict)
+            assert entry["title"] is None or isinstance(entry["title"], str)
+            assert entry["description"] is None or isinstance(entry["description"], str)
+            assert entry["organism"] is None or isinstance(entry["organism"], Organism)
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("sample"),
+        ids=[t[0] for t in _discover_fixture_xmls("sample")],
+    )
+    def test_creates_sra_instance(self, submission_id: str, xml_path: Path) -> None:
+        """パース結果から SRA インスタンスを生成できる。"""
+        results = _parse_fixture("sample", xml_path)
+        for entry in results:
+            sra = create_sra_entry(
+                "sample", entry,
+                status="live", accessibility="public-access",
+                date_created=None, date_modified=None, date_published=None,
+            )
+            assert isinstance(sra, SRA)
+            assert sra.type_ == "sra-sample"
+
+
+class TestFixtureAnalysis:
+    """Fixture-based tests for analysis XML parsing."""
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("analysis"),
+        ids=[t[0] for t in _discover_fixture_xmls("analysis")],
+    )
+    def test_parses_without_error(self, submission_id: str, xml_path: Path) -> None:
+        """フィクスチャ XML がエラーなくパースできる。"""
+        results = _parse_fixture("analysis", xml_path)
+        for entry in results:
+            assert entry["accession"] is not None
+            assert isinstance(entry["properties"], dict)
+            assert entry["title"] is None or isinstance(entry["title"], str)
+            assert entry["description"] is None or isinstance(entry["description"], str)
+
+    @pytest.mark.parametrize(
+        "submission_id,xml_path",
+        _discover_fixture_xmls("analysis"),
+        ids=[t[0] for t in _discover_fixture_xmls("analysis")],
+    )
+    def test_creates_sra_instance(self, submission_id: str, xml_path: Path) -> None:
+        """パース結果から SRA インスタンスを生成できる。"""
+        results = _parse_fixture("analysis", xml_path)
+        for entry in results:
+            sra = create_sra_entry(
+                "analysis", entry,
+                status="live", accessibility="public-access",
+                date_created=None, date_modified=None, date_published=None,
+            )
+            assert isinstance(sra, SRA)
+            assert sra.type_ == "sra-analysis"
+
+
+# === Representative fixture concrete value tests ===
+
+
+class TestDRA000072:
+    """DRA000072 の具体値テスト (DRA 典型パターン)。"""
+
+    def test_submission(self) -> None:
+        xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.submission.xml"
+        result = parse_submission(xml_path.read_bytes(), "DRA000072")
+        assert result is not None
+        assert result["accession"] == "DRA000072"
+        assert result["title"] == "DRA000072"
+        assert result["description"] is None  # empty submission_comment
+
+    def test_study(self) -> None:
+        xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.study.xml"
+        results = parse_study(xml_path.read_bytes(), "DRA000072")
+        assert len(results) == 1
+        assert results[0]["accession"] == "DRP000072"
+        assert results[0]["title"] == "Whole genome analysis of Streptococcus salivarius"
+        assert results[0]["description"] == "Whole genome analysis of Streptococcus salivarius"
+
+    def test_experiment(self) -> None:
+        xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.experiment.xml"
+        results = parse_experiment(xml_path.read_bytes(), "DRA000072")
+        assert len(results) >= 1
+        assert results[0]["accession"] is not None
+        assert results[0]["title"] is None or isinstance(results[0]["title"], str)
+
+    def test_sample(self) -> None:
+        xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.sample.xml"
+        results = parse_sample(xml_path.read_bytes(), "DRA000072")
+        assert len(results) >= 1
+        assert results[0]["accession"] is not None
+        assert results[0]["organism"] is None or isinstance(results[0]["organism"], Organism)
+
+    def test_run(self) -> None:
+        xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.run.xml"
+        results = parse_run(xml_path.read_bytes(), "DRA000072")
+        assert len(results) >= 1
+        assert results[0]["description"] is None
+
+    def test_analysis(self) -> None:
+        xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.analysis.xml"
+        results = parse_analysis(xml_path.read_bytes(), "DRA000072")
+        # analysis は空の場合もある
+        for entry in results:
+            assert entry["accession"] is not None
+
+
+class TestSRA000234:
+    """SRA000234 の具体値テスト (NCBI 複数エントリパターン)。"""
+
+    def test_submission(self) -> None:
+        xml_path = FIXTURE_BASE / "SRA000" / "SRA000234" / "SRA000234.submission.xml"
+        result = parse_submission(xml_path.read_bytes(), "SRA000234")
+        assert result is not None
+        assert result["accession"] == "SRA000234"
+        assert result["title"] is None  # self-closing SUBMISSION
+        assert result["description"] == "ftp submission manually prepared by shumwaym"
+
+    def test_study(self) -> None:
+        xml_path = FIXTURE_BASE / "SRA000" / "SRA000234" / "SRA000234.study.xml"
+        results = parse_study(xml_path.read_bytes(), "SRA000234")
+        assert len(results) == 1
+        assert results[0]["accession"] == "SRP000105"
+        assert "nucleosome" in results[0]["title"].lower()
+
+    def test_experiment_multiple(self) -> None:
+        xml_path = FIXTURE_BASE / "SRA000" / "SRA000234" / "SRA000234.experiment.xml"
+        results = parse_experiment(xml_path.read_bytes(), "SRA000234")
+        assert len(results) == 7
+        accessions = [r["accession"] for r in results]
+        assert "SRX000164" in accessions
+
+    def test_sample_multiple(self) -> None:
+        xml_path = FIXTURE_BASE / "SRA000" / "SRA000234" / "SRA000234.sample.xml"
+        results = parse_sample(xml_path.read_bytes(), "SRA000234")
+        assert len(results) == 7
+        accessions = [r["accession"] for r in results]
+        assert "SRS000331" in accessions
+
+
+class TestERA000005:
+    """ERA000005 の具体値テスト (ERA 空要素パターン)。"""
+
+    def test_submission(self) -> None:
+        xml_path = FIXTURE_BASE / "ERA000" / "ERA000005" / "ERA000005.submission.xml"
+        result = parse_submission(xml_path.read_bytes(), "ERA000005")
+        assert result is not None
+        assert result["accession"] == "ERA000005"
+        assert result["title"] is None  # no TITLE element
+        assert result["description"] is None  # no submission_comment
+
+    def test_study(self) -> None:
+        xml_path = FIXTURE_BASE / "ERA000" / "ERA000005" / "ERA000005.study.xml"
+        results = parse_study(xml_path.read_bytes(), "ERA000005")
+        assert len(results) == 1
+        assert results[0]["accession"] == "ERP000053"
+        assert "diploid genome" in results[0]["title"].lower()
+
+    def test_experiment_empty_title(self) -> None:
+        xml_path = FIXTURE_BASE / "ERA000" / "ERA000005" / "ERA000005.experiment.xml"
+        results = parse_experiment(xml_path.read_bytes(), "ERA000005")
+        assert len(results) >= 1
+        # ERA experiments often have <TITLE/> empty elements
+        first = results[0]
+        assert first["accession"] is not None
+        # title can be None for empty <TITLE/> elements
+        assert first["title"] is None or isinstance(first["title"], str)
+
+    def test_sample(self) -> None:
+        xml_path = FIXTURE_BASE / "ERA000" / "ERA000005" / "ERA000005.sample.xml"
+        results = parse_sample(xml_path.read_bytes(), "ERA000005")
+        assert len(results) >= 1
+        assert results[0]["accession"] is not None

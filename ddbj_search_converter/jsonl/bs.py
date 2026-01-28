@@ -185,7 +185,7 @@ def parse_same_as(sample: Dict[str, Any], accession: str = "") -> List[Xref]:
                 xrefs.append(Xref(
                     identifier=content,
                     type="sra-sample",
-                    url=f"https://ddbj.nig.ac.jp/search/entry/sra-sample/{content}",
+                    url=f"https://ddbj.nig.ac.jp/search/entries/sra-sample/{content}",
                 ))
     except Exception as e:
         log_warn(f"failed to parse same_as: {e}", accession=accession)
@@ -303,12 +303,12 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
         distribution=[Distribution(
             type="DataDownload",
             encodingFormat="JSON",
-            contentUrl=f"https://ddbj.nig.ac.jp/search/entry/biosample/{accession}.json",
+            contentUrl=f"https://ddbj.nig.ac.jp/search/entries/biosample/{accession}.json",
         )],
         isPartOf="BioSample",
         type="biosample",
         name=None,
-        url=f"https://ddbj.nig.ac.jp/search/entry/biosample/{accession}",
+        url=f"https://ddbj.nig.ac.jp/search/entries/biosample/{accession}",
         organism=parse_organism(sample, is_ddbj, accession),
         title=parse_title(sample, accession),
         description=parse_description(sample, accession),
@@ -353,8 +353,7 @@ def iterate_xml_biosamples(xml_path: Path) -> Iterator[bytes]:
 def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
     """DDBJ BioSample の日付を DuckDB キャッシュから取得して設定する。"""
     from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
-        date_cache_exists, fetch_bs_dates_from_cache,
-    )
+        date_cache_exists, fetch_bs_dates_from_cache)
     if not date_cache_exists(config):
         raise RuntimeError(
             "date cache not found. Run build_bp_bs_date_cache first."
@@ -520,8 +519,7 @@ def generate_bs_jsonl(
             # DDBJ: DuckDB キャッシュから対象 accession を取得
             from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
                 date_cache_exists,
-                fetch_bs_accessions_modified_since_from_cache,
-            )
+                fetch_bs_accessions_modified_since_from_cache)
             if not date_cache_exists(config):
                 raise RuntimeError(
                     "date cache not found. Run build_bp_bs_date_cache first."
