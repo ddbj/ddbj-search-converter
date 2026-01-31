@@ -4,26 +4,59 @@
 
 ## 環境構成
 
-- `compose.yml`: 本番環境（遺伝研スパコン）
-- `compose.dev.yml`: 開発環境（fixtures 使用）
-- `compose.elasticsearch.yml`: Elasticsearch 単体起動用
+環境変数ファイルで dev / staging / production を切り替える:
+
+| ファイル | 説明 |
+|---------|------|
+| `compose.yml` | 統合版 Docker Compose |
+| `compose.override.podman.yml` | Podman 用の差分設定 |
+| `compose.override.yml` | 実際に使う override（gitignore 済み） |
+| `env.dev` | 開発環境（fixtures 使用、ES 1GB） |
+| `env.staging` | ステージング環境（本番パス、ES 128GB） |
+| `env.production` | 本番環境（本番パス、ES 128GB） |
+| `.env` | 使用する環境変数（gitignore 済み） |
 
 ## DBLink 作成
 
-### 本番環境での実行
+### 環境起動
+
+**開発環境 (Docker)**:
 
 ```bash
-# Docker network 作成 & Elasticsearch 起動
+# 1. Docker network 作成（初回のみ）
 docker network create ddbj-search-network
-mkdir -p ./elasticsearch/{data,logs,backup}
-chmod 777 ./elasticsearch/{data,logs,backup}
-docker compose -f compose.elasticsearch.yml up -d
 
-# Converter container 起動
+# 2. 環境変数を設定
+cp env.dev .env
+
+# 3. 起動
 docker compose up -d --build
-docker compose exec app bash
 
-# === ここから container 内 ===
+# 4. コンテナに入る
+docker compose exec app bash
+```
+
+**ステージング・本番環境 (Podman)**:
+
+```bash
+# 1. Podman network 作成（初回のみ）
+podman network create ddbj-search-network
+
+# 2. 環境変数と override を設定
+cp env.staging .env                            # または env.production
+cp compose.override.podman.yml compose.override.yml
+
+# 3. 起動
+podman-compose up -d --build
+
+# 4. コンテナに入る
+podman-compose exec app bash
+```
+
+### パイプライン実行
+
+```bash
+# === container 内 ===
 
 # 外部リソースの存在確認
 check_external_resources
@@ -59,16 +92,6 @@ generate_bp_jsonl --full   # 初回は --full、以降は差分更新
 generate_bs_jsonl --full
 generate_sra_jsonl --full
 generate_jga_jsonl --full
-```
-
-### 開発環境での実行
-
-```bash
-# 開発環境起動 (fixtures 使用)
-docker compose -f compose.dev.yml up -d --build
-docker compose -f compose.dev.yml exec app bash
-
-# 以降のコマンドは本番環境と同じ
 ```
 
 ## CLI コマンド一覧

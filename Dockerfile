@@ -12,8 +12,11 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY . .
+
+COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --extra tests
+
+COPY . .
 
 ENTRYPOINT [""]
 CMD ["sleep", "infinity"]
