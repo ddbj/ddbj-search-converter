@@ -99,3 +99,7 @@ disable = [
     "W0719", # Exception type of Exception
     "I1101", # c-extension-no-member
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ddbj_search_converter"]
+include = ["py.typed"]
