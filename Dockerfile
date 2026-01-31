@@ -14,6 +14,8 @@ RUN apt update && \
 WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md ./
+COPY ddbj_search_converter ./ddbj_search_converter
+
 RUN uv sync --frozen --extra tests
 
 COPY . .
