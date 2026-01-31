@@ -136,6 +136,42 @@ generate_jga_jsonl --full
 | `es_delete_index` | Elasticsearch インデックス削除 |
 | `es_bulk_insert` | JSONL を Elasticsearch に一括挿入 |
 | `es_list_indexes` | 登録済みインデックス一覧 |
+| `es_health_check` | クラスタヘルス確認 (`-v` で詳細表示) |
+| `es_snapshot` | スナップショット管理 (サブコマンド形式) |
+
+#### スナップショット管理
+
+```bash
+# リポジトリ登録 (ES の path.repo と一致するパスを指定)
+es_snapshot repo register --name backup --path /usr/share/elasticsearch/backup
+
+# リポジトリ一覧
+es_snapshot repo list
+
+# スナップショット作成 (名前は自動生成)
+es_snapshot create --repo backup
+
+# スナップショット作成 (名前指定 + 特定インデックスのみ)
+es_snapshot create --repo backup --snapshot my_snapshot --indexes bioproject,biosample
+
+# スナップショット一覧
+es_snapshot list --repo backup -v
+
+# スナップショット復元
+es_snapshot restore --repo backup --snapshot my_snapshot
+
+# インデックス設定エクスポート (移行検証用)
+es_snapshot export-settings --output settings.json
+```
+
+#### 定期バックアップ (cron)
+
+`scripts/backup_es.sh` を cron で実行する:
+
+```bash
+# 毎日 2:00 AM にバックアップ、7日間保持
+0 2 * * * /path/to/scripts/backup_es.sh --repo backup --retention 7 >> /var/log/es_backup.log 2>&1
+```
 
 ### ログ・デバッグ
 

@@ -21,6 +21,10 @@ from ddbj_search_converter.es.bulk_insert import (bulk_insert_from_dir,
 from ddbj_search_converter.es.index import (create_index, delete_index,
                                             get_indexes_for_group,
                                             list_indexes)
+from ddbj_search_converter.es.monitoring import (check_health, format_bytes,
+                                                 get_cluster_health,
+                                                 get_index_stats,
+                                                 get_node_stats)
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, run_logger)
 
@@ -280,4 +284,104 @@ def main_list_indexes() -> None:
 
         except Exception as e:
             log_error("failed to list indexes", error=e)
+            sys.exit(1)
+
+
+# === Health Check ===
+
+
+def parse_health_check_args(args: List[str]) -> Tuple[Config, bool]:
+    parser = argparse.ArgumentParser(
+        description="Check Elasticsearch cluster health."
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Show detailed node and index information",
+    )
+    parser.add_argument(
+        "--es-url",
+        help="Elasticsearch URL (overrides env var)",
+    )
+
+    parsed = parser.parse_args(args)
+    config = get_config()
+    if parsed.es_url:
+        config = Config(
+            result_dir=config.result_dir,
+            const_dir=config.const_dir,
+            postgres_url=config.postgres_url,
+            es_url=parsed.es_url,
+        )
+
+    return config, parsed.verbose
+
+
+def main_health_check() -> None:
+    config, verbose = parse_health_check_args(sys.argv[1:])
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
+
+        try:
+            # Cluster health
+            cluster = get_cluster_health(config)
+
+            status_color = {
+                "green": "\033[92m",  # Green
+                "yellow": "\033[93m",  # Yellow
+                "red": "\033[91m",  # Red
+            }
+            reset = "\033[0m"
+            color = status_color.get(cluster.status, "")
+
+            print("\n=== Cluster Health ===")
+            print(f"Cluster Name: {cluster.cluster_name}")
+            print(f"Status: {color}{cluster.status.upper()}{reset}")
+            print(f"Nodes: {cluster.number_of_nodes} (data: {cluster.number_of_data_nodes})")
+            print(f"Shards: {cluster.active_shards} active ({cluster.active_primary_shards} primary)")
+            if cluster.unassigned_shards > 0:
+                print(f"Unassigned Shards: {cluster.unassigned_shards}")
+
+            if verbose:
+                # Node stats
+                print("\n=== Node Statistics ===")
+                nodes = get_node_stats(config)
+                for node in nodes:
+                    print(f"\nNode: {node.name} ({node.host})")
+                    print(f"  Disk: {format_bytes(node.disk_total_bytes - node.disk_free_bytes)} / "
+                          f"{format_bytes(node.disk_total_bytes)} ({node.disk_used_percent:.1f}% used)")
+                    print(f"  Heap: {format_bytes(node.heap_used_bytes)} / "
+                          f"{format_bytes(node.heap_max_bytes)} ({node.heap_used_percent:.1f}% used)")
+
+                # Index stats
+                print("\n=== Index Statistics ===")
+                print("-" * 60)
+                print(f"{'Index':<25} {'Docs':<12} {'Size':<12} {'Shards':<10}")
+                print("-" * 60)
+
+                index_stats = get_index_stats(config)
+                for idx in sorted(index_stats, key=lambda x: x.name):
+                    shards_str = f"{idx.primary_shards}p/{idx.replica_shards}r"
+                    print(f"{idx.name:<25} {idx.docs_count:<12} "
+                          f"{format_bytes(idx.store_size_bytes):<12} {shards_str:<10}")
+
+                print("-" * 60)
+
+            # Health issues
+            issues = check_health(config)
+            if issues:
+                print("\n=== Health Issues ===")
+                for issue in issues:
+                    if issue.level == "critical":
+                        print(f"\033[91m[CRITICAL]\033[0m {issue.message}")
+                    elif issue.level == "warning":
+                        print(f"\033[93m[WARNING]\033[0m {issue.message}")
+                    else:
+                        print(f"[{issue.level.upper()}] {issue.message}")
+                sys.exit(1)
+            else:
+                print("\n\033[92mAll health checks passed.\033[0m")
+
+        except Exception as e:
+            log_error("failed to check health", error=e)
             sys.exit(1)

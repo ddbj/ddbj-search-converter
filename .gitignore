@@ -169,7 +169,8 @@ cython_debug/
 elasticsearch/logs*
 elasticsearch/data*
 elasticsearch/backup
-ddbj_search_converter_prev
 ddbj_search_converter_results
+w3ddbjld_const
+dblink
 tests/fixtures
 compose.override.yml

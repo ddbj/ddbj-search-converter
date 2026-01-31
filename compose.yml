@@ -45,8 +45,10 @@ services:
       xpack.security.enabled: "false"
       bootstrap.memory_lock: "true"
       ES_JAVA_OPTS: ${ES_JAVA_OPTS}
+      path.repo: "/usr/share/elasticsearch/backup"
     volumes:
       - es-data:/usr/share/elasticsearch/data
+      - es-backup:/usr/share/elasticsearch/backup
     ulimits:
       memlock:
         soft: -1
@@ -67,4 +69,6 @@ networks:
 
 volumes:
   es-data:
+    driver: local
+  es-backup:
     driver: local
