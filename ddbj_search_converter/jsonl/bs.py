@@ -3,9 +3,7 @@ import argparse
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
-
-import xmltodict
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (BS_BASE_DIR_NAME,
                                           DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
@@ -21,6 +19,7 @@ from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (Accessibility, Attribute, BioSample,
                                           Distribution, Model, Organism,
                                           Package, Status, Xref)
+from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
@@ -160,7 +159,7 @@ def parse_package(sample: Dict[str, Any], model: List[Model], is_ddbj: bool, acc
             return Package(name=package_obj, display_name=package_obj)
         if isinstance(package_obj, dict):
             name = package_obj.get("content", "")
-            display_name = package_obj.get("display_name", name)
+            display_name = package_obj.get("display_name") or name
             return Package(name=name, display_name=display_name)
         return None
     except Exception as e:
@@ -325,28 +324,6 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
     )
 
 
-# === XML iteration ===
-
-
-def iterate_xml_biosamples(xml_path: Path) -> Iterator[bytes]:
-    """XML ファイルから <BioSample> 要素を順に抽出する。"""
-    inside_biosample = False
-    buffer = bytearray()
-    with xml_path.open(mode="rb") as f:
-        for line in f:
-            stripped_line = line.strip()
-            if stripped_line.startswith(b"<BioSample"):
-                inside_biosample = True
-                buffer = bytearray(line)
-            elif stripped_line.startswith(b"</BioSample>"):
-                inside_biosample = False
-                buffer.extend(line)
-                yield bytes(buffer)
-                buffer.clear()
-            elif inside_biosample:
-                buffer.extend(line)
-
-
 # === Processing ===
 
 
@@ -369,11 +346,9 @@ def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
 
 def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool) -> None:
     """NCBI BioSample の日付を XML から取得して設定する。"""
-    for xml_element in iterate_xml_biosamples(xml_path):
+    for xml_element in iterate_xml_element(xml_path, "BioSample"):
         try:
-            metadata = xmltodict.parse(
-                xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-            )
+            metadata = parse_xml(xml_element)
             sample = metadata["BioSample"]
             accession = parse_accession(sample, is_ddbj)
             if accession in docs:
@@ -409,11 +384,9 @@ def _process_xml_file_worker(
     skipped_count = 0
     filtered_count = 0
 
-    for xml_element in iterate_xml_biosamples(xml_path):
+    for xml_element in iterate_xml_element(xml_path, "BioSample"):
         try:
-            metadata = xmltodict.parse(
-                xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-            )
+            metadata = parse_xml(xml_element)
             bs_instance = xml_entry_to_bs_instance(metadata, is_ddbj)
 
             # blacklist チェック
@@ -578,18 +551,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
         description="Generate BioSample JSONL files from split XML files."
     )
     parser.add_argument(
-        "--result-dir",
-        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        "tmp_xml: {result_dir}/biosample/tmp_xml/{date}/, "
-        "jsonl: {result_dir}/biosample/jsonl/{date}/.",
-        default=None,
-    )
-    parser.add_argument(
-        "--date",
-        help=f"Date string for tmp_xml and output directory. Default: {TODAY_STR}",
-        default=TODAY_STR,
-    )
-    parser.add_argument(
         "--parallel-num",
         help=f"Number of parallel workers. Default: {DEFAULT_PARALLEL_NUM}",
         type=int,
@@ -600,24 +561,14 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
         help="Process all entries instead of incremental update.",
         action="store_true",
     )
-    parser.add_argument(
-        "--debug",
-        help="Enable debug mode.",
-        action="store_true",
-    )
 
     parsed = parser.parse_args(args)
 
     config = get_config()
-    if parsed.result_dir is not None:
-        config.result_dir = Path(parsed.result_dir)
-    if parsed.debug:
-        config.debug = True
 
-    date_str = parsed.date
     bs_base_dir = config.result_dir / BS_BASE_DIR_NAME
-    tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / date_str
-    output_dir = bs_base_dir / JSONL_DIR_NAME / date_str
+    tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / TODAY_STR
+    output_dir = bs_base_dir / JSONL_DIR_NAME / TODAY_STR
 
     return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full
 

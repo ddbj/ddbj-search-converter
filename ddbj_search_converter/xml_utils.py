@@ -4,9 +4,18 @@ BioProject/BioSample の大規模 XML を効率的に処理するための関数
 import gzip
 import shutil
 from pathlib import Path
-from typing import Generator, List, Literal
+from typing import Any, Dict, Generator, List, Literal
+
+import xmltodict
 
 from ddbj_search_converter.config import TODAY_STR, Config
+
+
+def parse_xml(xml_bytes: bytes) -> Dict[str, Any]:
+    """XML bytes を dict にパースする。標準パラメータを使用。"""
+    return xmltodict.parse(
+        xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
+    )
 
 
 def get_tmp_xml_dir(config: Config, subdir: Literal["bioproject", "biosample"]) -> Path:

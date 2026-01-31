@@ -9,8 +9,6 @@ from pathlib import Path
 from typing import (Any, Callable, Dict, List, Literal, Optional, Set, Tuple,
                     cast)
 
-import xmltodict
-
 from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
                                           TODAY_STR, Config, get_config,
                                           read_last_run, write_last_run)
@@ -28,6 +26,7 @@ from ddbj_search_converter.sra_accessions_tab import (SourceKind,
                                                       get_accession_info_bulk,
                                                       iter_all_submissions,
                                                       iter_updated_submissions)
+from ddbj_search_converter.xml_utils import parse_xml
 
 DEFAULT_BATCH_SIZE = 1000
 DEFAULT_PARALLEL_NUM = 8
@@ -51,13 +50,6 @@ SRA_TYPE_MAP: Dict[SraXmlType, SraEntryType] = {
 
 
 # === Parse functions ===
-
-
-def _parse_xml(xml_bytes: bytes) -> Dict[str, Any]:
-    """XML bytes を dict にパースする。"""
-    return xmltodict.parse(
-        xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-    )
 
 
 def _get_entries(parsed: Dict[str, Any], set_key: str, entry_key: str) -> List[Dict[str, Any]]:
@@ -138,7 +130,7 @@ def parse_submission(
 ) -> Optional[Dict[str, Any]]:
     """submission XML をパースする。"""
     try:
-        parsed = _parse_xml(xml_bytes)
+        parsed = parse_xml(xml_bytes)
         submission = parsed.get("SUBMISSION")
         if submission is None:
             return None
@@ -161,7 +153,7 @@ def parse_study(
     """study XML をパースする。複数の STUDY を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = _parse_xml(xml_bytes)
+        parsed = parse_xml(xml_bytes)
         studies = _get_entries(parsed, "STUDY_SET", "STUDY")
 
         for study in studies:
@@ -184,7 +176,7 @@ def parse_experiment(
     """experiment XML をパースする。複数の EXPERIMENT を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = _parse_xml(xml_bytes)
+        parsed = parse_xml(xml_bytes)
         experiments = _get_entries(parsed, "EXPERIMENT_SET", "EXPERIMENT")
 
         for exp in experiments:
@@ -207,7 +199,7 @@ def parse_run(
     """run XML をパースする。複数の RUN を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = _parse_xml(xml_bytes)
+        parsed = parse_xml(xml_bytes)
         runs = _get_entries(parsed, "RUN_SET", "RUN")
 
         for run in runs:
@@ -229,7 +221,7 @@ def parse_sample(
     """sample XML をパースする。複数の SAMPLE を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = _parse_xml(xml_bytes)
+        parsed = parse_xml(xml_bytes)
         samples = _get_entries(parsed, "SAMPLE_SET", "SAMPLE")
 
         for sample in samples:
@@ -262,7 +254,7 @@ def parse_analysis(
     """analysis XML をパースする。複数の ANALYSIS を返す。"""
     results: List[Dict[str, Any]] = []
     try:
-        parsed = _parse_xml(xml_bytes)
+        parsed = parse_xml(xml_bytes)
         analyses = _get_entries(parsed, "ANALYSIS_SET", "ANALYSIS")
 
         for analysis in analyses:
@@ -344,7 +336,7 @@ _PARSE_FNS: Dict[SraXmlType, Callable[..., Any]] = {
 def process_submission_xml(
     tar_reader: TarXMLReader,
     submission: str,
-    config: Config,
+    _config: Config,
     blacklist: Set[str],
     accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]],
 ) -> Dict[SraXmlType, List[Any]]:
@@ -354,7 +346,7 @@ def process_submission_xml(
     Args:
         tar_reader: TarXMLReader
         submission: submission accession
-        config: Config
+        _config: Config (現在未使用、将来の拡張用)
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
 
@@ -466,7 +458,7 @@ def process_source(
                 xml_bytes = tar_reader.read_xml(sub, xml_type)
                 if xml_bytes:
                     try:
-                        parsed = _parse_xml(xml_bytes)
+                        parsed = parse_xml(xml_bytes)
                         set_key = f"{xml_type.upper()}_SET"
                         entry_key = xml_type.upper()
                         for entry_data in _get_entries(parsed, set_key, entry_key):
@@ -595,17 +587,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, int, bool]:
         description="Generate SRA JSONL files from tar archives."
     )
     parser.add_argument(
-        "--result-dir",
-        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        "jsonl: {result_dir}/sra/jsonl/{date}/.",
-        default=None,
-    )
-    parser.add_argument(
-        "--date",
-        help=f"Date string for output directory. Default: {TODAY_STR}",
-        default=TODAY_STR,
-    )
-    parser.add_argument(
         "--parallel-num",
         help=f"Number of parallel workers (currently unused). Default: {DEFAULT_PARALLEL_NUM}",
         type=int,
@@ -616,23 +597,13 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, int, bool]:
         help="Process all entries instead of incremental update.",
         action="store_true",
     )
-    parser.add_argument(
-        "--debug",
-        help="Enable debug mode.",
-        action="store_true",
-    )
 
     parsed = parser.parse_args(args)
 
     config = get_config()
-    if parsed.result_dir is not None:
-        config.result_dir = Path(parsed.result_dir)
-    if parsed.debug:
-        config.debug = True
 
-    date_str = parsed.date
     sra_base_dir = config.result_dir / SRA_BASE_DIR_NAME
-    output_dir = sra_base_dir / JSONL_DIR_NAME / date_str
+    output_dir = sra_base_dir / JSONL_DIR_NAME / TODAY_STR
 
     return config, output_dir, parsed.parallel_num, parsed.full
 

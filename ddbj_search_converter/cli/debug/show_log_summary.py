@@ -233,12 +233,6 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         help="JSON output (default).",
     )
 
-    parser.add_argument(
-        "--result-dir",
-        default=None,
-        help="Result directory containing log.duckdb. Default: from config",
-    )
-
     parsed = parser.parse_args(args)
 
     if parsed.raw:
@@ -252,8 +246,6 @@ def main() -> None:
     parsed = parse_args(sys.argv[1:])
 
     config = get_config()
-    if parsed.result_dir is not None:
-        config.result_dir = Path(parsed.result_dir)
 
     db_path = _get_db_path(config.result_dir)
 

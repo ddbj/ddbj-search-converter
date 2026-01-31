@@ -49,21 +49,14 @@ def parse_args(args: List[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Show DBLink relation counts by (src_type, dst_type) pair as JSON."
     )
-    parser.add_argument(
-        "--const-dir",
-        help="Const directory containing dblink/dblink.tmp.duckdb. Default: from config",
-        default=None,
-    )
 
     return parser.parse_args(args)
 
 
 def main() -> None:
-    parsed = parse_args(sys.argv[1:])
+    parse_args(sys.argv[1:])
 
     config = get_config()
-    if parsed.const_dir is not None:
-        config.const_dir = Path(parsed.const_dir)
 
     results = get_relation_counts(config.const_dir)
     print(json.dumps(results, indent=2, ensure_ascii=False))

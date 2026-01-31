@@ -58,7 +58,7 @@ def bulk_insert_jsonl(
     config: Config,
     jsonl_files: List[Path],
     index: IndexName,
-    batch_size: int = 500,
+    batch_size: int = 5000,
     max_errors: int = 100,
 ) -> BulkInsertResult:
     """Bulk insert JSONL files into Elasticsearch.
@@ -99,7 +99,7 @@ def bulk_insert_jsonl(
                 stats_only=False,
                 raise_on_error=False,
                 max_retries=3,
-                request_timeout=300,
+                request_timeout=600,
             )
 
             success_count += success
@@ -130,7 +130,7 @@ def bulk_insert_from_dir(
     jsonl_dir: Path,
     index: IndexName,
     pattern: str = "*.jsonl",
-    batch_size: int = 500,
+    batch_size: int = 5000,
     max_errors: int = 100,
 ) -> BulkInsertResult:
     """Bulk insert all JSONL files from a directory.

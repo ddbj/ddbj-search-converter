@@ -21,17 +21,10 @@ def parse_args(args: List[str]) -> Tuple[Config, bool]:
         action="store_true",
         help="Force download Full tar.gz instead of daily updates",
     )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode",
-    )
 
     parsed = parser.parse_args(args)
 
     config = get_config()
-    if parsed.debug:
-        config.debug = True
 
     return config, parsed.force_full
 

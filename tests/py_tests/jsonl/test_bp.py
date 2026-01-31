@@ -4,8 +4,7 @@ from typing import Any, Dict
 
 import pytest
 
-from ddbj_search_converter.jsonl.bp import (iterate_xml_packages,
-                                            normalize_properties, parse_args,
+from ddbj_search_converter.jsonl.bp import (normalize_properties, parse_args,
                                             parse_description,
                                             parse_external_link, parse_grant,
                                             parse_object_type, parse_organism,
@@ -15,6 +14,7 @@ from ddbj_search_converter.jsonl.bp import (iterate_xml_packages,
                                             write_jsonl,
                                             xml_entry_to_bp_instance)
 from ddbj_search_converter.schema import BioProject
+from ddbj_search_converter.xml_utils import iterate_xml_element
 
 
 class TestParseObjectType:
@@ -592,7 +592,7 @@ class TestNormalizeProperties:
 
 
 class TestIterateXmlPackages:
-    """Tests for iterate_xml_packages function."""
+    """Tests for iterate_xml_element function with Package tag."""
 
     def test_extracts_packages(self, tmp_path: Path) -> None:
         """<Package> 要素を抽出する。"""
@@ -617,7 +617,7 @@ class TestIterateXmlPackages:
         xml_path = tmp_path / "test.xml"
         xml_path.write_bytes(xml_content.encode("utf-8"))
 
-        packages = list(iterate_xml_packages(xml_path))
+        packages = list(iterate_xml_element(xml_path, "Package"))
         assert len(packages) == 2
         assert b"PRJNA1" in packages[0]
         assert b"PRJNA2" in packages[1]
@@ -784,15 +784,3 @@ class TestParseArgs:
         config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(["--parallel-num", "32"])
         assert parallel_num == 32
 
-    def test_result_dir(self, tmp_path: Path) -> None:
-        """--result-dir オプションをパースする。"""
-        result_dir = tmp_path / "custom_result"
-        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(["--result-dir", str(result_dir)])
-        assert config.result_dir == result_dir
-
-    def test_date_option(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        """--date オプションをパースする。"""
-        monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
-        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(["--date", "20260115"])
-        assert "20260115" in str(tmp_xml_dir)
-        assert "20260115" in str(output_dir)

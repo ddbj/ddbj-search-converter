@@ -3,9 +3,7 @@ import argparse
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Literal, Optional, Set, Tuple
-
-import xmltodict
+from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (BP_BASE_DIR_NAME,
                                           DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
@@ -22,6 +20,7 @@ from ddbj_search_converter.schema import (Accessibility, Agency, BioProject,
                                           Distribution, ExternalLink, Grant,
                                           Organism, Organization, Publication,
                                           Status, Xref)
+from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
@@ -478,28 +477,6 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
     )
 
 
-# === XML iteration ===
-
-
-def iterate_xml_packages(xml_path: Path) -> Iterator[bytes]:
-    """XML ファイルから <Package> 要素を順に抽出する。"""
-    inside_package = False
-    buffer = bytearray()
-    with xml_path.open(mode="rb") as f:
-        for line in f:
-            stripped_line = line.strip()
-            if stripped_line.startswith(b"<Package>"):
-                inside_package = True
-                buffer = bytearray(line)
-            elif stripped_line.startswith(b"</Package>"):
-                inside_package = False
-                buffer.extend(line)
-                yield bytes(buffer)
-                buffer.clear()
-            elif inside_package:
-                buffer.extend(line)
-
-
 # === Processing ===
 
 
@@ -522,11 +499,9 @@ def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioProject]) -> None:
 
 def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioProject]) -> None:
     """NCBI BioProject の日付を XML から取得して設定する。"""
-    for xml_element in iterate_xml_packages(xml_path):
+    for xml_element in iterate_xml_element(xml_path, "Package"):
         try:
-            metadata = xmltodict.parse(
-                xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-            )
+            metadata = parse_xml(xml_element)
             project = metadata["Package"]["Project"]
             accession = project["Project"]["ProjectID"]["ArchiveID"]["accession"]
             if accession in docs:
@@ -562,11 +537,9 @@ def _process_xml_file_worker(
     skipped_count = 0
     filtered_count = 0
 
-    for xml_element in iterate_xml_packages(xml_path):
+    for xml_element in iterate_xml_element(xml_path, "Package"):
         try:
-            metadata = xmltodict.parse(
-                xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-            )
+            metadata = parse_xml(xml_element)
             bp_instance = xml_entry_to_bp_instance(metadata["Package"], is_ddbj)
 
             # blacklist チェック
@@ -731,18 +704,6 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
         description="Generate BioProject JSONL files from split XML files."
     )
     parser.add_argument(
-        "--result-dir",
-        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        "tmp_xml: {result_dir}/bioproject/tmp_xml/{date}/, "
-        "jsonl: {result_dir}/bioproject/jsonl/{date}/.",
-        default=None,
-    )
-    parser.add_argument(
-        "--date",
-        help=f"Date string for tmp_xml and output directory. Default: {TODAY_STR}",
-        default=TODAY_STR,
-    )
-    parser.add_argument(
         "--parallel-num",
         help=f"Number of parallel workers. Default: {DEFAULT_PARALLEL_NUM}",
         type=int,
@@ -753,24 +714,14 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
         help="Process all entries instead of incremental update.",
         action="store_true",
     )
-    parser.add_argument(
-        "--debug",
-        help="Enable debug mode.",
-        action="store_true",
-    )
 
     parsed = parser.parse_args(args)
 
     config = get_config()
-    if parsed.result_dir is not None:
-        config.result_dir = Path(parsed.result_dir)
-    if parsed.debug:
-        config.debug = True
 
-    date_str = parsed.date
     bp_base_dir = config.result_dir / BP_BASE_DIR_NAME
-    tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / date_str
-    output_dir = bp_base_dir / JSONL_DIR_NAME / date_str
+    tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / TODAY_STR
+    output_dir = bp_base_dir / JSONL_DIR_NAME / TODAY_STR
 
     return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full
 

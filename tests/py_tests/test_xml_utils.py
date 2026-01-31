@@ -6,9 +6,84 @@ import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.xml_utils import (extract_gzip, get_tmp_xml_dir,
-                                             iterate_xml_element, split_xml)
+                                             iterate_xml_element, parse_xml,
+                                             split_xml)
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
+
+
+class TestParseXml:
+    """Tests for parse_xml function."""
+
+    def test_parses_simple_xml(self) -> None:
+        """シンプルな XML をパースできる。"""
+        xml_bytes = b'<?xml version="1.0"?><Root><Child>value</Child></Root>'
+        result = parse_xml(xml_bytes)
+        assert result == {"Root": {"Child": "value"}}
+
+    def test_attributes_no_prefix(self) -> None:
+        """属性はプレフィックスなしでパースされる。"""
+        xml_bytes = b'<Root attr="test"><Child id="1">value</Child></Root>'
+        result = parse_xml(xml_bytes)
+        assert result["Root"]["attr"] == "test"
+        assert result["Root"]["Child"]["id"] == "1"
+        assert result["Root"]["Child"]["content"] == "value"
+
+    def test_cdata_as_content(self) -> None:
+        """CDATA は content キーでパースされる。"""
+        xml_bytes = b"<Root><Child><![CDATA[some cdata content]]></Child></Root>"
+        result = parse_xml(xml_bytes)
+        assert result["Root"]["Child"] == "some cdata content"
+
+    def test_nested_elements(self) -> None:
+        """ネストされた要素をパースできる。"""
+        xml_bytes = b"""
+        <BioSample accession="SAMN00000001">
+            <Description>
+                <Title>Test Sample</Title>
+                <Organism taxonomy_id="9606">
+                    <OrganismName>Homo sapiens</OrganismName>
+                </Organism>
+            </Description>
+        </BioSample>
+        """
+        result = parse_xml(xml_bytes)
+        assert result["BioSample"]["accession"] == "SAMN00000001"
+        assert result["BioSample"]["Description"]["Title"] == "Test Sample"
+        assert result["BioSample"]["Description"]["Organism"]["taxonomy_id"] == "9606"
+        assert result["BioSample"]["Description"]["Organism"]["OrganismName"] == "Homo sapiens"
+
+    def test_list_of_elements(self) -> None:
+        """同名の要素が複数ある場合はリストになる。"""
+        xml_bytes = b"""
+        <Root>
+            <Item>first</Item>
+            <Item>second</Item>
+            <Item>third</Item>
+        </Root>
+        """
+        result = parse_xml(xml_bytes)
+        assert result["Root"]["Item"] == ["first", "second", "third"]
+
+    def test_mixed_content_with_attributes(self) -> None:
+        """属性とテキストが混在する要素をパースできる。"""
+        xml_bytes = b'<Name abbr="DDBJ">DNA Data Bank of Japan</Name>'
+        result = parse_xml(xml_bytes)
+        assert result["Name"]["abbr"] == "DDBJ"
+        assert result["Name"]["content"] == "DNA Data Bank of Japan"
+
+    def test_empty_element(self) -> None:
+        """空要素をパースできる。"""
+        xml_bytes = b"<Root><Empty></Empty><SelfClose/></Root>"
+        result = parse_xml(xml_bytes)
+        assert result["Root"]["Empty"] is None
+        assert result["Root"]["SelfClose"] is None
+
+    def test_invalid_xml_raises_exception(self) -> None:
+        """不正な XML は例外を発生させる。"""
+        xml_bytes = b"<Root><Unclosed>"
+        with pytest.raises(Exception):
+            parse_xml(xml_bytes)
 
 
 class TestGetTmpXmlDir:

@@ -581,17 +581,6 @@ class TestParseArgs:
         config, output_dir, parallel_num, full = parse_args(["--parallel-num", "16"])
         assert parallel_num == 16
 
-    def test_result_dir(self, tmp_path: Path) -> None:
-        """--result-dir オプションをパースする。"""
-        result_dir = tmp_path / "custom_result"
-        config, output_dir, parallel_num, full = parse_args(["--result-dir", str(result_dir)])
-        assert config.result_dir == result_dir
-
-    def test_date_option(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        """--date オプションをパースする。"""
-        monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
-        config, output_dir, parallel_num, full = parse_args(["--date", "20260115"])
-        assert "20260115" in str(output_dir)
 
 
 # === Fixture-based parametrized tests ===

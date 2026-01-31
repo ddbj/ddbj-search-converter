@@ -45,20 +45,9 @@ def parse_create_index_args(args: List[str]) -> Tuple[Config, str, bool]:
         action="store_true",
         help="Skip indexes that already exist instead of raising an error",
     )
-    parser.add_argument(
-        "--es-url",
-        help="Elasticsearch URL (overrides env var)",
-    )
 
     parsed = parser.parse_args(args)
     config = get_config()
-    if parsed.es_url:
-        config = Config(
-            result_dir=config.result_dir,
-            const_dir=config.const_dir,
-            postgres_url=config.postgres_url,
-            es_url=parsed.es_url,
-        )
 
     return config, parsed.index, parsed.skip_existing
 
@@ -102,20 +91,9 @@ def parse_delete_index_args(args: List[str]) -> Tuple[Config, str, bool, bool]:
         action="store_true",
         help="Skip indexes that don't exist instead of raising an error",
     )
-    parser.add_argument(
-        "--es-url",
-        help="Elasticsearch URL (overrides env var)",
-    )
 
     parsed = parser.parse_args(args)
     config = get_config()
-    if parsed.es_url:
-        config = Config(
-            result_dir=config.result_dir,
-            const_dir=config.const_dir,
-            postgres_url=config.postgres_url,
-            es_url=parsed.es_url,
-        )
 
     return config, parsed.index, parsed.force, parsed.skip_missing
 
@@ -171,23 +149,12 @@ def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Pat
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=500,
-        help="Number of documents per bulk request (default: 500)",
-    )
-    parser.add_argument(
-        "--es-url",
-        help="Elasticsearch URL (overrides env var)",
+        default=5000,
+        help="Number of documents per bulk request (default: 5000)",
     )
 
     parsed = parser.parse_args(args)
     config = get_config()
-    if parsed.es_url:
-        config = Config(
-            result_dir=config.result_dir,
-            const_dir=config.const_dir,
-            postgres_url=config.postgres_url,
-            es_url=parsed.es_url,
-        )
 
     if not parsed.dir and not parsed.files:
         parser.error("Either --dir or --file must be specified")
@@ -244,20 +211,9 @@ def parse_list_indexes_args(args: List[str]) -> Config:
     parser = argparse.ArgumentParser(
         description="List Elasticsearch indexes and their document counts."
     )
-    parser.add_argument(
-        "--es-url",
-        help="Elasticsearch URL (overrides env var)",
-    )
 
-    parsed = parser.parse_args(args)
+    parser.parse_args(args)
     config = get_config()
-    if parsed.es_url:
-        config = Config(
-            result_dir=config.result_dir,
-            const_dir=config.const_dir,
-            postgres_url=config.postgres_url,
-            es_url=parsed.es_url,
-        )
 
     return config
 
@@ -299,20 +255,9 @@ def parse_health_check_args(args: List[str]) -> Tuple[Config, bool]:
         action="store_true",
         help="Show detailed node and index information",
     )
-    parser.add_argument(
-        "--es-url",
-        help="Elasticsearch URL (overrides env var)",
-    )
 
     parsed = parser.parse_args(args)
     config = get_config()
-    if parsed.es_url:
-        config = Config(
-            result_dir=config.result_dir,
-            const_dir=config.const_dir,
-            postgres_url=config.postgres_url,
-            es_url=parsed.es_url,
-        )
 
     return config, parsed.verbose
 

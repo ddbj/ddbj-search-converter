@@ -141,7 +141,7 @@ def get_config() -> Config:
 
 LAST_RUN_FILE_NAME = "last_run.json"
 
-DEFAULT_MARGIN_DAYS = 7
+DEFAULT_MARGIN_DAYS = 30
 
 
 def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:

@@ -4,8 +4,7 @@ from typing import Any, Dict
 
 import pytest
 
-from ddbj_search_converter.jsonl.bs import (iterate_xml_biosamples,
-                                            normalize_properties,
+from ddbj_search_converter.jsonl.bs import (normalize_properties,
                                             parse_accessibility,
                                             parse_accession, parse_args,
                                             parse_attributes,
@@ -15,6 +14,7 @@ from ddbj_search_converter.jsonl.bs import (iterate_xml_biosamples,
                                             parse_title, write_jsonl,
                                             xml_entry_to_bs_instance)
 from ddbj_search_converter.schema import BioSample
+from ddbj_search_converter.xml_utils import iterate_xml_element
 
 
 class TestParseAccession:
@@ -384,7 +384,7 @@ class TestNormalizeProperties:
 
 
 class TestIterateXmlBiosamples:
-    """Tests for iterate_xml_biosamples function."""
+    """Tests for iterate_xml_element function with BioSample tag."""
 
     def test_extracts_biosamples(self, tmp_path: Path) -> None:
         """<BioSample> 要素を抽出する。"""
@@ -405,7 +405,7 @@ class TestIterateXmlBiosamples:
         xml_path = tmp_path / "test.xml"
         xml_path.write_bytes(xml_content.encode("utf-8"))
 
-        biosamples = list(iterate_xml_biosamples(xml_path))
+        biosamples = list(iterate_xml_element(xml_path, "BioSample"))
         assert len(biosamples) == 2
         assert b"SAMN00000001" in biosamples[0]
         assert b"SAMN00000002" in biosamples[1]
@@ -634,19 +634,13 @@ class TestParseArgsIncremental:
         _, _, _, _, full = parse_args([])
         assert full is False
 
-    def test_parse_args_with_all_options(self) -> None:
-        """全オプションを指定した場合のテスト。"""
+    def test_parse_args_with_parallel_and_full(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """parallel-num と full オプションを指定した場合のテスト。"""
+        monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
         config, tmp_xml_dir, output_dir, parallel_num, full = parse_args([
-            "--result-dir", "/tmp/test",
-            "--date", "20240101",
             "--parallel-num", "8",
             "--full",
-            "--debug",
         ])
-        assert config.result_dir == Path("/tmp/test")
-        assert config.debug is True
-        assert "20240101" in str(tmp_xml_dir)
-        assert "20240101" in str(output_dir)
         assert parallel_num == 8
         assert full is True
 

@@ -8,40 +8,37 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-import xmltodict
-
 from ddbj_search_converter.config import (BP_BASE_DIR_NAME, BS_BASE_DIR_NAME,
                                           JGA_BASE_PATH, TMP_XML_DIR_NAME,
                                           TODAY_STR, Config, get_config)
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import (load_blacklist,
-                                                 load_sra_blacklist)
+                                                load_sra_blacklist)
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
-from ddbj_search_converter.jsonl.bp import (iterate_xml_packages,
-                                            xml_entry_to_bp_instance)
 from ddbj_search_converter.jsonl.bp import \
     _fetch_dates_ddbj as bp_fetch_dates_ddbj
 from ddbj_search_converter.jsonl.bp import \
     _fetch_dates_ncbi as bp_fetch_dates_ncbi
-from ddbj_search_converter.jsonl.bs import (iterate_xml_biosamples,
-                                            xml_entry_to_bs_instance)
+from ddbj_search_converter.jsonl.bp import xml_entry_to_bp_instance
 from ddbj_search_converter.jsonl.bs import \
     _fetch_dates_ddbj as bs_fetch_dates_ddbj
 from ddbj_search_converter.jsonl.bs import \
     _fetch_dates_ncbi as bs_fetch_dates_ncbi
-from ddbj_search_converter.jsonl.jga import (INDEX_TO_ACCESSION_TYPE,
-                                             XML_KEYS, IndexName,
+from ddbj_search_converter.jsonl.bs import xml_entry_to_bs_instance
+from ddbj_search_converter.jsonl.jga import (INDEX_TO_ACCESSION_TYPE, XML_KEYS,
+                                             IndexName,
                                              jga_entry_to_jga_instance,
                                              load_date_map, load_jga_xml)
-from ddbj_search_converter.jsonl.sra import (XML_TYPES, process_submission_xml)
+from ddbj_search_converter.jsonl.sra import XML_TYPES, process_submission_xml
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 from ddbj_search_converter.schema import XrefType
 from ddbj_search_converter.sra.tar_reader import (SraXmlType,
-                                                   get_dra_tar_reader,
-                                                   get_ncbi_tar_reader)
+                                                  get_dra_tar_reader,
+                                                  get_ncbi_tar_reader)
 from ddbj_search_converter.sra_accessions_tab import (
     SourceKind, get_accession_info_bulk, lookup_submissions_for_accessions)
+from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 # type ごとに受け入れる accession パターンを定義
 TYPE_PATTERNS: Dict[str, List[AccessionType]] = {
@@ -113,11 +110,9 @@ def regenerate_bp_jsonl(
 
     for xml_path in xml_files:
         is_ddbj = xml_path.name.startswith("ddbj_")
-        for xml_element in iterate_xml_packages(xml_path):
+        for xml_element in iterate_xml_element(xml_path, "Package"):
             try:
-                metadata = xmltodict.parse(
-                    xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-                )
+                metadata = parse_xml(xml_element)
                 bp_instance = xml_entry_to_bp_instance(metadata["Package"], is_ddbj)
 
                 if bp_instance.identifier not in target_accessions:
@@ -186,11 +181,9 @@ def regenerate_bs_jsonl(
 
     for xml_path in xml_files:
         is_ddbj = xml_path.name.startswith("ddbj_")
-        for xml_element in iterate_xml_biosamples(xml_path):
+        for xml_element in iterate_xml_element(xml_path, "BioSample"):
             try:
-                metadata = xmltodict.parse(
-                    xml_element, attr_prefix="", cdata_key="content", process_namespaces=False
-                )
+                metadata = parse_xml(xml_element)
                 bs_instance = xml_entry_to_bs_instance(metadata, is_ddbj)
 
                 if bs_instance.identifier not in target_accessions:
@@ -269,20 +262,21 @@ def regenerate_sra_jsonl(
     # entity type 別に結果を集約
     all_entries: Dict[str, List[Any]] = {t: [] for t in XML_TYPES}
 
-    for source in ("dra", "sra"):
-        accs = source_accessions[source]
+    source_kind: SourceKind
+    for source_kind in ("dra", "sra"):
+        accs = source_accessions[source_kind]
         if not accs:
             continue
 
-        is_dra = source == "dra"
-        log_info(f"processing {source.upper()}: {len(accs)} accession(s)")
+        is_dra = source_kind == "dra"
+        log_info(f"processing {source_kind.upper()}: {len(accs)} accession(s)")
 
         # accession → submission を逆引き
-        acc_to_sub = lookup_submissions_for_accessions(config, source, accs)
+        acc_to_sub = lookup_submissions_for_accessions(config, source_kind, accs)
 
         not_found = set(accs) - set(acc_to_sub.keys())
         if not_found:
-            log_warn(f"{len(not_found)} accession(s) not found in {source.upper()} accessions DB: {sorted(not_found)}")
+            log_warn(f"{len(not_found)} accession(s) not found in {source_kind.upper()} accessions DB: {sorted(not_found)}")
 
         if not acc_to_sub:
             continue
@@ -306,9 +300,7 @@ def regenerate_sra_jsonl(
                 xml_bytes = tar_reader.read_xml(sub, xml_type)
                 if xml_bytes:
                     try:
-                        parsed = xmltodict.parse(
-                            xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-                        )
+                        parsed = parse_xml(xml_bytes)
                         set_key = f"{xml_type.upper()}_SET"
                         entry_key = xml_type.upper()
                         entries_data = (parsed.get(set_key) or {}).get(entry_key)
@@ -323,11 +315,11 @@ def regenerate_sra_jsonl(
                         pass
 
             # accession info を取得
-            accession_info = get_accession_info_bulk(config, source, sub_accessions)
+            accession_info = get_accession_info_bulk(config, source_kind, sub_accessions)
 
             # submission を処理
             results = process_submission_xml(
-                tar_reader, sub, is_dra, config, blacklist, accession_info
+                tar_reader, sub, config, blacklist, accession_info
             )
 
             # target_accessions に含まれるもののみフィルタ
@@ -488,26 +480,6 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         default=None,
         help="Output directory. Default: {result_dir}/regenerate/{date}/",
     )
-    parser.add_argument(
-        "--result-dir",
-        default=None,
-        help="Base result directory.",
-    )
-    parser.add_argument(
-        "--date",
-        default=TODAY_STR,
-        help=f"Date string for input/output directory. Default: {TODAY_STR}",
-    )
-    parser.add_argument(
-        "--jga-base-path",
-        default=None,
-        help=f"Path to JGA XML/CSV files. Default: {JGA_BASE_PATH}",
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Enable debug mode.",
-    )
 
     parsed = parser.parse_args(args)
 
@@ -522,13 +494,8 @@ def main() -> None:
     parsed = parse_args(sys.argv[1:])
 
     config = get_config()
-    if parsed.result_dir is not None:
-        config.result_dir = Path(parsed.result_dir)
-    if parsed.debug:
-        config.debug = True
 
     data_type: str = parsed.type
-    date_str: str = parsed.date
 
     # accession を収集
     accessions: Set[str] = set()
@@ -552,28 +519,25 @@ def main() -> None:
         if parsed.output_dir:
             output_dir = Path(parsed.output_dir)
         else:
-            output_dir = config.result_dir / REGENERATE_DIR_NAME / date_str
+            output_dir = config.result_dir / REGENERATE_DIR_NAME / TODAY_STR
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
 
         if data_type == "bioproject":
             bp_base_dir = config.result_dir / BP_BASE_DIR_NAME
-            tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / date_str
+            tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / TODAY_STR
             regenerate_bp_jsonl(config, tmp_xml_dir, output_dir, accessions)
 
         elif data_type == "biosample":
             bs_base_dir = config.result_dir / BS_BASE_DIR_NAME
-            tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / date_str
+            tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / TODAY_STR
             regenerate_bs_jsonl(config, tmp_xml_dir, output_dir, accessions)
 
         elif data_type == "sra":
             regenerate_sra_jsonl(config, output_dir, accessions)
 
         elif data_type == "jga":
-            jga_base_path = (
-                Path(parsed.jga_base_path) if parsed.jga_base_path else JGA_BASE_PATH
-            )
-            regenerate_jga_jsonl(config, output_dir, jga_base_path, accessions)
+            regenerate_jga_jsonl(config, output_dir, JGA_BASE_PATH, accessions)
 
         log_info("regenerate_jsonl completed")
 

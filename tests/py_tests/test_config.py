@@ -105,10 +105,10 @@ class TestLastRunUtilities:
 class TestApplyMargin:
     """apply_margin のテスト。"""
 
-    def test_default_margin_7_days(self) -> None:
-        """デフォルトで 7 日分のマージンを減算する。"""
-        result = apply_margin("2026-01-20T00:00:00Z")
-        assert result == "2026-01-13T00:00:00Z"
+    def test_default_margin_30_days(self) -> None:
+        """デフォルトで 30 日分のマージンを減算する。"""
+        result = apply_margin("2026-02-15T00:00:00Z")
+        assert result == "2026-01-16T00:00:00Z"
 
     def test_custom_margin_days(self) -> None:
         """カスタム margin_days を指定できる。"""
@@ -117,15 +117,15 @@ class TestApplyMargin:
 
     def test_month_boundary(self) -> None:
         """月またぎで正しく計算される。"""
-        result = apply_margin("2026-02-03T00:00:00Z")
-        assert result == "2026-01-27T00:00:00Z"
+        result = apply_margin("2026-02-15T00:00:00Z")
+        assert result == "2026-01-16T00:00:00Z"
 
     def test_year_boundary(self) -> None:
         """年またぎで正しく計算される。"""
-        result = apply_margin("2026-01-05T00:00:00Z")
-        assert result == "2025-12-29T00:00:00Z"
+        result = apply_margin("2026-01-15T00:00:00Z")
+        assert result == "2025-12-16T00:00:00Z"
 
     def test_preserves_time_part(self) -> None:
         """時刻部分が保持される。"""
-        result = apply_margin("2026-01-20T15:30:45Z")
-        assert result == "2026-01-13T15:30:45Z"
+        result = apply_margin("2026-02-15T15:30:45Z")
+        assert result == "2026-01-16T15:30:45Z"

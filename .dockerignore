@@ -5,5 +5,6 @@
 !LICENSE
 !pyproject.toml
 !README.md
+!scripts
 !tests
 !uv.lock

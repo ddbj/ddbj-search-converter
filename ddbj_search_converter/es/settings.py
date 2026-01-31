@@ -38,16 +38,16 @@ INDEX_SETTINGS: Dict[str, Any] = {
 
 BULK_INSERT_SETTINGS: Dict[str, Any] = {
     # Number of documents per bulk request.
-    # 500 is a good balance between memory usage and throughput.
-    # Larger values may cause memory pressure with large documents.
-    "batch_size": 500,
+    # 5000 provides good throughput for large-scale data ingestion.
+    # Reduce if memory pressure occurs with very large documents.
+    "batch_size": 5000,
 
     # Maximum retries for failed bulk operations.
     "max_retries": 3,
 
     # Request timeout in seconds.
-    # 300 seconds is generous for large bulk inserts.
-    "request_timeout": 300,
+    # 600 seconds for large-scale bulk inserts with batch_size=5000.
+    "request_timeout": 600,
 
     # Refresh interval during bulk insert.
     # "-1" disables automatic refresh for better performance.

@@ -7,8 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
-import xmltodict
-
 from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
                                           JSONL_DIR_NAME, TODAY_STR, Config,
                                           get_config)
@@ -17,6 +15,7 @@ from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, run_logger)
 from ddbj_search_converter.schema import JGA, Distribution, Organism
+from ddbj_search_converter.xml_utils import parse_xml
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 INDEX_NAMES: List[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -41,9 +40,7 @@ def load_jga_xml(xml_path: Path) -> Dict[str, Any]:
     """JGA XML ファイルを読み込んでパースする。"""
     with xml_path.open("rb") as f:
         xml_bytes = f.read()
-    xml_metadata: Dict[str, Any] = xmltodict.parse(
-        xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-    )
+    xml_metadata: Dict[str, Any] = parse_xml(xml_bytes)
     return xml_metadata
 
 
@@ -228,65 +225,34 @@ def generate_jga_jsonl(
     log_info(f"wrote {len(jga_instances)} entries to jsonl file: {output_path}")
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, Path]:
+def parse_args(args: List[str]) -> Tuple[Config, Path]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(
         description="Generate JGA JSONL files from JGA XML files."
     )
-    parser.add_argument(
-        "--result-dir",
-        help="Base directory for output. Default: $PWD/ddbj_search_converter_results. "
-        "Output will be stored in {result_dir}/jga/jsonl/{date}/.",
-        default=None,
-    )
-    parser.add_argument(
-        "--date",
-        help=f"Date string for output directory. Default: {TODAY_STR}",
-        default=TODAY_STR,
-    )
-    parser.add_argument(
-        "--jga-base-path",
-        help=f"Path to JGA XML/CSV files. Default: {JGA_BASE_PATH}",
-        default=None,
-    )
-    parser.add_argument(
-        "--debug",
-        help="Enable debug mode.",
-        action="store_true",
-    )
 
-    parsed = parser.parse_args(args)
+    parser.parse_args(args)
 
     config = get_config()
-    if parsed.result_dir is not None:
-        config.result_dir = Path(parsed.result_dir)
-    if parsed.debug:
-        config.debug = True
+    output_dir = config.result_dir / JGA_BASE_DIR_NAME / JSONL_DIR_NAME / TODAY_STR
 
-    jga_base_path = (
-        Path(parsed.jga_base_path) if parsed.jga_base_path else JGA_BASE_PATH
-    )
-
-    date_str = parsed.date
-    output_dir = config.result_dir / JGA_BASE_DIR_NAME / JSONL_DIR_NAME / date_str
-
-    return config, output_dir, jga_base_path
+    return config, output_dir
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, output_dir, jga_base_path = parse_args(sys.argv[1:])
+    config, output_dir = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_jga_jsonl", config=config):
         log_debug(f"config: {config.model_dump_json(indent=2)}")
         log_debug(f"output directory: {output_dir}")
-        log_debug(f"jga base path: {jga_base_path}")
+        log_debug(f"jga base path: {JGA_BASE_PATH}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
 
         for index_name in INDEX_NAMES:
-            generate_jga_jsonl(config, index_name, output_dir, jga_base_path)
+            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH)
 
 
 if __name__ == "__main__":
