@@ -13,7 +13,7 @@ RUN apt update && \
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --extra tests
 
 COPY . .
