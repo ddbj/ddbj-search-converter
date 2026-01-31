@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ddbj-search-converter"
@@ -64,21 +64,6 @@ es_list_indexes = "ddbj_search_converter.cli.es:main_list_indexes"
 show_log_summary = "ddbj_search_converter.cli.debug.show_log_summary:main"
 show_log = "ddbj_search_converter.cli.debug.show_log:main"
 show_dblink_counts = "ddbj_search_converter.cli.debug.show_dblink_counts:main"
-
-[tool.setuptools]
-packages = [
-    "ddbj_search_converter",
-    "ddbj_search_converter.cli",
-    "ddbj_search_converter.cli.debug",
-    "ddbj_search_converter.date_cache",
-    "ddbj_search_converter.dblink",
-    "ddbj_search_converter.es",
-    "ddbj_search_converter.es.mappings",
-    "ddbj_search_converter.jsonl",
-    "ddbj_search_converter.logging",
-    "ddbj_search_converter.postgres",
-    "ddbj_search_converter.sra",
-]
 
 
 [tool.pytest.ini_options]

@@ -291,13 +291,30 @@ show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG
 
 ## 開発
 
+### セットアップ
+
+```bash
+# uv がインストールされていない場合
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 依存パッケージのインストール (.venv が自動作成される)
+uv sync --extra tests
+```
+
 ### テスト・リント
 
 ```bash
-pytest
-pylint ./ddbj_search_converter
-mypy ./ddbj_search_converter
-isort ./ddbj_search_converter
+uv run pytest -s
+uv run pylint ./ddbj_search_converter
+uv run mypy ./ddbj_search_converter
+uv run isort ./ddbj_search_converter
+```
+
+### 依存パッケージの追加
+
+```bash
+uv add <package>
+# → pyproject.toml と uv.lock が両方更新される
 ```
 
 ## License
