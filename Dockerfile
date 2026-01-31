@@ -20,5 +20,7 @@ RUN uv sync --frozen --extra tests
 
 COPY . .
 
+ENV PATH="/app/.venv/bin:$PATH"
+
 ENTRYPOINT [""]
 CMD ["sleep", "infinity"]
