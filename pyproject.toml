@@ -102,4 +102,4 @@ disable = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["ddbj_search_converter"]
-include = ["py.typed"]
+include = ["ddbj_search_converter/py.typed"]
