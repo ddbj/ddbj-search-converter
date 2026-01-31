@@ -361,7 +361,11 @@ main() {
 
     log_section "Pipeline Complete"
     log_info "Total duration: $((duration / 3600))h $(((duration % 3600) / 60))m $((duration % 60))s"
-    log_info "Use 'show_log_summary' to check detailed results"
+
+    log_section "Log Summary"
+    if [[ "$DRY_RUN" == false ]]; then
+        show_log_summary --raw
+    fi
 }
 
 main

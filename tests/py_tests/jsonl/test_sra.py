@@ -183,6 +183,7 @@ class TestParseSubmission:
         assert result["accession"] == "DRA000001"
         assert result["title"] == "Test Title"
         assert result["description"] == "Test comment"
+        assert result["submission_date"] == "2009-05-14T23:16:00+09:00"
 
     def test_returns_none_for_missing_submission(self) -> None:
         """SUBMISSION 要素がない場合は None を返す。"""
@@ -204,6 +205,17 @@ class TestParseSubmission:
         result = parse_submission(xml, accession="DRA000001")
         assert result is not None
         assert result["description"] is None
+
+    def test_submission_date_missing_returns_none(self) -> None:
+        """submission_date 属性がない場合は None を返す。"""
+        xml = b"""<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION accession="SRA000001">
+    <TITLE>Test</TITLE>
+</SUBMISSION>
+"""
+        result = parse_submission(xml, accession="SRA000001")
+        assert result is not None
+        assert result["submission_date"] is None
 
 
 class TestParseStudy:
@@ -521,6 +533,29 @@ class TestCreateSraEntry:
             assert result.type_ == entry_type
             assert result.identifier == f"TEST_{sra_type}"
 
+    def test_accepts_iso8601_date_created(self) -> None:
+        """ISO8601 形式の dateCreated を受け入れる（DRA の submission_date 形式）。"""
+        parsed: Dict[str, Any] = {
+            "accession": "DRA000072",
+            "title": "Test",
+            "description": None,
+            "properties": {},
+        }
+
+        result = create_sra_entry(
+            "submission",
+            parsed,
+            status="live",
+            accessibility="public-access",
+            date_created="2010-01-15T09:00:00+09:00",
+            date_modified="2014-05-12",
+            date_published="2010-03-26",
+        )
+
+        assert result.dateCreated == "2010-01-15T09:00:00+09:00"
+        assert result.dateModified == "2014-05-12"
+        assert result.datePublished == "2010-03-26"
+
 
 class TestWriteJsonl:
     """Tests for write_jsonl function."""
@@ -814,6 +849,7 @@ class TestDRA000072:
         assert result["accession"] == "DRA000072"
         assert result["title"] == "DRA000072"
         assert result["description"] is None  # empty submission_comment
+        assert result["submission_date"] == "2010-01-15T09:00:00+09:00"
 
     def test_study(self) -> None:
         xml_path = FIXTURE_BASE / "DRA000" / "DRA000072" / "DRA000072.study.xml"

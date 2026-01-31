@@ -140,6 +140,7 @@ def parse_submission(
             "title": _get_text(submission, "TITLE"),
             "description": submission.get("submission_comment") or None,
             "properties": parsed,
+            "submission_date": submission.get("submission_date"),
         }
     except Exception as e:
         log_warn(f"failed to parse submission xml: {e}", accession=accession)
@@ -339,6 +340,7 @@ def process_submission_xml(
     _config: Config,
     blacklist: Set[str],
     accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]],
+    is_dra: bool = False,
 ) -> Dict[SraXmlType, List[Any]]:
     """
     1つの submission から全 XML タイプを処理する。
@@ -349,11 +351,15 @@ def process_submission_xml(
         _config: Config (現在未使用、将来の拡張用)
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
+        is_dra: DRA かどうか（DRA の場合は XML の submission_date を dateCreated として使用）
 
     Returns:
         {xml_type: [model_instance, ...]}
     """
     results: Dict[SraXmlType, List[Any]] = {t: [] for t in XML_TYPES}
+
+    # DRA の場合、submission_date を保持（他の XML タイプでも使用）
+    submission_date: Optional[str] = None
 
     for xml_type in XML_TYPES:
         xml_bytes = tar_reader.read_xml(submission, xml_type)
@@ -365,6 +371,9 @@ def process_submission_xml(
         if xml_type == "submission":
             parsed = parse_fn(xml_bytes, submission)
             parsed_list = [parsed] if parsed and parsed.get("accession") else []
+            # DRA の場合、submission_date を取得
+            if is_dra and parsed_list:
+                submission_date = parsed_list[0].get("submission_date")
         else:
             parsed_list = parse_fn(xml_bytes, submission)
 
@@ -375,7 +384,19 @@ def process_submission_xml(
             info = accession_info.get(acc, ("live", "public", None, None, None, ""))
             status = _normalize_status(info[0])
             accessibility = _normalize_accessibility(info[1])
-            sra_entry = create_sra_entry(xml_type, entry, status, accessibility, info[2], info[3], info[4])
+
+            # DRA の場合は submission_date を dateCreated として使用
+            if is_dra:
+                date_created = submission_date
+            else:
+                date_created = info[2]  # Accessions.tab の Received
+            date_modified = info[3]
+            date_published = info[4]
+
+            sra_entry = create_sra_entry(
+                xml_type, entry, status, accessibility,
+                date_created, date_modified, date_published
+            )
             results[xml_type].append(sra_entry)
 
     return results
@@ -472,19 +493,9 @@ def process_source(
             # Accessions DB から情報を取得
             accession_info = get_accession_info_bulk(config, source, sub_accessions)
 
-            # DRA は Received (dateCreated) が常に空なので SRA 側から補完
-            if is_dra:
-                missing_received = [acc for acc, info in accession_info.items() if info[2] is None]
-                if missing_received:
-                    sra_info = get_accession_info_bulk(config, "sra", missing_received)
-                    for acc in missing_received:
-                        if acc in sra_info and sra_info[acc][2] is not None:
-                            dra = accession_info[acc]
-                            accession_info[acc] = (dra[0], dra[1], sra_info[acc][2], dra[3], dra[4], dra[5])
-
             # submission を処理
             results = process_submission_xml(
-                tar_reader, sub, config, blacklist, accession_info
+                tar_reader, sub, config, blacklist, accession_info, is_dra
             )
 
             for xml_type in XML_TYPES:
