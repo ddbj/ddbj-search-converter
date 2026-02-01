@@ -476,21 +476,24 @@ phase2_jsonl() {
 
     # Collect non-skipped JSONL commands
     local jsonl_cmds=()
+    local parallel_opt="--parallel-num ${MAX_PARALLEL}"
 
+    # bp/bs: --resume is always enabled (skip existing JSONL files)
     if ! should_skip_step "jsonl_bp"; then
-        jsonl_cmds+=("generate_bp_jsonl ${full_opt}")
+        jsonl_cmds+=("generate_bp_jsonl ${full_opt} ${parallel_opt} --resume")
     else
         log_info "[SKIP] jsonl_bp (--from-step)"
     fi
 
     if ! should_skip_step "jsonl_bs"; then
-        jsonl_cmds+=("generate_bs_jsonl ${full_opt}")
+        jsonl_cmds+=("generate_bs_jsonl ${full_opt} ${parallel_opt} --resume")
     else
         log_info "[SKIP] jsonl_bs (--from-step)"
     fi
 
+    # sra/jga: no --resume (sra doesn't support it, jga is fast enough)
     if ! should_skip_step "jsonl_sra"; then
-        jsonl_cmds+=("generate_sra_jsonl ${full_opt}")
+        jsonl_cmds+=("generate_sra_jsonl ${full_opt} ${parallel_opt}")
     else
         log_info "[SKIP] jsonl_sra (--from-step)"
     fi
@@ -502,7 +505,10 @@ phase2_jsonl() {
     fi
 
     if [[ ${#jsonl_cmds[@]} -gt 0 ]]; then
-        run_parallel_limited "$MAX_PARALLEL" "${jsonl_cmds[@]}"
+        # Run JSONL generation sequentially to avoid resource contention
+        for cmd in "${jsonl_cmds[@]}"; do
+            run_cmd "$cmd"
+        done
     fi
 }
 

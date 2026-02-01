@@ -459,6 +459,7 @@ def generate_bs_jsonl(
     output_dir: Path,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     full: bool = False,
+    resume: bool = False,
 ) -> None:
     """
     BioSample JSONL ファイルを生成する。
@@ -471,6 +472,7 @@ def generate_bs_jsonl(
         output_dir: 出力ディレクトリ ({result_dir}/biosample/jsonl/{date}/)
         parallel_num: 並列ワーカー数
         full: True の場合は全件処理、False の場合は差分更新
+        resume: True の場合は既存の JSONL ファイルをスキップ
     """
     if not tmp_xml_dir.exists():
         raise FileNotFoundError(f"tmp_xml directory not found: {tmp_xml_dir}")
@@ -511,12 +513,22 @@ def generate_bs_jsonl(
     log_info(f"found {len(ddbj_xml_files)} ddbj xml files and {len(ncbi_xml_files)} ncbi xml files")
 
     tasks: List[Tuple[Path, Path, bool, Optional[Set[str]], Optional[str]]] = []
+    skipped_existing = 0
     for xml_file in ddbj_xml_files:
         output_path = output_dir.joinpath(xml_file.stem + ".jsonl")
+        if resume and output_path.exists():
+            skipped_existing += 1
+            continue
         tasks.append((xml_file, output_path, True, ddbj_target_accessions, None))
     for xml_file in ncbi_xml_files:
         output_path = output_dir.joinpath(xml_file.stem + ".jsonl")
+        if resume and output_path.exists():
+            skipped_existing += 1
+            continue
         tasks.append((xml_file, output_path, False, None, since))
+
+    if skipped_existing > 0:
+        log_info(f"skipped {skipped_existing} existing files (resume mode)")
 
     total_count = 0
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
@@ -545,7 +557,7 @@ def generate_bs_jsonl(
 # === CLI ===
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
+def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(
         description="Generate BioSample JSONL files from split XML files."
@@ -561,6 +573,11 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
         help="Process all entries instead of incremental update.",
         action="store_true",
     )
+    parser.add_argument(
+        "--resume",
+        help="Skip existing JSONL files and resume from where it left off.",
+        action="store_true",
+    )
 
     parsed = parser.parse_args(args)
 
@@ -570,12 +587,12 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool]:
     tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / TODAY_STR
     output_dir = bs_base_dir / JSONL_DIR_NAME / TODAY_STR
 
-    return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full
+    return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full, parsed.resume
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(sys.argv[1:])
+    config, tmp_xml_dir, output_dir, parallel_num, full, resume = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bs_jsonl", config=config):
         log_debug(f"config: {config.model_dump_json(indent=2)}")
@@ -583,11 +600,12 @@ def main() -> None:
         log_debug(f"output directory: {output_dir}")
         log_debug(f"parallel workers: {parallel_num}")
         log_debug(f"full update: {full}")
+        log_debug(f"resume: {resume}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
 
-        generate_bs_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full)
+        generate_bs_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full, resume)
 
 
 if __name__ == "__main__":
