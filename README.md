@@ -245,7 +245,7 @@ uv run isort ./ddbj_search_converter
 - [docs/data-architecture.md](docs/data-architecture.md) - データフロー、AccessionType、出力ファイル
 - [docs/cli-pipeline.md](docs/cli-pipeline.md) - パイプライン詳細、差分更新、コマンドリファレンス
 - [docs/elasticsearch.md](docs/elasticsearch.md) - ES 操作、スナップショット管理
-- [docs/logging-debugging.md](docs/logging-debugging.md) - ログとデバッグ
+- [docs/logging.md](docs/logging.md) - ログとデバッグ
 
 ## License
 
