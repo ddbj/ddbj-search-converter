@@ -5,12 +5,10 @@ DDBJ BioProject の日付は XML に含まれていないため、PostgreSQL か
 """
 from typing import Dict, Iterable, Optional, Set, Tuple
 
-import psycopg2  # type: ignore[import-untyped]
-
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import log_debug
 from ddbj_search_converter.postgres.utils import (format_date,
-                                                  parse_postgres_url)
+                                                  postgres_connection)
 
 POSTGRES_DB_NAME = "bioproject"
 
@@ -35,18 +33,10 @@ def fetch_bp_dates_bulk(
     if not accession_list:
         return {}
 
-    host, port, user, password = parse_postgres_url(config.postgres_url)
     result: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]] = {}
 
     try:
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname=POSTGRES_DB_NAME,
-        )
-        try:
+        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn:
             with conn.cursor() as cur:
                 # IN 句のプレースホルダーを動的に生成
                 placeholders = ",".join(["%s"] * len(accession_list))
@@ -71,8 +61,6 @@ def fetch_bp_dates_bulk(
                         format_date(modified_date),
                         format_date(release_date),
                     )
-        finally:
-            conn.close()
     except Exception as e:
         log_debug(f"failed to fetch dates from postgresql: {e}")
         raise
@@ -101,18 +89,10 @@ def fetch_bp_accessions_modified_since(
         INNER JOIN mass.project p ON s.submission_id = p.submission_id
         WHERE p.modified_date >= %s
     """
-    host, port, user, password = parse_postgres_url(config.postgres_url)
     result: Set[str] = set()
 
     try:
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname=POSTGRES_DB_NAME,
-        )
-        try:
+        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn:
             with conn.cursor() as cur:
                 query = """
                     SELECT s.accession
@@ -126,8 +106,6 @@ def fetch_bp_accessions_modified_since(
 
                 for row in rows:
                     result.add(row[0])
-        finally:
-            conn.close()
     except Exception as e:
         log_debug(f"failed to fetch accessions from postgresql: {e}")
         raise

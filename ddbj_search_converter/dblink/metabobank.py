@@ -14,15 +14,14 @@ MetaboBank の IDF/SDRF ファイルから関連を抽出し、DBLink DB に挿�
 - metabobank -> biosample (SDRF の Comment[BioSample] + preserve から)
 """
 from pathlib import Path
-from typing import Iterator, Optional, Set, Tuple
+from typing import Iterator, Tuple
 
 from ddbj_search_converter.config import (METABOBANK_BASE_PATH,
                                           MTB_BP_PRESERVED_REL_PATH,
                                           MTB_BS_PRESERVED_REL_PATH, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
-                                                   parse_sdrf_file)
+from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
 from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
                                                 load_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
@@ -105,28 +104,6 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
     return mtb_to_bp, mtb_to_bs
 
 
-def process_metabobank_dir(mtb_dir: Path) -> Tuple[str, Optional[str], Set[str]]:
-    """
-    1 つの MetaboBank ディレクトリを処理し、MetaboBank ID, BioProject ID, BioSample IDs を返す。
-    IDF/SDRF が存在しない場合は None/空 set を返す。
-    """
-    mtb_id = mtb_dir.name
-
-    # IDF ファイルを探す
-    idf_files = list(mtb_dir.glob("*.idf.txt"))
-    bp_id: Optional[str] = None
-    if idf_files:
-        bp_id = parse_idf_file(idf_files[0])
-
-    # SDRF ファイルを探す
-    sdrf_files = list(mtb_dir.glob("*.sdrf.txt"))
-    bs_ids: Set[str] = set()
-    if sdrf_files:
-        bs_ids = parse_sdrf_file(sdrf_files[0])
-
-    return mtb_id, bp_id, bs_ids
-
-
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
@@ -138,7 +115,7 @@ def main() -> None:
         # IDF/SDRF ファイルから抽出
         dir_count = 0
         for mtb_dir in iterate_metabobank_dirs(METABOBANK_BASE_PATH):
-            mtb_id, bp_id, bs_ids = process_metabobank_dir(mtb_dir)
+            mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
             dir_count += 1
 
             if bp_id:

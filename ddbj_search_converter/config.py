@@ -35,8 +35,7 @@ DRA_BASE_PATH = Path("/usr/local/resources/dra")
 GEA_BASE_PATH = Path("/usr/local/resources/gea/experiment")
 METABOBANK_BASE_PATH = Path("/usr/local/shared_data/metabobank/study")
 JGA_BASE_PATH = Path("/usr/local/shared_data/jga/metadata-history/metadata")
-# DBLINK_OUTPUT_PATH = Path("/usr/local/shared_data/dblink")
-DBLINK_OUTPUT_PATH = Path("/app/ddbj_search_converter_results/dblink")
+DBLINK_OUTPUT_PATH = Path("/usr/local/shared_data/dblink")
 
 # DB file names
 LOG_DB_FILE_NAME = "log.duckdb"
@@ -149,6 +148,7 @@ def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
     dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
     margin_dt = dt - timedelta(days=margin_days)
     return margin_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
 DataType = Literal["bioproject", "biosample", "sra", "jga"]
 

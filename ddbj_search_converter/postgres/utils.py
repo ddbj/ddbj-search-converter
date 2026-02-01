@@ -1,7 +1,30 @@
 """PostgreSQL 関連のユーティリティ関数。"""
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Iterator, Optional, Tuple
 from urllib.parse import urlparse
+
+import psycopg2  # type: ignore[import-untyped]
+
+
+@contextmanager
+def postgres_connection(
+    postgres_url: str,
+    dbname: str,
+) -> Iterator[psycopg2.extensions.connection]:
+    """PostgreSQL 接続のコンテキストマネージャ。"""
+    host, port, user, password = parse_postgres_url(postgres_url)
+    conn = psycopg2.connect(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        dbname=dbname,
+    )
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 def format_date(dt: Optional[datetime]) -> Optional[str]:

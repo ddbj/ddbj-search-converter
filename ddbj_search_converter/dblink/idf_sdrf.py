@@ -3,7 +3,7 @@ IDF/SDRF ファイルのパース共通ユーティリティ。
 GEA と MetaboBank で使用する。
 """
 from pathlib import Path
-from typing import Optional, Set
+from typing import Optional, Set, Tuple
 
 
 def parse_idf_file(idf_path: Path) -> Optional[str]:
@@ -41,3 +41,28 @@ def parse_sdrf_file(sdrf_path: Path) -> Set[str]:
                 result.add(cols[bs_index].strip())
 
     return result
+
+
+def process_idf_sdrf_dir(dir_path: Path) -> Tuple[str, Optional[str], Set[str]]:
+    """
+    IDF/SDRF を含むディレクトリを処理し、ID, BioProject, BioSample IDs を返す。
+
+    Args:
+        dir_path: IDF/SDRF ファイルを含むディレクトリ
+
+    Returns:
+        (entry_id, bp_id, bs_ids): エントリ ID、BioProject ID、BioSample ID セット
+    """
+    entry_id = dir_path.name
+
+    idf_files = list(dir_path.glob("*.idf.txt"))
+    bp_id: Optional[str] = None
+    if idf_files:
+        bp_id = parse_idf_file(idf_files[0])
+
+    sdrf_files = list(dir_path.glob("*.sdrf.txt"))
+    bs_ids: Set[str] = set()
+    if sdrf_files:
+        bs_ids = parse_sdrf_file(sdrf_files[0])
+
+    return entry_id, bp_id, bs_ids

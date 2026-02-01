@@ -35,6 +35,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.utils import filter_pairs_by_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, log_warn,
@@ -265,57 +266,6 @@ def load_bp_blacklist(config: Config) -> Set[str]:
     return bp_blacklist
 
 
-def filter_umbrella_by_blacklist(
-    primary_to_umbrella: IdPairs,
-    bp_blacklist: Set[str],
-) -> IdPairs:
-    """umbrella と primary の両方を blacklist でフィルタリング。"""
-    original_count = len(primary_to_umbrella)
-    filtered = {
-        (primary, umbrella)
-        for primary, umbrella in primary_to_umbrella
-        if primary not in bp_blacklist and umbrella not in bp_blacklist
-    }
-    removed_count = original_count - len(filtered)
-    if removed_count > 0:
-        log_info(f"removed {removed_count} umbrella relations by blacklist")
-    return filtered
-
-
-def filter_hum_id_by_blacklist(
-    bp_to_hum: IdPairs,
-    bp_blacklist: Set[str],
-) -> IdPairs:
-    """bioproject を blacklist でフィルタリング。"""
-    original_count = len(bp_to_hum)
-    filtered = {
-        (bp, hum_id)
-        for bp, hum_id in bp_to_hum
-        if bp not in bp_blacklist
-    }
-    removed_count = original_count - len(filtered)
-    if removed_count > 0:
-        log_info(f"removed {removed_count} hum-id relations by blacklist")
-    return filtered
-
-
-def filter_geo_by_blacklist(
-    bp_to_geo: IdPairs,
-    bp_blacklist: Set[str],
-) -> IdPairs:
-    """bioproject を blacklist でフィルタリング。"""
-    original_count = len(bp_to_geo)
-    filtered = {
-        (bp, geo_id)
-        for bp, geo_id in bp_to_geo
-        if bp not in bp_blacklist
-    }
-    removed_count = original_count - len(filtered)
-    if removed_count > 0:
-        log_info(f"removed {removed_count} geo relations by blacklist")
-    return filtered
-
-
 def process_bioproject_xml(
     config: Config,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
@@ -370,9 +320,9 @@ def main() -> None:
         log_info(f"total {len(geo_relations)} geo relations (before filter)")
 
         # Filter by blacklist
-        umbrella_relations = filter_umbrella_by_blacklist(umbrella_relations, bp_blacklist)
-        hum_id_relations = filter_hum_id_by_blacklist(hum_id_relations, bp_blacklist)
-        geo_relations = filter_geo_by_blacklist(geo_relations, bp_blacklist)
+        umbrella_relations = filter_pairs_by_blacklist(umbrella_relations, bp_blacklist, "both")
+        hum_id_relations = filter_pairs_by_blacklist(hum_id_relations, bp_blacklist, "left")
+        geo_relations = filter_pairs_by_blacklist(geo_relations, bp_blacklist, "left")
 
         log_info(f"total {len(umbrella_relations)} umbrella relations (after filter)")
         log_info(f"total {len(hum_id_relations)} hum-id relations (after filter)")

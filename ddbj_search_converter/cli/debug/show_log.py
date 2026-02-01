@@ -13,8 +13,8 @@ from typing import Any, Dict, List, Optional
 
 import duckdb
 
-from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME,
-                                           TODAY, get_config)
+from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME, TODAY,
+                                          get_config)
 
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 

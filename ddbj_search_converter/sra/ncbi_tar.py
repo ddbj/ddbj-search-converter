@@ -20,14 +20,10 @@ import httpx
 from ddbj_search_converter.config import (NCBI_LAST_MERGED_FILE_NAME,
                                           NCBI_SRA_METADATA_BASE_URL,
                                           NCBI_SRA_METADATA_LOCAL_PATH,
-                                          NCBI_SRA_TAR_FILE_NAME,
-                                          SRA_TAR_DIR_NAME, TODAY, Config)
+                                          NCBI_SRA_TAR_FILE_NAME, TODAY,
+                                          Config)
 from ddbj_search_converter.logging.logger import log_info
-
-
-def get_sra_tar_dir(config: Config) -> Path:
-    """Get the directory for SRA tar files."""
-    return config.const_dir.joinpath(SRA_TAR_DIR_NAME)
+from ddbj_search_converter.sra.paths import get_sra_tar_dir
 
 
 def get_ncbi_tar_path(config: Config) -> Path:

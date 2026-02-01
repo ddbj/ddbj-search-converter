@@ -11,16 +11,16 @@ GEA (Gene Expression Archive) の IDF/SDRF ファイルから関連を抽出し�
 - gea -> biosample (SDRF の Comment[BioSample] カラムから)
 """
 from pathlib import Path
-from typing import Iterator, Optional, Set, Tuple
+from typing import Iterator
 
 from ddbj_search_converter.config import GEA_BASE_PATH, get_config
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.idf_sdrf import (parse_idf_file,
-                                                   parse_sdrf_file)
+from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
 from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
                                                 load_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
+from ddbj_search_converter.logging.logger import (log_debug, log_info,
+                                                  run_logger)
 from ddbj_search_converter.logging.schema import DebugCategory
 
 
@@ -40,28 +40,6 @@ def iterate_gea_dirs(base_path: Path) -> Iterator[Path]:
                 yield gea_dir
 
 
-def process_gea_dir(gea_dir: Path) -> Tuple[str, Optional[str], Set[str]]:
-    """
-    1 つの GEA ディレクトリを処理し、GEA ID, BioProject ID, BioSample IDs を返す。
-    IDF/SDRF が存在しない場合は None/空 set を返す。
-    """
-    gea_id = gea_dir.name
-
-    # IDF ファイルを探す
-    idf_files = list(gea_dir.glob("*.idf.txt"))
-    bp_id: Optional[str] = None
-    if idf_files:
-        bp_id = parse_idf_file(idf_files[0])
-
-    # SDRF ファイルを探す
-    sdrf_files = list(gea_dir.glob("*.sdrf.txt"))
-    bs_ids: Set[str] = set()
-    if sdrf_files:
-        bs_ids = parse_sdrf_file(sdrf_files[0])
-
-    return gea_id, bp_id, bs_ids
-
-
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
@@ -72,7 +50,7 @@ def main() -> None:
 
         dir_count = 0
         for gea_dir in iterate_gea_dirs(GEA_BASE_PATH):
-            gea_id, bp_id, bs_ids = process_gea_dir(gea_dir)
+            gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
             dir_count += 1
 
             if bp_id:

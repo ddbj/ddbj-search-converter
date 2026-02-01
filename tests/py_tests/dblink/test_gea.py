@@ -9,8 +9,8 @@ import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import init_dblink_db
-from ddbj_search_converter.dblink.gea import (iterate_gea_dirs, main,
-                                              process_gea_dir)
+from ddbj_search_converter.dblink.gea import iterate_gea_dirs, main
+from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
 from ddbj_search_converter.logging.logger import _ctx
 
 
@@ -46,8 +46,8 @@ class TestIterateGeaDirs:
         assert result == []
 
 
-class TestProcessGeaDir:
-    """Tests for process_gea_dir function."""
+class TestProcessIdfSdrfDir:
+    """Tests for process_idf_sdrf_dir function."""
 
     def test_processes_complete_gea_dir(self, tmp_path: Path) -> None:
         """IDF と SDRF の両方がある場合を処理する。"""
@@ -63,7 +63,7 @@ AF\tSAMD00001
 """
         (gea_dir / "E-GEAD-291.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        gea_id, bp_id, bs_ids = process_gea_dir(gea_dir)
+        gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
 
         assert gea_id == "E-GEAD-291"
         assert bp_id == "PRJDB7770"
@@ -79,7 +79,7 @@ AF\tSAMD00001
 """
         (gea_dir / "E-GEAD-100.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        gea_id, bp_id, bs_ids = process_gea_dir(gea_dir)
+        gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
 
         assert gea_id == "E-GEAD-100"
         assert bp_id is None
@@ -94,7 +94,7 @@ AF\tSAMD00001
 """
         (gea_dir / "E-GEAD-100.idf.txt").write_text(idf_content, encoding="utf-8")
 
-        gea_id, bp_id, bs_ids = process_gea_dir(gea_dir)
+        gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
 
         assert gea_id == "E-GEAD-100"
         assert bp_id == "PRJDB1234"

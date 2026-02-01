@@ -8,11 +8,12 @@ import psycopg2  # type: ignore[import-untyped]
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.date_cache.db import (finalize_date_cache_db,
-                                                  init_date_cache_db,
-                                                  insert_bp_dates,
-                                                  insert_bs_dates)
+                                                 init_date_cache_db,
+                                                 insert_bp_dates,
+                                                 insert_bs_dates)
 from ddbj_search_converter.logging.logger import log_info
-from ddbj_search_converter.postgres.utils import format_date, parse_postgres_url
+from ddbj_search_converter.postgres.utils import (format_date,
+                                                  parse_postgres_url)
 
 CURSOR_ITERSIZE = 50000
 

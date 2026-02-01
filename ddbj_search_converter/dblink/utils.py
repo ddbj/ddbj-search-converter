@@ -84,15 +84,26 @@ def filter_by_blacklist(
 def filter_pairs_by_blacklist(
     pairs: IdPairs,
     blacklist: Set[str],
-    position: Literal["left", "right"],
+    position: Literal["left", "right", "both"],
 ) -> IdPairs:
-    """片方のみ blacklist でフィルタ。"""
+    """blacklist でペアをフィルタ。
+
+    Args:
+        pairs: フィルタ対象のペア
+        blacklist: 除外する ID セット
+        position: フィルタ位置
+            - "left": 左側のみチェック
+            - "right": 右側のみチェック
+            - "both": 両側をチェック
+    """
     original_count = len(pairs)
 
     if position == "left":
         filtered = {(a, b) for a, b in pairs if a not in blacklist}
-    else:
+    elif position == "right":
         filtered = {(a, b) for a, b in pairs if b not in blacklist}
+    else:  # both
+        filtered = {(a, b) for a, b in pairs if a not in blacklist and b not in blacklist}
 
     removed_count = original_count - len(filtered)
     if removed_count > 0:

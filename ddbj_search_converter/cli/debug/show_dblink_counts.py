@@ -11,7 +11,7 @@ from typing import Dict, List
 import duckdb
 
 from ddbj_search_converter.config import (DBLINK_DB_FILE_NAME,
-                                           TMP_DBLINK_DB_FILE_NAME, get_config)
+                                          TMP_DBLINK_DB_FILE_NAME, get_config)
 
 
 def _get_db_path(const_dir: Path) -> Path:

@@ -37,14 +37,11 @@ jobs:
       - name: Run pylint
         run: |
           uv run pylint ./ddbj_search_converter
-        continue-on-error: true
 
       - name: Run mypy
         run: |
           uv run mypy ./ddbj_search_converter
-        continue-on-error: true
 
       - name: Run isort
         run: |
           uv run isort --check-only ./ddbj_search_converter
-        continue-on-error: true

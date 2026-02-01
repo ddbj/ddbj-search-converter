@@ -9,9 +9,9 @@ import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import init_dblink_db
+from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
 from ddbj_search_converter.dblink.metabobank import (iterate_metabobank_dirs,
-                                                     load_preserve_file, main,
-                                                     process_metabobank_dir)
+                                                     load_preserve_file, main)
 from ddbj_search_converter.logging.logger import _ctx, run_logger
 
 
@@ -59,8 +59,8 @@ class TestIterateMetabobankDirs:
         assert names == ["MTBKS1", "MTBKS2", "MTBKS3"]
 
 
-class TestProcessMetabobankDir:
-    """Tests for process_metabobank_dir function."""
+class TestProcessIdfSdrfDir:
+    """Tests for process_idf_sdrf_dir function."""
 
     def test_processes_complete_dir(self, tmp_path: Path) -> None:
         """IDF と SDRF の両方がある場合を処理する。"""
@@ -77,7 +77,7 @@ JMP036\tSAMD00657133
 """
         (mtb_dir / "MTBKS232.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        mtb_id, bp_id, bs_ids = process_metabobank_dir(mtb_dir)
+        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
 
         assert mtb_id == "MTBKS232"
         assert bp_id == "PRJDB17011"
@@ -93,7 +93,7 @@ S1\tSAMD00001
 """
         (mtb_dir / "MTBKS100.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        mtb_id, bp_id, bs_ids = process_metabobank_dir(mtb_dir)
+        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
 
         assert mtb_id == "MTBKS100"
         assert bp_id is None
@@ -108,7 +108,7 @@ S1\tSAMD00001
 """
         (mtb_dir / "MTBKS100.idf.txt").write_text(idf_content, encoding="utf-8")
 
-        mtb_id, bp_id, bs_ids = process_metabobank_dir(mtb_dir)
+        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
 
         assert mtb_id == "MTBKS100"
         assert bp_id == "PRJDB1234"
@@ -119,7 +119,7 @@ S1\tSAMD00001
         mtb_dir = tmp_path / "MTBKS100"
         mtb_dir.mkdir()
 
-        mtb_id, bp_id, bs_ids = process_metabobank_dir(mtb_dir)
+        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
 
         assert mtb_id == "MTBKS100"
         assert bp_id is None

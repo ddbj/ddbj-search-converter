@@ -22,21 +22,21 @@ import duckdb
 from ddbj_search_converter.config import (DEFAULT_MARGIN_DAYS, DRA_BASE_PATH,
                                           DRA_DB_FILE_NAME,
                                           DRA_LAST_UPDATED_FILE_NAME,
-                                          DRA_TAR_FILE_NAME, SRA_TAR_DIR_NAME,
-                                          TODAY, Config)
+                                          DRA_TAR_FILE_NAME, TODAY, Config)
 from ddbj_search_converter.logging.logger import log_info
+from ddbj_search_converter.sra.paths import get_sra_tar_dir
 
 XML_TYPES = ["submission", "study", "experiment", "run", "sample", "analysis"]
 
 
 def get_dra_tar_path(config: Config) -> Path:
     """Get the path to the DRA Metadata tar file."""
-    return config.const_dir.joinpath(SRA_TAR_DIR_NAME, DRA_TAR_FILE_NAME)
+    return get_sra_tar_dir(config).joinpath(DRA_TAR_FILE_NAME)
 
 
 def get_dra_last_updated_path(config: Config) -> Path:
     """Get the path to the dra_last_updated.txt file."""
-    return config.const_dir.joinpath(SRA_TAR_DIR_NAME, DRA_LAST_UPDATED_FILE_NAME)
+    return get_sra_tar_dir(config).joinpath(DRA_LAST_UPDATED_FILE_NAME)
 
 
 def get_dra_accessions_db_path(config: Config) -> Path:
