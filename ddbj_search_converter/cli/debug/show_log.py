@@ -23,7 +23,13 @@ def _get_db_path(result_dir: Path) -> Path:
     return result_dir.joinpath(LOG_DB_FILE_NAME)
 
 
-def _row_to_dict(timestamp: Any, run_name: str, message: str, extra_json: Any) -> Dict[str, Any]:
+def _row_to_dict(
+    timestamp: Any,
+    run_name: str,
+    message: str,
+    extra_json: Any,
+    error_json: Any = None,
+) -> Dict[str, Any]:
     """Convert a log row to a dict for JSONL output."""
     record: Dict[str, Any] = {
         "timestamp": str(timestamp)[:19] if timestamp else None,
@@ -45,6 +51,14 @@ def _row_to_dict(timestamp: Any, run_name: str, message: str, extra_json: Any) -
             for key, value in extra.items():
                 if key not in ("debug_category", "accession", "file", "source", "lifecycle"):
                     record[key] = value
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    if error_json:
+        try:
+            error = json.loads(error_json) if isinstance(error_json, str) else error_json
+            if error:
+                record["error"] = error
         except (json.JSONDecodeError, TypeError):
             pass
 
@@ -154,7 +168,21 @@ def _format_raw_record(record: Dict[str, Any], log_level: str) -> str:
 
     header = " ".join(header_parts)
     message = record.get("message", "")
-    return f"{header}\n  {message}"
+    lines = [f"{header}", f"  {message}"]
+
+    error = record.get("error")
+    if error:
+        error_type = error.get("type", "")
+        error_message = error.get("message", "")
+        traceback_str = error.get("traceback", "")
+        if error_type or error_message:
+            lines.append(f"  Error: {error_type}: {error_message}")
+        if traceback_str:
+            lines.append("  Traceback:")
+            for tb_line in traceback_str.strip().split("\n"):
+                lines.append(f"    {tb_line}")
+
+    return "\n".join(lines)
 
 
 def _fetch_logs(
@@ -165,7 +193,7 @@ def _fetch_logs(
 ) -> List[Any]:
     """Fetch log rows for a given run_id, optionally filtered by level."""
     query = """
-        SELECT timestamp, run_name, log_level, message, extra
+        SELECT timestamp, run_name, log_level, message, extra, error
         FROM log_records
         WHERE run_id = ?
     """
@@ -175,7 +203,7 @@ def _fetch_logs(
         query += " AND log_level = ?"
         params.append(level)
 
-    query += " ORDER BY timestamp DESC"
+    query += " ORDER BY timestamp ASC"
 
     if limit > 0:
         query += f" LIMIT {limit}"
@@ -342,8 +370,8 @@ def main() -> None:
             _print_jq_examples(run_name)
 
         # 4. Output
-        for timestamp, rn, log_level, message, extra_json in rows:
-            record = _row_to_dict(timestamp, rn, message, extra_json)
+        for timestamp, rn, log_level, message, extra_json, error_json in rows:
+            record = _row_to_dict(timestamp, rn, message, extra_json, error_json)
             record["log_level"] = log_level
             if parsed.raw:
                 print(_format_raw_record(record, log_level))
