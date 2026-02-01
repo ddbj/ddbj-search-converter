@@ -141,44 +141,73 @@ generate_jga_jsonl
 
 ## 一括実行スクリプト
 
-`scripts/` 以下に、パイプラインを一括実行するスクリプトを用意している。依存関係を考慮し、可能な範囲で並列実行する。
+`scripts/run_pipeline.sh` でパイプラインを一括実行する。依存関係を考慮し、可能な範囲で並列実行する。
 
-### run_full_pipeline.sh（初回・フル実行）
-
-ES インデックス作成から行う完全なパイプライン実行。
+### 基本的な使い方
 
 ```bash
-# 基本的な使い方
-./scripts/run_full_pipeline.sh
+# 差分更新（デフォルト）
+./scripts/run_pipeline.sh
+
+# 全件再生成（初回実行時）
+./scripts/run_pipeline.sh --full
 
 # 日付を指定
-./scripts/run_full_pipeline.sh --date 20260201
+./scripts/run_pipeline.sh --date 20260201
 
 # dry-run で実行内容を確認
-./scripts/run_full_pipeline.sh --dry-run
+./scripts/run_pipeline.sh --dry-run
 
-# 並列数を変更（デフォルト: 4）
-./scripts/run_full_pipeline.sh --parallel 8
+# 途中のステップから再開
+./scripts/run_pipeline.sh --from-step jsonl_sra
 
-# DBLink 構築をスキップ（JSONL + ES のみ）
-./scripts/run_full_pipeline.sh --skip-dblink
+# ステップ一覧を表示
+./scripts/run_pipeline.sh --list-steps
 
-# ES 操作をスキップ（DBLink + JSONL のみ）
-./scripts/run_full_pipeline.sh --skip-es
+# JSONL 生成の並列数を変更（デフォルト: 4）
+./scripts/run_pipeline.sh --parallel 32
 ```
 
-**オプション一覧:**
+### オプション一覧
 
 | オプション | 説明 |
 |-----------|------|
 | `--date YYYYMMDD` | 処理日付（デフォルト: 今日） |
-| `--skip-dblink` | DBLink 構築をスキップ |
-| `--skip-tar-sync` | tar ファイル同期をスキップ |
-| `--skip-es` | Elasticsearch 操作をスキップ |
+| `--full` | 全件モード: JSONL を全件再生成（デフォルト: 差分更新） |
+| `--from-step STEP` | 指定ステップから再開（`--list-steps` でステップ名を確認） |
+| `--list-steps` | 利用可能なステップ一覧を表示して終了 |
 | `--dry-run` | 実行内容を表示のみ（実際には実行しない） |
-| `--parallel N` | 最大並列数（デフォルト: 4） |
+| `--parallel N` | JSONL 生成の最大並列数（デフォルト: 4） |
 
-**実行フロー:**
+### ステップ一覧
+
+```
+=== PHASE 1: DBLink Construction ===
+  prepare              Prepare XML files and build accessions DB
+  init_dblink          Initialize DBLink database
+  dblink_bp_bs         Create BioProject-BioSample relations
+  dblink_bp            Create BioProject relations
+  dblink_assembly      Create Assembly and Master relations
+  dblink_gea           Create GEA relations
+  dblink_metabobank    Create MetaboBank relations
+  dblink_jga           Create JGA relations
+  dblink_sra           Create SRA internal relations
+  finalize_dblink      Finalize DBLink database
+  dump_dblink          Dump DBLink files
+
+=== PHASE 2: JSONL Generation ===
+  sync_tar             Sync tar files and build date cache
+  jsonl_bp             Generate BioProject JSONL
+  jsonl_bs             Generate BioSample JSONL
+  jsonl_sra            Generate SRA JSONL
+  jsonl_jga            Generate JGA JSONL
+
+=== PHASE 3: Elasticsearch ===
+  es_create            Create Elasticsearch indexes
+  es_bulk              Bulk insert to Elasticsearch
+```
+
+### 実行フロー
 
 ```
 PHASE 1: DBLink Construction
@@ -188,7 +217,7 @@ PHASE 1: DBLink Construction
     ↓
 init_dblink_db
     ↓
-├── [並列] create_dblink_* (7 コマンド)
+[順次] create_dblink_* (7 コマンド, DuckDB single-writer 制約)
     ↓
 finalize_dblink_db → dump_dblink_files
 
@@ -197,78 +226,18 @@ PHASE 2: JSONL Generation
 ├── [並列] sync_dra_tar
 └── [並列] build_bp_bs_date_cache
     ↓
-├── [並列] generate_bp_jsonl --full
-├── [並列] generate_bs_jsonl --full
-├── [並列] generate_sra_jsonl --full
-└── [並列] generate_jga_jsonl
+├── [並列, --parallel N] generate_bp_jsonl [--full]
+├── [並列, --parallel N] generate_bs_jsonl [--full]
+├── [並列, --parallel N] generate_sra_jsonl [--full]
+└── [並列, --parallel N] generate_jga_jsonl
 
 PHASE 3: Elasticsearch
-es_create_index --index all
+es_create_index --index all --skip-existing
     ↓
-[順次] es_bulk_insert (12 インデックス)
-```
-
-### run_incremental_pipeline.sh（日次バッチ・差分実行）
-
-日次バッチ用の差分更新パイプライン。DBLink 再構築 + JSONL 差分生成 + 既存 ES インデックスへの投入。
-
-```bash
-# 基本的な使い方（日次バッチ）
-./scripts/run_incremental_pipeline.sh
-
-# 日付を指定
-./scripts/run_incremental_pipeline.sh --date 20260201
-
-# dry-run で実行内容を確認
-./scripts/run_incremental_pipeline.sh --dry-run
-
-# DBLink 構築をスキップ（JSONL のみ再生成したい場合）
-./scripts/run_incremental_pipeline.sh --skip-dblink
-
-# ES 投入をスキップ（JSONL 生成のみ）
-./scripts/run_incremental_pipeline.sh --skip-es
-```
-
-**オプション一覧:**
-
-| オプション | 説明 |
-|-----------|------|
-| `--date YYYYMMDD` | 処理日付（デフォルト: 今日） |
-| `--skip-dblink` | DBLink 構築をスキップ（既存の DBLink を使用） |
-| `--skip-xml-prep` | XML 準備をスキップ（既存の分割 XML を使用） |
-| `--skip-tar-sync` | tar ファイル同期をスキップ |
-| `--skip-es` | Elasticsearch 操作をスキップ |
-| `--dry-run` | 実行内容を表示のみ（実際には実行しない） |
-| `--parallel N` | 最大並列数（デフォルト: 4） |
-
-**実行フロー:**
-
-```
-PHASE 1: DBLink Construction (デフォルトで実行)
-├── [並列] prepare_bioproject_xml
-├── [並列] prepare_biosample_xml
-└── [並列] build_sra_and_dra_accessions_db
-    ↓
-init_dblink_db → [並列] create_dblink_* → finalize_dblink_db
-
-PHASE 2: Preparation
-├── [並列] sync_ncbi_tar
-├── [並列] sync_dra_tar
-└── [並列] build_bp_bs_date_cache
-
-PHASE 3: JSONL Generation (差分モード)
-├── [並列] generate_bp_jsonl
-├── [並列] generate_bs_jsonl
-├── [並列] generate_sra_jsonl
-└── [並列] generate_jga_jsonl
-
-PHASE 4: Elasticsearch Bulk Insert
 [順次] es_bulk_insert (12 インデックス)
 ```
 
 ### 環境変数
-
-両スクリプトは以下の環境変数を参照する:
 
 | 環境変数 | 説明 |
 |---------|------|
@@ -280,8 +249,8 @@ PHASE 4: Elasticsearch Bulk Insert
 ### cron 設定例
 
 ```bash
-# 毎日 AM 3:00 に日次バッチを実行
-0 3 * * * /path/to/scripts/run_incremental_pipeline.sh --date $(date +\%Y\%m\%d) >> /var/log/ddbj_search_converter.log 2>&1
+# 毎日 AM 3:00 に日次バッチを実行（差分更新）
+0 3 * * * /path/to/scripts/run_pipeline.sh --date $(date +\%Y\%m\%d) >> /var/log/ddbj_search_converter.log 2>&1
 ```
 
 ## Hotfix: regenerate_jsonl
