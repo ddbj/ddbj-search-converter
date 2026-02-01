@@ -1,22 +1,21 @@
 """Elasticsearch monitoring utilities."""
 
-from dataclasses import dataclass
 from typing import List
+
+from pydantic import BaseModel
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.client import get_es_client
 from ddbj_search_converter.es.settings import get_health_thresholds
 
 
-@dataclass
-class HealthStatus:
+class HealthStatus(BaseModel):
     """Health status information."""
     level: str  # "ok", "warning", "critical"
     message: str
 
 
-@dataclass
-class ClusterHealth:
+class ClusterHealth(BaseModel):
     """Cluster health information."""
     status: str  # "green", "yellow", "red"
     cluster_name: str
@@ -29,8 +28,7 @@ class ClusterHealth:
     unassigned_shards: int
 
 
-@dataclass
-class NodeStats:
+class NodeStats(BaseModel):
     """Node statistics."""
     name: str
     host: str
@@ -42,8 +40,7 @@ class NodeStats:
     heap_used_percent: float
 
 
-@dataclass
-class IndexStats:
+class IndexStats(BaseModel):
     """Index statistics."""
     name: str
     docs_count: int
