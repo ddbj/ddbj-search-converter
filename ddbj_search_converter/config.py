@@ -10,7 +10,7 @@ from pydantic import BaseModel
 RESULT_DIR = Path.cwd().joinpath("ddbj_search_converter_results")  # Path to dump jsonl files and logs
 CONST_DIR = Path("/home/w3ddbjld/const")  # Path to store constant/shared resources
 DATE_FORMAT = "%Y%m%d"
-LOCAL_TZ = ZoneInfo("Asia/Tokyo")
+LOCAL_TZ = ZoneInfo(os.environ.get("TZ", "Asia/Tokyo"))
 _date_override = os.environ.get("DDBJ_SEARCH_CONVERTER_DATE")
 if _date_override:
     TODAY = datetime.strptime(_date_override, DATE_FORMAT).date()

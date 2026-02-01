@@ -23,6 +23,7 @@ services:
       - ${GEA_PATH}:/usr/local/resources/gea/experiment:ro
       - ${METABOBANK_PATH}:/usr/local/shared_data/metabobank/study:ro
     environment:
+      TZ: "Asia/Tokyo"
       DDBJ_SEARCH_CONVERTER_RESULT_DIR: ${DDBJ_SEARCH_CONVERTER_RESULT_DIR}
       DDBJ_SEARCH_CONVERTER_CONST_DIR: ${DDBJ_SEARCH_CONVERTER_CONST_DIR}
       DDBJ_SEARCH_CONVERTER_POSTGRES_URL: ${DDBJ_SEARCH_CONVERTER_POSTGRES_URL:-}

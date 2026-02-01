@@ -2,9 +2,8 @@
 
 from datetime import datetime
 from typing import Any, Dict, List, Optional, cast
-from zoneinfo import ZoneInfo
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import LOCAL_TZ, Config
 from ddbj_search_converter.es.client import get_es_client
 from ddbj_search_converter.es.index import ALL_INDEXES
 
@@ -99,7 +98,7 @@ def create_snapshot(
     es_client = get_es_client(config)
 
     if snapshot_name is None:
-        timestamp = datetime.now(ZoneInfo("Asia/Tokyo")).strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(LOCAL_TZ).strftime("%Y%m%d_%H%M%S")
         snapshot_name = f"ddbj_search_{timestamp}"
 
     if indexes is None:
