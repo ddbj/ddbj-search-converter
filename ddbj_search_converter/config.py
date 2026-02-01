@@ -54,6 +54,7 @@ BP_BS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"
 BP_BLACKLIST_REL_PATH = "bp/blacklist.txt"
 BS_BLACKLIST_REL_PATH = "bs/blacklist.txt"
 SRA_BLACKLIST_REL_PATH = "sra/blacklist.txt"
+JGA_BLACKLIST_REL_PATH = "jga/blacklist.txt"
 MTB_BP_PRESERVED_REL_PATH = "metabobank/mtb_id_bioproject_preserve.tsv"
 MTB_BS_PRESERVED_REL_PATH = "metabobank/mtb_id_biosample_preserve.tsv"
 

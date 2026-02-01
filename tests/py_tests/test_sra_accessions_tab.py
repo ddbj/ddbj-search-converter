@@ -337,7 +337,7 @@ class TestFindLatestSraAccessionsTabFile:
 
     def test_finds_existing_file(self, tmp_path: Path) -> None:
         """存在するファイルを見つける。"""
-        from ddbj_search_converter.sra_accessions_tab import TODAY
+        from ddbj_search_converter.config import TODAY
 
         date_str = TODAY.strftime("%Y%m%d")
         year = TODAY.strftime("%Y")
@@ -370,7 +370,7 @@ class TestFindLatestDraAccessionsTabFile:
 
     def test_finds_existing_file(self, tmp_path: Path) -> None:
         """存在するファイルを見つける。"""
-        from ddbj_search_converter.sra_accessions_tab import TODAY
+        from ddbj_search_converter.config import TODAY
 
         date_str = TODAY.strftime("%Y%m%d")
 
@@ -400,7 +400,7 @@ class TestBuildSraAccessionsDb:
 
     def test_builds_database(self, test_config: Config, tmp_path: Path) -> None:
         """SRA Accessionsデータベースを構築する。"""
-        from ddbj_search_converter.sra_accessions_tab import TODAY
+        from ddbj_search_converter.config import TODAY
 
         date_str = TODAY.strftime("%Y%m%d")
         year = TODAY.strftime("%Y")
@@ -441,7 +441,7 @@ class TestBuildDraAccessionsDb:
 
     def test_builds_database(self, test_config: Config, tmp_path: Path) -> None:
         """DRA Accessionsデータベースを構築する。"""
-        from ddbj_search_converter.sra_accessions_tab import TODAY
+        from ddbj_search_converter.config import TODAY
 
         date_str = TODAY.strftime("%Y%m%d")
 

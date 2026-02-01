@@ -64,7 +64,8 @@ def _parse_fixture(xml_type: str, xml_path: Path) -> List[Dict[str, Any]]:
     if xml_type == "submission":
         result = parse_fn(xml_bytes, submission_id)
         return [result] if result and result.get("accession") else []
-    return parse_fn(xml_bytes, submission_id)
+    results: List[Dict[str, Any]] = parse_fn(xml_bytes, submission_id)
+    return results
 
 
 # === Normalize tests ===

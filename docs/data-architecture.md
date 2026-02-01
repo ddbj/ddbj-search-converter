@@ -43,7 +43,7 @@ DDBJ-Search Converter のデータフローと構造。
 |   generate_bp_jsonl  -- tmp_xml + dblink + date_cache + blacklist           |
 |   generate_bs_jsonl  -- tmp_xml + dblink + date_cache + blacklist           |
 |   generate_sra_jsonl -- tar + dblink + accessions_db + blacklist            |
-|   generate_jga_jsonl -- XML/CSV + dblink                                    |
+|   generate_jga_jsonl -- XML/CSV + dblink + blacklist                        |
 |                                                                             |
 |   Output: {result}/jsonl/{YYYYMMDD}/*.jsonl (12 files)                      |
 +-----------------------------------------------------------------------------+
@@ -52,8 +52,9 @@ DDBJ-Search Converter のデータフローと構造。
 +-----------------------------------------------------------------------------+
 | Phase 3: Elasticsearch Ingestion                                            |
 |                                                                             |
-|   es_create_index -- bioproject, biosample, sra, jga                        |
-|   es_bulk_insert  -- 12 indexes + 3 aliases (sra, jga, entries)             |
+|   es_create_index      -- bioproject, biosample, sra, jga                   |
+|   es_bulk_insert       -- 12 indexes + 3 aliases (sra, jga, entries)        |
+|   es_delete_blacklist  -- blacklist に含まれる doc を ES から削除           |
 +-----------------------------------------------------------------------------+
 ```
 
@@ -105,7 +106,8 @@ JSONL 生成時に除外する accession のリスト。
 |---------|------|
 | `bp/blacklist.txt` | BioProject |
 | `bs/blacklist.txt` | BioSample |
-| `sra/blacklist.txt` | SRA |
+| `sra/blacklist.txt` | SRA (Submission, Study, Experiment, Run, Sample, Analysis) |
+| `jga/blacklist.txt` | JGA (Study, Dataset, DAC, Policy) |
 
 ### Preserved
 
@@ -116,6 +118,71 @@ DBLink 構築時に追加する手動管理の関連。
 | `dblink/bp_bs_preserved.tsv` | BioProject - BioSample |
 | `metabobank/mtb_id_bioproject_preserve.tsv` | MetaboBank - BioProject |
 | `metabobank/mtb_id_biosample_preserve.tsv` | MetaboBank - BioSample |
+
+### Blacklist / Preserved ファイルの挙動と役割
+
+#### Blacklist ファイル
+
+Blacklist ファイルは、公開すべきでないデータを除外するための仕組み。
+
+**ファイル形式:**
+
+- 1 行 1 accession
+- `#` で始まる行はコメントとして無視
+- 空行は無視
+
+**使用されるタイミング:**
+
+| ファイル | DBLink 構築 | JSONL 生成 | ES 削除 |
+|---------|-------------|-----------|---------|
+| `bp/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
+| `bs/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
+| `sra/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
+| `jga/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
+
+**挙動の詳細:**
+
+1. **DBLink 構築時**: blacklist に含まれる accession を含む関連ペアを除外。両側のいずれかが blacklist に含まれていれば除外される。
+2. **JSONL 生成時**: blacklist に含まれる accession のエントリは JSONL に出力されない。
+3. **ES 削除 (`es_delete_blacklist`)**: パイプライン実行後、blacklist に含まれる accession を Elasticsearch から削除。過去にインデックスされていたが後から blacklist に追加されたエントリを削除するために使用。
+
+**運用フロー:**
+
+```
+1. 問題のある accession を特定
+2. 該当する blacklist.txt に追記
+3. パイプラインを実行 (JSONL に含まれなくなる)
+4. es_delete_blacklist で ES から削除
+```
+
+#### Preserved ファイル
+
+Preserved ファイルは、XML/CSV などの元データに記載されていない関連を手動で追加するための仕組み。
+
+**ファイル形式:**
+
+- TSV (タブ区切り)
+- ヘッダ行: `from_id` と `to_id` (または同等のカラム名)
+- `#` で始まる行はコメントとして無視
+
+**使用されるタイミング:**
+
+| ファイル | 使用コマンド | 挙動 |
+|---------|-------------|------|
+| `dblink/bp_bs_preserved.tsv` | `create_dblink_bp_bs_relations` | BioProject-BioSample 関連に追加 |
+| `metabobank/mtb_id_bioproject_preserve.tsv` | `create_dblink_metabobank_relations` | MetaboBank-BioProject 関連に追加 |
+| `metabobank/mtb_id_biosample_preserve.tsv` | `create_dblink_metabobank_relations` | MetaboBank-BioSample 関連に追加 |
+
+**挙動の詳細:**
+
+1. **DBLink 構築時**: preserved ファイルの関連ペアを DBLink DB に追加。元データから抽出した関連と合算される。
+2. **JSONL 生成時**: DBLink DB から読み込まれた関連が `dbXrefs` フィールドに反映される。preserved で追加された関連も含まれる。
+
+**ユースケース:**
+
+- BioSample の XML に BioProject ID が記載されていないが、関連があることが分かっている場合
+- MetaboBank のデータで、IDF/SDRF から抽出できない関連を補完する場合
+- 過去のデータで関連情報が欠落している場合の補完
 
 ## 中間データベース
 

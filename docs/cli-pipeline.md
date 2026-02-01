@@ -91,6 +91,9 @@ es_bulk_insert --index jga-study
 es_bulk_insert --index jga-dataset
 es_bulk_insert --index jga-dac
 es_bulk_insert --index jga-policy
+
+# 11. blacklist に含まれるドキュメントを削除
+es_delete_blacklist --force
 ```
 
 ## 差分更新（Incremental）
@@ -182,6 +185,9 @@ generate_jga_jsonl
 ### ステップ一覧
 
 ```
+=== PHASE 0: Pre-check ===
+  check_resources      Check external resources availability
+
 === PHASE 1: DBLink Construction ===
   prepare              Prepare XML files and build accessions DB
   init_dblink          Initialize DBLink database
@@ -205,11 +211,15 @@ generate_jga_jsonl
 === PHASE 3: Elasticsearch ===
   es_create            Create Elasticsearch indexes
   es_bulk              Bulk insert to Elasticsearch
+  es_delete_blacklist  Delete blacklisted documents from Elasticsearch
 ```
 
 ### 実行フロー
 
 ```
+PHASE 0: Pre-check
+check_external_resources
+    ↓
 PHASE 1: DBLink Construction
 ├── [並列] prepare_bioproject_xml
 ├── [並列] prepare_biosample_xml
@@ -235,6 +245,8 @@ PHASE 3: Elasticsearch
 es_create_index --index all --skip-existing
     ↓
 [順次] es_bulk_insert (12 インデックス)
+    ↓
+es_delete_blacklist --force
 ```
 
 ### 環境変数
@@ -370,7 +382,7 @@ es_bulk_insert --index jga-study \
 | `generate_bp_jsonl` | `--full`, `--parallel-num` | BioProject JSONL 生成 |
 | `generate_bs_jsonl` | `--full`, `--parallel-num` | BioSample JSONL 生成 |
 | `generate_sra_jsonl` | `--full`, `--parallel-num` | SRA JSONL 生成 |
-| `generate_jga_jsonl` | - | JGA JSONL 生成（常に全件処理） |
+| `generate_jga_jsonl` | - | JGA JSONL 生成（常に全件処理、blacklist 適用） |
 | `regenerate_jsonl` | `--type`, `--accessions`, `--accession-file`, `--output-dir` | 特定 accession の JSONL 再生成 |
 
 ### Elasticsearch 操作
@@ -380,6 +392,7 @@ es_bulk_insert --index jga-study \
 | `es_create_index` | `--index`, `--skip-existing` | Elasticsearch インデックス作成 |
 | `es_delete_index` | `--index`, `--force`, `--skip-missing` | Elasticsearch インデックス削除 |
 | `es_bulk_insert` | `--index`, `--dir`, `--file`, `--batch-size` | JSONL を Elasticsearch に一括挿入 |
+| `es_delete_blacklist` | `--index`, `--force`, `--dry-run`, `--batch-size` | blacklist に含まれるドキュメントを ES から削除 |
 | `es_list_indexes` | - | 登録済みインデックス一覧 |
 | `es_health_check` | `-v` | クラスタヘルス確認 |
 | `es_snapshot` | サブコマンド形式 | スナップショット管理 |

@@ -11,8 +11,8 @@ from ddbj_search_converter.jsonl.bp import (normalize_properties, parse_args,
                                             parse_organization,
                                             parse_publication, parse_same_as,
                                             parse_status, parse_title,
-                                            write_jsonl,
                                             xml_entry_to_bp_instance)
+from ddbj_search_converter.jsonl.utils import write_jsonl
 from ddbj_search_converter.schema import BioProject
 from ddbj_search_converter.xml_utils import iterate_xml_element
 

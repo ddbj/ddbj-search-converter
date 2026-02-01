@@ -34,6 +34,8 @@ from ddbj_search_converter.config import (JGA_ANALYSIS_STUDY_CSV,
                                           JGA_POLICY_DAC_CSV, JGA_STUDY_XML,
                                           get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.utils import (filter_sra_pairs_by_blacklist,
+                                                load_jga_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
                                                   run_logger)
@@ -258,15 +260,28 @@ def process_jga_study_xml() -> Tuple[IdPairs, IdPairs]:
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
+        # Blacklist を読み込む
+        jga_blacklist = load_jga_blacklist(config)
+
         # Extract from XML
         study_to_hum_id, study_to_pubmed_id = process_jga_study_xml()
         log_info(f"extracted {len(study_to_hum_id)} JGA study -> hum-id relations")
         log_info(f"extracted {len(study_to_pubmed_id)} JGA study -> pubmed-id relations")
 
+        # Blacklist でフィルタ
+        study_to_hum_id = filter_sra_pairs_by_blacklist(study_to_hum_id, jga_blacklist)
+        study_to_pubmed_id = filter_sra_pairs_by_blacklist(study_to_pubmed_id, jga_blacklist)
+
         # Build JGA internal relations from CSV
         internal_relations = build_jga_internal_relations()
         for name, rel in internal_relations.items():
             log_info(f"built {len(rel)} JGA {name} relations")
+
+        # Blacklist でフィルタ
+        for name in internal_relations:
+            internal_relations[name] = filter_sra_pairs_by_blacklist(
+                internal_relations[name], jga_blacklist
+            )
 
         # Load to DB: XML-based relations
         if study_to_hum_id:

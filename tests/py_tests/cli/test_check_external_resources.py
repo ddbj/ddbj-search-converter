@@ -1,7 +1,7 @@
 """Tests for ddbj_search_converter.cli.check_external_resources module."""
 import os
 from pathlib import Path
-from typing import Generator
+from typing import Any, Generator, List
 from unittest.mock import patch
 
 import pytest
@@ -88,11 +88,15 @@ class TestCheckExternalResourcesMain:
         (const_dir / "dblink").mkdir(parents=True)
         (const_dir / "bp").mkdir(parents=True)
         (const_dir / "bs").mkdir(parents=True)
+        (const_dir / "sra").mkdir(parents=True)
+        (const_dir / "jga").mkdir(parents=True)
         (const_dir / "metabobank").mkdir(parents=True)
 
         (const_dir / "dblink" / "bp_bs_preserved.tsv").write_text("", encoding="utf-8")
         (const_dir / "bp" / "blacklist.txt").write_text("", encoding="utf-8")
         (const_dir / "bs" / "blacklist.txt").write_text("", encoding="utf-8")
+        (const_dir / "sra" / "blacklist.txt").write_text("", encoding="utf-8")
+        (const_dir / "jga" / "blacklist.txt").write_text("", encoding="utf-8")
         (const_dir / "metabobank" / "mtb_id_bioproject_preserve.tsv").write_text("", encoding="utf-8")
         (const_dir / "metabobank" / "mtb_id_biosample_preserve.tsv").write_text("", encoding="utf-8")
 
@@ -134,7 +138,7 @@ class TestCheckExternalResourcesMain:
         try:
             os.environ.update(env)
 
-            patches = [
+            patches: List[Any] = [
                 patch(f"ddbj_search_converter.cli.check_external_resources.{k}", v)
                 for k, v in mock_files.items()
             ]

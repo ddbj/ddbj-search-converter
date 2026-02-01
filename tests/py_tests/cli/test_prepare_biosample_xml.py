@@ -44,8 +44,8 @@ class TestProcessBiosampleXml:
 </BioSampleSet>
 """
         gz_file = tmp_path / "biosample.xml.gz"
-        with gzip.open(gz_file, "wb") as f:
-            f.write(xml_content)
+        with gzip.open(gz_file, "wb") as gf:
+            gf.write(xml_content)
 
         output_files = process_biosample_xml(
             config=config,
@@ -55,8 +55,8 @@ class TestProcessBiosampleXml:
         )
 
         assert len(output_files) == 2
-        for f in output_files:
-            assert f.exists()
+        for output_file in output_files:
+            assert output_file.exists()
 
 
 class TestPrepareBiosampleXmlMain:
@@ -79,10 +79,10 @@ class TestPrepareBiosampleXmlMain:
 </BioSample>
 </BioSampleSet>
 """
-        with gzip.open(ncbi_xml_gz, "wb") as f:
-            f.write(xml_content)
-        with gzip.open(ddbj_xml_gz, "wb") as f:
-            f.write(xml_content)
+        with gzip.open(ncbi_xml_gz, "wb") as gf:
+            gf.write(xml_content)
+        with gzip.open(ddbj_xml_gz, "wb") as gf:
+            gf.write(xml_content)
 
         env = {
             "DDBJ_SEARCH_CONVERTER_RESULT_DIR": str(result_dir),

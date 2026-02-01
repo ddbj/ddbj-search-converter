@@ -151,7 +151,7 @@ echo "出力先: $FIXTURES_DIR"
 # === ディレクトリ構造の作成 ===
 echo ""
 echo "--- ディレクトリ構造を作成中 ---"
-mkdir -p "$FIXTURES_DIR/home/w3ddbjld/const/"{bp,bs,sra,dblink,metabobank}
+mkdir -p "$FIXTURES_DIR/home/w3ddbjld/const/"{bp,bs,sra,jga,dblink,metabobank}
 mkdir -p "$FIXTURES_DIR/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
 mkdir -p "$FIXTURES_DIR/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
 mkdir -p "$FIXTURES_DIR/usr/local/shared_data/"{dblink,metabobank/study}
@@ -163,10 +163,11 @@ mkdir -p "$FIXTURES_DIR/usr/local/resources/gea/experiment"
 # コードで使用されるファイル (config.py 参照):
 #   - bp/blacklist.txt (BP_BLACKLIST_REL_PATH)
 #   - bs/blacklist.txt (BS_BLACKLIST_REL_PATH)
+#   - sra/blacklist.txt (SRA_BLACKLIST_REL_PATH)
+#   - jga/blacklist.txt (JGA_BLACKLIST_REL_PATH)
 #   - dblink/bp_bs_preserved.tsv (BP_BS_PRESERVED_REL_PATH)
 #   - metabobank/mtb_id_bioproject_preserve.tsv (MTB_BP_PRESERVED_REL_PATH)
 #   - metabobank/mtb_id_biosample_preserve.tsv (MTB_BS_PRESERVED_REL_PATH)
-#   - sra/blacklist.txt (SRA_BLACKLIST_REL_PATH)
 echo ""
 echo "--- const ディレクトリ ---"
 CONST_SRC="/home/w3ddbjld/const"
@@ -176,6 +177,7 @@ echo "blacklist ファイルを取得中..."
 fetch_text_file "$CONST_SRC/bp/blacklist.txt" "$CONST_DST/bp/blacklist.txt" 10 "bp/blacklist.txt"
 fetch_text_file "$CONST_SRC/bs/blacklist.txt" "$CONST_DST/bs/blacklist.txt" 10 "bs/blacklist.txt"
 fetch_text_file "$CONST_SRC/sra/blacklist.txt" "$CONST_DST/sra/blacklist.txt" 10 "sra/blacklist.txt"
+fetch_text_file "$CONST_SRC/jga/blacklist.txt" "$CONST_DST/jga/blacklist.txt" 10 "jga/blacklist.txt"
 
 echo "preserved ファイルを取得中..."
 fetch_text_file "$CONST_SRC/dblink/bp_bs_preserved.tsv" "$CONST_DST/dblink/bp_bs_preserved.tsv" 11 "dblink/bp_bs_preserved.tsv"

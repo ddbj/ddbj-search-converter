@@ -1,0 +1,2 @@
+# JGA blacklist for testing
+# Comment lines should be ignored

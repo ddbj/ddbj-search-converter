@@ -62,6 +62,7 @@ es_delete_index = "ddbj_search_converter.cli.es:main_delete_index"
 es_bulk_insert = "ddbj_search_converter.cli.es:main_bulk_insert"
 es_list_indexes = "ddbj_search_converter.cli.es:main_list_indexes"
 es_health_check = "ddbj_search_converter.cli.es:main_health_check"
+es_delete_blacklist = "ddbj_search_converter.cli.es:main_delete_blacklist"
 es_snapshot = "ddbj_search_converter.cli.es_snapshot:main"
 show_log_summary = "ddbj_search_converter.cli.debug.show_log_summary:main"
 show_log = "ddbj_search_converter.cli.debug.show_log:main"
@@ -74,7 +75,7 @@ testpaths = ["tests/py_tests"]
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
-files = ["./ddbj_search_converter/**/*.py"]
+files = ["./ddbj_search_converter/**/*.py", "./tests/**/*.py"]
 follow_imports = "silent"
 strict = true
 

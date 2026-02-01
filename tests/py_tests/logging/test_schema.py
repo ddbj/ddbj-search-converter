@@ -105,8 +105,7 @@ class TestExtra:
         """Test that Extra allows arbitrary additional fields."""
         extra = Extra(
             lifecycle="end",
-            custom_field="custom_value",
-            another_field=123,
+            **{"custom_field": "custom_value", "another_field": 123},  # type: ignore[arg-type]
         )
 
         assert extra.lifecycle == "end"

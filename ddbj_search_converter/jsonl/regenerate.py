@@ -13,6 +13,7 @@ from ddbj_search_converter.config import (BP_BASE_DIR_NAME, BS_BASE_DIR_NAME,
                                           TODAY_STR, Config, get_config)
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import (load_blacklist,
+                                                load_jga_blacklist,
                                                 load_sra_blacklist)
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.jsonl.bp import \
@@ -380,6 +381,8 @@ def regenerate_jga_jsonl(
     target_accessions: Set[str],
 ) -> None:
     """指定された accession の JGA JSONL を再生成する。"""
+    jga_blacklist = load_jga_blacklist(config)
+
     # 必要な index_name を判定
     needed_indexes: Dict[IndexName, Set[str]] = {}
     for acc in target_accessions:
@@ -416,6 +419,10 @@ def regenerate_jga_jsonl(
         for entry in entries:
             jga_instance = jga_entry_to_jga_instance(entry, index_name)
             if jga_instance.identifier in accs:
+                # blacklist チェック
+                if jga_instance.identifier in jga_blacklist:
+                    log_warn(f"accession {jga_instance.identifier} is in blacklist, skipping")
+                    continue
                 jga_instances[jga_instance.identifier] = jga_instance
 
         not_found = accs - set(jga_instances.keys())

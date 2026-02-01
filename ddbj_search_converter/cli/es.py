@@ -13,9 +13,13 @@ Usage:
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from ddbj_search_converter.config import Config, get_config
+from ddbj_search_converter.dblink.utils import (load_blacklist,
+                                                load_jga_blacklist,
+                                                load_sra_blacklist)
+from ddbj_search_converter.es.bulk_delete import bulk_delete_by_ids
 from ddbj_search_converter.es.bulk_insert import (bulk_insert_from_dir,
                                                   bulk_insert_jsonl)
 from ddbj_search_converter.es.index import (create_index, delete_index,
@@ -25,8 +29,10 @@ from ddbj_search_converter.es.monitoring import (check_health, format_bytes,
                                                  get_cluster_health,
                                                  get_index_stats,
                                                  get_node_stats)
+from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, run_logger)
+                                                  log_info, log_warn,
+                                                  run_logger)
 
 # === Create Index ===
 
@@ -329,4 +335,163 @@ def main_health_check() -> None:
 
         except Exception as e:
             log_error("failed to check health", error=e)
+            sys.exit(1)
+
+
+# === Delete Blacklist ===
+
+# AccessionType -> ES インデックス名のマッピング
+ACCESSION_TYPE_TO_INDEX: Dict[str, str] = {
+    "bioproject": "bioproject",
+    "umbrella-bioproject": "bioproject",
+    "biosample": "biosample",
+    "sra-submission": "sra-submission",
+    "sra-study": "sra-study",
+    "sra-experiment": "sra-experiment",
+    "sra-run": "sra-run",
+    "sra-sample": "sra-sample",
+    "sra-analysis": "sra-analysis",
+    "jga-study": "jga-study",
+    "jga-dataset": "jga-dataset",
+    "jga-dac": "jga-dac",
+    "jga-policy": "jga-policy",
+}
+
+
+def classify_accession(accession: str) -> Optional[str]:
+    """accession の ID パターンからインデックス名を判定する。"""
+    for acc_type, pattern in ID_PATTERN_MAP.items():
+        if acc_type in ACCESSION_TYPE_TO_INDEX and pattern.match(accession):
+            return ACCESSION_TYPE_TO_INDEX[acc_type]
+    return None
+
+
+def classify_blacklist_by_index(
+    blacklist: Set[str],
+) -> Dict[str, Set[str]]:
+    """blacklist の各 accession を ID パターンからインデックスごとに分類する。"""
+    result: Dict[str, Set[str]] = {}
+    for accession in blacklist:
+        index = classify_accession(accession)
+        if index:
+            result.setdefault(index, set()).add(accession)
+        else:
+            log_warn(f"cannot classify accession: {accession}")
+    return result
+
+
+def parse_delete_blacklist_args(args: List[str]) -> Tuple[Config, str, bool, bool, int]:
+    """Delete blacklist コマンドの引数をパースする。"""
+    parser = argparse.ArgumentParser(
+        description="Delete blacklisted documents from Elasticsearch indexes."
+    )
+    parser.add_argument(
+        "--index",
+        default="all",
+        help="Index group (bioproject, biosample, sra, jga, all). Default: all",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Delete without confirmation",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be deleted without actually deleting",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1000,
+        help="Batch size for bulk delete (default: 1000)",
+    )
+    parsed = parser.parse_args(args)
+    config = get_config()
+    return config, parsed.index, parsed.force, parsed.dry_run, parsed.batch_size
+
+
+def main_delete_blacklist() -> None:
+    """Blacklist に含まれるドキュメントを ES から削除する。"""
+    config, index_group, force, dry_run, batch_size = parse_delete_blacklist_args(sys.argv[1:])
+
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
+
+        # blacklist を読み込む
+        bp_blacklist, bs_blacklist = load_blacklist(config)
+        sra_blacklist = load_sra_blacklist(config)
+        jga_blacklist = load_jga_blacklist(config)
+
+        # 全 blacklist を統合
+        all_blacklist = bp_blacklist | bs_blacklist | sra_blacklist | jga_blacklist
+
+        if not all_blacklist:
+            log_info("No blacklist entries found")
+            return
+
+        log_info("loaded blacklist entries",
+                 bioproject=len(bp_blacklist),
+                 biosample=len(bs_blacklist),
+                 sra=len(sra_blacklist),
+                 jga=len(jga_blacklist))
+
+        # ID パターンでインデックスごとに分類
+        index_blacklist_map = classify_blacklist_by_index(all_blacklist)
+
+        # 対象インデックスを取得
+        target_indexes = get_indexes_for_group(index_group)  # type: ignore
+
+        # サマリ表示
+        total_to_delete = 0
+        for idx in target_indexes:
+            blacklist = index_blacklist_map.get(idx, set())
+            if blacklist:
+                total_to_delete += len(blacklist)
+                log_info(f"index={idx}: {len(blacklist)} blacklisted accessions")
+
+        if total_to_delete == 0:
+            log_info("No blacklisted accessions to delete")
+            return
+
+        if dry_run:
+            log_info(f"[DRY-RUN] Would delete {total_to_delete} documents total")
+            return
+
+        if not force:
+            confirm = input(f"Delete {total_to_delete} blacklisted documents? [y/N]: ")
+            if confirm.lower() != "y":
+                log_info("operation cancelled")
+                return
+
+        # 削除実行
+        total_success = 0
+        total_not_found = 0
+        total_errors = 0
+
+        for idx in target_indexes:
+            blacklist = index_blacklist_map.get(idx, set())
+            if not blacklist:
+                continue
+
+            result = bulk_delete_by_ids(config, idx, blacklist, batch_size)
+            log_info(f"deleted from {idx}",
+                     success=result.success_count,
+                     not_found=result.not_found_count,
+                     errors=result.error_count)
+
+            total_success += result.success_count
+            total_not_found += result.not_found_count
+            total_errors += result.error_count
+
+            if result.errors:
+                for err in result.errors[:5]:
+                    log_error(f"delete error: {err}")
+
+        log_info("Blacklist deletion completed",
+                 total_success=total_success,
+                 total_not_found=total_not_found,
+                 total_errors=total_errors)
+
+        if total_errors > 0:
             sys.exit(1)

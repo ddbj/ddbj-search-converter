@@ -26,6 +26,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Step definitions (order matters)
 STEP_NAMES=(
+    "check_resources"
     "prepare"
     "init_dblink"
     "dblink_bp_bs"
@@ -44,6 +45,7 @@ STEP_NAMES=(
     "jsonl_jga"
     "es_create"
     "es_bulk"
+    "es_delete_blacklist"
 )
 
 declare -A STEP_ORDER
@@ -52,6 +54,7 @@ for i in "${!STEP_NAMES[@]}"; do
 done
 
 declare -A STEP_DESC=(
+    ["check_resources"]="Check external resources availability"
     ["prepare"]="Prepare XML files and build accessions DB"
     ["init_dblink"]="Initialize DBLink database"
     ["dblink_bp_bs"]="Create BioProject-BioSample relations"
@@ -70,9 +73,11 @@ declare -A STEP_DESC=(
     ["jsonl_jga"]="Generate JGA JSONL"
     ["es_create"]="Create Elasticsearch indexes"
     ["es_bulk"]="Bulk insert to Elasticsearch"
+    ["es_delete_blacklist"]="Delete blacklisted documents from Elasticsearch"
 )
 
 declare -A STEP_PHASE=(
+    ["check_resources"]="PHASE 0: Pre-check"
     ["prepare"]="PHASE 1: DBLink Construction"
     ["init_dblink"]="PHASE 1: DBLink Construction"
     ["dblink_bp_bs"]="PHASE 1: DBLink Construction"
@@ -91,6 +96,7 @@ declare -A STEP_PHASE=(
     ["jsonl_jga"]="PHASE 2: JSONL Generation"
     ["es_create"]="PHASE 3: Elasticsearch"
     ["es_bulk"]="PHASE 3: Elasticsearch"
+    ["es_delete_blacklist"]="PHASE 3: Elasticsearch"
 )
 
 # Default values
@@ -334,6 +340,21 @@ run_parallel_limited() {
 }
 
 # ============================================================
+# PHASE 0: Pre-check
+# ============================================================
+phase0_check() {
+    log_section "PHASE 0: Pre-check"
+
+    # Step: check_resources
+    if should_skip_step "check_resources"; then
+        log_info "[SKIP] check_resources (--from-step)"
+    else
+        log_info "Step 0-1: Checking external resources..."
+        run_cmd "check_external_resources"
+    fi
+}
+
+# ============================================================
 # PHASE 1: DBLink Construction
 # ============================================================
 phase1_dblink() {
@@ -523,6 +544,14 @@ phase3_elasticsearch() {
         run_cmd "es_bulk_insert --index jga-dac --dir ${jga_dir}"
         run_cmd "es_bulk_insert --index jga-policy --dir ${jga_dir}"
     fi
+
+    # Step: es_delete_blacklist
+    if should_skip_step "es_delete_blacklist"; then
+        log_info "[SKIP] es_delete_blacklist (--from-step)"
+    else
+        log_info "Step 3-3: Deleting blacklisted documents..."
+        run_cmd "es_delete_blacklist --force"
+    fi
 }
 
 # ============================================================
@@ -549,6 +578,7 @@ main() {
     local start_time
     start_time=$(date +%s)
 
+    phase0_check
     phase1_dblink
     phase2_jsonl
     phase3_elasticsearch

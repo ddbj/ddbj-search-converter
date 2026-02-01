@@ -169,6 +169,45 @@ es_bulk_insert --index bioproject --batch-size 1000
 - `_op_type: "index"` のため既存ドキュメントは上書き (upsert 相当)
 - デフォルトのバッチサイズは 5000
 
+### blacklist 削除
+
+blacklist ファイルに含まれる accession を Elasticsearch から削除する。
+
+```bash
+# dry-run で削除対象を確認
+es_delete_blacklist --dry-run
+
+# 特定のインデックスグループのみ
+es_delete_blacklist --index jga --dry-run
+
+# 実行 (確認なし)
+es_delete_blacklist --force
+
+# バッチサイズを調整
+es_delete_blacklist --force --batch-size 500
+```
+
+**オプション:**
+
+| オプション | 説明 |
+|-----------|------|
+| `--index` | インデックスグループ (`bioproject`, `biosample`, `sra`, `jga`, `all`)。デフォルト: `all` |
+| `--force` | 確認なしで削除 |
+| `--dry-run` | 削除せず対象を表示のみ |
+| `--batch-size` | bulk delete のバッチサイズ。デフォルト: 1000 |
+
+**挙動:**
+
+1. 全 blacklist ファイル (`bp/blacklist.txt`, `bs/blacklist.txt`, `sra/blacklist.txt`, `jga/blacklist.txt`) を読み込む
+2. 各 accession の ID パターンから対象インデックスを判定
+3. bulk delete API で一括削除
+4. 存在しないドキュメント (404) はエラーとせず `not_found` としてカウント
+
+**ユースケース:**
+
+- パイプライン実行後に blacklist に追加されたエントリを削除
+- 過去にインデックスされたが、現在は非公開にすべきデータの削除
+
 ## ヘルスチェック
 
 ```bash

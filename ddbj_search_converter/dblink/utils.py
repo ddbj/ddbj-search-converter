@@ -3,6 +3,7 @@ from typing import Literal, Set, Tuple
 
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
                                           BS_BLACKLIST_REL_PATH,
+                                          JGA_BLACKLIST_REL_PATH,
                                           SRA_BLACKLIST_REL_PATH, Config)
 from ddbj_search_converter.dblink.db import IdPairs
 from ddbj_search_converter.logging.logger import log_info
@@ -128,3 +129,28 @@ def filter_sra_pairs_by_blacklist(
         log_info(f"removed {removed_count} sra relations by blacklist")
 
     return filtered
+
+
+def load_jga_blacklist(config: Config) -> Set[str]:
+    """JGA の blacklist ファイルを読み込む。
+
+    JGA blacklist には Study, Dataset, DAC, Policy の accession が含まれる。
+    コメント行 (#) は無視する。
+    """
+    jga_blacklist_path = config.const_dir.joinpath(JGA_BLACKLIST_REL_PATH)
+
+    jga_blacklist: Set[str] = set()
+
+    if jga_blacklist_path.exists():
+        with jga_blacklist_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    jga_blacklist.add(line)
+        log_info(f"loaded {len(jga_blacklist)} JGA blacklist entries",
+                 file=str(jga_blacklist_path))
+    else:
+        log_info(f"jga blacklist not found, skipping: {jga_blacklist_path}",
+                 file=str(jga_blacklist_path))
+
+    return jga_blacklist

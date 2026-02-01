@@ -5,12 +5,13 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
                                           JSONL_DIR_NAME, TODAY_STR, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import AccessionType
+from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
                                                   log_info, run_logger)
@@ -174,6 +175,7 @@ def generate_jga_jsonl(
     index_name: IndexName,
     output_dir: Path,
     jga_base_path: Path,
+    jga_blacklist: Set[str],
 ) -> None:
     """単一の JGA タイプの JSONL ファイルを生成する。"""
     xml_path = jga_base_path.joinpath(f"{index_name}.xml")
@@ -198,9 +200,19 @@ def generate_jga_jsonl(
 
     # エントリを JGA インスタンスに変換
     jga_instances: Dict[str, JGA] = {}
+    skipped_count = 0
     for entry in entries:
         jga_instance = jga_entry_to_jga_instance(entry, index_name)
+
+        # blacklist チェック
+        if jga_instance.identifier in jga_blacklist:
+            skipped_count += 1
+            continue
+
         jga_instances[jga_instance.identifier] = jga_instance
+
+    if skipped_count > 0:
+        log_info(f"skipped {skipped_count} entries by blacklist")
 
     accessions = list(jga_instances.keys())
 
@@ -251,8 +263,10 @@ def main() -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
 
+        jga_blacklist = load_jga_blacklist(config)
+
         for index_name in INDEX_NAMES:
-            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH)
+            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist)
 
 
 if __name__ == "__main__":
