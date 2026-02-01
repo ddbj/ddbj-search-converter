@@ -6,8 +6,13 @@ RUN apt update && \
     apt install -y --no-install-recommends \
     aria2 \
     curl \
+    iputils-ping \
     jq \
-    pigz && \
+    less \
+    pigz \
+    procps \
+    tree \
+    vim-tiny && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
