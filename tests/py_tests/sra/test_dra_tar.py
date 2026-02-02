@@ -13,11 +13,11 @@ class TestGetDraTarPath:
 
     def test_returns_correct_path(self) -> None:
         mock_config = MagicMock()
-        mock_config.const_dir = Path("/data/const")
+        mock_config.result_dir = Path("/data/result")
 
         result = get_dra_tar_path(mock_config)
 
-        assert result == Path("/data/const/sra/DRA_Metadata.tar")
+        assert result == Path("/data/result/sra_tar/DRA_Metadata.tar")
 
 
 class TestGetDraLastUpdatedPath:
@@ -25,11 +25,11 @@ class TestGetDraLastUpdatedPath:
 
     def test_returns_correct_path(self) -> None:
         mock_config = MagicMock()
-        mock_config.const_dir = Path("/data/const")
+        mock_config.result_dir = Path("/data/result")
 
         result = get_dra_last_updated_path(mock_config)
 
-        assert result == Path("/data/const/sra/dra_last_updated.txt")
+        assert result == Path("/data/result/sra_tar/dra_last_updated.txt")
 
 
 class TestGetDraAccessionsDbPath:

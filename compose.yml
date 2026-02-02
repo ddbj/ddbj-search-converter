@@ -6,6 +6,7 @@ services:
     container_name: ${APP_CONTAINER_NAME}
     volumes:
       - .:/app:rw
+      - app-venv:/app/.venv
       - ${RESULT_PATH}:/app/ddbj_search_converter_results:rw
       - ${CONST_PATH}:/home/w3ddbjld/const:rw
       # SRA / DRA Accessions
@@ -70,6 +71,8 @@ networks:
     external: true
 
 volumes:
+  app-venv:
+    driver: local
   es-data:
     driver: local
   es-backup:

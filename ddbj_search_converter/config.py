@@ -108,8 +108,8 @@ NCBI_SRA_METADATA_LOCAL_PATH = Path(
     "/lustre9/open/database/ddbj-dbt/dra-private/mirror/Metadata/Metadata"
 )
 
-# tar file names (stored in {const_dir}/sra/)
-SRA_TAR_DIR_NAME = "sra"
+# tar file names (stored in {result_dir}/sra_tar/)
+SRA_TAR_DIR_NAME = "sra_tar"
 NCBI_SRA_TAR_FILE_NAME = "NCBI_SRA_Metadata.tar"
 DRA_TAR_FILE_NAME = "DRA_Metadata.tar"
 NCBI_LAST_MERGED_FILE_NAME = "ncbi_last_merged.txt"

@@ -40,11 +40,11 @@ class TestGetNcbiTarPath:
 
     def test_returns_correct_path(self) -> None:
         mock_config = MagicMock()
-        mock_config.const_dir = Path("/data/const")
+        mock_config.result_dir = Path("/data/result")
 
         result = get_ncbi_tar_path(mock_config)
 
-        assert result == Path("/data/const/sra/NCBI_SRA_Metadata.tar")
+        assert result == Path("/data/result/sra_tar/NCBI_SRA_Metadata.tar")
 
 
 class TestGetNcbiLastMergedPath:
@@ -52,8 +52,8 @@ class TestGetNcbiLastMergedPath:
 
     def test_returns_correct_path(self) -> None:
         mock_config = MagicMock()
-        mock_config.const_dir = Path("/data/const")
+        mock_config.result_dir = Path("/data/result")
 
         result = get_ncbi_last_merged_path(mock_config)
 
-        assert result == Path("/data/const/sra/ncbi_last_merged.txt")
+        assert result == Path("/data/result/sra_tar/ncbi_last_merged.txt")

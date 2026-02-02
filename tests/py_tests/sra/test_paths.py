@@ -10,15 +10,15 @@ class TestGetSraTarDir:
 
     def test_returns_correct_path(self) -> None:
         mock_config = MagicMock()
-        mock_config.const_dir = Path("/data/const")
+        mock_config.result_dir = Path("/data/result")
 
         result = get_sra_tar_dir(mock_config)
 
-        assert result == Path("/data/const/sra")
+        assert result == Path("/data/result/sra_tar")
 
     def test_path_is_path_object(self) -> None:
         mock_config = MagicMock()
-        mock_config.const_dir = Path("/tmp/test")
+        mock_config.result_dir = Path("/tmp/test")
 
         result = get_sra_tar_dir(mock_config)
 

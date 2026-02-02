@@ -34,7 +34,7 @@ from ddbj_search_converter.jsonl.sra import XML_TYPES, process_submission_xml
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 from ddbj_search_converter.schema import XrefType
-from ddbj_search_converter.sra.tar_reader import (SraXmlType,
+from ddbj_search_converter.sra.tar_reader import (SraXmlType, TarXMLReader,
                                                   get_dra_tar_reader,
                                                   get_ncbi_tar_reader)
 from ddbj_search_converter.sra_accessions_tab import (
@@ -293,12 +293,17 @@ def regenerate_sra_jsonl(
             tar_reader = get_ncbi_tar_reader(config)
 
         for sub in submissions:
-            # submission に含まれる全 accession を tar から収集
+            # submission に含まれる全 XML を読み込む
+            xml_cache: Dict[SraXmlType, Optional[bytes]] = {}
+            for xml_type in XML_TYPES:
+                xml_cache[xml_type] = tar_reader.read_xml(sub, xml_type)
+
+            # submission に含まれる全 accession を収集
             sub_accessions: List[str] = [sub]
             for xml_type in XML_TYPES:
                 if xml_type == "submission":
                     continue
-                xml_bytes = tar_reader.read_xml(sub, xml_type)
+                xml_bytes = xml_cache.get(xml_type)
                 if xml_bytes:
                     try:
                         parsed = parse_xml(xml_bytes)
@@ -320,7 +325,11 @@ def regenerate_sra_jsonl(
 
             # submission を処理
             results = process_submission_xml(
-                tar_reader, sub, config, blacklist, accession_info
+                submission=sub,
+                blacklist=blacklist,
+                accession_info=accession_info,
+                is_dra=is_dra,
+                xml_cache=xml_cache,
             )
 
             # target_accessions に含まれるもののみフィルタ
