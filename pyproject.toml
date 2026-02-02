@@ -13,9 +13,9 @@ dependencies = [
     "duckdb",
     "elasticsearch>=8,<9",
     "httpx",
+    "lxml",
     "psycopg2-binary",
     "pydantic",
-    "xmltodict",
 ]
 
 [project.urls]
@@ -26,12 +26,12 @@ Repository = "https://github.com/ddbj/ddbj-search-converter.git"
 [project.optional-dependencies]
 tests = [
     "isort",
+    "lxml-stubs",
     "mypy",
     "pylint",
+    "pytest",
     "pytest-cov",
     "pytest-mock",
-    "pytest",
-    "types-xmltodict",
 ]
 
 [project.scripts]

@@ -4,18 +4,79 @@ BioProject/BioSample の大規模 XML を効率的に処理するための関数
 import gzip
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Literal
+from typing import Any, Dict, Generator, List, Literal, Optional, Union
 
-import xmltodict
+from lxml import etree
 
 from ddbj_search_converter.config import TODAY_STR, Config
 
 
+def _element_to_dict(
+    element: etree._Element,
+    parent_nsmap: Optional[Dict[Optional[str], str]] = None,
+) -> Union[Dict[str, Any], str, None]:
+    """lxml Element を dict に変換する。xmltodict と同じ出力形式を維持。"""
+    result: Dict[str, Any] = {}
+    parent_nsmap = parent_nsmap or {}
+
+    # 名前空間宣言を属性として追加（xmltodict の挙動に合わせる）
+    for prefix, uri in element.nsmap.items():
+        if parent_nsmap.get(prefix) != uri:
+            if prefix is None:
+                result["xmlns"] = uri
+            else:
+                result[f"xmlns:{prefix}"] = uri
+
+    # 属性を追加（プレフィックスなし、attr_prefix="" に対応）
+    for attr_key, attr_value in element.attrib.items():
+        key: str = str(attr_key)
+        if "}" in key:
+            key = key.split("}")[1]
+        result[key] = attr_value
+
+    # テキストコンテンツを処理
+    text = element.text
+    if text is not None:
+        text = text.strip()
+        if text:
+            if result:  # 属性または名前空間宣言がある場合
+                result["content"] = text
+            elif len(element) == 0:  # 子要素がない場合
+                return text
+
+    # 子要素を処理
+    children: Dict[str, List[Any]] = {}
+    for child in element:
+        child_tag: str = str(child.tag)
+        if "}" in child_tag:
+            child_tag = child_tag.split("}")[1]
+
+        child_value = _element_to_dict(child, element.nsmap)
+        if child_tag in children:
+            children[child_tag].append(child_value)
+        else:
+            children[child_tag] = [child_value]
+
+    # 単一要素のリストを値に変換
+    for child_key, child_list in children.items():
+        if len(child_list) == 1:
+            result[child_key] = child_list[0]
+        else:
+            result[child_key] = child_list
+
+    if not result:
+        return None
+
+    return result
+
+
 def parse_xml(xml_bytes: bytes) -> Dict[str, Any]:
-    """XML bytes を dict にパースする。標準パラメータを使用。"""
-    return xmltodict.parse(
-        xml_bytes, attr_prefix="", cdata_key="content", process_namespaces=False
-    )
+    """XML bytes を dict にパースする。lxml ベースで高速化。"""
+    root = etree.fromstring(xml_bytes)
+    root_tag: str = str(root.tag)
+    if "}" in root_tag:
+        root_tag = root_tag.split("}")[1]
+    return {root_tag: _element_to_dict(root)}
 
 
 def get_tmp_xml_dir(config: Config, subdir: Literal["bioproject", "biosample"]) -> Path:
