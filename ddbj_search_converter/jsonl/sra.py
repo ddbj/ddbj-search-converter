@@ -341,6 +341,7 @@ def process_submission_xml(
     blacklist: Set[str],
     accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]],
     is_dra: bool = False,
+    xml_cache: Optional[Dict[SraXmlType, Optional[bytes]]] = None,
 ) -> Dict[SraXmlType, List[Any]]:
     """
     1つの submission から全 XML タイプを処理する。
@@ -352,6 +353,7 @@ def process_submission_xml(
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
         is_dra: DRA かどうか（DRA の場合は XML の submission_date を dateCreated として使用）
+        xml_cache: 事前に読み込んだ XML データのキャッシュ（P0 最適化）
 
     Returns:
         {xml_type: [model_instance, ...]}
@@ -362,7 +364,11 @@ def process_submission_xml(
     submission_date: Optional[str] = None
 
     for xml_type in XML_TYPES:
-        xml_bytes = tar_reader.read_xml(submission, xml_type)
+        # キャッシュがあればそこから取得、なければ tar から読み込み
+        if xml_cache is not None:
+            xml_bytes = xml_cache.get(xml_type)
+        else:
+            xml_bytes = tar_reader.read_xml(submission, xml_type)
         if not xml_bytes:
             continue
 
@@ -459,24 +465,24 @@ def process_source(
         batch = submissions[i:i + batch_size]
         log_info(f"processing batch {i // batch_size + 1}/{(len(submissions) - 1) // batch_size + 1} ({len(batch)} submissions)")
 
-        # Accessions DB から情報を取得
-        # 各 submission に含まれる全 accession のリストを作成
-        all_accessions: List[str] = []
-        for sub in batch:
-            all_accessions.append(sub)
-            # submission に関連する accession は tar から取得時に判明するので、
-            # ここでは submission 自体のみを追加
+        # バッチ用 XML キャッシュ（tar 読み込み 2 重化防止）
+        xml_cache: Dict[str, Dict[SraXmlType, Optional[bytes]]] = {}
 
         # submission を処理
         for sub in batch:
-            # submission に関連する accession を tar から取得
+            # submission に関連する accession を収集
             sub_accessions: List[str] = [sub]
 
-            # 各 XML タイプを確認して accession を収集
+            # 全 XML タイプを読み込んでキャッシュ & accession 収集
+            xml_cache[sub] = {}
             for xml_type in XML_TYPES:
-                if xml_type == "submission":
-                    continue
                 xml_bytes = tar_reader.read_xml(sub, xml_type)
+                xml_cache[sub][xml_type] = xml_bytes
+
+                if xml_type == "submission":
+                    # submission は accession 収集不要
+                    continue
+
                 if xml_bytes:
                     try:
                         parsed = parse_xml(xml_bytes)
@@ -493,18 +499,23 @@ def process_source(
             # Accessions DB から情報を取得
             accession_info = get_accession_info_bulk(config, source, sub_accessions)
 
-            # submission を処理
+            # submission を処理（キャッシュを渡す）
             results = process_submission_xml(
-                tar_reader, sub, config, blacklist, accession_info, is_dra
+                tar_reader, sub, config, blacklist, accession_info, is_dra,
+                xml_cache=xml_cache[sub],
             )
 
             for xml_type in XML_TYPES:
                 all_entries[xml_type].extend(results[xml_type])
 
+        # バッチ終了: キャッシュを明示的に解放
+        del xml_cache
+
     # tar reader を閉じる
     tar_reader.close()
 
     # dbXrefs を更新
+    log_info("fetching dbXrefs from relation table...")
     xref_type_map: Dict[SraXmlType, XrefType] = {
         "submission": "sra-submission",
         "study": "sra-study",
@@ -517,10 +528,13 @@ def process_source(
         entity_type = xref_type_map[xml_type]
         accessions = [e.identifier for e in all_entries[xml_type]]
         if accessions:
+            log_info(f"fetching dbXrefs for {xml_type}: {len(accessions)} accessions")
             dbxref_map = get_dbxref_map(config, entity_type, accessions)
+            log_info(f"fetched dbXrefs for {xml_type}: {len(dbxref_map)} entries with relations")
             for entry in all_entries[xml_type]:
                 if entry.identifier in dbxref_map:
                     entry.dbXrefs = dbxref_map[entry.identifier]
+    log_info("finished fetching dbXrefs")
 
     # JSONL を出力
     counts: Dict[str, int] = {}

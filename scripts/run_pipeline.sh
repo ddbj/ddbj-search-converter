@@ -179,12 +179,14 @@ if [[ -n "$FROM_STEP" ]]; then
     FROM_STEP_ORDER="${STEP_ORDER[$FROM_STEP]}"
 fi
 
-# Set date environment variable if specified
+# Set date environment variable (always export to ensure consistency across subprocesses)
 if [[ -n "$TARGET_DATE" ]]; then
     export DDBJ_SEARCH_CONVERTER_DATE="$TARGET_DATE"
+else
+    export DDBJ_SEARCH_CONVERTER_DATE="${DDBJ_SEARCH_CONVERTER_DATE:-$(date '+%Y%m%d')}"
 fi
 
-DATE_STR="${DDBJ_SEARCH_CONVERTER_DATE:-$(date '+%Y%m%d')}"
+DATE_STR="$DDBJ_SEARCH_CONVERTER_DATE"
 RESULT_DIR="${DDBJ_SEARCH_CONVERTER_RESULT_DIR:-$(pwd)/ddbj_search_converter_results}"
 
 # Logging functions

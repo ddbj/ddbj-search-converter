@@ -244,6 +244,9 @@ def get_related_entities_bulk(
 
     db_path = _final_db_path(config)
 
+    # UNION ALL で分割することで、各クエリが単一インデックスを使用可能に
+    # - 前半: idx_relation_src (src_type, src_accession) を使用
+    # - 後半: idx_relation_dst (dst_type, dst_accession) を使用
     with duckdb.connect(db_path, read_only=True) as conn:
         rows = conn.execute(
             """
@@ -252,25 +255,22 @@ def get_related_entities_bulk(
             )
             SELECT
                 i.accession AS query_accession,
-                CASE
-                    WHEN r.src_type = ? AND r.src_accession = i.accession
-                    THEN r.dst_type
-                    ELSE r.src_type
-                END AS related_type,
-                CASE
-                    WHEN r.src_type = ? AND r.src_accession = i.accession
-                    THEN r.dst_accession
-                    ELSE r.src_accession
-                END AS related_accession
+                r.dst_type AS related_type,
+                r.dst_accession AS related_accession
             FROM relation r
-            JOIN input i
-              ON (r.src_type = ? AND r.src_accession = i.accession)
-              OR (r.dst_type = ? AND r.dst_accession = i.accession)
+            JOIN input i ON r.src_type = ? AND r.src_accession = i.accession
+
+            UNION ALL
+
+            SELECT
+                i.accession AS query_accession,
+                r.src_type AS related_type,
+                r.src_accession AS related_accession
+            FROM relation r
+            JOIN input i ON r.dst_type = ? AND r.dst_accession = i.accession
             """,
             (
                 accessions,
-                entity_type,
-                entity_type,
                 entity_type,
                 entity_type,
             ),

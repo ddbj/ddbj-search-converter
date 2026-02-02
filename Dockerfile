@@ -1,5 +1,14 @@
 FROM python:3.12-bookworm
 
+LABEL org.opencontainers.image.title="ddbj-search-converter" \
+      org.opencontainers.image.description="Data converter for DDBJ Search" \
+      org.opencontainers.image.version="0.1.0" \
+      org.opencontainers.image.authors="Bioinformatics and DDBJ Center" \
+      org.opencontainers.image.url="https://github.com/ddbj/ddbj-search-converter" \
+      org.opencontainers.image.source="https://github.com/ddbj/ddbj-search-converter" \
+      org.opencontainers.image.documentation="https://github.com/ddbj/ddbj-search-converter/blob/main/README.md" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN apt update && \
