@@ -37,8 +37,8 @@ DDBJ-Search Converter のデータフローと構造。
 | Phase 2: JSONL Generation                                                   |
 |                                                                             |
 |   build_bp_bs_date_cache -- PostgreSQL --> {const}/bp_bs_date.duckdb        |
-|   sync_ncbi_tar          -- download/merge --> {const}/sra/NCBI_SRA.tar     |
-|   sync_dra_tar           -- archive DRA XML -> {const}/sra/DRA.tar          |
+|   sync_ncbi_tar          -- download/merge --> {result}/sra_tar/NCBI_SRA.tar|
+|   sync_dra_tar           -- archive DRA XML -> {result}/sra_tar/DRA.tar     |
 |                                                                             |
 |   generate_bp_jsonl  -- tmp_xml + dblink + date_cache + blacklist           |
 |   generate_bs_jsonl  -- tmp_xml + dblink + date_cache + blacklist           |
@@ -198,11 +198,13 @@ SRA/DRA の Accessions.tab を DuckDB にロードしたもの。
 ### Metadata tar
 
 SRA/DRA の Metadata XML をまとめた tar ファイル。`generate_sra_jsonl` で使用。
+SSD 上の `{result_dir}/sra_tar/` に配置してランダムアクセスを高速化。
 
 | ファイル | 用途 |
 |---------|------|
-| `{const_dir}/sra/NCBI_SRA_Metadata.tar` | NCBI SRA (sync_ncbi_tar で作成) |
-| `{const_dir}/sra/DRA_Metadata.tar` | DRA (sync_dra_tar で作成) |
+| `{result_dir}/sra_tar/NCBI_SRA_Metadata.tar` | NCBI SRA (sync_ncbi_tar で作成) |
+| `{result_dir}/sra_tar/DRA_Metadata.tar` | DRA (sync_dra_tar で作成) |
+| `{result_dir}/sra_tar/*.tar.index.pkl` | tar インデックスキャッシュ (並列読み込み高速化) |
 
 ### DBLink DB
 
