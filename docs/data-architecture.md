@@ -280,20 +280,37 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `jga_study-pubmed_id/jga_study2pubmed_id.tsv` | jga-study - pubmed-id |
 | `jga_study-jga_dataset/jga_study2jga_dataset.tsv` | jga-study - jga-dataset |
 
-## JSONL 出力（12 種類）
+## JSONL 出力
 
-`{result_dir}/jsonl/{YYYYMMDD}/` 以下に出力される。
+`{result_dir}/{type}/jsonl/{YYYYMMDD}/` 以下に出力される。
 
-| ファイル | ES Index |
-|---------|----------|
-| `bioproject.jsonl` | `bioproject` |
-| `biosample.jsonl` | `biosample` |
-| `submission.jsonl` | `sra-submission` |
-| `study.jsonl` | `sra-study` |
-| `experiment.jsonl` | `sra-experiment` |
-| `run.jsonl` | `sra-run` |
-| `sample.jsonl` | `sra-sample` |
-| `analysis.jsonl` | `sra-analysis` |
+### BioProject / BioSample
+
+| ファイルパターン | ES Index |
+|-----------------|----------|
+| `ddbj_*.jsonl`, `ncbi_*.jsonl` | `bioproject` |
+| `ddbj_*.jsonl`, `ncbi_*.jsonl` | `biosample` |
+
+XML ファイル単位で分割されたファイルが出力される。
+
+### SRA
+
+| ファイルパターン | ES Index |
+|-----------------|----------|
+| `{dra,ncbi}_submission_{NNNN}.jsonl` | `sra-submission` |
+| `{dra,ncbi}_study_{NNNN}.jsonl` | `sra-study` |
+| `{dra,ncbi}_experiment_{NNNN}.jsonl` | `sra-experiment` |
+| `{dra,ncbi}_run_{NNNN}.jsonl` | `sra-run` |
+| `{dra,ncbi}_sample_{NNNN}.jsonl` | `sra-sample` |
+| `{dra,ncbi}_analysis_{NNNN}.jsonl` | `sra-analysis` |
+
+並列処理のためバッチ単位（5000 submissions/batch）で分割されたファイルが出力される。
+`es_bulk_insert` では `--pattern` オプションで対象ファイルを絞り込む。
+
+### JGA
+
+| ファイルパターン | ES Index |
+|-----------------|----------|
 | `jga-study.jsonl` | `jga-study` |
 | `jga-dataset.jsonl` | `jga-dataset` |
 | `jga-dac.jsonl` | `jga-dac` |

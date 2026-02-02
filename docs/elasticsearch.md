@@ -164,6 +164,9 @@ es_bulk_insert --index bioproject \
 
 # バッチサイズを調整
 es_bulk_insert --index bioproject --batch-size 1000
+
+# パターンを指定（SRA の分割ファイル対応）
+es_bulk_insert --index sra-run --dir ${sra_dir} --pattern '*_run_*.jsonl'
 ```
 
 - `_op_type: "index"` のため既存ドキュメントは上書き (upsert 相当)

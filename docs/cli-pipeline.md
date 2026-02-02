@@ -391,7 +391,7 @@ es_bulk_insert --index jga-study \
 |---------|----------|------|
 | `es_create_index` | `--index`, `--skip-existing` | Elasticsearch インデックス作成 |
 | `es_delete_index` | `--index`, `--force`, `--skip-missing` | Elasticsearch インデックス削除 |
-| `es_bulk_insert` | `--index`, `--dir`, `--file`, `--batch-size` | JSONL を Elasticsearch に一括挿入 |
+| `es_bulk_insert` | `--index`, `--dir`, `--file`, `--pattern`, `--batch-size` | JSONL を Elasticsearch に一括挿入 |
 | `es_delete_blacklist` | `--index`, `--force`, `--dry-run`, `--batch-size` | blacklist に含まれるドキュメントを ES から削除 |
 | `es_list_indexes` | - | 登録済みインデックス一覧 |
 | `es_health_check` | `-v` | クラスタヘルス確認 |

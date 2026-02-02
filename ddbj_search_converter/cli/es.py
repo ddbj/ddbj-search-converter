@@ -133,7 +133,7 @@ def main_delete_index() -> None:
 # === Bulk Insert ===
 
 
-def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Path], int]:
+def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Path], str, int]:
     parser = argparse.ArgumentParser(
         description="Bulk insert JSONL files into Elasticsearch."
     )
@@ -153,6 +153,11 @@ def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Pat
         help="JSONL file to insert (can be specified multiple times)",
     )
     parser.add_argument(
+        "--pattern",
+        default="*.jsonl",
+        help="Glob pattern to match JSONL files when using --dir (default: *.jsonl)",
+    )
+    parser.add_argument(
         "--batch-size",
         type=int,
         default=5000,
@@ -168,14 +173,14 @@ def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Pat
     jsonl_dir = Path(parsed.dir) if parsed.dir else Path(".")
     jsonl_files = [Path(f) for f in (parsed.files or [])]
 
-    return config, parsed.index, jsonl_dir, jsonl_files, parsed.batch_size
+    return config, parsed.index, jsonl_dir, jsonl_files, parsed.pattern, parsed.batch_size
 
 
 def main_bulk_insert() -> None:
-    config, index, jsonl_dir, jsonl_files, batch_size = parse_bulk_insert_args(sys.argv[1:])
+    config, index, jsonl_dir, jsonl_files, pattern, batch_size = parse_bulk_insert_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info("bulk inserting into elasticsearch", index=index)
+        log_info("bulk inserting into elasticsearch", index=index, pattern=pattern)
 
         try:
             if jsonl_files:
@@ -190,6 +195,7 @@ def main_bulk_insert() -> None:
                     config=config,
                     jsonl_dir=jsonl_dir,
                     index=index,  # type: ignore
+                    pattern=pattern,
                     batch_size=batch_size,
                 )
 
