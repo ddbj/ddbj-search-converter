@@ -4,15 +4,19 @@ DRA (DDBJ) と NCBI SRA の XML を tar ファイルから読み込み、
 6 種類 (submission, study, experiment, run, sample, analysis) の JSONL を生成する。
 
 並列処理アーキテクチャ:
-    Worker 自己完結パターンを採用。各 worker が独立して tar ファイルを開き、
-    XML 読み込みから JSONL 出力まで完結する。これにより並列に tar を読み込める。
-    インデックスキャッシュを使用して各 worker でのインデックス再構築を回避する。
+    Producer-Worker パターンを採用。tar reader はシングルスレッドで動作し、
+    batch 分の XML を読み込んだら ProcessPoolExecutor の worker に submit する。
+    各 worker は独立して DB クエリ、XML パース、dbXrefs 取得、JSONL 出力を行う。
 """
+from __future__ import annotations
+
 import argparse
 import sys
-from concurrent.futures import Future, ProcessPoolExecutor, as_completed
+from concurrent.futures import (FIRST_COMPLETED, Future, ProcessPoolExecutor,
+                                wait)
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, cast
+from typing import (Any, Callable, Dict, Iterator, List, Literal, Optional,
+                    Set, Tuple, cast)
 
 from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
                                           TODAY_STR, Config, get_config,
@@ -24,9 +28,6 @@ from ddbj_search_converter.logging.logger import (log_debug, log_info,
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (SRA, Accessibility, Distribution,
                                           Organism, Status, XrefType)
-from ddbj_search_converter.sra.tar_index_cache import (is_cache_valid,
-                                                       load_index_cache,
-                                                       save_index_cache)
 from ddbj_search_converter.sra.tar_reader import (SraXmlType, TarXMLReader,
                                                   get_dra_tar_path,
                                                   get_ncbi_tar_path)
@@ -420,6 +421,28 @@ def process_submission_xml(
 # === Batch processing ===
 
 
+def _read_batch_xml(
+    tar_reader: TarXMLReader,
+    batch_subs: List[str],
+) -> Dict[str, Dict[SraXmlType, Optional[bytes]]]:
+    """
+    バッチ分の submission から全 XML を読み込む。
+
+    Args:
+        tar_reader: TarXMLReader
+        batch_subs: バッチ内の submission accession リスト
+
+    Returns:
+        {submission: {xml_type: xml_bytes or None}}
+    """
+    xml_data: Dict[str, Dict[SraXmlType, Optional[bytes]]] = {}
+    for sub in batch_subs:
+        xml_data[sub] = {}
+        for xml_type in XML_TYPES:
+            xml_data[sub][xml_type] = tar_reader.read_xml(sub, xml_type)
+    return xml_data
+
+
 def _extract_accessions_from_xml(
     xml_bytes: Optional[bytes],
     xml_type: SraXmlType,
@@ -457,7 +480,7 @@ def _process_batch_worker(
     batch_num: int,
     total_batches: int,
     batch_subs: List[str],
-    tar_path: Path,
+    xml_data: Dict[str, Dict[SraXmlType, Optional[bytes]]],
     blacklist: Set[str],
     output_dir: Path,
     is_dra: bool,
@@ -465,15 +488,13 @@ def _process_batch_worker(
     """
     1 batch を処理して JSONL を出力するワーカー関数。
 
-    各 worker が独立して tar ファイルを開き、XML 読み込みから JSONL 出力まで完結する。
-
     Args:
         config: Config オブジェクト
         source: "dra" or "sra"
         batch_num: バッチ番号
         total_batches: 総バッチ数
         batch_subs: バッチ内の submission リスト
-        tar_path: tar ファイルのパス
+        xml_data: {submission: {xml_type: xml_bytes}}
         blacklist: blacklist
         output_dir: 出力ディレクトリ
         is_dra: DRA かどうか
@@ -482,23 +503,6 @@ def _process_batch_worker(
         {xml_type: count}
     """
     prefix = "dra" if is_dra else "ncbi"
-    log_info(f"processing batch {batch_num}/{total_batches} ({len(batch_subs)} submissions)")
-
-    # キャッシュからインデックスをロード
-    index_data = load_index_cache(tar_path)
-
-    # tar を開く
-    with TarXMLReader(tar_path, index_data) as tar_reader:
-        # offset 順にソート（シーケンシャル読み込みに近づける）
-        offsets = tar_reader.get_submission_offsets(batch_subs)
-        sorted_subs = sorted(batch_subs, key=lambda s: offsets.get(s, float("inf")))
-
-        # XML 読み込み
-        xml_data: Dict[str, Dict[SraXmlType, Optional[bytes]]] = {}
-        for sub in sorted_subs:
-            xml_data[sub] = {}
-            for xml_type in XML_TYPES:
-                xml_data[sub][xml_type] = tar_reader.read_xml(sub, xml_type)
 
     # Step 1: accession 収集
     all_accessions: List[str] = []
@@ -516,7 +520,9 @@ def _process_batch_worker(
     accession_info = get_accession_info_bulk(config, source, all_accessions)
 
     # Step 3: XML パース + モデル作成
+    counts: Dict[str, int] = {t: 0 for t in XML_TYPES}
     batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
+
     for sub in batch_subs:
         results = process_submission_xml(
             submission=sub,
@@ -538,7 +544,6 @@ def _process_batch_worker(
                     entry.dbXrefs = dbxref_map[entry.identifier]
 
     # Step 5: JSONL 出力（XML type ごとに分割ファイル）
-    counts: Dict[str, int] = {}
     for xml_type in XML_TYPES:
         output_path = output_dir / f"{prefix}_{xml_type}_{batch_num:04d}.jsonl"
         write_jsonl(output_path, batch_entries[xml_type])
@@ -563,9 +568,9 @@ def process_source(
     """
     DRA または NCBI SRA を処理する。
 
-    Worker 自己完結パターンで並列処理:
-    - メインプロセス: インデックスキャッシュを構築し、全バッチを並列 submit
-    - Worker: 各自 tar を開いて XML 読み込み → パース → JSONL 出力
+    Producer-Worker パターンで並列処理:
+    - Producer (メインスレッド): tar から XML を読み込み、buffer に蓄積
+    - Worker (worker プロセス): バッチ処理して JSONL 出力
 
     Args:
         config: Config オブジェクト
@@ -574,7 +579,7 @@ def process_source(
         blacklist: blacklist
         full: 全件処理するかどうか
         since: 差分更新の基準日時
-        parallel_num: 並列ワーカー数
+        parallel_num: Worker プロセス数
 
     Returns:
         {xml_type: count}
@@ -589,12 +594,6 @@ def process_source(
     else:
         tar_path = get_ncbi_tar_path(config)
 
-    # インデックスキャッシュを構築（なければ）
-    if not is_cache_valid(tar_path):
-        log_info(f"building tar index cache for {source}...")
-        with TarXMLReader(tar_path) as reader:
-            save_index_cache(tar_path, reader.get_index_for_cache())
-
     # 対象 submission を取得
     if full or since is None:
         submissions = list(iter_all_submissions(config, source))
@@ -607,39 +606,77 @@ def process_source(
         log_info(f"no submissions to process for {source}")
         return {t: 0 for t in XML_TYPES}
 
+    # tar を開く
+    tar_reader = TarXMLReader(tar_path)
+
+    # submission を tar の offset 順にソート（シーケンシャル読み込み最適化）
+    log_info("sorting submissions by tar offset...")
+    offsets = tar_reader.get_submission_offsets(submissions)
+    sorted_submissions = sorted(submissions, key=lambda s: offsets.get(s, float("inf")))
+
     batch_size = DEFAULT_BATCH_SIZE
-    total_batches = (len(submissions) - 1) // batch_size + 1
+    total_batches = (len(sorted_submissions) - 1) // batch_size + 1
     log_info(f"batch_size={batch_size}, total_batches={total_batches}, parallel_num={parallel_num}")
+
+    # バッチイテレータ
+    def batch_iter() -> Iterator[Tuple[int, List[str]]]:
+        for i in range(0, len(sorted_submissions), batch_size):
+            batch_num = i // batch_size + 1
+            batch_subs = sorted_submissions[i:i + batch_size]
+            yield batch_num, batch_subs
+
+    batches = batch_iter()
+    buffer: List[Tuple[int, List[str], Dict[str, Dict[SraXmlType, Optional[bytes]]]]] = []
+    batches_exhausted = False
 
     # 合計カウント
     total_counts: Dict[str, int] = {t: 0 for t in XML_TYPES}
+    completed_batches = 0
 
-    # 全バッチを並列 submit
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
-        futures: List[Future[Dict[str, int]]] = []
+        pending: Set[Future[Dict[str, int]]] = set()
 
-        for i in range(0, len(submissions), batch_size):
-            batch_num = i // batch_size + 1
-            batch_subs = submissions[i:i + batch_size]
+        while True:
+            # バッファが空いていれば先読み（tar reader は止まらない）
+            while not batches_exhausted and len(buffer) < parallel_num + 1:
+                try:
+                    batch_num, batch_subs = next(batches)
+                    xml_data = _read_batch_xml(tar_reader, batch_subs)
+                    buffer.append((batch_num, batch_subs, xml_data))
+                    log_info(f"read batch {batch_num}/{total_batches} into buffer ({len(batch_subs)} submissions)")
+                except StopIteration:
+                    batches_exhausted = True
+                    break
 
-            future = executor.submit(
-                _process_batch_worker,
-                config, source, batch_num, total_batches, batch_subs,
-                tar_path, blacklist, output_dir, is_dra,
-            )
-            futures.append(future)
+            # worker が空いていて、バッファにデータがあれば submit
+            while len(pending) < parallel_num and buffer:
+                batch_num, batch_subs, xml_data = buffer.pop(0)
+                future = executor.submit(
+                    _process_batch_worker,
+                    config, source, batch_num, total_batches, batch_subs, xml_data,
+                    blacklist, output_dir, is_dra,
+                )
+                pending.add(future)
+                log_info(f"submitted batch {batch_num}/{total_batches}")
 
-        # 結果を収集
-        completed = 0
-        for future in as_completed(futures):
-            try:
-                counts = future.result()
-                completed += 1
-                for xml_type, count in counts.items():
-                    total_counts[xml_type] += count
-                log_info(f"progress: {completed}/{total_batches} batches completed")
-            except Exception as e:
-                log_warn(f"batch processing failed: {e}")
+            # 終了条件
+            if not pending:
+                break
+
+            # 1つ完了するまで待機
+            done, pending = wait(pending, return_when=FIRST_COMPLETED)
+            for f in done:
+                try:
+                    counts = f.result()
+                    completed_batches += 1
+                    for xml_type, count in counts.items():
+                        total_counts[xml_type] += count
+                    log_info(f"completed batch ({completed_batches}/{total_batches})")
+                except Exception as e:
+                    log_warn(f"batch processing failed: {e}")
+
+    # tar reader を閉じる
+    tar_reader.close()
 
     # 結果をログ出力
     for xml_type in XML_TYPES:
@@ -664,7 +701,7 @@ def generate_sra_jsonl(
     Args:
         config: Config オブジェクト
         output_dir: 出力ディレクトリ ({result_dir}/sra/jsonl/{date}/)
-        parallel_num: 並列ワーカー数
+        parallel_num: Worker プロセス数
         full: True の場合は全件処理、False の場合は差分更新
     """
     # blacklist を読み込む
@@ -720,7 +757,7 @@ def parse_args(args: List[str]) -> Tuple[Config, Path, int, bool]:
     )
     parser.add_argument(
         "--parallel-num",
-        help=f"Number of parallel workers for batch processing. Default: {DEFAULT_PARALLEL_NUM}",
+        help=f"Number of consumer processes for XML parsing. Default: {DEFAULT_PARALLEL_NUM}",
         type=int,
         default=DEFAULT_PARALLEL_NUM,
     )
@@ -747,7 +784,7 @@ def main() -> None:
     with run_logger(run_name="generate_sra_jsonl", config=config):
         log_debug(f"config: {config.model_dump_json(indent=2)}")
         log_debug(f"output directory: {output_dir}")
-        log_debug(f"parallel workers: {parallel_num}")
+        log_debug(f"consumer processes: {parallel_num}")
         log_debug(f"full update: {full}")
 
         generate_sra_jsonl(config, output_dir, parallel_num, full)
