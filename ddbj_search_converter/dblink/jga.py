@@ -23,7 +23,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-import xmltodict
+from lxml import etree
 
 from ddbj_search_converter.config import (JGA_ANALYSIS_STUDY_CSV,
                                           JGA_DATA_EXPERIMENT_CSV,
@@ -136,6 +136,50 @@ def build_jga_internal_relations() -> Dict[str, IdPairs]:
 # === XML parsing ===
 
 
+def _element_to_dict(element: etree._Element) -> Dict[str, Any]:
+    """lxml Element を dict に変換する。属性はプレフィックスなし。"""
+    result: Dict[str, Any] = {}
+
+    # 属性を追加
+    for attr_key, attr_value in element.attrib.items():
+        key: str = str(attr_key)
+        if "}" in key:
+            key = key.split("}")[1]
+        result[key] = attr_value
+
+    # テキストコンテンツを処理
+    text = element.text
+    if text is not None:
+        text = text.strip()
+        if text:
+            if result:  # 属性がある場合
+                result["content"] = text
+            elif len(element) == 0:  # 子要素がない場合
+                return {"content": text} if result else text  # type: ignore
+
+    # 子要素を処理
+    children: Dict[str, List[Any]] = {}
+    for child in element:
+        child_tag: str = str(child.tag)
+        if "}" in child_tag:
+            child_tag = child_tag.split("}")[1]
+
+        child_value = _element_to_dict(child)
+        if child_tag in children:
+            children[child_tag].append(child_value)
+        else:
+            children[child_tag] = [child_value]
+
+    # 単一要素のリストを値に変換
+    for child_key, child_list in children.items():
+        if len(child_list) == 1:
+            result[child_key] = child_list[0]
+        else:
+            result[child_key] = child_list
+
+    return result
+
+
 def load_jga_study_xml() -> List[Dict[str, Any]]:
     """jga-study.xml を読み込み、STUDY エントリのリストを返す。
 
@@ -146,20 +190,15 @@ def load_jga_study_xml() -> List[Dict[str, Any]]:
     if not xml_path.exists():
         raise FileNotFoundError(f"XML file not found: {xml_path}")
 
-    with xml_path.open("rb") as f:
-        xml_data = xmltodict.parse(
-            f, attr_prefix="", cdata_key="content", process_namespaces=False
-        )
+    tree = etree.parse(str(xml_path))
+    root = tree.getroot()
 
-    study_set = xml_data.get("STUDY_SET", {})
-    studies = study_set.get("STUDY", [])
+    # STUDY 要素を取得
+    studies: List[Dict[str, Any]] = []
+    for study_elem in root.findall("STUDY"):
+        studies.append(_element_to_dict(study_elem))
 
-    # Ensure it's a list (single entry case)
-    if isinstance(studies, dict):
-        studies = [studies]
-
-    result: List[Dict[str, Any]] = studies if isinstance(studies, list) else []
-    return result
+    return studies
 
 
 def extract_hum_id(study_entry: Dict[str, Any]) -> Optional[str]:

@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (BP_BASE_DIR_NAME,
                                           DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
+                                          MAX_DBXREFS_PER_DOCUMENT,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           apply_margin, get_config,
                                           read_last_run, write_last_run)
@@ -98,20 +99,19 @@ def parse_description(project: Dict[str, Any], accession: str = "") -> Optional[
 
 
 def parse_organization(project: Dict[str, Any], is_ddbj: bool, accession: str = "") -> List[Organization]:
-    """BioProject から Organization を抽出する。"""
+    """BioProject から Organization を抽出する。
+
+    Note: DDBJ BioProject XML には Submission 要素がないため、
+    DDBJ では常に空リストを返す。NCBI BioProject XML のみ Organization を持つ。
+    """
     organizations: List[Organization] = []
     try:
-        if is_ddbj:
-            organization = (
-                ((project.get("Submission") or {})
-                 .get("Submission") or {})
-                .get("Description") or {}
-            ).get("Organization")
-        else:
-            organization = (
-                (project.get("Project") or {})
-                .get("ProjectDescr") or {}
-            ).get("Organization")
+        # NCBI/DDBJ 共通: Submission.Description.Organization
+        # (DDBJ XML には Submission 要素がないため空を返す)
+        organization = (
+            ((project.get("Submission") or {})
+             .get("Description") or {})
+        ).get("Organization")
         if organization is None:
             return []
 
@@ -402,15 +402,12 @@ def _normalize_organization_name(project: Dict[str, Any]) -> None:
             _normalize_single(org, org, None)
 
     try:
-        # DDBJ case: project["Submission"]["Submission"]["Description"]["Organization"]
+        # NCBI/DDBJ 共通: project["Submission"]["Description"]["Organization"]
+        # (DDBJ XML には Submission 要素がないため、古い NCBI BioProject にも存在しない場合がある)
         submission = project.get("Submission") or {}
-        if "Submission" in submission:
-            org = ((submission.get("Submission") or {}).get("Description") or {}).get("Organization")
+        if "Description" in submission:
+            org = (submission.get("Description") or {}).get("Organization")
             _normalize_org(org)
-
-        # NCBI case: project["Project"]["ProjectDescr"]["Organization"]
-        org = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Organization")
-        _normalize_org(org)
     except Exception as e:
         log_debug(f"failed to normalize organization name: {e}", debug_category=DebugCategory.NORMALIZE_ORGANIZATION_NAME)
 
@@ -566,6 +563,12 @@ def _process_xml_file_worker(
     dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
+            if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
+                log_warn(
+                    f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
+                    accession=accession,
+                )
+                xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
             docs[accession].dbXrefs = xrefs
 
     # 日付を取得

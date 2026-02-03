@@ -48,6 +48,11 @@ TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
 DATE_CACHE_DB_FILE_NAME = "bp_bs_date.duckdb"
 TMP_DATE_CACHE_DB_FILE_NAME = "bp_bs_date.tmp.duckdb"
 
+# JSONL generation limits
+# ES nested_objects.limit is 100,000 by default.
+# Set a safe upper limit for dbXrefs to avoid ES bulk insert failures.
+MAX_DBXREFS_PER_DOCUMENT = 50000
+
 # const_dir relative paths (blacklist, preserved)
 # These are relative to config.const_dir, which can be overridden by env var
 BP_BS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"

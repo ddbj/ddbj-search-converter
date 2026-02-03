@@ -467,6 +467,44 @@ def iter_study_analysis_relations(
     yield from rows
 
 
+def iter_submission_analysis_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """
+    Submission <-> Analysis 関連をイテレートする。
+
+    ANALYSIS 行から Submission と Accession (Analysis) の関連を抽出する。
+    Study が NULL の場合でも Submission 経由で関連を持てるようにする。
+    NULL 値は除外される。
+
+    Returns:
+        (submission_accession, analysis_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                Submission,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'ANALYSIS'
+                AND Submission IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
 # === Query functions for JSONL generation ===
 
 

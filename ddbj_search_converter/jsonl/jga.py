@@ -8,13 +8,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
-                                          JSONL_DIR_NAME, TODAY_STR, Config,
-                                          get_config)
+                                          JSONL_DIR_NAME,
+                                          MAX_DBXREFS_PER_DOCUMENT, TODAY_STR,
+                                          Config, get_config)
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, run_logger)
+                                                  log_info, log_warn,
+                                                  run_logger)
 from ddbj_search_converter.schema import JGA, Distribution, Organism
 from ddbj_search_converter.xml_utils import parse_xml
 
@@ -219,6 +221,12 @@ def generate_jga_jsonl(
     # dbXrefs を取得して更新
     dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
     for accession, xrefs in dbxref_map.items():
+        if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
+            log_warn(
+                f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
+                accession=accession,
+            )
+            xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
         jga_instance = jga_instances[accession]
         jga_instance.dbXrefs = xrefs
 

@@ -627,23 +627,24 @@ class TestParseArgsIncremental:
 
     def test_parse_args_full_flag(self) -> None:
         """--full フラグを指定した場合、full=True になる。"""
-        _, _, _, _, full = parse_args(["--full"])
+        _, _, _, _, full, _ = parse_args(["--full"])
         assert full is True
 
     def test_parse_args_default_incremental(self) -> None:
         """デフォルトでは full=False (差分更新モード)。"""
-        _, _, _, _, full = parse_args([])
+        _, _, _, _, full, _ = parse_args([])
         assert full is False
 
     def test_parse_args_with_parallel_and_full(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """parallel-num と full オプションを指定した場合のテスト。"""
         monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
-        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args([
+        config, tmp_xml_dir, output_dir, parallel_num, full, resume = parse_args([
             "--parallel-num", "8",
             "--full",
         ])
         assert parallel_num == 8
         assert full is True
+        assert resume is False
 
 
 class TestXmlEntryStatusAccessibility:

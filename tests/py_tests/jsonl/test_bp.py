@@ -138,9 +138,10 @@ class TestParseOrganization:
 
     def test_parses_ncbi_organization(self) -> None:
         """NCBI 形式の Organization を抽出する。"""
+        # NCBI BioProject では Organization は Submission.Description.Organization にある
         project: Dict[str, Any] = {
-            "Project": {
-                "ProjectDescr": {
+            "Submission": {
+                "Description": {
                     "Organization": {
                         "Name": "Test Organization",
                         "type": "center",
@@ -159,12 +160,10 @@ class TestParseOrganization:
         """DDBJ 形式の Organization を抽出する。"""
         project: Dict[str, Any] = {
             "Submission": {
-                "Submission": {
-                    "Description": {
-                        "Organization": {
-                            "Name": "DDBJ Organization",
-                            "type": "center"
-                        }
+                "Description": {
+                    "Organization": {
+                        "Name": "DDBJ Organization",
+                        "type": "center"
                     }
                 }
             }
@@ -175,9 +174,10 @@ class TestParseOrganization:
 
     def test_parses_organization_with_abbr(self) -> None:
         """abbreviation 付きの Organization を抽出する。"""
+        # Organization は Submission.Description.Organization にある
         project: Dict[str, Any] = {
-            "Project": {
-                "ProjectDescr": {
+            "Submission": {
+                "Description": {
                     "Organization": {
                         "Name": {"content": "Full Name", "abbr": "FN"},
                         "type": "center"
@@ -192,9 +192,10 @@ class TestParseOrganization:
 
     def test_parses_multiple_organizations(self) -> None:
         """複数の Organization を抽出する。"""
+        # Organization は Submission.Description.Organization にある
         project: Dict[str, Any] = {
-            "Project": {
-                "ProjectDescr": {
+            "Submission": {
+                "Description": {
                     "Organization": [
                         {"Name": "Org1"},
                         {"Name": "Org2"}
@@ -545,24 +546,23 @@ class TestNormalizeProperties:
         """DDBJ 形式の Organization.Name を正規化する。"""
         project: Dict[str, Any] = {
             "Submission": {
-                "Submission": {
-                    "Description": {
-                        "Organization": {
-                            "Name": "Test Organization"
-                        }
+                "Description": {
+                    "Organization": {
+                        "Name": "Test Organization"
                     }
                 }
             }
         }
         normalize_properties(project)
         expected = {"content": "Test Organization"}
-        assert project["Submission"]["Submission"]["Description"]["Organization"]["Name"] == expected
+        assert project["Submission"]["Description"]["Organization"]["Name"] == expected
 
     def test_normalizes_organization_name_ncbi(self) -> None:
         """NCBI 形式の Organization.Name を正規化する。"""
+        # NCBI BioProject でも Organization は Submission.Description.Organization にある
         project: Dict[str, Any] = {
-            "Project": {
-                "ProjectDescr": {
+            "Submission": {
+                "Description": {
                     "Organization": {
                         "Name": "NCBI Organization"
                     }
@@ -571,13 +571,14 @@ class TestNormalizeProperties:
         }
         normalize_properties(project)
         expected = {"content": "NCBI Organization"}
-        assert project["Project"]["ProjectDescr"]["Organization"]["Name"] == expected
+        assert project["Submission"]["Description"]["Organization"]["Name"] == expected
 
     def test_normalizes_organization_name_list(self) -> None:
         """複数の Organization.Name を正規化する。"""
+        # Organization は Submission.Description.Organization にある
         project: Dict[str, Any] = {
-            "Project": {
-                "ProjectDescr": {
+            "Submission": {
+                "Description": {
                     "Organization": [
                         {"Name": "Org1"},
                         {"Name": {"content": "Org2", "abbr": "O2"}},
@@ -586,9 +587,9 @@ class TestNormalizeProperties:
             }
         }
         normalize_properties(project)
-        assert project["Project"]["ProjectDescr"]["Organization"][0]["Name"] == {"content": "Org1"}
+        assert project["Submission"]["Description"]["Organization"][0]["Name"] == {"content": "Org1"}
         # 既に dict の場合は変更しない
-        assert project["Project"]["ProjectDescr"]["Organization"][1]["Name"] == {"content": "Org2", "abbr": "O2"}
+        assert project["Submission"]["Description"]["Organization"][1]["Name"] == {"content": "Org2", "abbr": "O2"}
 
 
 class TestIterateXmlPackages:
@@ -765,22 +766,23 @@ class TestParseArgs:
     def test_default_args(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """デフォルト引数でパースする。"""
         monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
-        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args([])
+        config, tmp_xml_dir, output_dir, parallel_num, full, resume = parse_args([])
         assert config.result_dir == tmp_path
         assert "bioproject/tmp_xml" in str(tmp_xml_dir)
         assert "bioproject/jsonl" in str(output_dir)
         assert parallel_num == 64
         assert full is False
+        assert resume is False
 
     def test_full_flag(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """--full フラグをパースする。"""
         monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
-        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(["--full"])
+        config, tmp_xml_dir, output_dir, parallel_num, full, resume = parse_args(["--full"])
         assert full is True
 
     def test_parallel_num(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """--parallel-num オプションをパースする。"""
         monkeypatch.setenv("DDBJ_SEARCH_CONVERTER_RESULT_DIR", str(tmp_path))
-        config, tmp_xml_dir, output_dir, parallel_num, full = parse_args(["--parallel-num", "32"])
+        config, tmp_xml_dir, output_dir, parallel_num, full, resume = parse_args(["--parallel-num", "32"])
         assert parallel_num == 32
 

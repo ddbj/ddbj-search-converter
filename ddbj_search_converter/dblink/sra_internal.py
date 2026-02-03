@@ -30,7 +30,7 @@ from ddbj_search_converter.sra_accessions_tab import (
     SourceKind, iter_experiment_run_relations,
     iter_experiment_sample_relations, iter_run_sample_relations,
     iter_study_analysis_relations, iter_study_experiment_relations,
-    iter_submission_study_relations)
+    iter_submission_analysis_relations, iter_submission_study_relations)
 
 
 def process_sra_internal_relations(
@@ -105,6 +105,25 @@ def process_sra_internal_relations(
     study_analysis = filter_sra_pairs_by_blacklist(study_analysis, sra_blacklist)
     if study_analysis:
         load_to_db(config, study_analysis, "sra-study", "sra-analysis")
+
+    # Submission <-> Analysis (Study が空の analysis 用)
+    submission_analysis: IdPairs = set()
+    for submission, analysis in iter_submission_analysis_relations(config, source=source):
+        if not submission or not analysis:
+            continue
+        if not is_valid_accession(submission, "sra-submission"):
+            log_debug(f"skipping invalid sra-submission: {submission}", accession=submission,
+                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            continue
+        if not is_valid_accession(analysis, "sra-analysis"):
+            log_debug(f"skipping invalid sra-analysis: {analysis}", accession=analysis,
+                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            continue
+        submission_analysis.add((submission, analysis))
+    log_info(f"extracted {len(submission_analysis)} {source_label} Submission <-> Analysis relations")
+    submission_analysis = filter_sra_pairs_by_blacklist(submission_analysis, sra_blacklist)
+    if submission_analysis:
+        load_to_db(config, submission_analysis, "sra-submission", "sra-analysis")
 
     # Experiment <-> Run
     experiment_run: IdPairs = set()

@@ -9,8 +9,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from ddbj_search_converter.config import (BP_BASE_DIR_NAME, BS_BASE_DIR_NAME,
-                                          JGA_BASE_PATH, TMP_XML_DIR_NAME,
-                                          TODAY_STR, Config, get_config)
+                                          JGA_BASE_PATH,
+                                          MAX_DBXREFS_PER_DOCUMENT,
+                                          TMP_XML_DIR_NAME, TODAY_STR, Config,
+                                          get_config)
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import (load_blacklist,
                                                 load_jga_blacklist,
@@ -139,6 +141,12 @@ def regenerate_bp_jsonl(
     dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
+            if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
+                log_warn(
+                    f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
+                    accession=accession,
+                )
+                xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
             docs[accession].dbXrefs = xrefs
 
     # 日付取得: DDBJ と NCBI の docs を分けて処理
@@ -210,6 +218,12 @@ def regenerate_bs_jsonl(
     dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
+            if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
+                log_warn(
+                    f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
+                    accession=accession,
+                )
+                xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
             docs[accession].dbXrefs = xrefs
 
     # 日付取得
@@ -356,7 +370,14 @@ def regenerate_sra_jsonl(
             dbxref_map = get_dbxref_map(config, entity_type, accessions)
             for entry in all_entries[xml_type]:
                 if entry.identifier in dbxref_map:
-                    entry.dbXrefs = dbxref_map[entry.identifier]
+                    xrefs = dbxref_map[entry.identifier]
+                    if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
+                        log_warn(
+                            f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
+                            accession=entry.identifier,
+                        )
+                        xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
+                    entry.dbXrefs = xrefs
 
     # JSONL を出力 (空の場合はファイル作成しない)
     for xml_type in XML_TYPES:
@@ -446,6 +467,12 @@ def regenerate_jga_jsonl(
         dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accession_list)
         for accession, xrefs in dbxref_map.items():
             if accession in jga_instances:
+                if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
+                    log_warn(
+                        f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
+                        accession=accession,
+                    )
+                    xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
                 jga_instances[accession].dbXrefs = xrefs
 
         # 日付
