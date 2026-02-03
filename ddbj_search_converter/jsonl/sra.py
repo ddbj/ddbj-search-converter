@@ -11,6 +11,7 @@ DRA (DDBJ) と NCBI SRA の XML を tar ファイルから読み込み、
 from __future__ import annotations
 
 import argparse
+import gc
 import sys
 from concurrent.futures import (FIRST_COMPLETED, Future, ProcessPoolExecutor,
                                 wait)
@@ -658,6 +659,7 @@ def process_source(
                 )
                 pending.add(future)
                 log_info(f"submitted batch {batch_num}/{total_batches}")
+                del xml_data  # pickle 化後に参照を解放
 
             # 終了条件
             if not pending:
@@ -674,6 +676,10 @@ def process_source(
                     log_info(f"completed batch ({completed_batches}/{total_batches})")
                 except Exception as e:
                     log_warn(f"batch processing failed: {e}")
+
+            # 定期的にガベージコレクションを実行してメモリを解放
+            if completed_batches % 10 == 0:
+                gc.collect()
 
     # tar reader を閉じる
     tar_reader.close()
