@@ -161,6 +161,9 @@ generate_jga_jsonl
 # dry-run で実行内容を確認
 ./scripts/run_pipeline.sh --dry-run
 
+# ES インデックスをクリーンアップしてから投入（冪等性あり）
+./scripts/run_pipeline.sh --clean-es
+
 # 途中のステップから再開
 ./scripts/run_pipeline.sh --from-step jsonl_sra
 
@@ -181,6 +184,7 @@ generate_jga_jsonl
 | `--list-steps` | 利用可能なステップ一覧を表示して終了 |
 | `--dry-run` | 実行内容を表示のみ（実際には実行しない） |
 | `--parallel N` | JSONL 生成の最大並列数（デフォルト: 4） |
+| `--clean-es` | ES bulk insert 前に全インデックスを削除（冪等性あり） |
 
 ### ステップ一覧
 
@@ -242,6 +246,8 @@ PHASE 2: JSONL Generation
 └── [並列, --parallel N] generate_jga_jsonl
 
 PHASE 3: Elasticsearch
+[--clean-es 指定時] es_delete_index --index all --skip-missing --force
+    ↓
 es_create_index --index all --skip-existing
     ↓
 [順次] es_bulk_insert (12 インデックス)

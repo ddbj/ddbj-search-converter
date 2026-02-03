@@ -12,6 +12,7 @@
 #   --list-steps        Show available steps and exit
 #   --dry-run           Show what would be done without executing
 #   --parallel N        Max parallel jobs for JSONL generation (default: 4)
+#   --clean-es          Delete all ES indexes before bulk insert (idempotent)
 #
 # Environment variables (optional):
 #   DDBJ_SEARCH_CONVERTER_RESULT_DIR    Result directory
@@ -106,6 +107,7 @@ DRY_RUN=false
 MAX_PARALLEL=4
 FROM_STEP=""
 FROM_STEP_ORDER=0
+CLEAN_ES=false
 
 # Show available steps
 show_steps() {
@@ -144,6 +146,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        --clean-es)
+            CLEAN_ES=true
             shift
             ;;
         --parallel)
@@ -523,7 +529,15 @@ phase3_elasticsearch() {
     # Step: es_create
     if should_skip_step "es_create"; then
         log_info "[SKIP] es_create (--from-step)"
+        if [[ "$CLEAN_ES" == true ]]; then
+            log_info "Note: --clean-es has no effect because es_create step is skipped"
+        fi
     else
+        if [[ "$CLEAN_ES" == true ]]; then
+            log_info "Step 3-0: Deleting existing ES indexes (--clean-es)..."
+            run_cmd "es_delete_index --index all --skip-missing --force"
+        fi
+
         log_info "Step 3-1: Creating Elasticsearch indexes..."
         run_cmd "es_create_index --index all --skip-existing"
     fi
@@ -573,6 +587,7 @@ main() {
     log_info "Mode: $(if [[ "$FULL_MODE" == true ]]; then echo "full"; else echo "incremental"; fi)"
     log_info "Max parallel jobs: ${MAX_PARALLEL}"
     log_info "Dry run: ${DRY_RUN}"
+    log_info "Clean ES: ${CLEAN_ES}"
     if [[ -n "$FROM_STEP" ]]; then
         log_info "From step: ${FROM_STEP}"
     fi
