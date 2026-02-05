@@ -75,32 +75,6 @@ else
 fi
 
 # === Query 4 ===
-echo "=== Running Query 4: Search for JGAS000284 (JGAD000390) in dbXrefs.identifier ==="
-RESPONSE_4=$(curl -fsSL -X POST "http://ddbj-search-elasticsearch:9200/jga-study/_search" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": {
-      "nested": {
-        "path": "dbXrefs",
-        "query": {
-          "term": { "dbXrefs.identifier": "JGAD000390" }
-        }
-      }
-    },
-    "_source": ["identifier", "title", "dbXrefs", "properties"],
-    "from": 0,
-    "size": 10000
-  }')
-HIT_COUNT_4=$(echo "$RESPONSE_4" | jq '.hits.total.value')
-
-if [ "$HIT_COUNT_4" -gt 0 ]; then
-  echo "[OK] Query 4 returned $HIT_COUNT_4 hits."
-else
-  echo "[ERROR] Query 4 returned no hits."
-  exit 1
-fi
-
-# === Query 5 ===
 echo "=== Running Query 5: Search for JGAD000390 ==="
 RESPONSE_5=$(curl -fsSL -X POST "http://ddbj-search-elasticsearch:9200/jga-dataset/_search" \
   -H "Content-Type: application/json" \

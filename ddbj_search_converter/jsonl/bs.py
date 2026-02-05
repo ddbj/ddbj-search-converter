@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (BS_BASE_DIR_NAME,
                                           DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
-                                          MAX_DBXREFS_PER_DOCUMENT,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           apply_margin, get_config,
                                           read_last_run, write_last_run)
@@ -424,12 +423,6 @@ def _process_xml_file_worker(
     dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
-            if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
-                log_warn(
-                    f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
-                    accession=accession,
-                )
-                xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
             docs[accession].dbXrefs = xrefs
 
     # 日付を取得

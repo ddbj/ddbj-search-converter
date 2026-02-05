@@ -48,22 +48,8 @@ def get_common_mapping() -> Dict[str, Any]:
             "type": "text",
             "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
         },
-        "dbXrefs": {
-            "type": "nested",
-            "properties": {
-                "identifier": {"type": "keyword"},
-                "type": {"type": "keyword"},
-                "url": {"type": "keyword", "index": False},
-            },
-        },
-        "sameAs": {
-            "type": "nested",
-            "properties": {
-                "identifier": {"type": "keyword"},
-                "type": {"type": "keyword"},
-                "url": {"type": "keyword", "index": False},
-            },
-        },
+        "dbXrefs": {"type": "object", "enabled": False},
+        "sameAs": {"type": "object", "enabled": False},
         "status": {"type": "keyword"},
         "accessibility": {"type": "keyword"},
         "dateCreated": {"type": "date"},

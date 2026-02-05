@@ -18,8 +18,8 @@ INDEX_SETTINGS: Dict[str, Any] = {
         "refresh_interval": "1s",
 
         # Nested objects limit: maximum number of nested objects per document.
-        # Default ES value is 10000, but we need more for BioProject/BioSample
-        # with many dbXrefs, sameAs, and nested attributes.
+        # Default ES value is 10000, but we need more for BioSample attributes
+        # and other nested fields.
         "mapping.nested_objects.limit": 100000,
 
         # Number of primary shards: 1 is sufficient for our data volume.

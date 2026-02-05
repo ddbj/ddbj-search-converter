@@ -19,11 +19,9 @@ from pathlib import Path
 from typing import (Any, Callable, Dict, Iterator, List, Literal, Optional,
                     Set, Tuple, cast)
 
-from ddbj_search_converter.config import (JSONL_DIR_NAME,
-                                          MAX_DBXREFS_PER_DOCUMENT,
-                                          SRA_BASE_DIR_NAME, TODAY_STR, Config,
-                                          get_config, read_last_run,
-                                          write_last_run)
+from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
+                                          TODAY_STR, Config, get_config,
+                                          read_last_run, write_last_run)
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
@@ -558,14 +556,7 @@ def _process_batch_worker(
             dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions)
             for entry in batch_entries[xml_type]:
                 if entry.identifier in dbxref_map:
-                    xrefs = dbxref_map[entry.identifier]
-                    if len(xrefs) > MAX_DBXREFS_PER_DOCUMENT:
-                        log_warn(
-                            f"dbXrefs truncated from {len(xrefs)} to {MAX_DBXREFS_PER_DOCUMENT}",
-                            accession=entry.identifier,
-                        )
-                        xrefs = xrefs[:MAX_DBXREFS_PER_DOCUMENT]
-                    entry.dbXrefs = xrefs
+                    entry.dbXrefs = dbxref_map[entry.identifier]
 
     # Step 5: JSONL 出力（XML type ごとに分割ファイル）
     for xml_type in XML_TYPES:
