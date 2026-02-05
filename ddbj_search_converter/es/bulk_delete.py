@@ -83,7 +83,7 @@ def bulk_delete_by_ids(
         stats_only=False,
         raise_on_error=False,
         max_retries=3,
-        request_timeout=300,
+        request_timeout=600,
     )
 
     if isinstance(failed, list):
