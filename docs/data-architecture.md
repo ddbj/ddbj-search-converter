@@ -186,6 +186,17 @@ Preserved ファイルは、XML/CSV などの元データに記載されてい�
 
 ## 中間データベース
 
+### ID 変換マッピング
+
+NCBI XML から抽出した数字 ID -> accession のマッピング。SRA Accessions.tab や TRAD ORGANISM_LIST で数字 ID が使われている場合に変換するために使用。
+
+| ファイル | 用途 |
+|---------|------|
+| `{result_dir}/bp_id_to_accession.tsv` | BioProject 数字 ID -> accession |
+| `{result_dir}/bs_id_to_accession.tsv` | BioSample 数字 ID -> accession |
+
+`create_dblink_bp_bs_relations` で生成され、`create_dblink_assembly_and_master_relations` や `create_dblink_sra_internal_relations` で使用される。
+
 ### Accessions DB
 
 SRA/DRA の Accessions.tab を DuckDB にロードしたもの。

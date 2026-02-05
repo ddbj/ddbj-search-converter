@@ -48,6 +48,10 @@ TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
 DATE_CACHE_DB_FILE_NAME = "bp_bs_date.duckdb"
 TMP_DATE_CACHE_DB_FILE_NAME = "bp_bs_date.tmp.duckdb"
 
+# ID to accession mapping files (for numeric ID conversion)
+BP_ID_TO_ACCESSION_FILE_NAME = "bp_id_to_accession.tsv"
+BS_ID_TO_ACCESSION_FILE_NAME = "bs_id_to_accession.tsv"
+
 # const_dir relative paths (blacklist, preserved)
 # These are relative to config.const_dir, which can be overridden by env var
 BP_BS_PRESERVED_REL_PATH = "dblink/bp_bs_preserved.tsv"

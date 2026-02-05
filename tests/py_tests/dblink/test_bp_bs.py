@@ -27,11 +27,12 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ncbi_xml_file(xml_file)
+        results, skipped, id_mappings = process_ncbi_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMN00000001", "PRJNA12345")
         assert len(skipped) == 0
+        assert id_mappings == {"12345": "SAMN00000001"}
 
     def test_extract_biosample_bioproject_from_attribute(self, tmp_path: Path) -> None:
         """Test extracting BioSample -> BioProject relation from Attribute element."""
@@ -51,11 +52,12 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ncbi_xml_file(xml_file)
+        results, skipped, id_mappings = process_ncbi_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMN00000002", "PRJNA67890")
         assert len(skipped) == 0
+        assert id_mappings == {"12345": "SAMN00000002"}
 
     def test_numeric_accession_is_skipped(self, tmp_path: Path) -> None:
         """Test that numeric accession (internal ID) is skipped."""
@@ -76,12 +78,14 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ncbi_xml_file(xml_file)
+        results, skipped, id_mappings = process_ncbi_xml_file(xml_file)
 
         # Should be empty because accession="31458136" doesn't start with "SAM"
         assert len(results) == 0
         assert len(skipped) == 1
         assert skipped[0] == "31458136"
+        # No id mapping because accession is invalid
+        assert id_mappings == {}
 
     def test_real_entry_samea11488912(self, tmp_path: Path) -> None:
         """Test with the actual problematic entry from biosample_set.xml.gz."""
@@ -115,11 +119,13 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ncbi_xml_file(xml_file)
+        results, skipped, id_mappings = process_ncbi_xml_file(xml_file)
 
         # This entry has no bioproject_accession attribute, so should return empty
         assert len(results) == 0
         assert len(skipped) == 0
+        # But id mapping should be present
+        assert id_mappings == {"31458136": "SAMEA11488912"}
 
     def test_link_with_numeric_text_converts_to_prjna(self, tmp_path: Path) -> None:
         """Test that Link with numeric text is converted to PRJNA prefix."""
@@ -139,11 +145,12 @@ class TestProcessNcbiXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ncbi_xml_file(xml_file)
+        results, skipped, id_mappings = process_ncbi_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMN00000003", "PRJNA12345")
         assert len(skipped) == 0
+        assert id_mappings == {"12345": "SAMN00000003"}
 
 
 class TestProcessDdbjXmlFile:
@@ -167,11 +174,13 @@ class TestProcessDdbjXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ddbj_xml_file(xml_file)
+        results, skipped, id_mappings = process_ddbj_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMD00000001", "PRJDB12345")
         assert len(skipped) == 0
+        # DDBJ XML does not have id attribute, so mapping is empty
+        assert id_mappings == {}
 
     def test_numeric_biosample_id_is_skipped(self, tmp_path: Path) -> None:
         """Test that numeric BioSample ID is skipped."""
@@ -191,12 +200,13 @@ class TestProcessDdbjXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ddbj_xml_file(xml_file)
+        results, skipped, id_mappings = process_ddbj_xml_file(xml_file)
 
         # Should be empty because BioSample ID doesn't start with "SAM"
         assert len(results) == 0
         assert len(skipped) == 1
         assert skipped[0] == "12345678"
+        assert id_mappings == {}
 
     def test_extract_biosample_bioproject_from_bioproject_id(self, tmp_path: Path) -> None:
         """Test extracting from bioproject_id attribute (actual DDBJ XML format)."""
@@ -220,8 +230,9 @@ class TestProcessDdbjXmlFile:
         xml_file = tmp_path / "test.xml"
         xml_file.write_text(xml_content)
 
-        results, skipped = process_ddbj_xml_file(xml_file)
+        results, skipped, id_mappings = process_ddbj_xml_file(xml_file)
 
         assert len(results) == 1
         assert results[0] == ("SAMD00000001", "PRJDB1640")
         assert len(skipped) == 0
+        assert id_mappings == {}

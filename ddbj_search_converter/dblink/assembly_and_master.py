@@ -25,16 +25,21 @@ dump_dblink_files CLI コマンドで出力する。
     - 以下の関連を抽出:
         - insdc-master <-> bioproject
         - insdc-master <-> biosample
+- bp_id_to_accession.tsv ({result_dir}/)
+    - BioProject 数字ID -> accession マッピング
+    - create_dblink_bp_bs_relations で生成
 
 出力:
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
-from typing import Dict
+from typing import Dict, Optional
 
 import httpx
 
-from ddbj_search_converter.config import (ASSEMBLY_SUMMARY_URL, TRAD_BASE_PATH,
-                                          get_config)
+from ddbj_search_converter.config import (ASSEMBLY_SUMMARY_URL,
+                                          BP_ID_TO_ACCESSION_FILE_NAME,
+                                          TRAD_BASE_PATH, get_config)
+from ddbj_search_converter.dblink.bp_bs import IdMapping, load_id_mapping_tsv
 from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
                                                 filter_pairs_by_blacklist,
@@ -146,11 +151,44 @@ def process_assembly_summary_file(
                     target_set.add((left_val, right_val))
 
 
+def _convert_bp_id_if_needed(
+    raw_bp: str,
+    bp_id_to_accession: IdMapping,
+    file_path: str,
+) -> Optional[str]:
+    """Convert BioProject numeric ID to accession if needed.
+
+    Returns:
+        Converted accession, or None if conversion failed.
+    """
+    if is_valid_accession(raw_bp, "bioproject"):
+        return raw_bp
+
+    # Try to convert numeric ID to accession
+    if raw_bp in bp_id_to_accession:
+        return bp_id_to_accession[raw_bp]
+
+    # Cannot convert - skip
+    log_debug(
+        f"skipping invalid bioproject: {raw_bp}",
+        accession=raw_bp,
+        file=file_path,
+        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+        source="trad",
+    )
+    return None
+
+
 def process_trad_files(
     master_to_bp: IdPairs,
     master_to_bs: IdPairs,
+    bp_id_to_accession: IdMapping,
 ) -> None:
-    """cols: [3]=master, [9]=bioproject, [10]=biosample"""
+    """cols: [3]=master, [9]=bioproject, [10]=biosample
+
+    Args:
+        bp_id_to_accession: BioProject numeric ID -> accession mapping for conversion.
+    """
     log_info("processing trad organism list files")
 
     for path in TRAD_FILES:
@@ -180,16 +218,10 @@ def process_trad_files(
                     continue
 
                 if bp:
-                    if is_valid_accession(bp, "bioproject"):
-                        master_to_bp.add((master, bp))
-                    else:
-                        log_debug(
-                            f"skipping invalid bioproject: {bp}",
-                            accession=bp,
-                            file=str(path),
-                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                            source="trad",
-                        )
+                    converted_bp = _convert_bp_id_if_needed(bp, bp_id_to_accession, str(path))
+                    if converted_bp:
+                        master_to_bp.add((master, converted_bp))
+
                 if bs:
                     if is_valid_accession(bs, "biosample"):
                         master_to_bs.add((master, bs))
@@ -208,6 +240,10 @@ def main() -> None:
     with run_logger(config=config):
         bp_blacklist, bs_blacklist = load_blacklist(config)
 
+        # Load BioProject id -> accession mapping for numeric ID conversion
+        bp_mapping_path = config.result_dir / BP_ID_TO_ACCESSION_FILE_NAME
+        bp_id_to_accession = load_id_mapping_tsv(bp_mapping_path)
+
         assembly_to_bp: IdPairs = set()
         assembly_to_bs: IdPairs = set()
         assembly_to_insdc: IdPairs = set()
@@ -223,7 +259,7 @@ def main() -> None:
             master_to_bs,
             bs_to_bp,
         )
-        process_trad_files(master_to_bp, master_to_bs)
+        process_trad_files(master_to_bp, master_to_bs, bp_id_to_accession)
 
         # Apply blacklist filters
         assembly_to_bp = filter_pairs_by_blacklist(assembly_to_bp, bp_blacklist, "right")
