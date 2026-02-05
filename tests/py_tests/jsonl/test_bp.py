@@ -92,6 +92,52 @@ class TestParseOrganism:
         result = parse_organism(project, is_ddbj=False)
         assert result is None
 
+    def test_parses_ncbi_top_single_organism(self) -> None:
+        """NCBI ProjectTypeTopSingleOrganism 形式の Organism を抽出する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectType": {
+                    "ProjectTypeTopSingleOrganism": {
+                        "Organism": {
+                            "taxID": "2788",
+                            "OrganismName": "Pyropia yezoensis"
+                        }
+                    }
+                }
+            }
+        }
+        result = parse_organism(project, is_ddbj=False)
+        assert result is not None
+        assert result.identifier == "2788"
+        assert result.name == "Pyropia yezoensis"
+
+    def test_ncbi_submission_takes_priority_over_top_single(self) -> None:
+        """NCBI で両方ある場合は ProjectTypeSubmission を優先する。"""
+        project: Dict[str, Any] = {
+            "Project": {
+                "ProjectType": {
+                    "ProjectTypeSubmission": {
+                        "Target": {
+                            "Organism": {
+                                "taxID": "9606",
+                                "OrganismName": "Homo sapiens"
+                            }
+                        }
+                    },
+                    "ProjectTypeTopSingleOrganism": {
+                        "Organism": {
+                            "taxID": "2788",
+                            "OrganismName": "Pyropia yezoensis"
+                        }
+                    }
+                }
+            }
+        }
+        result = parse_organism(project, is_ddbj=False)
+        assert result is not None
+        assert result.identifier == "9606"
+        assert result.name == "Homo sapiens"
+
 
 class TestParseTitle:
     """Tests for parse_title function."""

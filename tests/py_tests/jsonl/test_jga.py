@@ -188,13 +188,21 @@ class TestJgaEntryToJgaInstance:
         assert result.organism.identifier == "9606"
         assert result.accessibility == "controlled-access"
 
-    def test_uses_accession_as_name_when_no_alias(self) -> None:
-        """alias がない場合は accession を name とする。"""
+    def test_returns_none_when_no_alias(self) -> None:
+        """alias がない場合は name が None になる。"""
         entry: Dict[str, Any] = {"accession": "JGAS000001"}
 
         result = jga_entry_to_jga_instance(entry, "jga-study")
 
-        assert result.name == "JGAS000001"
+        assert result.name is None
+
+    def test_returns_none_when_alias_equals_accession(self) -> None:
+        """alias が accession と同じ場合は name が None になる。"""
+        entry: Dict[str, Any] = {"accession": "JGAS000001", "alias": "JGAS000001"}
+
+        result = jga_entry_to_jga_instance(entry, "jga-study")
+
+        assert result.name is None
 
 
 class TestWriteJsonl:

@@ -4,7 +4,7 @@
 
 ## 概要
 
-DDBJ-Search Converter は、生命科学データベース間の関連情報（DBLink）を構築し、Elasticsearch へのデータ投入を支援するツール。
+DDBJ-Search Converter は、生命科学データベース間の関連情報（DBLink）と BioProject / BioSample / SRA / JGA データを構築し、Elasticsearch へのデータ投入を支援するツール。
 
 **主な機能:**
 

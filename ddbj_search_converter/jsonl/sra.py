@@ -182,6 +182,7 @@ def parse_study(
             descriptor = (study.get("DESCRIPTOR") or {})
             results.append({
                 "accession": study.get("accession"),
+                "alias": study.get("alias"),
                 "title": _get_text(descriptor, "STUDY_TITLE"),
                 "description": _get_text(descriptor, "STUDY_ABSTRACT") or _get_text(descriptor, "STUDY_DESCRIPTION"),
                 "properties": {"STUDY_SET": {"STUDY": study}},
@@ -205,6 +206,7 @@ def parse_experiment(
             design = (exp.get("DESIGN") or {})
             results.append({
                 "accession": exp.get("accession"),
+                "alias": exp.get("alias"),
                 "title": _get_text(exp, "TITLE"),
                 "description": _get_text(design, "DESIGN_DESCRIPTION"),
                 "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
@@ -227,6 +229,7 @@ def parse_run(
         for run in runs:
             results.append({
                 "accession": run.get("accession"),
+                "alias": run.get("alias"),
                 "title": _get_text(run, "TITLE"),
                 "description": None,
                 "properties": {"RUN_SET": {"RUN": run}},
@@ -259,6 +262,7 @@ def parse_sample(
 
             results.append({
                 "accession": sample.get("accession"),
+                "alias": sample.get("alias"),
                 "title": _get_text(sample, "TITLE"),
                 "description": _get_text(sample, "DESCRIPTION"),
                 "organism": organism,
@@ -282,6 +286,7 @@ def parse_analysis(
         for analysis in analyses:
             results.append({
                 "accession": analysis.get("accession"),
+                "alias": analysis.get("alias"),
                 "title": _get_text(analysis, "TITLE"),
                 "description": _get_text(analysis, "DESCRIPTION"),
                 "properties": {"ANALYSIS_SET": {"ANALYSIS": analysis}},
@@ -308,6 +313,15 @@ def _make_url(entry_type: str, identifier: str) -> str:
     return f"https://ddbj.nig.ac.jp/search/entries/{entry_type}/{identifier}"
 
 
+def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:
+    """alias が accession と異なる場合のみ name として返す。"""
+    if alias is None:
+        return None
+    if alias == accession:
+        return None
+    return alias
+
+
 def create_sra_entry(
     sra_type: SraXmlType,
     parsed: Dict[str, Any],
@@ -326,7 +340,7 @@ def create_sra_entry(
         distribution=_make_distribution(entry_type, identifier),
         isPartOf="sra",
         type=entry_type,
-        name=None,
+        name=_get_name_from_alias(identifier, parsed.get("alias")),
         url=_make_url(entry_type, identifier),
         organism=parsed.get("organism"),
         title=parsed.get("title"),

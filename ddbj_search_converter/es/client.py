@@ -28,6 +28,16 @@ def set_refresh_interval(es_client: Elasticsearch, index: str, interval: str) ->
     )
 
 
-def refresh_index(es_client: Elasticsearch, index: str) -> None:
-    """Manually refresh an index to make all documents searchable."""
-    es_client.indices.refresh(index=index)
+def refresh_index(
+    es_client: Elasticsearch,
+    index: str,
+    timeout: str = "10m",
+) -> None:
+    """Manually refresh an index to make all documents searchable.
+
+    Args:
+        es_client: Elasticsearch client
+        index: Index name
+        timeout: Timeout for the refresh operation (default: 10 minutes)
+    """
+    es_client.indices.refresh(index=index, timeout=timeout)

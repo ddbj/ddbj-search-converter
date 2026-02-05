@@ -78,6 +78,16 @@ def parse_title(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
         return None
 
 
+def parse_name(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
+    """BioSample から name (SampleName) を抽出する。"""
+    try:
+        name = (sample.get("Description") or {}).get("SampleName")
+        return str(name) if name is not None else None
+    except Exception as e:
+        log_warn(f"failed to parse name: {e}", accession=accession)
+        return None
+
+
 def parse_description(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioSample から description を抽出する。"""
     try:
@@ -307,7 +317,7 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
         )],
         isPartOf="BioSample",
         type="biosample",
-        name=None,
+        name=parse_name(sample, accession),
         url=f"https://ddbj.nig.ac.jp/search/entries/biosample/{accession}",
         organism=parse_organism(sample, is_ddbj, accession),
         title=parse_title(sample, accession),

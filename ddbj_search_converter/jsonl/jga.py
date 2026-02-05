@@ -140,10 +140,18 @@ def extract_description(entry: Dict[str, Any], index_name: IndexName) -> Optiona
     return str(description) if description is not None else None
 
 
+def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:
+    """alias が accession と異なる場合のみ name として返す。"""
+    if alias is None:
+        return None
+    if alias == accession:
+        return None
+    return alias
+
+
 def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> JGA:
     """JGA XML エントリを JGA インスタンスに変換する。"""
     accession: str = entry["accession"]
-    name = entry.get("alias", accession)
 
     return JGA(
         identifier=accession,
@@ -157,7 +165,7 @@ def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> J
         ],
         isPartOf="jga",
         type=index_name,
-        name=name,
+        name=_get_name_from_alias(accession, entry.get("alias")),
         url=f"https://ddbj.nig.ac.jp/search/entries/{index_name}/{accession}",
         organism=Organism(identifier="9606", name="Homo sapiens"),
         title=extract_title(entry, index_name),

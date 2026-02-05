@@ -50,23 +50,30 @@ def parse_object_type(project: Dict[str, Any]) -> Literal["BioProject", "Umbrell
 
 
 def parse_organism(project: Dict[str, Any], is_ddbj: bool, accession: str = "") -> Optional[Organism]:
-    """BioProject から Organism を抽出する。"""
+    """BioProject から Organism を抽出する。
+
+    取得元（優先順位順）:
+    - DDBJ: ProjectType/ProjectTypeTopAdmin/Organism
+    - NCBI: ProjectType/ProjectTypeSubmission/Target/Organism
+            ProjectType/ProjectTypeTopSingleOrganism/Organism
+    """
     try:
+        project_type = project.get("Project", {}).get("ProjectType", {})
+        organism_obj = None
+
         if is_ddbj:
-            organism_obj = (
-                project.get("Project", {})
-                .get("ProjectType", {})
-                .get("ProjectTypeTopAdmin", {})
-                .get("Organism")
-            )
+            organism_obj = project_type.get("ProjectTypeTopAdmin", {}).get("Organism")
         else:
+            # ProjectTypeSubmission/Target/Organism を優先
             organism_obj = (
-                project.get("Project", {})
-                .get("ProjectType", {})
-                .get("ProjectTypeSubmission", {})
+                project_type.get("ProjectTypeSubmission", {})
                 .get("Target", {})
                 .get("Organism")
             )
+            # なければ ProjectTypeTopSingleOrganism/Organism を試す
+            if organism_obj is None:
+                organism_obj = project_type.get("ProjectTypeTopSingleOrganism", {}).get("Organism")
+
         if organism_obj is None:
             return None
         return Organism(

@@ -9,9 +9,9 @@ from ddbj_search_converter.jsonl.bs import (normalize_properties,
                                             parse_accession, parse_args,
                                             parse_attributes,
                                             parse_description, parse_model,
-                                            parse_organism, parse_package,
-                                            parse_same_as, parse_status,
-                                            parse_title,
+                                            parse_name, parse_organism,
+                                            parse_package, parse_same_as,
+                                            parse_status, parse_title,
                                             xml_entry_to_bs_instance)
 from ddbj_search_converter.jsonl.utils import write_jsonl
 from ddbj_search_converter.schema import BioSample
@@ -120,6 +120,24 @@ class TestParseTitle:
         """タイトルがない場合は None を返す。"""
         sample: Dict[str, Any] = {"Description": {}}
         assert parse_title(sample) is None
+
+
+class TestParseName:
+    """Tests for parse_name function."""
+
+    def test_parses_name(self) -> None:
+        """SampleName を抽出する。"""
+        sample: Dict[str, Any] = {
+            "Description": {
+                "SampleName": "Sample ABC"
+            }
+        }
+        assert parse_name(sample) == "Sample ABC"
+
+    def test_returns_none_when_missing(self) -> None:
+        """SampleName がない場合は None を返す。"""
+        sample: Dict[str, Any] = {"Description": {}}
+        assert parse_name(sample) is None
 
 
 class TestParseDescription:
