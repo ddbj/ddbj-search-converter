@@ -58,12 +58,17 @@ services:
         hard: -1
     mem_limit: ${ES_MEM_LIMIT}
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status'"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s http://localhost:9200/_cluster/health | grep -q 'status'",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - ddbj-search-network
+    init: true
 
 networks:
   ddbj-search-network:
