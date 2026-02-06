@@ -11,15 +11,6 @@ from ddbj_search_converter.sra.tar_reader import TarXMLReader
 
 
 @pytest.fixture
-def test_config(tmp_path: Path) -> Config:
-    """Create a test config with temporary directories."""
-    return Config(
-        result_dir=tmp_path / "results",
-        const_dir=tmp_path / "const",
-    )
-
-
-@pytest.fixture
 def sample_tar(tmp_path: Path) -> Path:
     """Create a sample tar file with XML files."""
     tar_path = tmp_path / "sample.tar"

@@ -75,8 +75,13 @@ def parse_organism(project: Dict[str, Any], is_ddbj: bool, accession: str = "") 
 
         if organism_obj is None:
             return None
+        tax_id = organism_obj.get("taxID", "")
+        if isinstance(tax_id, list):
+            tax_id = tax_id[0] if tax_id else ""
+        elif isinstance(tax_id, dict):
+            tax_id = tax_id.get("content", "")
         return Organism(
-            identifier=str(organism_obj.get("taxID", "")),
+            identifier=str(tax_id),
             name=organism_obj.get("OrganismName"),
         )
     except Exception as e:
@@ -88,7 +93,11 @@ def parse_title(project: Dict[str, Any], accession: str = "") -> Optional[str]:
     """BioProject から title を抽出する。"""
     try:
         title = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Title")
-        return str(title) if title is not None else None
+        if title is None:
+            return None
+        if isinstance(title, dict):
+            return str(title.get("content", ""))
+        return str(title)
     except Exception as e:
         log_warn(f"failed to parse title: {e}", accession=accession)
         return None

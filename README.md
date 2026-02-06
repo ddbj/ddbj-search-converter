@@ -234,11 +234,13 @@ uv remove <package>
 ### テスト・リント
 
 ```bash
-uv run pytest -s
+uv run pytest -v
 uv run pylint ./ddbj_search_converter
 uv run mypy ./ddbj_search_converter
 uv run isort ./ddbj_search_converter
 ```
+
+詳細は [tests/README.md](tests/README.md) を参照。
 
 ## ドキュメント
 

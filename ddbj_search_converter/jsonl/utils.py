@@ -42,9 +42,14 @@ def to_xref(id_: str, *, type_hint: Optional[XrefType] = None) -> Xref:
     どのパターンにもマッチしない場合は taxonomy として扱う。
     """
     if type_hint is not None:
+        if type_hint not in URL_TEMPLATE:
+            raise ValueError(f"Unknown type_hint: {type_hint}")
         url_template = URL_TEMPLATE[type_hint]
         if type_hint == "gea":
-            gea_id_num = int(id_.removeprefix("E-GEAD-"))
+            try:
+                gea_id_num = int(id_.removeprefix("E-GEAD-"))
+            except ValueError:
+                gea_id_num = 0
             prefix = f"E-GEAD-{(gea_id_num // 1000) * 1000:03d}"
             url = url_template.format(prefix=prefix, id=id_)
         else:

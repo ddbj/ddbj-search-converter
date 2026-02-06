@@ -197,7 +197,7 @@ def generate_jga_jsonl(
     root_key, entry_key = XML_KEYS[index_name]
     try:
         entries = xml_metadata[root_key][entry_key]
-        if index_name == "jga-dac":
+        if index_name == "jga-dac" and not isinstance(entries, list):
             entries = [entries]  # DAC は単一エントリなのでリストにラップ
         if not isinstance(entries, list):
             raise ValueError(f"Expected a list for {index_name}, but got: {type(entries)}")

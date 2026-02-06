@@ -86,6 +86,16 @@ def get_tmp_xml_dir(config: Config, subdir: Literal["bioproject", "biosample"]) 
     return tmp_dir
 
 
+def _is_tag_start(line: bytes, tag_start: bytes) -> bool:
+    """行がタグの開始であるか判定する。プレフィクスマッチを防止。"""
+    if not line.startswith(tag_start):
+        return False
+    if len(line) == len(tag_start):
+        return True
+    next_byte = line[len(tag_start):len(tag_start) + 1]
+    return next_byte in (b">", b" ", b"\t", b"\n", b"\r", b"/")
+
+
 def iterate_xml_element(xml_file: Path, tag: str) -> Generator[bytes, None, None]:
     """行単位でタグを検出。属性付きタグ (<BioSample id="...") に対応するため startswith で判定。"""
     tag_start = f"<{tag}".encode()
@@ -98,10 +108,14 @@ def iterate_xml_element(xml_file: Path, tag: str) -> Generator[bytes, None, None
         for line in f:
             stripped = line.strip()
 
-            if stripped.startswith(tag_start):
+            if _is_tag_start(stripped, tag_start):
                 inside_element = True
                 buffer = bytearray(line)
-            elif stripped.startswith(tag_end):
+                if tag_end in stripped:
+                    inside_element = False
+                    yield bytes(buffer)
+                    buffer.clear()
+            elif inside_element and stripped.startswith(tag_end):
                 inside_element = False
                 buffer.extend(line)
                 yield bytes(buffer)

@@ -18,8 +18,11 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
     bs_blacklist: Set[str] = set()
 
     if bp_blacklist_path.exists():
-        bp_blacklist = set(bp_blacklist_path.read_text(encoding="utf-8").strip().split("\n"))
-        bp_blacklist.discard("")
+        with bp_blacklist_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    bp_blacklist.add(line)
         log_info(f"loaded {len(bp_blacklist)} BioProject blacklist entries",
                  file=str(bp_blacklist_path))
     else:
@@ -27,8 +30,11 @@ def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
                  file=str(bp_blacklist_path))
 
     if bs_blacklist_path.exists():
-        bs_blacklist = set(bs_blacklist_path.read_text(encoding="utf-8").strip().split("\n"))
-        bs_blacklist.discard("")
+        with bs_blacklist_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    bs_blacklist.add(line)
         log_info(f"loaded {len(bs_blacklist)} BioSample blacklist entries",
                  file=str(bs_blacklist_path))
     else:

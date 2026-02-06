@@ -1,23 +1,74 @@
 # テスト
 
+## テスト方針
+
+- **TDD/PBT**: テストはバグを探すために書く。通るだけの場当たり的なテストは書かない
+- **Property-Based Testing**: [hypothesis](https://hypothesis.readthedocs.io/) を使い、ランダム入力で不変条件を検証する
+- **エッジケースの網羅**: 境界値、None、空文字列、異常系を必ずテストする
+- **既知バグの文書化**: 発見済みバグは `xfail` やコメントでテスト内に文書化する
+
+## テストの種類と使い分け
+
+| 種類 | 用途 | 例 |
+|------|------|-----|
+| `@pytest.mark.parametrize` | 具体的な入出力の検証 | valid/invalid なアクセッション ID |
+| `@given(...)` (hypothesis) | 不変条件の検証 | `normalize_edge(a,b) == normalize_edge(b,a)` |
+| 通常テスト | エッジケース、統合テスト | 空ファイル、None 入力 |
+
 ## 実行方法
 
 ```bash
-# 依存インストール
-python3 -m pip install -e ".[tests]"
+# 依存インストール (uv)
+uv sync --extra tests
 
 # テスト実行
-python3 -m pytest
+uv run pytest -v
 
-# カバレッジ付き (デフォルト)
-python3 -m pytest --cov=ddbj_search_converter --cov-report=html:tests/htmlcov
+# カバレッジ付き (デフォルト設定)
+uv run pytest --cov-report=term-missing
+
+# hypothesis 統計表示
+uv run pytest --hypothesis-show-statistics
+
+# リント
+uv run pylint ./ddbj_search_converter
+uv run mypy ./ddbj_search_converter
+uv run isort ./ddbj_search_converter
 ```
+
+## ディレクトリ構成
+
+```
+tests/
+    README.md                   # 本ファイル
+    fixtures/                   # テスト用小規模データセット
+    py_tests/
+        conftest.py             # 共有 fixture (test_config, clean_ctx)
+        strategies.py           # hypothesis カスタム strategies
+        test_id_patterns.py     # id_patterns モジュール
+        test_xml_utils.py       # xml_utils モジュール
+        dblink/
+            test_utils.py       # dblink.utils モジュール
+            test_db.py          # dblink.db モジュール
+            test_assembly_and_master.py
+            test_bp_bs.py
+        jsonl/
+            test_utils.py       # jsonl.utils モジュール
+            test_bp.py          # jsonl.bp モジュール
+            test_bs.py          # jsonl.bs モジュール
+            test_jga.py         # jsonl.jga モジュール
+            test_sra.py         # jsonl.sra モジュール
+            test_regenerate.py  # jsonl.regenerate モジュール
+        archive/                # 旧テスト (pyproject.toml で除外)
+```
+
+## archive ディレクトリ
+
+`tests/py_tests/archive/` には旧テストを保存している。`pyproject.toml` の `addopts` で `--ignore=tests/py_tests/archive` を指定しており、`pytest` 実行時には自動的に除外される。
 
 ## 開発環境 (Docker)
 
 本番と同じパス構造で CLI コマンドをテストできる開発環境。
-
-### セットアップ
 
 ```bash
 # 1. 本番サーバで fixture 取得 (遺伝研スパコン内で実行)
@@ -31,12 +82,6 @@ docker compose -f compose.dev.yml exec app check_external_resources
 
 # 4. 終了
 docker compose -f compose.dev.yml down
-```
-
-### ES へのアクセス
-
-```bash
-curl http://localhost:9200
 ```
 
 ## Fixture データ
@@ -58,63 +103,30 @@ curl http://localhost:9200
 ```
 tests/fixtures/
 ├── home/w3ddbjld/const/
-│   ├── bp/blacklist.txt          # BioProject blacklist
-│   ├── bs/blacklist.txt          # BioSample blacklist
-│   ├── sra/blacklist.txt         # SRA blacklist
-│   ├── dblink/bp_bs_preserved.tsv    # BP-BS preserved 関連
+│   ├── bp/blacklist.txt
+│   ├── bs/blacklist.txt
+│   ├── sra/blacklist.txt
+│   ├── dblink/bp_bs_preserved.tsv
 │   └── metabobank/
 │       ├── mtb_id_bioproject_preserve.tsv
 │       └── mtb_id_biosample_preserve.tsv
 ├── lustre9/open/database/ddbj-dbt/dra-private/
 │   ├── mirror/SRA_Accessions/YYYY/MM/
-│   │   └── SRA_Accessions.tab.YYYYMMDD  # SRA Accessions (100 rows)
+│   │   └── SRA_Accessions.tab.YYYYMMDD
 │   └── tracesys/batch/logs/livelist/ReleaseData/public/
-│       └── YYYYMMDD.DRA_Accessions.tab  # DRA Accessions (100 rows)
+│       └── YYYYMMDD.DRA_Accessions.tab
 └── usr/local/
     ├── shared_data/
-    │   ├── dblink/               # DBLink 生成物 (空)
+    │   ├── dblink/
     │   ├── jga/metadata-history/metadata/
-    │   │   ├── jga-study.xml                   # JGA XML (10 entries each)
-    │   │   ├── jga-dataset.xml
-    │   │   ├── jga-dac.xml
-    │   │   ├── jga-policy.xml
-    │   │   ├── study.date.csv                  # date CSV (10 rows each)
-    │   │   ├── dataset.date.csv
-    │   │   ├── dac.date.csv
-    │   │   ├── policy.date.csv
-    │   │   ├── dataset-analysis-relation.csv   # relation CSV (10 rows each)
-    │   │   ├── analysis-study-relation.csv
-    │   │   ├── dataset-data-relation.csv
-    │   │   ├── data-experiment-relation.csv
-    │   │   ├── experiment-study-relation.csv
-    │   │   ├── dataset-policy-relation.csv
-    │   │   └── policy-dac-relation.csv
+    │   │   ├── jga-study.xml, jga-dataset.xml, jga-dac.xml, jga-policy.xml
+    │   │   ├── study.date.csv, dataset.date.csv, dac.date.csv, policy.date.csv
+    │   │   └── (relation CSV files)
     │   └── metabobank/study/
-    │       └── ...               # MetaboBank IDF/SDRF (10 each)
     └── resources/
         ├── bioproject/
-        │   ├── bioproject.xml            # NCBI BioProject (10 entries)
-        │   └── ddbj_core_bioproject.xml  # DDBJ BioProject (10 entries)
         ├── biosample/
-        │   ├── biosample_set.xml.gz      # NCBI BioSample (10 entries, gzipped)
-        │   └── ddbj_biosample_set.xml.gz # DDBJ BioSample (10 entries, gzipped)
-        ├── dra/fastq/DRA000/DRA000XXX/  # DRA XML (Accessions.tab に含まれる accession)
-        │   ├── *.experiment.xml
-        │   ├── *.run.xml
-        │   ├── *.sample.xml
-        │   ├── *.study.xml
-        │   └── *.submission.xml
+        ├── dra/fastq/
         ├── trad/
-        │   ├── wgs/WGS_ORGANISM_LIST.txt
-        │   ├── tls/TLS_ORGANISM_LIST.txt
-        │   ├── tsa/TSA_ORGANISM_LIST.txt
-        │   └── tpa/
-        │       ├── wgs/TPA_WGS_ORGANISM_LIST.txt
-        │       ├── tsa/TPA_TSA_ORGANISM_LIST.txt
-        │       └── tls/TPA_TLS_ORGANISM_LIST.txt
         └── gea/experiment/
-            └── E-GEAD-XXX/E-GEAD-XXXX/  # GEA IDF/SDRF (10 each)
-                ├── *.idf.txt
-                └── *.sdrf.txt
 ```
-

@@ -25,6 +25,7 @@ Repository = "https://github.com/ddbj/ddbj-search-converter.git"
 
 [project.optional-dependencies]
 tests = [
+    "hypothesis",
     "isort",
     "lxml-stubs",
     "mypy",

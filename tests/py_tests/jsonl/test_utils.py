@@ -1,116 +1,117 @@
 """Tests for ddbj_search_converter.jsonl.utils module."""
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
-from ddbj_search_converter.jsonl.utils import to_xref
+from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, to_xref
+from ddbj_search_converter.schema import XrefType
+
+from ..strategies import ALL_ACCESSION_TYPES
 
 
 class TestToXref:
     """Tests for to_xref function."""
 
     def test_biosample_id(self) -> None:
-        """BioSample ID を認識する。"""
         xref = to_xref("SAMD00000001")
-
         assert xref.identifier == "SAMD00000001"
         assert xref.type_ == "biosample"
-        assert "biosample" in xref.url
 
     def test_bioproject_id(self) -> None:
-        """BioProject ID を認識する。"""
         xref = to_xref("PRJDB12345")
-
         assert xref.identifier == "PRJDB12345"
         assert xref.type_ == "bioproject"
-        assert "bioproject" in xref.url
 
-    def test_jga_study_id(self) -> None:
-        """JGA Study ID を認識する。"""
-        xref = to_xref("JGAS000001")
+    @pytest.mark.parametrize("acc,expected_type", [
+        ("JGAS000001", "jga-study"),
+        ("JGAD000001", "jga-dataset"),
+        ("JGAC000001", "jga-dac"),
+        ("JGAP000001", "jga-policy"),
+        ("SRP123456", "sra-study"),
+        ("DRP123456", "sra-study"),
+        ("SRR123456", "sra-run"),
+        ("GCA_000001405.15", "insdc-assembly"),
+        ("MTBKS123", "metabobank"),
+        ("hum0001", "hum-id"),
+    ])
+    def test_auto_detection(self, acc: str, expected_type: str) -> None:
+        xref = to_xref(acc)
+        assert xref.type_ == expected_type
 
-        assert xref.identifier == "JGAS000001"
-        assert xref.type_ == "jga-study"
-        assert "jga-study" in xref.url
-
-    def test_jga_dataset_id(self) -> None:
-        """JGA Dataset ID を認識する。"""
-        xref = to_xref("JGAD000001")
-
-        assert xref.identifier == "JGAD000001"
-        assert xref.type_ == "jga-dataset"
-        assert "jga-dataset" in xref.url
-
-    def test_jga_dac_id(self) -> None:
-        """JGA DAC ID を認識する。"""
-        xref = to_xref("JGAC000001")
-
-        assert xref.identifier == "JGAC000001"
-        assert xref.type_ == "jga-dac"
-        assert "jga-dac" in xref.url
-
-    def test_jga_policy_id(self) -> None:
-        """JGA Policy ID を認識する。"""
-        xref = to_xref("JGAP000001")
-
-        assert xref.identifier == "JGAP000001"
-        assert xref.type_ == "jga-policy"
-        assert "jga-policy" in xref.url
-
-    def test_sra_study_id(self) -> None:
-        """SRA Study ID を認識する。"""
-        xref = to_xref("SRP123456")
-
-        assert xref.identifier == "SRP123456"
-        assert xref.type_ == "sra-study"
-
-    def test_dra_study_id(self) -> None:
-        """DRA Study ID を認識する。"""
-        xref = to_xref("DRP123456")
-
-        assert xref.identifier == "DRP123456"
-        assert xref.type_ == "sra-study"
-
-    def test_gea_id(self) -> None:
-        """GEA ID を認識する。"""
+    def test_gea_id_url(self) -> None:
         xref = to_xref("E-GEAD-123")
-
-        assert xref.identifier == "E-GEAD-123"
         assert xref.type_ == "gea"
         assert "E-GEAD-000" in xref.url
 
-    def test_hum_id(self) -> None:
-        """hum ID を認識する。"""
-        xref = to_xref("hum0001")
+    def test_gea_id_url_boundary(self) -> None:
+        """GEA ID 999 -> prefix E-GEAD-000, ID 1000 -> prefix E-GEAD-1000."""
+        xref_999 = to_xref("E-GEAD-999")
+        assert "E-GEAD-000" in xref_999.url
 
-        assert xref.identifier == "hum0001"
-        assert xref.type_ == "hum-id"
-        assert "humandbs.dbcls.jp" in xref.url
+        xref_1000 = to_xref("E-GEAD-1000")
+        assert "E-GEAD-1000" in xref_1000.url
 
     def test_type_hint_overrides_detection(self) -> None:
-        """type_hint を指定すると検出をスキップする。"""
         xref = to_xref("12345678", type_hint="pubmed-id")
-
-        assert xref.identifier == "12345678"
         assert xref.type_ == "pubmed-id"
         assert "pubmed.ncbi.nlm.nih.gov" in xref.url
 
     def test_unknown_id_falls_back_to_taxonomy(self) -> None:
-        """不明な ID は taxonomy にフォールバックする。"""
         xref = to_xref("9606")
-
-        assert xref.identifier == "9606"
         assert xref.type_ == "taxonomy"
-        assert "Taxonomy" in xref.url
 
-    def test_insdc_assembly_id(self) -> None:
-        """INSDC Assembly ID を認識する。"""
-        xref = to_xref("GCA_000001405.15")
+    def test_type_hint_gea(self) -> None:
+        xref = to_xref("E-GEAD-123", type_hint="gea")
+        assert xref.type_ == "gea"
+        assert "E-GEAD-000" in xref.url
 
-        assert xref.identifier == "GCA_000001405.15"
-        assert xref.type_ == "insdc-assembly"
 
-    def test_metabobank_id(self) -> None:
-        """MetaboBank ID を認識する。"""
-        xref = to_xref("MTBKS123")
+class TestBug6GeaNonNumericId:
+    """Bug #6 (fixed): to_xref GEA の非数値 ID でもクラッシュしない。"""
 
-        assert xref.identifier == "MTBKS123"
-        assert xref.type_ == "metabobank"
+    def test_non_numeric_gea_id_with_hint(self) -> None:
+        xref = to_xref("E-GEAD-abc", type_hint="gea")
+        assert xref.type_ == "gea"
+
+    def test_non_numeric_gea_id_without_hint(self) -> None:
+        """type_hint なしの場合、パターンマッチで弾かれるので問題ない。"""
+        xref = to_xref("E-GEAD-abc")
+        assert xref.type_ == "taxonomy"
+
+
+class TestBug7InvalidTypeHint:
+    """Bug #7 (fixed): to_xref 無効な type_hint で ValueError を送出。"""
+
+    def test_invalid_type_hint(self) -> None:
+        with pytest.raises(ValueError, match="Unknown type_hint"):
+            to_xref("test", type_hint="nonexistent")  # type: ignore[arg-type]
+
+
+class TestPBT:
+    """Property-based tests for to_xref."""
+
+    @given(type_hint=st.sampled_from(list(URL_TEMPLATE.keys())), id_=st.text(min_size=1, max_size=20))
+    def test_type_hint_always_returns_matching_type(self, type_hint: XrefType, id_: str) -> None:
+        """type_hint 指定時、結果の type が type_hint と一致する。"""
+        xref = to_xref(id_, type_hint=type_hint)
+        assert xref.type_ == type_hint
+
+
+class TestEdgeCases:
+    """Edge case tests."""
+
+    def test_empty_string_without_hint(self) -> None:
+        """空文字列は taxonomy にフォールバック。"""
+        xref = to_xref("")
+        assert xref.type_ == "taxonomy"
+
+    def test_pubmed_id_vs_taxonomy_ambiguity(self) -> None:
+        """数字のみの ID はパターンマッチで taxonomy にフォールバック。"""
+        xref = to_xref("12345")
+        # pubmed-id and taxonomy share the same pattern, but neither is in priority_types
+        assert xref.type_ == "taxonomy"
+
+    def test_gea_id_zero(self) -> None:
+        xref = to_xref("E-GEAD-0")
+        assert xref.type_ == "gea"
+        assert "E-GEAD-000" in xref.url

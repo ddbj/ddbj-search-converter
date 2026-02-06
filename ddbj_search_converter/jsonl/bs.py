@@ -37,10 +37,14 @@ def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
         if isinstance(ids, list):
             for id_obj in ids:
                 if isinstance(id_obj, dict) and id_obj.get("namespace") == "BioSample":
-                    return str(id_obj.get("content", ""))
+                    content = id_obj.get("content")
+                    if content is not None:
+                        return str(content)
         elif isinstance(ids, dict):
             if ids.get("namespace") == "BioSample":
-                return str(ids.get("content", ""))
+                content = ids.get("content")
+                if content is not None:
+                    return str(content)
         raise ValueError("No BioSample namespace ID found")
     accession = sample.get("accession")
     if accession is None:
@@ -100,7 +104,7 @@ def parse_description(sample: Dict[str, Any], accession: str = "") -> Optional[s
             if isinstance(para, str):
                 return para
             if isinstance(para, list):
-                return " ".join(str(p) for p in para if p)
+                return " ".join(str(p) for p in para if p is not None)
         return None
     except Exception as e:
         log_warn(f"failed to parse description: {e}", accession=accession)
@@ -148,7 +152,7 @@ def parse_model(sample: Dict[str, Any], accession: str = "") -> List[Model]:
                 models.append(Model(name=model))
             elif isinstance(model, dict):
                 content = model.get("content")
-                if content:
+                if content is not None:
                     models.append(Model(name=str(content)))
     except Exception as e:
         log_warn(f"failed to parse model: {e}", accession=accession)
