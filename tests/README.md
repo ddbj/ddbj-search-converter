@@ -59,7 +59,6 @@ tests/
             test_jga.py         # jsonl.jga モジュール
             test_sra.py         # jsonl.sra モジュール
             test_regenerate.py  # jsonl.regenerate モジュール
-        archive/                # 旧テスト (pyproject.toml で除外)
 ```
 
 ## archive ディレクトリ
