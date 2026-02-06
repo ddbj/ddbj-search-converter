@@ -94,25 +94,23 @@ def bulk_insert_jsonl(
         for jsonl_file in jsonl_files:
             actions = generate_bulk_actions(jsonl_file, index)
 
-            success, failed = helpers.bulk(
+            for ok, info in helpers.parallel_bulk(
                 es_client,
                 actions,
+                thread_count=BULK_INSERT_SETTINGS["thread_count"],
                 chunk_size=batch_size,
-                stats_only=False,
                 raise_on_error=False,
+                raise_on_exception=False,
                 max_retries=BULK_INSERT_SETTINGS["max_retries"],
                 request_timeout=BULK_INSERT_SETTINGS["request_timeout"],
-            )
-
-            success_count += success
-            # failed can be int (when stats_only=True) or list
-            if isinstance(failed, list) and failed:
-                for err in failed:
+            ):
+                if ok:
+                    success_count += 1
+                else:
                     error_count += 1
-                    total_docs += 1
                     if len(errors) < max_errors:
-                        errors.append(err)
-            total_docs += success
+                        errors.append(info)
+            total_docs = success_count + error_count
 
     finally:
         # Re-enable refresh and manually refresh to make docs searchable

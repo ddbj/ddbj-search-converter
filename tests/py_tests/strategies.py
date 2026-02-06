@@ -1,6 +1,7 @@
 """Hypothesis custom strategies for PBT."""
 import re
 import string
+from datetime import datetime
 
 from hypothesis import strategies as st
 
@@ -56,6 +57,19 @@ def st_sra_accession(letter: str = "R") -> st.SearchStrategy[str]:
     prefix = st.sampled_from(["S", "D", "E"])
     digits = st.integers(min_value=1, max_value=999999).map(str)
     return st.tuples(prefix, digits).map(lambda t: t[0] + letter + t[1])
+
+
+def st_sra_type() -> st.SearchStrategy[str]:
+    """SRA accession Type (SUBMISSION, STUDY, EXPERIMENT, RUN, SAMPLE, ANALYSIS)."""
+    return st.sampled_from(["SUBMISSION", "STUDY", "EXPERIMENT", "RUN", "SAMPLE", "ANALYSIS"])
+
+
+def st_timestamp_str() -> st.SearchStrategy[str]:
+    """ISO 8601 timestamp string suitable for SRA Accessions TSV."""
+    return st.datetimes(
+        min_value=datetime(2000, 1, 1),
+        max_value=datetime(2030, 12, 31),
+    ).map(lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
 
 def st_xml_dict() -> st.SearchStrategy[dict]:

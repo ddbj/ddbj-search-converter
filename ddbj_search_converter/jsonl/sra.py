@@ -537,6 +537,7 @@ def _process_batch_worker(
     # Step 3: XML パース + モデル作成
     counts: Dict[str, int] = {t: 0 for t in XML_TYPES}
     batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
+    seen_ids: Dict[SraXmlType, Set[str]] = {t: set() for t in XML_TYPES}
 
     for sub in batch_subs:
         results = process_submission_xml(
@@ -547,7 +548,10 @@ def _process_batch_worker(
             xml_cache=xml_data[sub],
         )
         for xml_type in XML_TYPES:
-            batch_entries[xml_type].extend(results[xml_type])
+            for entry in results[xml_type]:
+                if entry.identifier not in seen_ids[xml_type]:
+                    batch_entries[xml_type].append(entry)
+                    seen_ids[xml_type].add(entry.identifier)
 
     # Step 4: dbXrefs 取得（バッチ全体で一括取得）
     for xml_type in XML_TYPES:

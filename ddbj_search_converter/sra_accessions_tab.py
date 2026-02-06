@@ -551,9 +551,9 @@ def get_accession_info_bulk(
                     Accession,
                     Status,
                     Visibility,
-                    CAST(Received AS VARCHAR),
-                    CAST(Updated AS VARCHAR),
-                    CAST(Published AS VARCHAR),
+                    strftime(Received, '%Y-%m-%dT%H:%M:%SZ'),
+                    strftime(Updated, '%Y-%m-%dT%H:%M:%SZ'),
+                    strftime(Published, '%Y-%m-%dT%H:%M:%SZ'),
                     Type
                 FROM accessions
                 WHERE Accession IN ({placeholders})

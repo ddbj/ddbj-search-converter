@@ -4,19 +4,22 @@ SRA モジュールは tar ファイル読み込みに強く依存するため�
 ここではパース関数と正規化関数のユニットテストを中心に行う。
 """
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, cast
+from typing import Any, Dict, Generator, List, Optional, Set, cast
 
 import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.jsonl.sra import (
+    XML_TYPES,
     _normalize_accessibility,
     _normalize_status,
+    create_sra_entry,
     parse_study,
     parse_submission,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
-from ddbj_search_converter.schema import Accessibility, Status
+from ddbj_search_converter.schema import SRA, Accessibility, Status
+from ddbj_search_converter.sra.tar_reader import SraXmlType
 
 
 @pytest.fixture
@@ -151,3 +154,128 @@ class TestEdgeCases:
         """アンダースコアがハイフンに変換される。"""
         assert _normalize_accessibility("controlled_access") == "controlled-access"
         assert _normalize_accessibility("CONTROLLED_ACCESS") == "controlled-access"
+
+
+def _make_sra_entry(identifier: str, sra_type: SraXmlType = "study") -> SRA:
+    """テスト用の SRA エントリを作成するヘルパー。"""
+    parsed = {
+        "accession": identifier,
+        "properties": {},
+        "alias": None,
+        "title": f"Title for {identifier}",
+        "description": None,
+    }
+    return create_sra_entry(
+        sra_type=sra_type,
+        parsed=parsed,
+        status="live",
+        accessibility="public-access",
+        date_created=None,
+        date_modified=None,
+        date_published=None,
+    )
+
+
+class TestBatchDedup:
+    """_process_batch_worker の重複排除ロジックを検証する。
+
+    実際の _process_batch_worker は tar 読み込みや DB 依存が大きいため、
+    Step 3 の重複排除ロジック部分を単体で再現してテストする。
+    """
+
+    def test_dedup_removes_duplicates_within_same_type(self) -> None:
+        """同一 xml_type 内で重複する identifier が排除される。"""
+        entries = [
+            _make_sra_entry("SRP000001", "study"),
+            _make_sra_entry("SRP000002", "study"),
+            _make_sra_entry("SRP000001", "study"),  # duplicate
+            _make_sra_entry("SRP000003", "study"),
+        ]
+
+        batch_entries: List[SRA] = []
+        seen_ids: Set[str] = set()
+        for entry in entries:
+            if entry.identifier not in seen_ids:
+                batch_entries.append(entry)
+                seen_ids.add(entry.identifier)
+
+        assert len(batch_entries) == 3
+        ids = [e.identifier for e in batch_entries]
+        assert ids == ["SRP000001", "SRP000002", "SRP000003"]
+
+    def test_dedup_across_submissions(self) -> None:
+        """異なる submission から生成された同一 identifier が排除される。"""
+        sub1_results = [
+            _make_sra_entry("SRP000001", "study"),
+            _make_sra_entry("SRP000002", "study"),
+        ]
+        sub2_results = [
+            _make_sra_entry("SRP000001", "study"),  # same as sub1
+            _make_sra_entry("SRP000003", "study"),
+        ]
+
+        batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
+        seen_ids: Dict[SraXmlType, Set[str]] = {t: set() for t in XML_TYPES}
+
+        for results in [sub1_results, sub2_results]:
+            for entry in results:
+                if entry.identifier not in seen_ids["study"]:
+                    batch_entries["study"].append(entry)
+                    seen_ids["study"].add(entry.identifier)
+
+        assert len(batch_entries["study"]) == 3
+        ids = [e.identifier for e in batch_entries["study"]]
+        assert ids == ["SRP000001", "SRP000002", "SRP000003"]
+
+    def test_dedup_independent_across_types(self) -> None:
+        """異なる xml_type 間では重複排除が独立して行われる。"""
+        study_entries = [_make_sra_entry("SRP000001", "study")]
+        sample_entries = [_make_sra_entry("SRS000001", "sample")]
+
+        batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
+        seen_ids: Dict[SraXmlType, Set[str]] = {t: set() for t in XML_TYPES}
+
+        for entry in study_entries:
+            if entry.identifier not in seen_ids["study"]:
+                batch_entries["study"].append(entry)
+                seen_ids["study"].add(entry.identifier)
+
+        for entry in sample_entries:
+            if entry.identifier not in seen_ids["sample"]:
+                batch_entries["sample"].append(entry)
+                seen_ids["sample"].add(entry.identifier)
+
+        assert len(batch_entries["study"]) == 1
+        assert len(batch_entries["sample"]) == 1
+
+    def test_dedup_preserves_first_occurrence(self) -> None:
+        """重複がある場合、最初の出現が保持される。"""
+        entry1 = _make_sra_entry("SRP000001", "study")
+        entry1_dup = _make_sra_entry("SRP000001", "study")
+
+        batch_entries: List[SRA] = []
+        seen_ids: Set[str] = set()
+        for entry in [entry1, entry1_dup]:
+            if entry.identifier not in seen_ids:
+                batch_entries.append(entry)
+                seen_ids.add(entry.identifier)
+
+        assert len(batch_entries) == 1
+        assert batch_entries[0] is entry1
+
+    def test_no_duplicates_all_kept(self) -> None:
+        """重複がない場合、全エントリが保持される。"""
+        entries = [
+            _make_sra_entry("SRP000001", "study"),
+            _make_sra_entry("SRP000002", "study"),
+            _make_sra_entry("SRP000003", "study"),
+        ]
+
+        batch_entries: List[SRA] = []
+        seen_ids: Set[str] = set()
+        for entry in entries:
+            if entry.identifier not in seen_ids:
+                batch_entries.append(entry)
+                seen_ids.add(entry.identifier)
+
+        assert len(batch_entries) == 3

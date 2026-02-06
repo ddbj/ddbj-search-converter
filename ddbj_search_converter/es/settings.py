@@ -38,9 +38,13 @@ INDEX_SETTINGS: Dict[str, Any] = {
 
 BULK_INSERT_SETTINGS: Dict[str, Any] = {
     # Number of documents per bulk request.
-    # 5000 provides good throughput for large-scale data ingestion.
+    # 10000 provides good throughput for large-scale data ingestion.
     # Reduce if memory pressure occurs with very large documents.
-    "batch_size": 5000,
+    "batch_size": 10000,
+
+    # Number of threads for parallel_bulk.
+    # 8 threads balance throughput and ES write queue pressure.
+    "thread_count": 8,
 
     # Maximum retries for failed bulk operations.
     "max_retries": 3,
