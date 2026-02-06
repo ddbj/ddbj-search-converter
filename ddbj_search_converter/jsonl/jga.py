@@ -14,8 +14,7 @@ from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, log_warn,
-                                                  run_logger)
+                                                  log_info, run_logger)
 from ddbj_search_converter.schema import JGA, Distribution, Organism
 from ddbj_search_converter.xml_utils import parse_xml
 

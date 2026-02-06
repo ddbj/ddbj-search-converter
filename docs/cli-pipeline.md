@@ -61,7 +61,7 @@ build_bp_bs_date_cache
 # 7. SRA/DRA Metadata tar 構築 (SRA JSONL 生成前に必須)
 sync_ncbi_tar
 sync_dra_tar
-# 出力: {const_dir}/sra/NCBI_SRA_Metadata.tar, DRA_Metadata.tar
+# 出力: {result_dir}/sra_tar/NCBI_SRA_Metadata.tar, DRA_Metadata.tar
 
 # 8. JSONL 生成 (初回は --full)
 generate_bp_jsonl --full
@@ -240,10 +240,11 @@ PHASE 2: JSONL Generation
 ├── [並列] sync_dra_tar
 └── [並列] build_bp_bs_date_cache
     ↓
-├── [並列, --parallel N] generate_bp_jsonl [--full]
-├── [並列, --parallel N] generate_bs_jsonl [--full]
-├── [並列, --parallel N] generate_sra_jsonl [--full]
-└── [並列, --parallel N] generate_jga_jsonl
+├── [逐次] generate_bp_jsonl [--full] [--parallel-num N]
+├── [逐次] generate_bs_jsonl [--full] [--parallel-num N]
+├── [逐次] generate_sra_jsonl [--full] [--parallel-num N]
+└── [逐次] generate_jga_jsonl
+# --parallel-num は各コマンド内部の並列度 (デフォルト: 4)
 
 PHASE 3: Elasticsearch
 [--clean-es 指定時] es_delete_index --index all --skip-missing --force
@@ -385,8 +386,8 @@ es_bulk_insert --index jga-study \
 | コマンド | オプション | 説明 |
 |---------|----------|------|
 | `build_bp_bs_date_cache` | - | BP/BS 日付情報を PostgreSQL から DuckDB キャッシュに構築 |
-| `generate_bp_jsonl` | `--full`, `--parallel-num` | BioProject JSONL 生成 |
-| `generate_bs_jsonl` | `--full`, `--parallel-num` | BioSample JSONL 生成 |
+| `generate_bp_jsonl` | `--full`, `--parallel-num`, `--resume` | BioProject JSONL 生成 |
+| `generate_bs_jsonl` | `--full`, `--parallel-num`, `--resume` | BioSample JSONL 生成 |
 | `generate_sra_jsonl` | `--full`, `--parallel-num` | SRA JSONL 生成 |
 | `generate_jga_jsonl` | - | JGA JSONL 生成（常に全件処理、blacklist 適用） |
 | `regenerate_jsonl` | `--type`, `--accessions`, `--accession-file`, `--output-dir` | 特定 accession の JSONL 再生成 |

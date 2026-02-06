@@ -7,7 +7,7 @@ This supports append-based daily updates where newer entries are appended.
 """
 import tarfile
 from pathlib import Path
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from ddbj_search_converter.config import (DRA_TAR_FILE_NAME,
                                           NCBI_SRA_TAR_FILE_NAME, Config)
@@ -22,7 +22,7 @@ SRA_XML_TYPES: List[SraXmlType] = ["submission", "study", "experiment", "run", "
 class TarXMLReader:
     """Read XML files from a tar archive using an in-memory index."""
 
-    def __init__(self, tar_path: Path, index_data: Optional[Dict[str, dict]] = None):
+    def __init__(self, tar_path: Path, index_data: Optional[Dict[str, Dict[str, Any]]] = None):
         """
         Args:
             tar_path: tar ファイルのパス

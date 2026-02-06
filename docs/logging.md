@@ -140,10 +140,21 @@ show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG | \
 
 | Category | 用途 |
 |----------|------|
-| `INVALID_BIOSAMPLE_ID` | BioSample accession が無効 |
-| `INVALID_BIOPROJECT_ID` | BioProject accession が無効 |
+| `CONFIG` | 設定情報の出力 |
+| `INVALID_ACCESSION_ID` | accession ID が無効 |
+| `INVALID_GCF_FORMAT` | GCF フォーマットが無効 |
+| `INVALID_WGS_RANGE` | WGS range が無効 |
+| `FILE_NOT_FOUND` | ファイルが見つからない |
+| `EMPTY_RESULT` | 結果が空 |
+| `BLACKLIST_NO_MATCH` | blacklist にマッチなし |
 | `PARSE_FALLBACK` | パース失敗でフォールバック |
-| `NORMALIZE_*` | 各種正規化失敗 |
+| `NORMALIZE_BIOSAMPLE_SET_ID` | BioSample set ID の正規化失敗 |
+| `NORMALIZE_LOCUS_TAG_PREFIX` | locus tag prefix の正規化失敗 |
+| `NORMALIZE_LOCAL_ID` | local ID の正規化失敗 |
+| `NORMALIZE_ORGANIZATION_NAME` | organization name の正規化失敗 |
+| `NORMALIZE_GRANT_AGENCY` | grant agency の正規化失敗 |
+| `NORMALIZE_OWNER_NAME` | owner name の正規化失敗 |
+| `NORMALIZE_MODEL` | model の正規化失敗 |
 | `FETCH_DATES_FAILED` | XML からの日付取得失敗 |
 | `XML_ACCESSION_COLLECT_FAILED` | XML からの accession 収集失敗 |
 | `UNSUPPORTED_EXTERNAL_LINK_DB` | 未対応の ExternalLink DB |

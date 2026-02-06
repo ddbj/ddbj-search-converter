@@ -24,10 +24,10 @@ ID_PATTERN_MAP: Dict[AccessionType, Pattern[str]] = {
     "insdc-master": re.compile(
         r"^([A-Z]0{5}|[A-Z]{2}0{6}|[A-Z]{4,6}0{8,10}|[A-J][A-Z]{2}0{5})$"
     ),
-    "metabobank": re.compile(r"^MTB"),
+    "metabobank": re.compile(r"^MTBKS\d+$"),
     "hum-id": re.compile(r"^hum\d+$"),
     "pubmed-id": re.compile(r"^\d+$"),  # pubmed-id は数字のみ (to_xref では最後にフォールバック)
-    "taxonomy": re.compile(r"^\d+"),
+    "taxonomy": re.compile(r"^\d+$"),
 }
 
 

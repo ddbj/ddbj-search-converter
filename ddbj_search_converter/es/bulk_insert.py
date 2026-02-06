@@ -11,6 +11,7 @@ from ddbj_search_converter.es.client import (check_index_exists, get_es_client,
                                              refresh_index,
                                              set_refresh_interval)
 from ddbj_search_converter.es.index import IndexName
+from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
 from elasticsearch import helpers
 
 
@@ -58,7 +59,7 @@ def bulk_insert_jsonl(
     config: Config,
     jsonl_files: List[Path],
     index: IndexName,
-    batch_size: int = 5000,
+    batch_size: int = BULK_INSERT_SETTINGS["batch_size"],
     max_errors: int = 100,
 ) -> BulkInsertResult:
     """Bulk insert JSONL files into Elasticsearch.
@@ -83,10 +84,11 @@ def bulk_insert_jsonl(
 
     total_docs = 0
     success_count = 0
+    error_count = 0
     errors: List[Dict[str, Any]] = []
 
     # Disable refresh during bulk insert for better performance
-    set_refresh_interval(es_client, index, "-1")
+    set_refresh_interval(es_client, index, BULK_INSERT_SETTINGS["bulk_refresh_interval"])
 
     try:
         for jsonl_file in jsonl_files:
@@ -98,14 +100,15 @@ def bulk_insert_jsonl(
                 chunk_size=batch_size,
                 stats_only=False,
                 raise_on_error=False,
-                max_retries=3,
-                request_timeout=600,
+                max_retries=BULK_INSERT_SETTINGS["max_retries"],
+                request_timeout=BULK_INSERT_SETTINGS["request_timeout"],
             )
 
             success_count += success
             # failed can be int (when stats_only=True) or list
             if isinstance(failed, list) and failed:
                 for err in failed:
+                    error_count += 1
                     total_docs += 1
                     if len(errors) < max_errors:
                         errors.append(err)
@@ -113,14 +116,14 @@ def bulk_insert_jsonl(
 
     finally:
         # Re-enable refresh and manually refresh to make docs searchable
-        set_refresh_interval(es_client, index, "1s")
+        set_refresh_interval(es_client, index, BULK_INSERT_SETTINGS["normal_refresh_interval"])
         refresh_index(es_client, index)
 
     return BulkInsertResult(
         index=index,
         total_docs=total_docs,
         success_count=success_count,
-        error_count=len(errors),
+        error_count=error_count,
         errors=errors,
     )
 
@@ -130,7 +133,7 @@ def bulk_insert_from_dir(
     jsonl_dir: Path,
     index: IndexName,
     pattern: str = "*.jsonl",
-    batch_size: int = 5000,
+    batch_size: int = BULK_INSERT_SETTINGS["batch_size"],
     max_errors: int = 100,
 ) -> BulkInsertResult:
     """Bulk insert all JSONL files from a directory.

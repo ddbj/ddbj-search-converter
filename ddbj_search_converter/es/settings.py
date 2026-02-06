@@ -8,7 +8,7 @@ from typing import Any, Dict
 
 # === Index Settings ===
 # These settings are applied when creating new indexes.
-# See: mappings/common.py for INDEX_SETTINGS used in index creation.
+# Used in mappings/common.py for index creation.
 
 INDEX_SETTINGS: Dict[str, Any] = {
     "index": {
@@ -77,31 +77,6 @@ SNAPSHOT_SETTINGS: Dict[str, Any] = {
 }
 
 
-# === Performance Tuning Settings ===
-# Optional settings for performance optimization.
-# These can be applied to indexes after creation if needed.
-
-PERFORMANCE_SETTINGS: Dict[str, Any] = {
-    # Merge scheduler settings for indexing performance.
-    # max_thread_count controls concurrent segment merges.
-    # For single-threaded indexing, 1 is usually sufficient.
-    "merge": {
-        "scheduler": {
-            "max_thread_count": 1,
-        },
-    },
-
-    # Translog durability settings.
-    # "async" improves performance but risks data loss on crash.
-    # "request" (default) ensures durability at the cost of performance.
-    # Only use "async" if you can tolerate some data loss.
-    "translog": {
-        "durability": "request",  # Keep default for safety
-        "sync_interval": "5s",
-    },
-}
-
-
 # === Health Check Thresholds ===
 # Thresholds for monitoring and alerting.
 
@@ -118,30 +93,6 @@ HEALTH_CHECK_THRESHOLDS: Dict[str, Any] = {
     # JVM heap usage critical threshold (percentage)
     "heap_critical_percent": 90,
 }
-
-
-def get_index_settings() -> Dict[str, Any]:
-    """Get index settings for creating new indexes.
-
-    Returns a copy to prevent accidental modification.
-    """
-    return INDEX_SETTINGS.copy()
-
-
-def get_bulk_settings() -> Dict[str, Any]:
-    """Get bulk insert settings.
-
-    Returns a copy to prevent accidental modification.
-    """
-    return BULK_INSERT_SETTINGS.copy()
-
-
-def get_snapshot_settings() -> Dict[str, Any]:
-    """Get snapshot settings.
-
-    Returns a copy to prevent accidental modification.
-    """
-    return SNAPSHOT_SETTINGS.copy()
 
 
 def get_health_thresholds() -> Dict[str, Any]:

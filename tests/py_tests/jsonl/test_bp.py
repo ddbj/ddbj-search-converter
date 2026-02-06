@@ -196,7 +196,7 @@ class TestParseOrganization:
                 }
             }
         }
-        result = parse_organization(project, is_ddbj=False)
+        result = parse_organization(project)
         assert len(result) == 1
         assert result[0].name == "Test Organization"
         assert result[0].organizationType == "center"
@@ -214,7 +214,7 @@ class TestParseOrganization:
                 }
             }
         }
-        result = parse_organization(project, is_ddbj=True)
+        result = parse_organization(project)
         assert len(result) == 1
         assert result[0].name == "DDBJ Organization"
 
@@ -231,7 +231,7 @@ class TestParseOrganization:
                 }
             }
         }
-        result = parse_organization(project, is_ddbj=False)
+        result = parse_organization(project)
         assert len(result) == 1
         assert result[0].name == "Full Name"
         assert result[0].abbreviation == "FN"
@@ -249,7 +249,7 @@ class TestParseOrganization:
                 }
             }
         }
-        result = parse_organization(project, is_ddbj=False)
+        result = parse_organization(project)
         assert len(result) == 2
 
 

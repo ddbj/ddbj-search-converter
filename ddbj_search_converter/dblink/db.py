@@ -125,10 +125,11 @@ def write_relations_to_tsv(
 def load_relations_from_tsv(config: Config, tsv_path: Path) -> None:
     db_path = _tmp_db_path(config)
     with duckdb.connect(str(db_path)) as conn:
+        safe_path = str(tsv_path).replace("'", "''")
         conn.execute(f"""
             INSERT INTO relation
             SELECT * FROM read_csv(
-                '{tsv_path}',
+                '{safe_path}',
                 header=false,
                 columns={{
                     'src_type': 'TEXT',
@@ -203,7 +204,7 @@ def get_related_entities(
 ) -> Iterator[Tuple[str, str]]:
     """無向グラフなので src/dst 両方向を検索。"""
     db_path = _final_db_path(config)
-    with duckdb.connect(db_path) as conn:
+    with duckdb.connect(str(db_path)) as conn:
         rows = conn.execute(
             """
             SELECT
@@ -247,7 +248,7 @@ def get_related_entities_bulk(
     # UNION ALL で分割することで、各クエリが単一インデックスを使用可能に
     # - 前半: idx_relation_src (src_type, src_accession) を使用
     # - 後半: idx_relation_dst (dst_type, dst_accession) を使用
-    with duckdb.connect(db_path, read_only=True) as conn:
+    with duckdb.connect(str(db_path), read_only=True) as conn:
         rows = conn.execute(
             """
             WITH input(accession) AS (

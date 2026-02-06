@@ -1,12 +1,18 @@
 """Elasticsearch client management."""
 
+from typing import Dict
+
 from ddbj_search_converter.config import Config
 from elasticsearch import Elasticsearch
 
+_clients: Dict[str, Elasticsearch] = {}
+
 
 def get_es_client(config: Config) -> Elasticsearch:
-    """Create and return an Elasticsearch client."""
-    return Elasticsearch(config.es_url)
+    """Return a cached Elasticsearch client for the given config."""
+    if config.es_url not in _clients:
+        _clients[config.es_url] = Elasticsearch(config.es_url)
+    return _clients[config.es_url]
 
 
 def check_index_exists(es_client: Elasticsearch, index: str) -> bool:

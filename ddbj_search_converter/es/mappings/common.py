@@ -2,15 +2,9 @@
 
 from typing import Any, Dict
 
-# Index settings
-INDEX_SETTINGS: Dict[str, Any] = {
-    "index": {
-        "refresh_interval": "1s",
-        "mapping.nested_objects.limit": 100000,
-        "number_of_shards": 1,
-        "number_of_replicas": 0,
-    }
-}
+from ddbj_search_converter.es.settings import INDEX_SETTINGS
+
+__all__ = ["INDEX_SETTINGS", "get_common_mapping", "merge_mappings"]
 
 
 def get_common_mapping() -> Dict[str, Any]:

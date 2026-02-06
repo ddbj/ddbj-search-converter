@@ -561,10 +561,10 @@ phase3_elasticsearch() {
         run_cmd "es_bulk_insert --index sra-run --dir ${sra_dir} --pattern '*_run_*.jsonl'"
         run_cmd "es_bulk_insert --index sra-sample --dir ${sra_dir} --pattern '*_sample_*.jsonl'"
         run_cmd "es_bulk_insert --index sra-analysis --dir ${sra_dir} --pattern '*_analysis_*.jsonl'"
-        run_cmd "es_bulk_insert --index jga-study --dir ${jga_dir}"
-        run_cmd "es_bulk_insert --index jga-dataset --dir ${jga_dir}"
-        run_cmd "es_bulk_insert --index jga-dac --dir ${jga_dir}"
-        run_cmd "es_bulk_insert --index jga-policy --dir ${jga_dir}"
+        run_cmd "es_bulk_insert --index jga-study --dir ${jga_dir} --pattern 'jga-study.jsonl'"
+        run_cmd "es_bulk_insert --index jga-dataset --dir ${jga_dir} --pattern 'jga-dataset.jsonl'"
+        run_cmd "es_bulk_insert --index jga-dac --dir ${jga_dir} --pattern 'jga-dac.jsonl'"
+        run_cmd "es_bulk_insert --index jga-policy --dir ${jga_dir} --pattern 'jga-policy.jsonl'"
     fi
 
     # Step: es_delete_blacklist

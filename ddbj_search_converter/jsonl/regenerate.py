@@ -34,7 +34,7 @@ from ddbj_search_converter.jsonl.sra import XML_TYPES, process_submission_xml
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 from ddbj_search_converter.schema import XrefType
-from ddbj_search_converter.sra.tar_reader import (SraXmlType, TarXMLReader,
+from ddbj_search_converter.sra.tar_reader import (SraXmlType,
                                                   get_dra_tar_reader,
                                                   get_ncbi_tar_reader)
 from ddbj_search_converter.sra_accessions_tab import (

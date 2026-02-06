@@ -285,7 +285,7 @@ def process_ncbi_bioproject_xml_file(xml_path: Path) -> XmlProcessResult:
     id_to_accession: Dict[str, str] = {}
 
     with xml_path.open("r", encoding="utf-8") as f:
-        for event, elem in ET.iterparse(f, events=("end",)):
+        for _, elem in ET.iterparse(f, events=("end",)):
             tag = elem.tag.split("}")[-1]
 
             if tag == "ArchiveID":

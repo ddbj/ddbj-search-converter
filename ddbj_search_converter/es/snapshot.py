@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, cast
 from ddbj_search_converter.config import LOCAL_TZ, Config
 from ddbj_search_converter.es.client import get_es_client
 from ddbj_search_converter.es.index import ALL_INDEXES
+from ddbj_search_converter.es.settings import SNAPSHOT_SETTINGS
 
 
 def register_repository(
@@ -77,7 +78,7 @@ def create_snapshot(
     repo_name: str,
     snapshot_name: Optional[str] = None,
     indexes: Optional[List[str]] = None,
-    include_global_state: bool = False,
+    include_global_state: bool = SNAPSHOT_SETTINGS["include_global_state"],
     wait_for_completion: bool = True,
     metadata: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
@@ -99,7 +100,7 @@ def create_snapshot(
 
     if snapshot_name is None:
         timestamp = datetime.now(LOCAL_TZ).strftime("%Y%m%d_%H%M%S")
-        snapshot_name = f"ddbj_search_{timestamp}"
+        snapshot_name = f"{SNAPSHOT_SETTINGS['snapshot_name_prefix']}_{timestamp}"
 
     if indexes is None:
         indexes = list(ALL_INDEXES)

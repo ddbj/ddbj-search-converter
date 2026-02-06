@@ -6,7 +6,7 @@
 import pickle
 import tarfile
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from ddbj_search_converter.logging.logger import log_info
 
@@ -38,7 +38,7 @@ def save_index_cache(tar_path: Path, members: Dict[str, tarfile.TarInfo]) -> Non
     log_info(f"tar index cache saved: {len(members)} entries")
 
 
-def load_index_cache(tar_path: Path) -> Optional[Dict[str, dict]]:
+def load_index_cache(tar_path: Path) -> Optional[Dict[str, Dict[str, Any]]]:
     """キャッシュからインデックスを読み込む。
 
     キャッシュが存在しない、または tar より古い場合は None を返す。
@@ -55,7 +55,7 @@ def load_index_cache(tar_path: Path) -> Optional[Dict[str, dict]]:
 
     log_info(f"loading tar index cache: {cache_path}")
     with cache_path.open("rb") as f:
-        index_data = pickle.load(f)
+        index_data = cast(Dict[str, Dict[str, Any]], pickle.load(f))
     log_info(f"tar index cache loaded: {len(index_data)} entries")
 
     return index_data

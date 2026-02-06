@@ -79,16 +79,19 @@ bulk insert やインデックス作成時の設定値。
 ```python
 # Bulk insert 設定
 BULK_INSERT_SETTINGS = {
-    "batch_size": 5000,        # 1回の bulk リクエストあたりのドキュメント数
-    "max_retries": 3,          # リトライ回数
-    "request_timeout": 600,    # タイムアウト (秒)
+    "batch_size": 5000,                # 1回の bulk リクエストあたりのドキュメント数
+    "max_retries": 3,                  # リトライ回数
+    "request_timeout": 600,            # タイムアウト (秒)
+    "bulk_refresh_interval": "-1",     # bulk insert 中のリフレッシュ間隔 (無効化)
+    "normal_refresh_interval": "1s",   # bulk insert 後のリフレッシュ間隔 (復元)
 }
 
 # インデックス設定
 INDEX_SETTINGS = {
-    "number_of_shards": 1,     # シャード数 (single-node では 1)
-    "number_of_replicas": 0,   # レプリカ数 (single-node では 0)
-    "refresh_interval": "1s",  # リフレッシュ間隔
+    "refresh_interval": "1s",                  # リフレッシュ間隔
+    "mapping.nested_objects.limit": 100000,    # nested オブジェクト上限
+    "number_of_shards": 1,                     # シャード数 (single-node では 1)
+    "number_of_replicas": 0,                   # レプリカ数 (single-node では 0)
 }
 ```
 

@@ -104,7 +104,7 @@ def parse_description(project: Dict[str, Any], accession: str = "") -> Optional[
         return None
 
 
-def parse_organization(project: Dict[str, Any], is_ddbj: bool, accession: str = "") -> List[Organization]:
+def parse_organization(project: Dict[str, Any], accession: str = "") -> List[Organization]:
     """BioProject から Organization を抽出する。
 
     Note: DDBJ BioProject XML には Submission 要素がないため、
@@ -466,7 +466,7 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
         organism=parse_organism(project, is_ddbj, accession),
         title=parse_title(project, accession),
         description=parse_description(project, accession),
-        organization=parse_organization(project, is_ddbj, accession),
+        organization=parse_organization(project, accession),
         publication=parse_publication(project, accession),
         grant=parse_grant(project, accession),
         externalLink=parse_external_link(project, accession),
