@@ -101,7 +101,6 @@ def bulk_insert_jsonl(
                 chunk_size=batch_size,
                 raise_on_error=False,
                 raise_on_exception=False,
-                max_retries=BULK_INSERT_SETTINGS["max_retries"],
                 request_timeout=BULK_INSERT_SETTINGS["request_timeout"],
             ):
                 if ok:

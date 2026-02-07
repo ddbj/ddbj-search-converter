@@ -46,9 +46,6 @@ BULK_INSERT_SETTINGS: Dict[str, Any] = {
     # 8 threads balance throughput and ES write queue pressure.
     "thread_count": 8,
 
-    # Maximum retries for failed bulk operations.
-    "max_retries": 3,
-
     # Request timeout in seconds.
     # 600 seconds for large-scale bulk inserts with batch_size=5000.
     "request_timeout": 600,
