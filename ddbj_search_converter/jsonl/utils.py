@@ -1,6 +1,6 @@
 """JSONL 生成用の共通ユーティリティ関数。"""
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import (AccessionType,
@@ -110,8 +110,13 @@ def get_dbxref_map(
     config: Config,
     entity_type: AccessionType,
     accessions: List[str],
+    umbrella_ids: Optional[Set[str]] = None,
 ) -> Dict[str, List[Xref]]:
-    """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
+    """dblink DB から関連エントリを取得し、Xref リストに変換する。
+
+    umbrella_ids が指定されている場合、related_type が "bioproject" でも
+    related_id が umbrella_ids に含まれていれば "umbrella-bioproject" に変換する。
+    """
     if not accessions:
         return {}
 
@@ -123,6 +128,10 @@ def get_dbxref_map(
     for accession, related_list in relations.items():
         xrefs: List[Xref] = []
         for related_type, related_id in related_list:
+            if (umbrella_ids is not None
+                    and related_type == "bioproject"
+                    and related_id in umbrella_ids):
+                related_type = "umbrella-bioproject"
             xref = to_xref(related_id, type_hint=related_type)
             xrefs.append(xref)
         xrefs.sort(key=lambda x: x.identifier)

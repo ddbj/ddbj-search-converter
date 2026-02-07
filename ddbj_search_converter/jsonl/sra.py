@@ -19,10 +19,10 @@ from pathlib import Path
 from typing import (Any, Callable, Dict, Iterator, List, Literal, Optional,
                     Set, Tuple, cast)
 
-from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
-                                          TODAY_STR, Config, get_config,
-                                          read_last_run, write_last_run)
-from ddbj_search_converter.config import SEARCH_BASE_URL
+from ddbj_search_converter.config import (JSONL_DIR_NAME, SEARCH_BASE_URL,
+                                          SRA_BASE_DIR_NAME, TODAY_STR, Config,
+                                          get_config, read_last_run,
+                                          write_last_run)
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
@@ -500,6 +500,7 @@ def _process_batch_worker(
     blacklist: Set[str],
     output_dir: Path,
     is_dra: bool,
+    umbrella_ids: Set[str],
 ) -> Dict[str, int]:
     """
     1 batch を処理して JSONL を出力するワーカー関数。
@@ -558,7 +559,7 @@ def _process_batch_worker(
     for xml_type in XML_TYPES:
         accessions = [e.identifier for e in batch_entries[xml_type]]
         if accessions:
-            dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions)
+            dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions, umbrella_ids=umbrella_ids)
             for entry in batch_entries[xml_type]:
                 if entry.identifier in dbxref_map:
                     entry.dbXrefs = dbxref_map[entry.identifier]
@@ -605,6 +606,11 @@ def process_source(
         {xml_type: count}
     """
     is_dra = source == "dra"
+
+    # umbrella-bioproject ID セットを取得
+    from ddbj_search_converter.dblink.db import \
+        get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+    umbrella_ids = get_umbrella_bioproject_ids(config)
 
     log_info(f"processing {source.upper()}...")
 
@@ -674,7 +680,7 @@ def process_source(
                 future = executor.submit(
                     _process_batch_worker,
                     config, source, batch_num, total_batches, batch_subs, xml_data,
-                    blacklist, output_dir, is_dra,
+                    blacklist, output_dir, is_dra, umbrella_ids,
                 )
                 pending.add(future)
                 log_info(f"submitted batch {batch_num}/{total_batches}")

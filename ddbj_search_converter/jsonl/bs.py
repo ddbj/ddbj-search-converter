@@ -7,10 +7,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (BS_BASE_DIR_NAME,
                                           DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
-                                          TMP_XML_DIR_NAME, TODAY_STR, Config,
-                                          apply_margin, get_config,
-                                          read_last_run, write_last_run)
-from ddbj_search_converter.config import SEARCH_BASE_URL
+                                          SEARCH_BASE_URL, TMP_XML_DIR_NAME,
+                                          TODAY_STR, Config, apply_margin,
+                                          get_config, read_last_run,
+                                          write_last_run)
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -378,6 +378,7 @@ def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool)
 def _process_xml_file_worker(
     config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
     bs_blacklist: Set[str],
+    umbrella_ids: Set[str],
     target_accessions: Optional[Set[str]] = None,
     since: Optional[str] = None,
 ) -> int:
@@ -425,7 +426,7 @@ def _process_xml_file_worker(
         log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXrefs を一括取得
-    dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
+    dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()), umbrella_ids=umbrella_ids)
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
             docs[accession].dbXrefs = xrefs
@@ -456,15 +457,20 @@ def _process_xml_file_worker(
 def process_xml_file(
     config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
     bs_blacklist: Optional[Set[str]] = None,
+    umbrella_ids: Optional[Set[str]] = None,
     target_accessions: Optional[Set[str]] = None,
     since: Optional[str] = None,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bs_blacklist is None:
         _, bs_blacklist = load_blacklist(config)
+    if umbrella_ids is None:
+        from ddbj_search_converter.dblink.db import \
+            get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+        umbrella_ids = get_umbrella_bioproject_ids(config)
     return _process_xml_file_worker(
         config, xml_path, output_path, is_ddbj, bs_blacklist,
-        target_accessions, since
+        umbrella_ids, target_accessions, since
     )
 
 
@@ -494,6 +500,11 @@ def generate_bs_jsonl(
 
     # blacklist を読み込む
     _, bs_blacklist = load_blacklist(config)
+
+    # umbrella-bioproject ID セットを取得
+    from ddbj_search_converter.dblink.db import \
+        get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+    umbrella_ids = get_umbrella_bioproject_ids(config)
 
     # 差分更新の基準日時を取得
     since: Optional[str] = None
@@ -550,7 +561,7 @@ def generate_bs_jsonl(
         futures = {
             executor.submit(
                 _process_xml_file_worker, config, xml_path, output_path, is_ddbj,
-                bs_blacklist, target_accessions, since_param
+                bs_blacklist, umbrella_ids, target_accessions, since_param
             ): (xml_path, is_ddbj)
             for xml_path, output_path, is_ddbj, target_accessions, since_param in tasks
         }

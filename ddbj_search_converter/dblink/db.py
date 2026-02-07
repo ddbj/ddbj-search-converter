@@ -284,6 +284,28 @@ def get_related_entities_bulk(
     return result
 
 
+def get_umbrella_bioproject_ids(config: Config) -> Set[str]:
+    """finalize 済み DB から umbrella-bioproject の accession ID セットを取得する。
+
+    normalize_edge の影響で src/dst どちらに入るか分からないので両方チェックする。
+    """
+    db_path = _final_db_path(config)
+    with duckdb.connect(str(db_path), read_only=True) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT dst_accession
+            FROM relation
+            WHERE dst_type = 'umbrella-bioproject'
+            UNION
+            SELECT DISTINCT src_accession
+            FROM relation
+            WHERE src_type = 'umbrella-bioproject'
+            """,
+        ).fetchall()
+
+    return {row[0] for row in rows}
+
+
 def export_relations(
     config: Config,
     output_path: Path,

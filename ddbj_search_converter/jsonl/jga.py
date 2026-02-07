@@ -8,10 +8,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
-                                          JSONL_DIR_NAME, TODAY_STR, Config,
-                                          get_config)
+                                          JSONL_DIR_NAME, SEARCH_BASE_URL,
+                                          TODAY_STR, Config, get_config)
 from ddbj_search_converter.dblink.db import AccessionType
-from ddbj_search_converter.config import SEARCH_BASE_URL
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -185,6 +184,7 @@ def generate_jga_jsonl(
     output_dir: Path,
     jga_base_path: Path,
     jga_blacklist: Set[str],
+    umbrella_ids: Optional[Set[str]] = None,
 ) -> None:
     """単一の JGA タイプの JSONL ファイルを生成する。"""
     xml_path = jga_base_path.joinpath(f"{index_name}.xml")
@@ -226,7 +226,7 @@ def generate_jga_jsonl(
     accessions = list(jga_instances.keys())
 
     # dbXrefs を取得して更新
-    dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
+    dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions, umbrella_ids=umbrella_ids)
     for accession, xrefs in dbxref_map.items():
         jga_instances[accession].dbXrefs = xrefs
 
@@ -273,8 +273,12 @@ def main() -> None:
 
         jga_blacklist = load_jga_blacklist(config)
 
+        from ddbj_search_converter.dblink.db import \
+            get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+        umbrella_ids = get_umbrella_bioproject_ids(config)
+
         for index_name in INDEX_NAMES:
-            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist)
+            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist, umbrella_ids)
 
 
 if __name__ == "__main__":

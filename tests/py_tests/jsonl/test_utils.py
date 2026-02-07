@@ -1,9 +1,14 @@
 """Tests for ddbj_search_converter.jsonl.utils module."""
+import duckdb
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, to_xref
+from ddbj_search_converter.config import Config
+from ddbj_search_converter.dblink.db import (finalize_relation_db,
+                                             init_dblink_db)
+from ddbj_search_converter.jsonl.utils import (URL_TEMPLATE, get_dbxref_map,
+                                               to_xref)
 from ddbj_search_converter.schema import XrefType
 
 from ..strategies import ALL_ACCESSION_TYPES
@@ -115,3 +120,91 @@ class TestEdgeCases:
         xref = to_xref("E-GEAD-0")
         assert xref.type_ == "gea"
         assert "E-GEAD-000" in xref.url
+
+
+class TestGetDbxrefMapUmbrella:
+    """Tests for get_dbxref_map with umbrella_ids parameter."""
+
+    def test_replaces_bioproject_with_umbrella(self, test_config: Config) -> None:
+        """umbrella_ids に含まれる bioproject ID は umbrella-bioproject に変換される。"""
+        init_dblink_db(test_config)
+        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(tmp_db_path)) as conn:
+            # biosample -> bioproject 関連 (bioproject type で格納)
+            conn.execute(
+                "INSERT INTO relation VALUES "
+                "('bioproject', 'PRJDB999', 'biosample', 'SAMD1')"
+            )
+        finalize_relation_db(test_config)
+
+        umbrella_ids = {"PRJDB999"}
+        result = get_dbxref_map(test_config, "biosample", ["SAMD1"], umbrella_ids=umbrella_ids)
+
+        assert "SAMD1" in result
+        xrefs = result["SAMD1"]
+        assert len(xrefs) == 1
+        assert xrefs[0].type_ == "umbrella-bioproject"
+        assert xrefs[0].identifier == "PRJDB999"
+
+    def test_does_not_replace_non_umbrella_bioproject(self, test_config: Config) -> None:
+        """umbrella_ids に含まれない bioproject ID はそのまま bioproject のまま。"""
+        init_dblink_db(test_config)
+        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(tmp_db_path)) as conn:
+            conn.execute(
+                "INSERT INTO relation VALUES "
+                "('bioproject', 'PRJDB100', 'biosample', 'SAMD1')"
+            )
+        finalize_relation_db(test_config)
+
+        umbrella_ids = {"PRJDB999"}  # PRJDB100 は含まれない
+        result = get_dbxref_map(test_config, "biosample", ["SAMD1"], umbrella_ids=umbrella_ids)
+
+        assert "SAMD1" in result
+        xrefs = result["SAMD1"]
+        assert len(xrefs) == 1
+        assert xrefs[0].type_ == "bioproject"
+
+    def test_none_umbrella_ids_keeps_original_type(self, test_config: Config) -> None:
+        """umbrella_ids=None の場合は従来通り動作する。"""
+        init_dblink_db(test_config)
+        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(tmp_db_path)) as conn:
+            conn.execute(
+                "INSERT INTO relation VALUES "
+                "('bioproject', 'PRJDB999', 'biosample', 'SAMD1')"
+            )
+        finalize_relation_db(test_config)
+
+        # umbrella_ids=None (デフォルト)
+        result = get_dbxref_map(test_config, "biosample", ["SAMD1"])
+
+        assert "SAMD1" in result
+        xrefs = result["SAMD1"]
+        assert len(xrefs) == 1
+        assert xrefs[0].type_ == "bioproject"
+
+    def test_mixed_umbrella_and_regular(self, test_config: Config) -> None:
+        """umbrella と通常 bioproject が混在する場合、正しく区別される。"""
+        init_dblink_db(test_config)
+        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(tmp_db_path)) as conn:
+            conn.execute(
+                "INSERT INTO relation VALUES "
+                "('bioproject', 'PRJDB100', 'biosample', 'SAMD1')"
+            )
+            conn.execute(
+                "INSERT INTO relation VALUES "
+                "('bioproject', 'PRJDB999', 'biosample', 'SAMD1')"
+            )
+        finalize_relation_db(test_config)
+
+        umbrella_ids = {"PRJDB999"}
+        result = get_dbxref_map(test_config, "biosample", ["SAMD1"], umbrella_ids=umbrella_ids)
+
+        assert "SAMD1" in result
+        xrefs = result["SAMD1"]
+        assert len(xrefs) == 2
+        types = {x.type_ for x in xrefs}
+        assert "bioproject" in types
+        assert "umbrella-bioproject" in types
