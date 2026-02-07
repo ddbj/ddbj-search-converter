@@ -88,7 +88,7 @@ class TestGetMappingForIndex:
         ]:
             mapping = get_mapping_for_index(sra_type)  # type: ignore
             props = mapping["mappings"]["properties"]
-            assert "downloadUrl" in props
+            assert "downloadUrl" not in props
 
     def test_jga_mappings(self) -> None:
         for jga_type in ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]:

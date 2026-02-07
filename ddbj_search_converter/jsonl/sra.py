@@ -346,7 +346,6 @@ def create_sra_entry(
         description=parsed.get("description"),
         dbXrefs=[],
         sameAs=[],
-        downloadUrl=[],
         status=status,
         accessibility=accessibility,
         dateCreated=date_created,

@@ -3,8 +3,7 @@
 from typing import Any, Dict, List, Literal
 
 from ddbj_search_converter.es.mappings.common import (INDEX_SETTINGS,
-                                                      get_common_mapping,
-                                                      merge_mappings)
+                                                      get_common_mapping)
 
 SraIndexType = Literal[
     "sra-submission",
@@ -25,33 +24,17 @@ SRA_INDEXES: List[SraIndexType] = [
 ]
 
 
-def get_sra_specific_mapping() -> Dict[str, Any]:
-    """Return SRA-specific mapping properties (shared by all 6 types)."""
-    return {
-        "downloadUrl": {
-            "type": "nested",
-            "properties": {
-                "type": {"type": "keyword"},
-                "url": {"type": "keyword", "index": False},
-            },
-        },
-    }
-
-
 def get_sra_mapping(index_type: SraIndexType) -> Dict[str, Any]:  # pylint: disable=unused-argument
     """Return the complete SRA mapping for the specified index type.
 
     Args:
         index_type: SRA index type (currently unused, kept for API consistency)
 
-    All SRA types use the same mapping: common + downloadUrl.
+    All SRA types use the same mapping (common only).
     """
     return {
         "settings": INDEX_SETTINGS,
         "mappings": {
-            "properties": merge_mappings(
-                get_common_mapping(),
-                get_sra_specific_mapping(),
-            )
+            "properties": get_common_mapping()
         },
     }

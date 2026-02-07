@@ -158,11 +158,6 @@ class BioSample(BaseModel):
 # === SRA ===
 
 
-class DownloadUrl(BaseModel):
-    type_: Optional[str] = Field(alias="type")
-    url: str
-
-
 class SRA(BaseModel):
     identifier: str
     properties: Any
@@ -176,7 +171,6 @@ class SRA(BaseModel):
     description: Optional[str]
     dbXrefs: List[Xref]
     sameAs: List[Xref]
-    downloadUrl: List[DownloadUrl]
     status: Status
     accessibility: Accessibility
     dateCreated: Optional[str]

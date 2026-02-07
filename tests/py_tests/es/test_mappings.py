@@ -155,14 +155,11 @@ class TestSraMapping:
             assert "dbXrefs" in props
             assert "status" in props
 
-    def test_all_sra_types_have_download_url(self) -> None:
+    def test_sra_no_download_url(self) -> None:
         for sra_type in SRA_INDEXES:
             mapping = get_sra_mapping(sra_type)
             props = mapping["mappings"]["properties"]
-            assert "downloadUrl" in props
-            assert props["downloadUrl"]["type"] == "nested"
-            assert "type" in props["downloadUrl"]["properties"]
-            assert "url" in props["downloadUrl"]["properties"]
+            assert "downloadUrl" not in props
 
     def test_sra_no_old_specific_fields(self) -> None:
         """Removed fields should not be present in any SRA mapping."""
