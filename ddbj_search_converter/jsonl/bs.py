@@ -10,6 +10,7 @@ from ddbj_search_converter.config import (BS_BASE_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           apply_margin, get_config,
                                           read_last_run, write_last_run)
+from ddbj_search_converter.config import SEARCH_BASE_URL
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -198,7 +199,7 @@ def parse_same_as(sample: Dict[str, Any], accession: str = "") -> List[Xref]:
                 xrefs.append(Xref(
                     identifier=content,
                     type="sra-sample",
-                    url=f"https://ddbj.nig.ac.jp/search/entries/sra-sample/{content}",
+                    url=f"{SEARCH_BASE_URL}/search/entries/sra-sample/{content}",
                 ))
     except Exception as e:
         log_warn(f"failed to parse same_as: {e}", accession=accession)
@@ -316,12 +317,12 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
         distribution=[Distribution(
             type="DataDownload",
             encodingFormat="JSON",
-            contentUrl=f"https://ddbj.nig.ac.jp/search/entries/biosample/{accession}.json",
+            contentUrl=f"{SEARCH_BASE_URL}/search/entries/biosample/{accession}.json",
         )],
         isPartOf="BioSample",
         type="biosample",
         name=parse_name(sample, accession),
-        url=f"https://ddbj.nig.ac.jp/search/entries/biosample/{accession}",
+        url=f"{SEARCH_BASE_URL}/search/entries/biosample/{accession}",
         organism=parse_organism(sample, is_ddbj, accession),
         title=parse_title(sample, accession),
         description=parse_description(sample, accession),

@@ -11,6 +11,7 @@ from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
                                           JSONL_DIR_NAME, TODAY_STR, Config,
                                           get_config)
 from ddbj_search_converter.dblink.db import AccessionType
+from ddbj_search_converter.config import SEARCH_BASE_URL
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -158,13 +159,13 @@ def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> J
             Distribution(
                 type="DataDownload",
                 encodingFormat="JSON",
-                contentUrl=f"https://ddbj.nig.ac.jp/search/entries/{index_name}/{accession}.json",
+                contentUrl=f"{SEARCH_BASE_URL}/search/entries/{index_name}/{accession}.json",
             )
         ],
         isPartOf="jga",
         type=index_name,
         name=_get_name_from_alias(accession, entry.get("alias")),
-        url=f"https://ddbj.nig.ac.jp/search/entries/{index_name}/{accession}",
+        url=f"{SEARCH_BASE_URL}/search/entries/{index_name}/{accession}",
         organism=Organism(identifier="9606", name="Homo sapiens"),
         title=extract_title(entry, index_name),
         description=extract_description(entry, index_name),

@@ -22,6 +22,7 @@ from typing import (Any, Callable, Dict, Iterator, List, Literal, Optional,
 from ddbj_search_converter.config import (JSONL_DIR_NAME, SRA_BASE_DIR_NAME,
                                           TODAY_STR, Config, get_config,
                                           read_last_run, write_last_run)
+from ddbj_search_converter.config import SEARCH_BASE_URL
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_info,
@@ -302,13 +303,13 @@ def _make_distribution(entry_type: str, identifier: str) -> List[Distribution]:
     return [Distribution(
         type="DataDownload",
         encodingFormat="JSON",
-        contentUrl=f"https://ddbj.nig.ac.jp/search/entries/{entry_type}/{identifier}.json",
+        contentUrl=f"{SEARCH_BASE_URL}/search/entries/{entry_type}/{identifier}.json",
     )]
 
 
 def _make_url(entry_type: str, identifier: str) -> str:
     """URL を作成する。"""
-    return f"https://ddbj.nig.ac.jp/search/entries/{entry_type}/{identifier}"
+    return f"{SEARCH_BASE_URL}/search/entries/{entry_type}/{identifier}"
 
 
 def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:

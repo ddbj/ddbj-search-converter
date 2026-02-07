@@ -18,7 +18,7 @@ DDBJ-Search Converter は、生命科学データベース間の関連情報（D
 |-------------|------|
 | BioProject | NCBI/DDBJ BioProject |
 | BioSample | NCBI/DDBJ BioSample |
-| SRA/DRA | INCSD SRA/DRA |
+| SRA/DRA | INSDC SRA/DRA |
 | JGA | Japan Genotype-Phenotype Archive |
 | GEA | Gene Expression Archive |
 | MetaboBank | MetaboBank |
@@ -41,12 +41,13 @@ DDBJ-Search Converter は、生命科学データベース間の関連情報（D
 ### 環境起動（Staging / Production）
 
 ```bash
-# 1. Podman network 作成（初回のみ）
-podman network create ddbj-search-network
-
-# 2. 環境変数と override を設定
+# 1. 環境変数と override を設定
 cp env.staging .env # または env.production
 cp compose.override.podman.yml compose.override.yml
+
+# 2. Podman network 作成（初回のみ、既に存在していてもエラーにならない）
+podman network create ddbj-search-network-staging || true
+# production の場合: podman network create ddbj-search-network-production || true
 
 # 3. 起動
 podman-compose up -d --build
@@ -107,7 +108,7 @@ es_bulk_insert --index jga-policy
 
 ## データアーキテクチャ
 
-```
+```plain
 +-----------------------------------------------------------------------------+
 | External Resources                                                          |
 |   BioProject XML, BioSample XML, SRA/DRA Accessions.tab,                    |
@@ -159,18 +160,23 @@ es_bulk_insert --index jga-policy
 ### .env の主要設定
 
 ```bash
+# === Environment ===
+DDBJ_SEARCH_ENV=production     # dev, staging, production
+
 # === Elasticsearch Settings ===
-ES_MEM_LIMIT=128g              # コンテナメモリ上限
-ES_JAVA_OPTS=-Xms64g -Xmx64g   # JVM ヒープサイズ
+DDBJ_SEARCH_ES_MEM_LIMIT=128g              # コンテナメモリ上限
+DDBJ_SEARCH_ES_JAVA_OPTS=-Xms64g -Xmx64g   # JVM ヒープサイズ
 
 # === Volume Paths (for compose.yml) ===
-RESULT_PATH=./ddbj_search_converter_results   # 結果出力先
-CONST_PATH=/home/w3ddbjld/const               # blacklist, preserved 等
+DDBJ_SEARCH_CONVERTER_RESULT_PATH=./ddbj_search_converter_results   # 結果出力先
+DDBJ_SEARCH_CONVERTER_CONST_PATH=/home/w3ddbjld/const               # blacklist, preserved 等
 DBLINK_PATH=/usr/local/shared_data/dblink     # DBLink TSV 出力先
 BIOPROJECT_PATH=/usr/local/resources/bioproject
 BIOSAMPLE_PATH=/usr/local/resources/biosample
 # ... 他のマウントパス
 ```
+
+`DDBJ_SEARCH_ENV` により、コンテナ名（`ddbj-search-converter-{env}`, `ddbj-search-es-{env}`）と Docker network 名（`ddbj-search-network-{env}`）が自動決定される。
 
 **DATE 固定**: 過去日のデータで再現・検証する場合は `DDBJ_SEARCH_CONVERTER_DATE=YYYYMMDD` を設定する。
 
@@ -181,11 +187,11 @@ Development Container を前提とする。
 ### 環境起動（Dev）
 
 ```bash
-# 1. Docker network 作成（初回のみ）
-docker network create ddbj-search-network
-
-# 2. 環境変数を設定
+# 1. 環境変数を設定
 cp env.dev .env
+
+# 2. Docker network 作成（初回のみ、既に存在していてもエラーにならない）
+docker network create ddbj-search-network-dev || true
 
 # 3. 起動
 docker compose up -d --build

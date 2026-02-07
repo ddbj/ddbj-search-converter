@@ -6,7 +6,7 @@ DDBJ-Search Converter のパイプライン実行と差分更新。
 
 パイプラインは 3 フェーズで構成される。
 
-```
+```plain
 Phase 1: 前処理 + DBLink 構築
     外部リソース -> 前処理コマンド -> DBLink DB -> TSV
 
@@ -188,7 +188,7 @@ generate_jga_jsonl
 
 ### ステップ一覧
 
-```
+```plain
 === PHASE 0: Pre-check ===
   check_resources      Check external resources availability
 
@@ -220,7 +220,7 @@ generate_jga_jsonl
 
 ### 実行フロー
 
-```
+```plain
 PHASE 0: Pre-check
 check_external_resources
     ↓
@@ -348,6 +348,7 @@ es_bulk_insert --index jga-study \
 | `DDBJ_SEARCH_CONVERTER_CONST_DIR` | const ディレクトリ（blacklist, DB 等） |
 | `DDBJ_SEARCH_CONVERTER_DATE` | 処理日付 (YYYYMMDD) |
 | `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL |
+| `DDBJ_SEARCH_HOST` | DDBJ Search ホスト名 |
 | `DDBJ_SEARCH_CONVERTER_POSTGRES_URL` | PostgreSQL URL |
 
 ### 外部リソース確認・前処理

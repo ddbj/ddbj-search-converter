@@ -2,27 +2,27 @@
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import (AccessionType,
                                              get_related_entities_bulk)
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Xref, XrefType
 
 URL_TEMPLATE: Dict[XrefType, str] = {
-    "biosample": "https://ddbj.nig.ac.jp/search/entries/biosample/{id}",
-    "bioproject": "https://ddbj.nig.ac.jp/search/entries/bioproject/{id}",
-    "umbrella-bioproject": "https://ddbj.nig.ac.jp/search/entries/bioproject/{id}",
-    "sra-submission": "https://ddbj.nig.ac.jp/search/entries/sra-submission/{id}",
-    "sra-study": "https://ddbj.nig.ac.jp/search/entries/sra-study/{id}",
-    "sra-experiment": "https://ddbj.nig.ac.jp/search/entries/sra-experiment/{id}",
-    "sra-run": "https://ddbj.nig.ac.jp/search/entries/sra-run/{id}",
-    "sra-sample": "https://ddbj.nig.ac.jp/search/entries/sra-sample/{id}",
-    "sra-analysis": "https://ddbj.nig.ac.jp/search/entries/sra-analysis/{id}",
-    "jga-study": "https://ddbj.nig.ac.jp/search/entries/jga-study/{id}",
-    "jga-dataset": "https://ddbj.nig.ac.jp/search/entries/jga-dataset/{id}",
-    "jga-dac": "https://ddbj.nig.ac.jp/search/entries/jga-dac/{id}",
-    "jga-policy": "https://ddbj.nig.ac.jp/search/entries/jga-policy/{id}",
-    "gea": "https://ddbj.nig.ac.jp/public/ddbj_database/gea/experiment/{prefix}/{id}/",
+    "biosample": f"{SEARCH_BASE_URL}/search/entries/biosample/{{id}}",
+    "bioproject": f"{SEARCH_BASE_URL}/search/entries/bioproject/{{id}}",
+    "umbrella-bioproject": f"{SEARCH_BASE_URL}/search/entries/bioproject/{{id}}",
+    "sra-submission": f"{SEARCH_BASE_URL}/search/entries/sra-submission/{{id}}",
+    "sra-study": f"{SEARCH_BASE_URL}/search/entries/sra-study/{{id}}",
+    "sra-experiment": f"{SEARCH_BASE_URL}/search/entries/sra-experiment/{{id}}",
+    "sra-run": f"{SEARCH_BASE_URL}/search/entries/sra-run/{{id}}",
+    "sra-sample": f"{SEARCH_BASE_URL}/search/entries/sra-sample/{{id}}",
+    "sra-analysis": f"{SEARCH_BASE_URL}/search/entries/sra-analysis/{{id}}",
+    "jga-study": f"{SEARCH_BASE_URL}/search/entries/jga-study/{{id}}",
+    "jga-dataset": f"{SEARCH_BASE_URL}/search/entries/jga-dataset/{{id}}",
+    "jga-dac": f"{SEARCH_BASE_URL}/search/entries/jga-dac/{{id}}",
+    "jga-policy": f"{SEARCH_BASE_URL}/search/entries/jga-policy/{{id}}",
+    "gea": f"{SEARCH_BASE_URL}/public/ddbj_database/gea/experiment/{{prefix}}/{{id}}/",
     "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
     "insdc-master": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",

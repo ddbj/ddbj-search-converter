@@ -4,7 +4,7 @@ DDBJ-Search Converter のデータフローと構造。
 
 ## データフロー
 
-```
+```plain
 +-----------------------------------------------------------------------------+
 | External Resources                                                          |
 |   BioProject XML, BioSample XML, SRA/DRA Accessions.tab, SRA/DRA XML,       |
@@ -148,7 +148,7 @@ Blacklist ファイルは、公開すべきでないデータを除外するた�
 
 **運用フロー:**
 
-```
+```plain
 1. 問題のある accession を特定
 2. 該当する blacklist.txt に追記
 3. パイプラインを実行 (JSONL に含まれなくなる)

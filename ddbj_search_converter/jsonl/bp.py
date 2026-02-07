@@ -10,6 +10,7 @@ from ddbj_search_converter.config import (BP_BASE_DIR_NAME,
                                           TMP_XML_DIR_NAME, TODAY_STR, Config,
                                           apply_margin, get_config,
                                           read_last_run, write_last_run)
+from ddbj_search_converter.config import SEARCH_BASE_URL
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -465,13 +466,13 @@ def xml_entry_to_bp_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioProject
         distribution=[Distribution(
             type="DataDownload",
             encodingFormat="JSON",
-            contentUrl=f"https://ddbj.nig.ac.jp/search/entries/bioproject/{accession}.json",
+            contentUrl=f"{SEARCH_BASE_URL}/search/entries/bioproject/{accession}.json",
         )],
         isPartOf="BioProject",
         type="bioproject",
         objectType=parse_object_type(project),
         name=None,
-        url=f"https://ddbj.nig.ac.jp/search/entries/bioproject/{accession}",
+        url=f"{SEARCH_BASE_URL}/search/entries/bioproject/{accession}",
         organism=parse_organism(project, is_ddbj, accession),
         title=parse_title(project, accession),
         description=parse_description(project, accession),

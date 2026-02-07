@@ -8,7 +8,7 @@ Elasticsearch の設定は **4 箇所** に分散している。
 
 | ファイル | 役割 |
 |---------|------|
-| `env.{dev,staging,production}` | 環境変数の定義。ES メモリ、コンテナ名、接続先 URL |
+| `env.{dev,staging,production}` | 環境変数の定義。ES メモリ、接続先 URL |
 | `compose.yml` | Docker Compose 設定。環境変数を参照して ES コンテナを起動 |
 | `elasticsearch/config/elasticsearch.yml` | ES 本体の詳細設定 (bulk insert 最適化など) |
 | `ddbj_search_converter/es/settings.py` | Python 側の ES 操作設定 (batch size, timeout など) |
@@ -18,39 +18,57 @@ Elasticsearch の設定は **4 箇所** に分散している。
 環境ごとの設定値を定義する。`cp env.dev .env` などで使用する環境を選択。
 
 ```bash
-# === Container Settings ===
-APP_CONTAINER_NAME=ddbj-search-converter-dev
-ES_CONTAINER_NAME=ddbj-search-es-dev
+# === Environment ===
+DDBJ_SEARCH_ENV=dev    # dev, staging, production
 
 # === Elasticsearch Settings ===
-ES_MEM_LIMIT=1g           # コンテナ全体のメモリ制限
-ES_JAVA_OPTS=-Xms512m -Xmx512m  # JVM ヒープ
+DDBJ_SEARCH_ES_MEM_LIMIT=1g           # コンテナ全体のメモリ制限
+DDBJ_SEARCH_ES_JAVA_OPTS=-Xms512m -Xmx512m  # JVM ヒープ
 
 # === Application Settings (config.py) ===
 DDBJ_SEARCH_CONVERTER_ES_URL=http://elasticsearch:9200
 ```
 
+`DDBJ_SEARCH_ENV` により、コンテナ名とネットワーク名が自動決定される:
+
+| リソース | 命名規則 |
+|---------|---------|
+| app コンテナ | `ddbj-search-converter-{env}` |
+| ES コンテナ | `ddbj-search-es-{env}` |
+| Docker network | `ddbj-search-network-{env}` |
+
 **環境別の設定値:**
 
-| 環境 | ES_MEM_LIMIT | ES_JAVA_OPTS |
-|------|--------------|--------------|
+| 環境 | DDBJ_SEARCH_ES_MEM_LIMIT | DDBJ_SEARCH_ES_JAVA_OPTS |
+|------|--------------------------|--------------------------|
 | dev | 1g | `-Xms512m -Xmx512m` |
-| staging | 128g | `-Xms64g -Xmx64g` |
+| staging | 128g | `-Xms31g -Xmx31g` |
 | production | 128g | `-Xms64g -Xmx64g` |
 
 ### 2. Docker Compose (compose.yml)
 
 環境変数を参照して ES コンテナを構成する。
 
+**前提**: Docker network を事前に作成しておく（`external: true` のため）。
+
+```bash
+# Docker の場合（初回のみ、既に存在していてもエラーにならない）
+docker network create ddbj-search-network-dev || true
+
+# Podman の場合
+podman network create ddbj-search-network-staging || true
+```
+
 ```yaml
 elasticsearch:
   image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
+  container_name: ddbj-search-es-${DDBJ_SEARCH_ENV}
   environment:
-    TZ: "Asia/Tokyo"
+    TZ: ${TZ:-Asia/Tokyo}
     discovery.type: "single-node"
     xpack.security.enabled: "false"
     bootstrap.memory_lock: "true"
-    ES_JAVA_OPTS: ${ES_JAVA_OPTS}
+    ES_JAVA_OPTS: ${DDBJ_SEARCH_ES_JAVA_OPTS}
     path.repo: "/usr/share/elasticsearch/backup"
   volumes:
     - es-data:/usr/share/elasticsearch/data

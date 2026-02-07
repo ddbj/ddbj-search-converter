@@ -3,12 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ${APP_CONTAINER_NAME}
+    container_name: ddbj-search-converter-${DDBJ_SEARCH_ENV}
     volumes:
       - .:/app:rw
       - app-venv:/app/.venv
-      - ${RESULT_PATH}:/app/ddbj_search_converter_results:rw
-      - ${CONST_PATH}:/home/w3ddbjld/const:rw
+      - ${DDBJ_SEARCH_CONVERTER_RESULT_PATH}:/app/ddbj_search_converter_results:rw
+      - ${DDBJ_SEARCH_CONVERTER_CONST_PATH}:/home/w3ddbjld/const:rw
       # SRA / DRA Accessions
       - ${SRA_ACCESSIONS_PATH}:/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions:ro
       - ${DRA_ACCESSIONS_PATH}:/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public:ro
@@ -24,11 +24,12 @@ services:
       - ${GEA_PATH}:/usr/local/resources/gea/experiment:ro
       - ${METABOBANK_PATH}:/usr/local/shared_data/metabobank/study:ro
     environment:
-      TZ: "Asia/Tokyo"
+      TZ: ${TZ:-Asia/Tokyo}
       DDBJ_SEARCH_CONVERTER_RESULT_DIR: ${DDBJ_SEARCH_CONVERTER_RESULT_DIR}
       DDBJ_SEARCH_CONVERTER_CONST_DIR: ${DDBJ_SEARCH_CONVERTER_CONST_DIR}
       DDBJ_SEARCH_CONVERTER_POSTGRES_URL: ${DDBJ_SEARCH_CONVERTER_POSTGRES_URL:-}
       DDBJ_SEARCH_CONVERTER_ES_URL: ${DDBJ_SEARCH_CONVERTER_ES_URL}
+      DDBJ_SEARCH_HOST: ${DDBJ_SEARCH_HOST}
     working_dir: /app
     command: ["sleep", "infinity"]
     depends_on:
@@ -40,13 +41,13 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
-    container_name: ${ES_CONTAINER_NAME}
+    container_name: ddbj-search-es-${DDBJ_SEARCH_ENV}
     environment:
-      TZ: "Asia/Tokyo"
+      TZ: ${TZ:-Asia/Tokyo}
       discovery.type: "single-node"
       xpack.security.enabled: "false"
       bootstrap.memory_lock: "true"
-      ES_JAVA_OPTS: ${ES_JAVA_OPTS}
+      ES_JAVA_OPTS: ${DDBJ_SEARCH_ES_JAVA_OPTS}
       path.repo: "/usr/share/elasticsearch/backup"
     volumes:
       - es-data:/usr/share/elasticsearch/data
@@ -56,7 +57,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: ${ES_MEM_LIMIT}
+    mem_limit: ${DDBJ_SEARCH_ES_MEM_LIMIT}
     healthcheck:
       test:
         [
@@ -72,7 +73,7 @@ services:
 
 networks:
   ddbj-search-network:
-    name: ddbj-search-network
+    name: ddbj-search-network-${DDBJ_SEARCH_ENV}
     external: true
 
 volumes:

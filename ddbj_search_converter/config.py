@@ -11,6 +11,7 @@ RESULT_DIR = Path.cwd().joinpath("ddbj_search_converter_results")  # Path to dum
 CONST_DIR = Path("/home/w3ddbjld/const")  # Path to store constant/shared resources
 DATE_FORMAT = "%Y%m%d"
 LOCAL_TZ = ZoneInfo(os.environ.get("TZ", "Asia/Tokyo"))
+SEARCH_BASE_URL = f"https://{os.environ.get('DDBJ_SEARCH_HOST', 'ddbj.nig.ac.jp')}"
 _date_override = os.environ.get("DDBJ_SEARCH_CONVERTER_DATE")
 if _date_override:
     TODAY = datetime.strptime(_date_override, DATE_FORMAT).date()
