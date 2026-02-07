@@ -1,0 +1,78 @@
+@prefix bioproject: <http://ddbj.nig.ac.jp/ontologies/bioproject/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://ddbj.nig.ac.jp/ontologies/bioproject/>
+    a owl:Ontology ;
+    rdfs:label "DDBJ BioProject Ontology" ;
+    rdfs:comment "Vocabulary for DDBJ BioProject metadata" .
+
+bioproject:status
+    a owl:DatatypeProperty ;
+    rdfs:label "status" ;
+    rdfs:comment "INSDC record status: live, unpublished, suppressed, or withdrawn" .
+
+bioproject:properties
+    a owl:ObjectProperty ;
+    rdfs:label "properties" ;
+    rdfs:comment "Original XML structure preserved as a JSON object" .
+
+bioproject:organism
+    a owl:ObjectProperty ;
+    rdfs:label "organism" ;
+    rdfs:comment "Target organism with taxonomy identifier and scientific name" .
+
+bioproject:dbXrefs
+    a owl:ObjectProperty ;
+    rdfs:label "dbXrefs" ;
+    rdfs:comment "Cross-references to related entries in other INSDC databases" .
+
+bioproject:objectType
+    a owl:DatatypeProperty ;
+    rdfs:label "objectType" ;
+    rdfs:comment "BioProject classification: BioProject or UmbrellaBioProject" .
+
+bioproject:organization
+    a owl:ObjectProperty ;
+    rdfs:label "organization" ;
+    rdfs:comment "Submitting organization from BioProject XML Submission" .
+
+bioproject:organizationType
+    a owl:DatatypeProperty ;
+    rdfs:label "organizationType" ;
+    rdfs:comment "Type of organization, e.g. center, institute" .
+
+bioproject:role
+    a owl:DatatypeProperty ;
+    rdfs:label "role" ;
+    rdfs:comment "Role of the organization, e.g. owner" .
+
+bioproject:publication
+    a owl:ObjectProperty ;
+    rdfs:label "publication" ;
+    rdfs:comment "Publication associated with the BioProject" .
+
+bioproject:Reference
+    a owl:DatatypeProperty ;
+    rdfs:label "Reference" ;
+    rdfs:comment "Publication reference identifier (e.g. PubMed ID string)" .
+
+bioproject:DbType
+    a owl:DatatypeProperty ;
+    rdfs:label "DbType" ;
+    rdfs:comment "Publication database type, e.g. ePubmed" .
+
+bioproject:grant
+    a owl:ObjectProperty ;
+    rdfs:label "grant" ;
+    rdfs:comment "Funding grant associated with the BioProject" .
+
+bioproject:agency
+    a owl:ObjectProperty ;
+    rdfs:label "agency" ;
+    rdfs:comment "Funding agency for a grant" .
+
+bioproject:externalLink
+    a owl:ObjectProperty ;
+    rdfs:label "externalLink" ;
+    rdfs:comment "External link associated with the BioProject" .

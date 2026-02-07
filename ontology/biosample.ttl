@@ -1,0 +1,63 @@
+@prefix biosample: <http://ddbj.nig.ac.jp/ontologies/biosample/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://ddbj.nig.ac.jp/ontologies/biosample/>
+    a owl:Ontology ;
+    rdfs:label "DDBJ BioSample Ontology" ;
+    rdfs:comment "Vocabulary for DDBJ BioSample metadata" .
+
+biosample:status
+    a owl:DatatypeProperty ;
+    rdfs:label "status" ;
+    rdfs:comment "INSDC record status: live, unpublished, suppressed, or withdrawn" .
+
+biosample:properties
+    a owl:ObjectProperty ;
+    rdfs:label "properties" ;
+    rdfs:comment "Original XML structure preserved as a JSON object" .
+
+biosample:organism
+    a owl:ObjectProperty ;
+    rdfs:label "organism" ;
+    rdfs:comment "Target organism with taxonomy identifier and scientific name" .
+
+biosample:dbXrefs
+    a owl:ObjectProperty ;
+    rdfs:label "dbXrefs" ;
+    rdfs:comment "Cross-references to related entries in other INSDC databases" .
+
+biosample:attributes
+    a owl:ObjectProperty ;
+    rdfs:label "attributes" ;
+    rdfs:comment "Key-value metadata attributes of the BioSample" .
+
+biosample:attribute_name
+    a owl:DatatypeProperty ;
+    rdfs:label "attribute_name" ;
+    rdfs:comment "Original attribute name as submitted" .
+
+biosample:display_name
+    a owl:DatatypeProperty ;
+    rdfs:label "display_name" ;
+    rdfs:comment "Human-readable display name" .
+
+biosample:harmonized_name
+    a owl:DatatypeProperty ;
+    rdfs:label "harmonized_name" ;
+    rdfs:comment "Standardized attribute name harmonized across submissions" .
+
+biosample:content
+    a owl:DatatypeProperty ;
+    rdfs:label "content" ;
+    rdfs:comment "Attribute value content" .
+
+biosample:model
+    a owl:ObjectProperty ;
+    rdfs:label "model" ;
+    rdfs:comment "BioSample data model classification, e.g. MIGS.ba.host-associated" .
+
+biosample:package
+    a owl:ObjectProperty ;
+    rdfs:label "package" ;
+    rdfs:comment "BioSample submission package with name and display name" .

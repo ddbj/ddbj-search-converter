@@ -254,6 +254,7 @@ uv run isort ./ddbj_search_converter
 - [docs/cli-pipeline.md](docs/cli-pipeline.md) - パイプライン詳細、差分更新、コマンドリファレンス
 - [docs/elasticsearch.md](docs/elasticsearch.md) - ES 操作、スナップショット管理
 - [docs/logging.md](docs/logging.md) - ログとデバッグ
+- [ontology/README.md](ontology/README.md) - JSON-LD Context / Vocabulary 定義
 
 ## License
 

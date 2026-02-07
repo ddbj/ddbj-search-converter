@@ -1,0 +1,22 @@
+{
+  "@context": {
+    "@vocab": "http://ddbj.nig.ac.jp/ontologies/sra/",
+    "schema": "https://schema.org/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "identifier": "schema:identifier",
+    "name": "schema:name",
+    "url": "schema:url",
+    "description": "schema:description",
+    "title": "dcterms:title",
+    "type": "schema:additionalType",
+    "isPartOf": "schema:isPartOf",
+    "sameAs": "schema:sameAs",
+    "distribution": "schema:distribution",
+    "contentUrl": "schema:contentUrl",
+    "encodingFormat": "schema:encodingFormat",
+    "accessibility": "dcterms:accessRights",
+    "dateCreated": "schema:dateCreated",
+    "dateModified": "schema:dateModified",
+    "datePublished": "schema:datePublished"
+  }
+}
