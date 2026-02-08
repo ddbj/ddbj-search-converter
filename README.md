@@ -31,6 +31,12 @@ DDBJ-Search Converter は、生命科学データベース間の関連情報（D
 - JSONL: 12 種類（ES 投入用）
 - ES Index: 12 種類
 
+**関連プロジェクト:**
+
+- [ddbj-search](https://github.com/ddbj/ddbj-search) - nginx reverse proxy
+- [ddbj-search-api](https://github.com/ddbj/ddbj-search-api) - RESTful API サーバー
+- [ddbj-search-front](https://github.com/ddbj/ddbj-search-front) - フロントエンド
+
 ## クイックスタート
 
 ### 前提条件

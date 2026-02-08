@@ -53,6 +53,8 @@ services:
       - es-data:/usr/share/elasticsearch/data
       - es-backup:/usr/share/elasticsearch/backup
       - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    # ports:
+    #   - 127.0.0.1:9200:9200
     ulimits:
       memlock:
         soft: -1
