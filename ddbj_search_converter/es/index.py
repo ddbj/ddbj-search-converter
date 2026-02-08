@@ -178,7 +178,7 @@ def setup_aliases(config: Config) -> List[str]:
 
 
 def list_indexes(config: Config) -> List[Dict[str, Any]]:
-    """List all DDBJ-Search indexes with their doc counts.
+    """List all DDBJ Search indexes with their doc counts.
 
     Returns:
         List of dicts containing index name and doc_count

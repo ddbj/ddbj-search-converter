@@ -220,7 +220,7 @@ class TestClosingTagBehavior:
 
     iterate_xml_element は行ベースパーサのため、終了タグ `</Tag>` が
     行頭に現れることを前提にしている。これは性能のための設計判断であり、
-    DDBJ-Search の XML データではこの仮定が成り立つ。
+    DDBJ Search の XML データではこの仮定が成り立つ。
     """
 
     def test_closing_tag_at_line_start(self, tmp_path: Path) -> None:

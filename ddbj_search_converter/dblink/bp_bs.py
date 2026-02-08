@@ -51,7 +51,8 @@ from ddbj_search_converter.config import (BP_BS_PRESERVED_REL_PATH,
                                           DRA_DB_FILE_NAME, SRA_DB_FILE_NAME,
                                           Config, get_config)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
+from ddbj_search_converter.dblink.utils import (convert_id_if_needed,
+                                                filter_by_blacklist,
                                                 load_blacklist)
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import (log_debug, log_error,
@@ -352,36 +353,6 @@ def load_id_mapping_tsv(tsv_path: Path) -> IdMapping:
     return mapping
 
 
-def _convert_id_if_needed(
-    raw_id: str,
-    id_type: str,
-    id_to_accession: IdMapping,
-    file_path: str,
-    source: str,
-) -> Optional[str]:
-    """Convert numeric ID to accession if needed.
-
-    Returns:
-        Converted accession, or None if conversion failed.
-    """
-    if is_valid_accession(raw_id, id_type):  # type: ignore
-        return raw_id
-
-    # Try to convert numeric ID to accession
-    if raw_id in id_to_accession:
-        return id_to_accession[raw_id]
-
-    # Cannot convert - skip
-    log_debug(
-        f"skipping invalid {id_type}: {raw_id}",
-        accession=raw_id,
-        file=file_path,
-        debug_category=DebugCategory.INVALID_ACCESSION_ID,
-        source=source,
-    )
-    return None
-
-
 def process_sra_dra_accessions(
     config: Config,
     bs_to_bp: IdPairs,
@@ -396,11 +367,11 @@ def process_sra_dra_accessions(
         if not bs or not bp:
             continue
 
-        converted_bs = _convert_id_if_needed(bs, "biosample", bs_id_to_accession, str(sra_db_path), "sra")
+        converted_bs = convert_id_if_needed(bs, "biosample", bs_id_to_accession, str(sra_db_path), "sra")
         if not converted_bs:
             continue
 
-        converted_bp = _convert_id_if_needed(bp, "bioproject", bp_id_to_accession, str(sra_db_path), "sra")
+        converted_bp = convert_id_if_needed(bp, "bioproject", bp_id_to_accession, str(sra_db_path), "sra")
         if not converted_bp:
             continue
 
@@ -413,11 +384,11 @@ def process_sra_dra_accessions(
         if not bs or not bp:
             continue
 
-        converted_bs = _convert_id_if_needed(bs, "biosample", bs_id_to_accession, str(dra_db_path), "dra")
+        converted_bs = convert_id_if_needed(bs, "biosample", bs_id_to_accession, str(dra_db_path), "dra")
         if not converted_bs:
             continue
 
-        converted_bp = _convert_id_if_needed(bp, "bioproject", bp_id_to_accession, str(dra_db_path), "dra")
+        converted_bp = convert_id_if_needed(bp, "bioproject", bp_id_to_accession, str(dra_db_path), "dra")
         if not converted_bp:
             continue
 

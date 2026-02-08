@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 
 import duckdb
 
+from ddbj_search_converter.cli.debug.run_order import sort_run_names
 from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME, TODAY,
                                           get_config)
 
@@ -95,10 +96,10 @@ def _select_interactively(label: str, items: List[str], hint_flag: str) -> str:
 def _resolve_run_name(con: duckdb.DuckDBPyConnection, run_date: date) -> str:
     """Resolve run_name for the given date, interactively if needed."""
     rows = con.execute(
-        "SELECT DISTINCT run_name FROM log_records WHERE run_date = ? ORDER BY run_name",
+        "SELECT DISTINCT run_name FROM log_records WHERE run_date = ?",
         [run_date],
     ).fetchall()
-    names: List[str] = [str(r[0]) for r in rows]
+    names: List[str] = sort_run_names([str(r[0]) for r in rows])
 
     date_str = run_date.strftime(DATE_FORMAT)
     if len(names) == 0:

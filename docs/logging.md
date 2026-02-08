@@ -1,6 +1,6 @@
 # ログとデバッグ
 
-DDBJ-Search Converter のログ確認とデバッグ方法。
+DDBJ Search Converter のログ確認とデバッグ方法。
 
 ## ログ出力先
 

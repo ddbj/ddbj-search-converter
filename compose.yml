@@ -4,6 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ddbj-search-converter-${DDBJ_SEARCH_ENV}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
     volumes:
       - .:/app:rw
       - app-venv:/app/.venv
@@ -29,12 +32,9 @@ services:
       DDBJ_SEARCH_CONVERTER_CONST_DIR: ${DDBJ_SEARCH_CONVERTER_CONST_DIR}
       DDBJ_SEARCH_CONVERTER_POSTGRES_URL: ${DDBJ_SEARCH_CONVERTER_POSTGRES_URL:-}
       DDBJ_SEARCH_CONVERTER_ES_URL: ${DDBJ_SEARCH_CONVERTER_ES_URL}
-      DDBJ_SEARCH_HOST: ${DDBJ_SEARCH_HOST}
+      DDBJ_SEARCH_BASE_URL: ${DDBJ_SEARCH_BASE_URL}
     working_dir: /app
     command: ["sleep", "infinity"]
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     networks:
       - ddbj-search-network
     init: true
@@ -42,6 +42,10 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
     container_name: ddbj-search-es-${DDBJ_SEARCH_ENV}
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-backup:/usr/share/elasticsearch/backup
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     environment:
       TZ: ${TZ:-Asia/Tokyo}
       discovery.type: "single-node"
@@ -49,10 +53,6 @@ services:
       bootstrap.memory_lock: "true"
       ES_JAVA_OPTS: ${DDBJ_SEARCH_ES_JAVA_OPTS}
       path.repo: "/usr/share/elasticsearch/backup"
-    volumes:
-      - es-data:/usr/share/elasticsearch/data
-      - es-backup:/usr/share/elasticsearch/backup
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     # ports:
     #   - 127.0.0.1:9200:9200
     ulimits:

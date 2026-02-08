@@ -1,6 +1,6 @@
 # Elasticsearch
 
-DDBJ-Search Converter の Elasticsearch 操作。
+DDBJ Search Converter の Elasticsearch 操作。
 
 ## 設定ファイル構成
 

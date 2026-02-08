@@ -1,12 +1,14 @@
 """DBLink 処理用のユーティリティ関数。"""
-from typing import Literal, Set, Tuple
+from typing import Dict, Literal, Optional, Set, Tuple
 
 from ddbj_search_converter.config import (BP_BLACKLIST_REL_PATH,
                                           BS_BLACKLIST_REL_PATH,
                                           JGA_BLACKLIST_REL_PATH,
                                           SRA_BLACKLIST_REL_PATH, Config)
 from ddbj_search_converter.dblink.db import IdPairs
-from ddbj_search_converter.logging.logger import log_info
+from ddbj_search_converter.id_patterns import is_valid_accession
+from ddbj_search_converter.logging.logger import log_debug, log_info
+from ddbj_search_converter.logging.schema import DebugCategory
 
 
 def load_blacklist(config: Config) -> Tuple[Set[str], Set[str]]:
@@ -160,3 +162,37 @@ def load_jga_blacklist(config: Config) -> Set[str]:
                  file=str(jga_blacklist_path))
 
     return jga_blacklist
+
+
+# Type alias (re-exported for convenience)
+IdMapping = Dict[str, str]  # numeric_id -> accession
+
+
+def convert_id_if_needed(
+    raw_id: str,
+    id_type: str,
+    id_to_accession: IdMapping,
+    file_path: str,
+    source: str,
+) -> Optional[str]:
+    """Convert numeric ID to accession if needed.
+
+    Returns:
+        Converted accession, or None if conversion failed.
+    """
+    if is_valid_accession(raw_id, id_type):  # type: ignore
+        return raw_id
+
+    # Try to convert numeric ID to accession
+    if raw_id in id_to_accession:
+        return id_to_accession[raw_id]
+
+    # Cannot convert - skip
+    log_debug(
+        f"skipping invalid {id_type}: {raw_id}",
+        accession=raw_id,
+        file=file_path,
+        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+        source=source,
+    )
+    return None

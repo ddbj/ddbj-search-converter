@@ -1,6 +1,6 @@
 # データアーキテクチャ
 
-DDBJ-Search Converter のデータフローと構造。
+DDBJ Search Converter のデータフローと構造。
 
 ## データフロー
 
@@ -27,7 +27,7 @@ DDBJ-Search Converter のデータフローと構造。
 |   create_dblink_gea_relations        -- parse IDF/SDRF                      |
 |   create_dblink_metabobank_relations -- parse IDF/SDRF, preserved.tsv       |
 |   create_dblink_jga_relations        -- parse XML/CSV                       |
-|   create_dblink_sra_internal         -- from Accessions DB                  |
+|   create_dblink_sra_internal         -- SRA internal + BP/BS <-> SRA        |
 |   finalize_dblink_db -------------> {const}/dblink/dblink.duckdb            |
 |   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (16 files)          |
 +-----------------------------------------------------------------------------+

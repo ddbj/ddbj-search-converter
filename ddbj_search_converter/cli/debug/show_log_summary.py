@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 
 import duckdb
 
+from ddbj_search_converter.cli.debug.run_order import run_name_sort_key
 from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME, TODAY,
                                           get_config)
 
@@ -39,22 +40,28 @@ def _get_db_path(result_dir: Path) -> Path:
 def _fetch_run_ids(
     con: duckdb.DuckDBPyConnection, run_date: date
 ) -> Dict[str, List[str]]:
-    """Fetch run_name -> list of run_ids (latest first) for the given date."""
+    """Fetch run_name -> list of run_ids (latest first) for the given date.
+
+    Keys are ordered by pipeline execution order (see run_order.py).
+    """
     rows = con.execute(
         """
         SELECT run_name, run_id, MAX(timestamp) AS last_ts
         FROM log_records
         WHERE run_date = ?
         GROUP BY run_name, run_id
-        ORDER BY run_name, last_ts DESC
+        ORDER BY last_ts DESC
         """,
         [run_date],
     ).fetchall()
 
-    result: Dict[str, List[str]] = {}
+    # Collect run_ids per run_name (already latest-first within each name)
+    unordered: Dict[str, List[str]] = {}
     for run_name, run_id, _ in rows:
-        result.setdefault(str(run_name), []).append(str(run_id))
-    return result
+        unordered.setdefault(str(run_name), []).append(str(run_id))
+
+    # Re-order keys by pipeline order
+    return {k: unordered[k] for k in sorted(unordered, key=run_name_sort_key)}
 
 
 def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> Dict[str, Any]:

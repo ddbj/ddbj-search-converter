@@ -20,7 +20,15 @@ from ddbj_search_converter.sra_accessions_tab import (
     get_submission_accessions,
     init_accession_db,
     iter_all_submissions,
+    iter_bp_analysis_relations,
     iter_bp_bs_relations,
+    iter_bp_experiment_relations,
+    iter_bp_run_relations,
+    iter_bp_study_relations,
+    iter_bs_analysis_relations,
+    iter_bs_experiment_relations,
+    iter_bs_run_relations,
+    iter_bs_sample_relations,
     iter_experiment_run_relations,
     iter_experiment_sample_relations,
     iter_run_sample_relations,
@@ -457,6 +465,16 @@ _RELATION_SPECS: list[tuple] = [
     (iter_submission_study_relations, "STUDY", "Submission", "Accession"),
     (iter_study_analysis_relations, "ANALYSIS", "Study", "Accession"),
     (iter_submission_analysis_relations, "ANALYSIS", "Submission", "Accession"),
+    # BioProject <-> SRA
+    (iter_bp_study_relations, "STUDY", "BioProject", "Accession"),
+    (iter_bp_experiment_relations, "EXPERIMENT", "BioProject", "Accession"),
+    (iter_bp_run_relations, "RUN", "BioProject", "Accession"),
+    (iter_bp_analysis_relations, "ANALYSIS", "BioProject", "Accession"),
+    # BioSample <-> SRA
+    (iter_bs_sample_relations, "SAMPLE", "BioSample", "Accession"),
+    (iter_bs_experiment_relations, "EXPERIMENT", "BioSample", "Accession"),
+    (iter_bs_run_relations, "RUN", "BioSample", "Accession"),
+    (iter_bs_analysis_relations, "ANALYSIS", "BioSample", "Accession"),
 ]
 
 

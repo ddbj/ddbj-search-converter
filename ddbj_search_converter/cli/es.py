@@ -238,7 +238,7 @@ def main_list_indexes() -> None:
         try:
             indexes = list_indexes(config)
 
-            print("\nDDBJ-Search Elasticsearch Indexes:")
+            print("\nDDBJ Search Elasticsearch Indexes:")
             print("-" * 50)
             print(f"{'Index':<20} {'Exists':<10} {'Doc Count':<15}")
             print("-" * 50)

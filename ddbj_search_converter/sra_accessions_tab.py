@@ -505,6 +505,289 @@ def iter_submission_analysis_relations(
     yield from rows
 
 
+# === BioProject/BioSample <-> SRA relation iterators ===
+
+
+def iter_bp_study_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioProject <-> Study 関連をイテレートする。
+
+    STUDY 行から BioProject と Accession (Study) の関連を抽出する。
+
+    Returns:
+        (bioproject, study_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioProject,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'STUDY'
+                AND BioProject IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bp_experiment_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioProject <-> Experiment 関連をイテレートする。
+
+    EXPERIMENT 行から BioProject と Accession (Experiment) の関連を抽出する。
+
+    Returns:
+        (bioproject, experiment_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioProject,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'EXPERIMENT'
+                AND BioProject IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bp_run_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioProject <-> Run 関連をイテレートする。
+
+    RUN 行から BioProject と Accession (Run) の関連を抽出する。
+
+    Returns:
+        (bioproject, run_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioProject,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'RUN'
+                AND BioProject IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bp_analysis_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioProject <-> Analysis 関連をイテレートする。
+
+    ANALYSIS 行から BioProject と Accession (Analysis) の関連を抽出する。
+
+    Returns:
+        (bioproject, analysis_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioProject,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'ANALYSIS'
+                AND BioProject IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bs_sample_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioSample <-> Sample 関連をイテレートする。
+
+    SAMPLE 行から BioSample と Accession (Sample) の関連を抽出する。
+
+    Returns:
+        (biosample, sample_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioSample,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'SAMPLE'
+                AND BioSample IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bs_experiment_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioSample <-> Experiment 関連をイテレートする。
+
+    EXPERIMENT 行から BioSample と Accession (Experiment) の関連を抽出する。
+
+    Returns:
+        (biosample, experiment_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioSample,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'EXPERIMENT'
+                AND BioSample IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bs_run_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioSample <-> Run 関連をイテレートする。
+
+    RUN 行から BioSample と Accession (Run) の関連を抽出する。
+
+    Returns:
+        (biosample, run_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioSample,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'RUN'
+                AND BioSample IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
+def iter_bs_analysis_relations(
+    config: Config,
+    *,
+    source: SourceKind,
+) -> Iterator[Tuple[str, str]]:
+    """BioSample <-> Analysis 関連をイテレートする。
+
+    ANALYSIS 行から BioSample と Accession (Analysis) の関連を抽出する。
+
+    Returns:
+        (biosample, analysis_accession) のイテレータ
+    """
+    db_path = (
+        _final_sra_db_path(config)
+        if source == "sra"
+        else _final_dra_db_path(config)
+    )
+
+    with duckdb.connect(db_path) as conn:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT
+                BioSample,
+                Accession
+            FROM accessions
+            WHERE
+                Type = 'ANALYSIS'
+                AND BioSample IS NOT NULL
+                AND Accession IS NOT NULL
+            """
+        ).fetchall()
+
+    yield from rows
+
+
 # === Query functions for JSONL generation ===
 
 

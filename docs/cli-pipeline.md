@@ -1,6 +1,6 @@
 # CLI パイプライン
 
-DDBJ-Search Converter のパイプライン実行と差分更新。
+DDBJ Search Converter のパイプライン実行と差分更新。
 
 ## パイプライン概要
 
@@ -348,7 +348,7 @@ es_bulk_insert --index jga-study \
 | `DDBJ_SEARCH_CONVERTER_CONST_DIR` | const ディレクトリ（blacklist, DB 等） |
 | `DDBJ_SEARCH_CONVERTER_DATE` | 処理日付 (YYYYMMDD) |
 | `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL |
-| `DDBJ_SEARCH_HOST` | DDBJ Search ホスト名 |
+| `DDBJ_SEARCH_BASE_URL` | DDBJ Search ベース URL |
 | `DDBJ_SEARCH_CONVERTER_POSTGRES_URL` | PostgreSQL URL |
 
 ### 外部リソース確認・前処理
@@ -378,7 +378,7 @@ es_bulk_insert --index jga-study \
 | `create_dblink_gea_relations` | - | GEA 関連を抽出 |
 | `create_dblink_metabobank_relations` | - | MetaboBank 関連を抽出 |
 | `create_dblink_jga_relations` | - | JGA 関連を抽出 |
-| `create_dblink_sra_internal_relations` | - | SRA 内部関連を抽出 |
+| `create_dblink_sra_internal_relations` | - | SRA 内部関連 + BioProject/BioSample ↔ SRA 関連を抽出 |
 | `finalize_dblink_db` | - | DBLink DB を確定 |
 | `dump_dblink_files` | - | DBLink DB から TSV ファイルを出力 |
 
