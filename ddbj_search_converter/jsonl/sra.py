@@ -303,13 +303,13 @@ def _make_distribution(entry_type: str, identifier: str) -> List[Distribution]:
     return [Distribution(
         type="DataDownload",
         encodingFormat="JSON",
-        contentUrl=f"{SEARCH_BASE_URL}/search/entries/{entry_type}/{identifier}.json",
+        contentUrl=f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}.json",
     )]
 
 
 def _make_url(entry_type: str, identifier: str) -> str:
     """URL を作成する。"""
-    return f"{SEARCH_BASE_URL}/search/entries/{entry_type}/{identifier}"
+    return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}"
 
 
 def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:

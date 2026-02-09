@@ -158,13 +158,13 @@ def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> J
             Distribution(
                 type="DataDownload",
                 encodingFormat="JSON",
-                contentUrl=f"{SEARCH_BASE_URL}/search/entries/{index_name}/{accession}.json",
+                contentUrl=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{accession}.json",
             )
         ],
         isPartOf="jga",
         type=index_name,
         name=_get_name_from_alias(accession, entry.get("alias")),
-        url=f"{SEARCH_BASE_URL}/search/entries/{index_name}/{accession}",
+        url=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{accession}",
         organism=Organism(identifier="9606", name="Homo sapiens"),
         title=extract_title(entry, index_name),
         description=extract_description(entry, index_name),
