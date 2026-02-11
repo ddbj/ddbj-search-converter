@@ -4,7 +4,7 @@ SRA モジュールは tar ファイル読み込みに強く依存するため�
 ここではパース関数と正規化関数のユニットテストを中心に行う。
 """
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Set, cast
+from typing import Any, Dict, Generator, List, Optional, Set, Tuple, cast
 
 import pytest
 
@@ -16,6 +16,7 @@ from ddbj_search_converter.jsonl.sra import (
     create_sra_entry,
     parse_study,
     parse_submission,
+    process_submission_xml,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
 from ddbj_search_converter.schema import SRA, Accessibility, Status
@@ -156,9 +157,89 @@ class TestEdgeCases:
         assert _normalize_accessibility("CONTROLLED_ACCESS") == "controlled-access"
 
 
+class TestProcessSubmissionXml:
+    """Tests for process_submission_xml function."""
+
+    _SUBMISSION_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION accession="DRA000001" submission_date="2020-01-01">
+  <TITLE>Test DRA Submission</TITLE>
+</SUBMISSION>
+"""
+
+    _STUDY_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET>
+  <STUDY accession="DRP000001">
+    <DESCRIPTOR>
+      <STUDY_TITLE>Test Study</STUDY_TITLE>
+    </DESCRIPTOR>
+  </STUDY>
+</STUDY_SET>
+"""
+
+    def test_dra_uses_received_from_accessions_tab(self) -> None:
+        """DRA でも Accessions.tab の Received が dateCreated に使われる。"""
+        accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]] = {
+            "DRA000001": ("live", "public", "2024-06-15", "2024-07-01", "2024-08-01", "submission"),
+            "DRP000001": ("live", "public", "2024-06-15", "2024-07-01", "2024-08-01", "study"),
+        }
+        xml_cache: Dict[SraXmlType, Optional[bytes]] = {
+            "submission": self._SUBMISSION_XML,
+            "study": self._STUDY_XML,
+            "experiment": None,
+            "run": None,
+            "sample": None,
+            "analysis": None,
+        }
+
+        results = process_submission_xml(
+            submission="DRA000001",
+            blacklist=set(),
+            accession_info=accession_info,
+            xml_cache=xml_cache,
+        )
+
+        # submission の dateCreated が Accessions.tab の Received であること
+        assert len(results["submission"]) == 1
+        assert results["submission"][0].dateCreated == "2024-06-15"
+
+        # study も同様に Accessions.tab の Received であること
+        assert len(results["study"]) == 1
+        assert results["study"][0].dateCreated == "2024-06-15"
+
+    def test_received_none_results_in_date_created_none(self) -> None:
+        """Received が None の場合、dateCreated が None になる。"""
+        accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]] = {
+            "DRA000001": ("live", "public", None, None, None, "submission"),
+            "DRP000001": ("live", "public", None, None, None, "study"),
+        }
+        xml_cache: Dict[SraXmlType, Optional[bytes]] = {
+            "submission": self._SUBMISSION_XML,
+            "study": self._STUDY_XML,
+            "experiment": None,
+            "run": None,
+            "sample": None,
+            "analysis": None,
+        }
+
+        results = process_submission_xml(
+            submission="DRA000001",
+            blacklist=set(),
+            accession_info=accession_info,
+            xml_cache=xml_cache,
+        )
+
+        assert len(results["submission"]) == 1
+        assert results["submission"][0].dateCreated is None
+
+        assert len(results["study"]) == 1
+        assert results["study"][0].dateCreated is None
+
+
 def _make_sra_entry(identifier: str, sra_type: SraXmlType = "study") -> SRA:
     """テスト用の SRA エントリを作成するヘルパー。"""
-    parsed = {
+    parsed: Dict[str, Any] = {
         "accession": identifier,
         "properties": {},
         "alias": None,

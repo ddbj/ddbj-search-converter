@@ -371,7 +371,6 @@ def process_submission_xml(
     submission: str,
     blacklist: Set[str],
     accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]],
-    is_dra: bool,
     xml_cache: Dict[SraXmlType, Optional[bytes]],
 ) -> Dict[SraXmlType, List[Any]]:
     """
@@ -381,16 +380,12 @@ def process_submission_xml(
         submission: submission accession
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
-        is_dra: DRA かどうか（DRA の場合は XML の submission_date を dateCreated として使用）
         xml_cache: 事前に読み込んだ XML データのキャッシュ
 
     Returns:
         {xml_type: [model_instance, ...]}
     """
     results: Dict[SraXmlType, List[Any]] = {t: [] for t in XML_TYPES}
-
-    # DRA の場合、submission_date を保持（他の XML タイプでも使用）
-    submission_date: Optional[str] = None
 
     for xml_type in XML_TYPES:
         xml_bytes = xml_cache.get(xml_type)
@@ -402,9 +397,6 @@ def process_submission_xml(
         if xml_type == "submission":
             parsed = parse_fn(xml_bytes, submission)
             parsed_list = [parsed] if parsed and parsed.get("accession") else []
-            # DRA の場合、submission_date を取得
-            if is_dra and parsed_list:
-                submission_date = parsed_list[0].get("submission_date")
         else:
             parsed_list = parse_fn(xml_bytes, submission)
 
@@ -416,11 +408,7 @@ def process_submission_xml(
             status = _normalize_status(info[0])
             accessibility = _normalize_accessibility(info[1])
 
-            # DRA の場合は submission_date を dateCreated として使用
-            if is_dra:
-                date_created = submission_date
-            else:
-                date_created = info[2]  # Accessions.tab の Received
+            date_created = info[2]  # Accessions.tab の Received
             date_modified = info[3]
             date_published = info[4]
 
@@ -545,7 +533,6 @@ def _process_batch_worker(
             submission=sub,
             blacklist=blacklist,
             accession_info=accession_info,
-            is_dra=is_dra,
             xml_cache=xml_data[sub],
         )
         for xml_type in XML_TYPES:
