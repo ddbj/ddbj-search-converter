@@ -158,7 +158,8 @@ es_bulk_insert --index jga-policy
 | ファイル | 説明 |
 |---------|------|
 | `compose.yml` | 統合版 Docker Compose |
-| `compose.override.podman.yml` | Podman 用の差分設定 |
+| `compose.override.docker.yml` | Docker (dev) 用の差分設定（user 指定） |
+| `compose.override.podman.yml` | Podman 用の差分設定（userns_mode） |
 | `env.dev` | 開発環境（fixtures 使用、出力ローカル、ES 512MB） |
 | `env.staging` | ステージング環境（入力本番パス、出力ローカル、ES 64GB） |
 | `env.production` | 本番環境（入出力とも本番パス、ES 64GB） |
@@ -169,9 +170,9 @@ es_bulk_insert --index jga-policy
 # === Environment ===
 DDBJ_SEARCH_ENV=production     # dev, staging, production
 
-# === Container User (Docker dev: host UID/GID, Podman: default 0:0) ===
-CONTAINER_UID=1000   # Docker dev のみ設定。Podman 環境では未設定 (デフォルト 0:0)
-CONTAINER_GID=1000
+# === Container User (Docker dev のみ。compose.override.docker.yml が参照) ===
+CONTAINER_UID=1000   # Docker dev: ホスト UID に合わせる
+CONTAINER_GID=1000   # Docker dev: ホスト GID に合わせる
 
 # === Elasticsearch Settings ===
 DDBJ_SEARCH_ES_MEM_LIMIT=128g              # コンテナメモリ上限
@@ -197,8 +198,9 @@ Development Container を前提とする。
 ### 環境起動（Dev）
 
 ```bash
-# 1. 環境変数を設定
+# 1. 環境変数と override を設定
 cp env.dev .env
+cp compose.override.docker.yml compose.override.yml
 
 # UID が 1000 以外の場合は .env を修正
 # id -u  # 自分の UID を確認
