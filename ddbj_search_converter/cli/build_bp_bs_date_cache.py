@@ -1,7 +1,6 @@
 from ddbj_search_converter.config import get_config
 from ddbj_search_converter.date_cache.build import build_date_cache
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 
 
 def main() -> None:

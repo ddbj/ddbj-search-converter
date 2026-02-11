@@ -12,15 +12,12 @@ gzip 圧縮された BioSample XML を展開し、batch 単位で分割する。
 - {result_dir}/biosample/tmp_xml/{YYYYMMDD}/ncbi_{n}.xml
 - {result_dir}/biosample/tmp_xml/{YYYYMMDD}/ddbj_{n}.xml
 """
-from pathlib import Path
-from typing import List
 
-from ddbj_search_converter.config import (DDBJ_BIOSAMPLE_XML,
-                                          NCBI_BIOSAMPLE_XML, Config,
-                                          get_config)
+from pathlib import Path
+
+from ddbj_search_converter.config import DDBJ_BIOSAMPLE_XML, NCBI_BIOSAMPLE_XML, Config, get_config
 from ddbj_search_converter.logging.logger import log_info, run_logger
-from ddbj_search_converter.xml_utils import (extract_gzip, get_tmp_xml_dir,
-                                             split_xml)
+from ddbj_search_converter.xml_utils import extract_gzip, get_tmp_xml_dir, split_xml
 
 DEFAULT_BATCH_SIZE = 10000
 
@@ -34,7 +31,7 @@ def process_biosample_xml(
     gz_path: Path,
     prefix: str,
     batch_size: int,
-) -> List[Path]:
+) -> list[Path]:
     """Process BioSample XML gzip file.
 
     Raises:
@@ -74,13 +71,19 @@ def main() -> None:
     with run_logger(config=config):
         # Process NCBI BioSample XML
         ncbi_files = process_biosample_xml(
-            config, NCBI_BIOSAMPLE_XML, "ncbi", DEFAULT_BATCH_SIZE,
+            config,
+            NCBI_BIOSAMPLE_XML,
+            "ncbi",
+            DEFAULT_BATCH_SIZE,
         )
         log_info(f"created {len(ncbi_files)} NCBI BioSample XML files")
 
         # Process DDBJ BioSample XML
         ddbj_files = process_biosample_xml(
-            config, DDBJ_BIOSAMPLE_XML, "ddbj", DEFAULT_BATCH_SIZE,
+            config,
+            DDBJ_BIOSAMPLE_XML,
+            "ddbj",
+            DEFAULT_BATCH_SIZE,
         )
         log_info(f"created {len(ddbj_files)} DDBJ BioSample XML files")
 

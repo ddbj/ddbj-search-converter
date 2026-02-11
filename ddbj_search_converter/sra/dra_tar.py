@@ -11,18 +11,23 @@ The tar structure is flattened to match NCBI format:
 
 Uses tar command with file list for fast bulk operations.
 """
-import os
+
 import subprocess
+from collections.abc import Iterator
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Iterator, List
 
 import duckdb
 
-from ddbj_search_converter.config import (DEFAULT_MARGIN_DAYS, DRA_BASE_PATH,
-                                          DRA_DB_FILE_NAME,
-                                          DRA_LAST_UPDATED_FILE_NAME,
-                                          DRA_TAR_FILE_NAME, TODAY, Config)
+from ddbj_search_converter.config import (
+    DEFAULT_MARGIN_DAYS,
+    DRA_BASE_PATH,
+    DRA_DB_FILE_NAME,
+    DRA_LAST_UPDATED_FILE_NAME,
+    DRA_TAR_FILE_NAME,
+    TODAY,
+    Config,
+)
 from ddbj_search_converter.logging.logger import log_info
 from ddbj_search_converter.sra.paths import get_sra_tar_dir
 
@@ -47,11 +52,7 @@ def get_dra_accessions_db_path(config: Config) -> Path:
 def get_dra_xml_dir_path(submission: str) -> Path:
     """Get the directory path for a DRA submission's XML files."""
     # fastq/{submission[:6]}/{submission}/
-    return DRA_BASE_PATH.joinpath(
-        "fastq",
-        submission[:6],
-        submission
-    )
+    return DRA_BASE_PATH.joinpath("fastq", submission[:6], submission)
 
 
 def iter_all_dra_submissions(config: Config) -> Iterator[str]:
@@ -81,9 +82,7 @@ def iter_all_dra_submissions(config: Config) -> Iterator[str]:
 
 
 def iter_updated_dra_submissions(
-    config: Config,
-    since_date: date,
-    margin_days: int = DEFAULT_MARGIN_DAYS
+    config: Config, since_date: date, margin_days: int = DEFAULT_MARGIN_DAYS
 ) -> Iterator[str]:
     """Iterate over DRA submissions updated since a given date.
 
@@ -118,14 +117,14 @@ def iter_updated_dra_submissions(
         yield row[0]
 
 
-def collect_xml_files_for_submission(submission: str) -> List[str]:
+def collect_xml_files_for_submission(submission: str) -> list[str]:
     """Collect existing XML file paths for a submission.
 
     Uses os.listdir() once to minimize Lustre inode access.
     """
     xml_dir = get_dra_xml_dir_path(submission)
     try:
-        existing_files = set(os.listdir(xml_dir))
+        existing_files = {p.name for p in xml_dir.iterdir()}
     except FileNotFoundError:
         return []
 
@@ -159,14 +158,13 @@ def build_dra_tar(config: Config) -> None:
     submission_count = 0
 
     log_info("collecting dra xml files...")
-    with open(file_list_path, "w", encoding="utf-8") as f:
+    with file_list_path.open("w", encoding="utf-8") as f:
         for submission in iter_all_dra_submissions(config):
             files = collect_xml_files_for_submission(submission)
             if files:
                 submission_count += 1
                 total_files += len(files)
-                for src_path in files:
-                    f.write(f"{src_path}\n")
+                f.writelines(f"{src_path}\n" for src_path in files)
                 if submission_count % 10000 == 0:
                     log_info(f"collected {submission_count} submissions ({total_files} files)")
 
@@ -212,11 +210,7 @@ def sync_dra_tar(config: Config) -> None:
     # Get last update date
     if last_updated_path.exists():
         last_updated_str = last_updated_path.read_text().strip()
-        last_updated = date(
-            int(last_updated_str[:4]),
-            int(last_updated_str[4:6]),
-            int(last_updated_str[6:8])
-        )
+        last_updated = date(int(last_updated_str[:4]), int(last_updated_str[4:6]), int(last_updated_str[6:8]))
     else:
         # If no last_updated file, rebuild from scratch
         log_info("no dra_last_updated file found, building from scratch")
@@ -231,14 +225,13 @@ def sync_dra_tar(config: Config) -> None:
     total_files = 0
     submission_count = 0
 
-    with open(file_list_path, "w", encoding="utf-8") as f:
+    with file_list_path.open("w", encoding="utf-8") as f:
         for submission in iter_updated_dra_submissions(config, last_updated):
             files = collect_xml_files_for_submission(submission)
             if files:
                 submission_count += 1
                 total_files += len(files)
-                for src_path in files:
-                    f.write(f"{src_path}\n")
+                f.writelines(f"{src_path}\n" for src_path in files)
 
     if total_files == 0:
         log_info("no updated dra submissions found")

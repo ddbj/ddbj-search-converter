@@ -1,5 +1,6 @@
 """Tests for ddbj_search_converter.jsonl.bs module."""
-from typing import Any, Dict, List
+
+from typing import Any
 
 import pytest
 
@@ -19,9 +20,9 @@ from ddbj_search_converter.jsonl.bs import (
 )
 
 
-def _make_sample(overrides: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def _make_sample(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
     """Minimal valid sample dict for testing."""
-    base: Dict[str, Any] = {
+    base: dict[str, Any] = {
         "accession": "SAMN00000001",
         "Ids": {"Id": {"namespace": "BioSample", "content": "SAMD00000001"}},
         "Description": {},
@@ -52,12 +53,12 @@ class TestParseAccession:
         assert parse_accession(sample, is_ddbj=True) == "SAMD00000002"
 
     def test_no_ids_raises(self) -> None:
-        sample: Dict[str, Any] = {"Ids": None}
+        sample: dict[str, Any] = {"Ids": None}
         with pytest.raises(ValueError):
             parse_accession(sample, is_ddbj=True)
 
     def test_no_accession_raises(self) -> None:
-        sample: Dict[str, Any] = {}
+        sample: dict[str, Any] = {}
         with pytest.raises(ValueError):
             parse_accession(sample, is_ddbj=False)
 
@@ -78,7 +79,8 @@ class TestParseOrganism:
     def test_ncbi_organism(self) -> None:
         sample = _make_sample()
         sample["Description"]["Organism"] = {
-            "taxonomy_id": "9606", "taxonomy_name": "Homo sapiens",
+            "taxonomy_id": "9606",
+            "taxonomy_name": "Homo sapiens",
         }
         result = parse_organism(sample, is_ddbj=False)
         assert result is not None
@@ -88,7 +90,8 @@ class TestParseOrganism:
     def test_ddbj_organism(self) -> None:
         sample = _make_sample()
         sample["Description"]["Organism"] = {
-            "taxonomy_id": "9606", "OrganismName": "Homo sapiens",
+            "taxonomy_id": "9606",
+            "OrganismName": "Homo sapiens",
         }
         result = parse_organism(sample, is_ddbj=True)
         assert result is not None
@@ -273,6 +276,7 @@ class TestParsePackage:
 
     def test_ddbj_uses_model(self) -> None:
         from ddbj_search_converter.schema import Model
+
         model = [Model(name="Generic")]
         sample = _make_sample()
         pkg = parse_package(sample, model, is_ddbj=True)
@@ -366,5 +370,5 @@ class TestNormalizeProperties:
         assert sample["Models"]["Model"] == {"content": "Generic"}
 
     def test_no_crash_on_empty_sample(self) -> None:
-        sample: Dict[str, Any] = {}
+        sample: dict[str, Any] = {}
         normalize_properties(sample)

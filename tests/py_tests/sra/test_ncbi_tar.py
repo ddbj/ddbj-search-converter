@@ -1,11 +1,14 @@
 """sra/ncbi_tar.py のテスト。"""
+
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from ddbj_search_converter.sra.ncbi_tar import (get_ncbi_daily_tar_gz_url,
-                                                 get_ncbi_full_tar_gz_url,
-                                                 get_ncbi_last_merged_path,
-                                                 get_ncbi_tar_path)
+from ddbj_search_converter.sra.ncbi_tar import (
+    get_ncbi_daily_tar_gz_url,
+    get_ncbi_full_tar_gz_url,
+    get_ncbi_last_merged_path,
+    get_ncbi_tar_path,
+)
 
 
 class TestGetNcbiFullTarGzUrl:

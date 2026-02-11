@@ -1,5 +1,5 @@
 """Hypothesis custom strategies for PBT."""
-import re
+
 import string
 from datetime import datetime
 
@@ -72,14 +72,16 @@ def st_timestamp_str() -> st.SearchStrategy[str]:
     ).map(lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%SZ"))
 
 
-def st_xml_dict() -> st.SearchStrategy[dict]:
+def st_xml_dict() -> st.SearchStrategy[dict]:  # type: ignore[type-arg]
     """XML parse result-like nested dict generation."""
     leaf = st.one_of(
         st.text(min_size=0, max_size=50),
         st.none(),
         st.integers(min_value=0, max_value=99999).map(str),
     )
-    return st.fixed_dictionaries({
-        "content": leaf,
-        "attr": st.text(min_size=0, max_size=20),
-    })
+    return st.fixed_dictionaries(
+        {
+            "content": leaf,
+            "attr": st.text(min_size=0, max_size=20),
+        }
+    )

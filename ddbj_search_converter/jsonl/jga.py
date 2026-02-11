@@ -1,27 +1,33 @@
 """JGA JSONL 生成モジュール。"""
+
 import argparse
 import csv
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Set, Tuple
+from typing import Any, Literal
 
-from ddbj_search_converter.config import (JGA_BASE_DIR_NAME, JGA_BASE_PATH,
-                                          JSONL_DIR_NAME, SEARCH_BASE_URL,
-                                          TODAY_STR, Config, get_config)
+from ddbj_search_converter.config import (
+    JGA_BASE_DIR_NAME,
+    JGA_BASE_PATH,
+    JSONL_DIR_NAME,
+    SEARCH_BASE_URL,
+    TODAY_STR,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
-from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, run_logger
 from ddbj_search_converter.schema import JGA, Distribution, Organism
 from ddbj_search_converter.xml_utils import parse_xml
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
-INDEX_NAMES: List[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
+INDEX_NAMES: list[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 
-XML_KEYS: Dict[IndexName, Tuple[str, str]] = {
+XML_KEYS: dict[IndexName, tuple[str, str]] = {
     "jga-study": ("STUDY_SET", "STUDY"),
     "jga-dataset": ("DATASETS", "DATASET"),
     "jga-dac": ("DAC_SET", "DAC"),
@@ -29,7 +35,7 @@ XML_KEYS: Dict[IndexName, Tuple[str, str]] = {
 }
 
 # JGA type から AccessionType へのマッピング
-INDEX_TO_ACCESSION_TYPE: Dict[IndexName, AccessionType] = {
+INDEX_TO_ACCESSION_TYPE: dict[IndexName, AccessionType] = {
     "jga-study": "jga-study",
     "jga-dataset": "jga-dataset",
     "jga-dac": "jga-dac",
@@ -37,22 +43,22 @@ INDEX_TO_ACCESSION_TYPE: Dict[IndexName, AccessionType] = {
 }
 
 
-def load_jga_xml(xml_path: Path) -> Dict[str, Any]:
+def load_jga_xml(xml_path: Path) -> dict[str, Any]:
     """JGA XML ファイルを読み込んでパースする。"""
     with xml_path.open("rb") as f:
         xml_bytes = f.read()
-    xml_metadata: Dict[str, Any] = parse_xml(xml_bytes)
+    xml_metadata: dict[str, Any] = parse_xml(xml_bytes)
     return xml_metadata
 
 
-def format_date(value: Optional[str | datetime]) -> Optional[str]:
+def format_date(value: str | datetime | None) -> str | None:
     """datetime を ISO 8601 形式の文字列に変換する。"""
     if value is None:
         return None
     try:
         if isinstance(value, datetime):
             return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        elif isinstance(value, str):
+        if isinstance(value, str):
             dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
             return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     except Exception:
@@ -74,9 +80,7 @@ def _format_date_from_csv(value: str) -> str:
     if _TZ_FIX.search(fixed_value):
         fixed_value = _TZ_FIX.sub(r"\1:00", fixed_value)
     fixed_value = fixed_value.replace("Z", "+00:00")
-    fixed_value = _FRAC_FIX.sub(
-        lambda m: f"{m.group(1).ljust(7, '0')}{m.group(2)}", fixed_value
-    )
+    fixed_value = _FRAC_FIX.sub(lambda m: f"{m.group(1).ljust(7, '0')}{m.group(2)}", fixed_value)
     date = datetime.fromisoformat(fixed_value)
     result = format_date(date)
     if result is None:
@@ -84,9 +88,7 @@ def _format_date_from_csv(value: str) -> str:
     return result
 
 
-def load_date_map(
-    jga_base_path: Path, index_name: IndexName
-) -> Dict[str, Tuple[str, str, str]]:
+def load_date_map(jga_base_path: Path, index_name: IndexName) -> dict[str, tuple[str, str, str]]:
     """
     CSV から日付情報を読み込む。
 
@@ -96,11 +98,9 @@ def load_date_map(
     type_name = index_name.replace("jga-", "")
     csv_path = jga_base_path.joinpath(f"{type_name}.date.csv")
     if not csv_path.exists():
-        raise FileNotFoundError(
-            f"CSV file for {index_name} date map does not exist: {csv_path}"
-        )
+        raise FileNotFoundError(f"CSV file for {index_name} date map does not exist: {csv_path}")
 
-    date_map: Dict[str, Tuple[str, str, str]] = {}
+    date_map: dict[str, tuple[str, str, str]] = {}
     with csv_path.open("r", encoding="utf-8") as f:
         reader = csv.reader(f)
         next(reader)  # Skip header
@@ -118,7 +118,7 @@ def load_date_map(
     return date_map
 
 
-def extract_title(entry: Dict[str, Any], index_name: IndexName) -> Optional[str]:
+def extract_title(entry: dict[str, Any], index_name: IndexName) -> str | None:
     """JGA エントリからタイトルを抽出する。"""
     title: Any = None
     if index_name == "jga-study":
@@ -128,7 +128,7 @@ def extract_title(entry: Dict[str, Any], index_name: IndexName) -> Optional[str]
     return str(title) if title is not None else None
 
 
-def extract_description(entry: Dict[str, Any], index_name: IndexName) -> Optional[str]:
+def extract_description(entry: dict[str, Any], index_name: IndexName) -> str | None:
     """JGA エントリから説明を抽出する。"""
     description: Any = None
     if index_name == "jga-study":
@@ -138,7 +138,7 @@ def extract_description(entry: Dict[str, Any], index_name: IndexName) -> Optiona
     return str(description) if description is not None else None
 
 
-def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:
+def _get_name_from_alias(accession: str, alias: str | None) -> str | None:
     """alias が accession と異なる場合のみ name として返す。"""
     if alias is None:
         return None
@@ -147,7 +147,7 @@ def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:
     return alias
 
 
-def jga_entry_to_jga_instance(entry: Dict[str, Any], index_name: IndexName) -> JGA:
+def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> JGA:
     """JGA XML エントリを JGA インスタンスに変換する。"""
     accession: str = entry["accession"]
 
@@ -183,8 +183,8 @@ def generate_jga_jsonl(
     index_name: IndexName,
     output_dir: Path,
     jga_base_path: Path,
-    jga_blacklist: Set[str],
-    umbrella_ids: Optional[Set[str]] = None,
+    jga_blacklist: set[str],
+    umbrella_ids: set[str] | None = None,
 ) -> None:
     """単一の JGA タイプの JSONL ファイルを生成する。"""
     xml_path = jga_base_path.joinpath(f"{index_name}.xml")
@@ -208,7 +208,7 @@ def generate_jga_jsonl(
     log_info(f"processing {len(entries)} entries from xml file: {xml_path}")
 
     # エントリを JGA インスタンスに変換
-    jga_instances: Dict[str, JGA] = {}
+    jga_instances: dict[str, JGA] = {}
     skipped_count = 0
     for entry in entries:
         jga_instance = jga_entry_to_jga_instance(entry, index_name)
@@ -245,11 +245,9 @@ def generate_jga_jsonl(
     log_info(f"wrote {len(jga_instances)} entries to jsonl file: {output_path}")
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path]:
+def parse_args(args: list[str]) -> tuple[Config, Path]:
     """コマンドライン引数をパースする。"""
-    parser = argparse.ArgumentParser(
-        description="Generate JGA JSONL files from JGA XML files."
-    )
+    parser = argparse.ArgumentParser(description="Generate JGA JSONL files from JGA XML files.")
 
     parser.parse_args(args)
 
@@ -273,8 +271,8 @@ def main() -> None:
 
         jga_blacklist = load_jga_blacklist(config)
 
-        from ddbj_search_converter.dblink.db import \
-            get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+        from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
+
         umbrella_ids = get_umbrella_bioproject_ids(config)
 
         for index_name in INDEX_NAMES:

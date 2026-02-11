@@ -2,18 +2,20 @@
 PostgreSQL から BioProject/BioSample の日付情報を全件取得し、
 DuckDB キャッシュを構築するモジュール。
 """
-from typing import Iterator, Optional, Tuple
 
-import psycopg2  # type: ignore[import-untyped]
+from collections.abc import Iterator
+
+import psycopg2
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.date_cache.db import (finalize_date_cache_db,
-                                                 init_date_cache_db,
-                                                 insert_bp_dates,
-                                                 insert_bs_dates)
+from ddbj_search_converter.date_cache.db import (
+    finalize_date_cache_db,
+    init_date_cache_db,
+    insert_bp_dates,
+    insert_bs_dates,
+)
 from ddbj_search_converter.logging.logger import log_info
-from ddbj_search_converter.postgres.utils import (format_date,
-                                                  parse_postgres_url)
+from ddbj_search_converter.postgres.utils import format_date, parse_postgres_url
 
 CURSOR_ITERSIZE = 50000
 
@@ -42,7 +44,7 @@ BS_QUERY = """
 
 def _fetch_all_bp_dates(
     postgres_url: str,
-) -> Iterator[Tuple[str, Optional[str], Optional[str], Optional[str]]]:
+) -> Iterator[tuple[str, str | None, str | None, str | None]]:
     host, port, user, password = parse_postgres_url(postgres_url)
     conn = psycopg2.connect(
         host=host,
@@ -69,7 +71,7 @@ def _fetch_all_bp_dates(
 
 def _fetch_all_bs_dates(
     postgres_url: str,
-) -> Iterator[Tuple[str, Optional[str], Optional[str], Optional[str]]]:
+) -> Iterator[tuple[str, str | None, str | None, str | None]]:
     host, port, user, password = parse_postgres_url(postgres_url)
     conn = psycopg2.connect(
         host=host,

@@ -3,19 +3,17 @@ Sync NCBI SRA Metadata tar with daily updates.
 
 Downloads and appends daily tar.gz files since last sync.
 """
+
 import argparse
 import sys
-from typing import List, Tuple
 
 from ddbj_search_converter.config import Config, get_config
 from ddbj_search_converter.logging.logger import log_info, run_logger
 from ddbj_search_converter.sra.ncbi_tar import get_ncbi_tar_path, sync_ncbi_tar
 
 
-def parse_args(args: List[str]) -> Tuple[Config, bool]:
-    parser = argparse.ArgumentParser(
-        description="Sync NCBI SRA Metadata tar with daily updates"
-    )
+def parse_args(args: list[str]) -> tuple[Config, bool]:
+    parser = argparse.ArgumentParser(description="Sync NCBI SRA Metadata tar with daily updates")
     parser.add_argument(
         "--force-full",
         action="store_true",

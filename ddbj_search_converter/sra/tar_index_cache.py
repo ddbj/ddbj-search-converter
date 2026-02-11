@@ -3,10 +3,11 @@
 並列 tar 読み込みで、各 worker がインデックスを再構築するのを避けるため、
 インデックスを pickle でキャッシュする。
 """
+
 import pickle
 import tarfile
 from pathlib import Path
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 from ddbj_search_converter.logging.logger import log_info
 
@@ -16,7 +17,7 @@ def get_index_cache_path(tar_path: Path) -> Path:
     return tar_path.with_suffix(".tar.index.pkl")
 
 
-def save_index_cache(tar_path: Path, members: Dict[str, tarfile.TarInfo]) -> None:
+def save_index_cache(tar_path: Path, members: dict[str, tarfile.TarInfo]) -> None:
     """インデックスをキャッシュファイルに保存する。"""
     cache_path = get_index_cache_path(tar_path)
     log_info(f"saving tar index cache: {cache_path}")
@@ -38,7 +39,7 @@ def save_index_cache(tar_path: Path, members: Dict[str, tarfile.TarInfo]) -> Non
     log_info(f"tar index cache saved: {len(members)} entries")
 
 
-def load_index_cache(tar_path: Path) -> Optional[Dict[str, Dict[str, Any]]]:
+def load_index_cache(tar_path: Path) -> dict[str, dict[str, Any]] | None:
     """キャッシュからインデックスを読み込む。
 
     キャッシュが存在しない、または tar より古い場合は None を返す。
@@ -55,7 +56,7 @@ def load_index_cache(tar_path: Path) -> Optional[Dict[str, Dict[str, Any]]]:
 
     log_info(f"loading tar index cache: {cache_path}")
     with cache_path.open("rb") as f:
-        index_data = cast(Dict[str, Dict[str, Any]], pickle.load(f))
+        index_data = cast("dict[str, dict[str, Any]]", pickle.load(f))
     log_info(f"tar index cache loaded: {len(index_data)} entries")
 
     return index_data

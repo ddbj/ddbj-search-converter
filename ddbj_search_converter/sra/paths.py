@@ -1,4 +1,5 @@
 """SRA tar ファイル関連のパス構築ユーティリティ。"""
+
 from pathlib import Path
 
 from ddbj_search_converter.config import SRA_TAR_DIR_NAME, Config

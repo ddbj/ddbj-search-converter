@@ -1,13 +1,13 @@
 """Common Elasticsearch mapping definitions shared across all indexes."""
 
-from typing import Any, Dict
+from typing import Any
 
 from ddbj_search_converter.es.settings import INDEX_SETTINGS
 
 __all__ = ["INDEX_SETTINGS", "get_common_mapping", "merge_mappings"]
 
 
-def get_common_mapping() -> Dict[str, Any]:
+def get_common_mapping() -> dict[str, Any]:
     """Return the common mapping properties shared by all indexes."""
     return {
         "identifier": {"type": "keyword"},
@@ -52,9 +52,9 @@ def get_common_mapping() -> Dict[str, Any]:
     }
 
 
-def merge_mappings(*mappings: Dict[str, Any]) -> Dict[str, Any]:
+def merge_mappings(*mappings: dict[str, Any]) -> dict[str, Any]:
     """Merge multiple mapping property dictionaries."""
-    result: Dict[str, Any] = {}
+    result: dict[str, Any] = {}
     for mapping in mappings:
         result.update(mapping)
     return result

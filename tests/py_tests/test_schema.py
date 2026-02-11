@@ -1,5 +1,4 @@
 """Tests for ddbj_search_converter.schema module."""
-import pytest
 
 from ddbj_search_converter.schema import JGA, Distribution, Organism, Xref
 

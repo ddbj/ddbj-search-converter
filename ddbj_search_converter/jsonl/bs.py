@@ -1,25 +1,39 @@
 """BioSample JSONL 生成モジュール。"""
+
 import argparse
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-from ddbj_search_converter.config import (BS_BASE_DIR_NAME,
-                                          DEFAULT_MARGIN_DAYS, JSONL_DIR_NAME,
-                                          SEARCH_BASE_URL, TMP_XML_DIR_NAME,
-                                          TODAY_STR, Config, apply_margin,
-                                          get_config, read_last_run,
-                                          write_last_run)
+from ddbj_search_converter.config import (
+    BS_BASE_DIR_NAME,
+    DEFAULT_MARGIN_DAYS,
+    JSONL_DIR_NAME,
+    SEARCH_BASE_URL,
+    TMP_XML_DIR_NAME,
+    TODAY_STR,
+    Config,
+    apply_margin,
+    get_config,
+    read_last_run,
+    write_last_run,
+)
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
-from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, log_warn,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
-from ddbj_search_converter.schema import (Accessibility, Attribute, BioSample,
-                                          Distribution, Model, Organism,
-                                          Package, Status, Xref)
+from ddbj_search_converter.schema import (
+    Accessibility,
+    Attribute,
+    BioSample,
+    Distribution,
+    Model,
+    Organism,
+    Package,
+    Status,
+    Xref,
+)
 from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 DEFAULT_BATCH_SIZE = 2000
@@ -29,7 +43,7 @@ DEFAULT_PARALLEL_NUM = 64
 # === Parse functions ===
 
 
-def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
+def parse_accession(sample: dict[str, Any], is_ddbj: bool) -> str:
     """BioSample から accession を抽出する。"""
     if is_ddbj:
         ids = (sample.get("Ids") or {}).get("Id")
@@ -41,11 +55,10 @@ def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
                     content = id_obj.get("content")
                     if content is not None:
                         return str(content)
-        elif isinstance(ids, dict):
-            if ids.get("namespace") == "BioSample":
-                content = ids.get("content")
-                if content is not None:
-                    return str(content)
+        elif isinstance(ids, dict) and ids.get("namespace") == "BioSample":
+            content = ids.get("content")
+            if content is not None:
+                return str(content)
         raise ValueError("No BioSample namespace ID found")
     accession = sample.get("accession")
     if accession is None:
@@ -53,7 +66,7 @@ def parse_accession(sample: Dict[str, Any], is_ddbj: bool) -> str:
     return str(accession)
 
 
-def parse_organism(sample: Dict[str, Any], is_ddbj: bool, accession: str = "") -> Optional[Organism]:
+def parse_organism(sample: dict[str, Any], is_ddbj: bool, accession: str = "") -> Organism | None:
     """BioSample から Organism を抽出する。"""
     try:
         organism_obj = (sample.get("Description") or {}).get("Organism")
@@ -72,7 +85,7 @@ def parse_organism(sample: Dict[str, Any], is_ddbj: bool, accession: str = "") -
         return None
 
 
-def parse_title(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
+def parse_title(sample: dict[str, Any], accession: str = "") -> str | None:
     """BioSample から title を抽出する。"""
     try:
         title = (sample.get("Description") or {}).get("Title")
@@ -82,7 +95,7 @@ def parse_title(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
         return None
 
 
-def parse_name(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
+def parse_name(sample: dict[str, Any], accession: str = "") -> str | None:
     """BioSample から name (SampleName) を抽出する。"""
     try:
         name = (sample.get("Description") or {}).get("SampleName")
@@ -92,7 +105,7 @@ def parse_name(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
         return None
 
 
-def parse_description(sample: Dict[str, Any], accession: str = "") -> Optional[str]:
+def parse_description(sample: dict[str, Any], accession: str = "") -> str | None:
     """BioSample から description を抽出する。"""
     try:
         comment = (sample.get("Description") or {}).get("Comment")
@@ -112,9 +125,9 @@ def parse_description(sample: Dict[str, Any], accession: str = "") -> Optional[s
         return None
 
 
-def parse_attributes(sample: Dict[str, Any], accession: str = "") -> List[Attribute]:
+def parse_attributes(sample: dict[str, Any], accession: str = "") -> list[Attribute]:
     """BioSample から Attributes を抽出する。"""
-    attributes: List[Attribute] = []
+    attributes: list[Attribute] = []
     try:
         attrs = (sample.get("Attributes") or {}).get("Attribute")
         if attrs is None:
@@ -122,27 +135,31 @@ def parse_attributes(sample: Dict[str, Any], accession: str = "") -> List[Attrib
         attr_list = attrs if isinstance(attrs, list) else [attrs]
         for attr in attr_list:
             if isinstance(attr, dict):
-                attributes.append(Attribute(
-                    attribute_name=attr.get("attribute_name"),
-                    display_name=attr.get("display_name"),
-                    harmonized_name=attr.get("harmonized_name"),
-                    content=attr.get("content"),
-                ))
+                attributes.append(
+                    Attribute(
+                        attribute_name=attr.get("attribute_name"),
+                        display_name=attr.get("display_name"),
+                        harmonized_name=attr.get("harmonized_name"),
+                        content=attr.get("content"),
+                    )
+                )
             elif isinstance(attr, str):
-                attributes.append(Attribute(
-                    attribute_name=None,
-                    display_name=None,
-                    harmonized_name=None,
-                    content=attr,
-                ))
+                attributes.append(
+                    Attribute(
+                        attribute_name=None,
+                        display_name=None,
+                        harmonized_name=None,
+                        content=attr,
+                    )
+                )
     except Exception as e:
         log_warn(f"failed to parse attributes: {e}", accession=accession)
     return attributes
 
 
-def parse_model(sample: Dict[str, Any], accession: str = "") -> List[Model]:
+def parse_model(sample: dict[str, Any], accession: str = "") -> list[Model]:
     """BioSample から Model を抽出する。"""
-    models: List[Model] = []
+    models: list[Model] = []
     try:
         model_obj = (sample.get("Models") or {}).get("Model")
         if model_obj is None:
@@ -160,7 +177,7 @@ def parse_model(sample: Dict[str, Any], accession: str = "") -> List[Model]:
     return models
 
 
-def parse_package(sample: Dict[str, Any], model: List[Model], is_ddbj: bool, accession: str = "") -> Optional[Package]:
+def parse_package(sample: dict[str, Any], model: list[Model], is_ddbj: bool, accession: str = "") -> Package | None:
     """BioSample から Package を抽出する。"""
     try:
         if is_ddbj:
@@ -182,9 +199,9 @@ def parse_package(sample: Dict[str, Any], model: List[Model], is_ddbj: bool, acc
         return None
 
 
-def parse_same_as(sample: Dict[str, Any], accession: str = "") -> List[Xref]:
+def parse_same_as(sample: dict[str, Any], accession: str = "") -> list[Xref]:
     """BioSample から sameAs (SRA ID) を抽出する。"""
-    xrefs: List[Xref] = []
+    xrefs: list[Xref] = []
     try:
         ids = (sample.get("Ids") or {}).get("Id")
         if ids is None:
@@ -196,19 +213,19 @@ def parse_same_as(sample: Dict[str, Any], accession: str = "") -> List[Xref]:
             db = id_obj.get("db")
             content = id_obj.get("content")
             if db == "SRA" and content:
-                xrefs.append(Xref(
-                    identifier=content,
-                    type="sra-sample",
-                    url=f"{SEARCH_BASE_URL}/search/entry/sra-sample/{content}",
-                ))
+                xrefs.append(
+                    Xref(
+                        identifier=content,
+                        type="sra-sample",
+                        url=f"{SEARCH_BASE_URL}/search/entry/sra-sample/{content}",
+                    )
+                )
     except Exception as e:
         log_warn(f"failed to parse same_as: {e}", accession=accession)
     return xrefs
 
 
-def parse_date_from_xml(
-    sample: Dict[str, Any]
-) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def parse_date_from_xml(sample: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
     """XML から日付を抽出する (NCBI 用)。"""
     date_created = sample.get("submission_date")
     date_modified = sample.get("last_update")
@@ -216,7 +233,7 @@ def parse_date_from_xml(
     return date_created, date_modified, date_published
 
 
-def parse_status(sample: Dict[str, Any], accession: str = "") -> Status:
+def parse_status(sample: dict[str, Any], accession: str = "") -> Status:
     """
     BioSample から status を抽出する。
 
@@ -235,7 +252,7 @@ def parse_status(sample: Dict[str, Any], accession: str = "") -> Status:
     return "live"
 
 
-def parse_accessibility(sample: Dict[str, Any], accession: str = "") -> Accessibility:
+def parse_accessibility(sample: dict[str, Any], accession: str = "") -> Accessibility:
     """
     BioSample から accessibility (@access) を抽出する。
 
@@ -260,13 +277,13 @@ def parse_accessibility(sample: Dict[str, Any], accession: str = "") -> Accessib
 # === Properties normalization ===
 
 
-def normalize_properties(sample: Dict[str, Any]) -> None:
+def normalize_properties(sample: dict[str, Any]) -> None:
     """properties 内の値を正規化する。"""
     _normalize_owner_name(sample)
     _normalize_model(sample)
 
 
-def _normalize_owner_name(sample: Dict[str, Any]) -> None:
+def _normalize_owner_name(sample: dict[str, Any]) -> None:
     """Owner.Name を正規化する。"""
     try:
         owner = sample.get("Owner")
@@ -283,7 +300,7 @@ def _normalize_owner_name(sample: Dict[str, Any]) -> None:
         log_debug(f"failed to normalize owner name: {e}", debug_category=DebugCategory.NORMALIZE_OWNER_NAME)
 
 
-def _normalize_model(sample: Dict[str, Any]) -> None:
+def _normalize_model(sample: dict[str, Any]) -> None:
     """Models.Model を正規化する。"""
     try:
         model = (sample.get("Models") or {}).get("Model")
@@ -302,7 +319,7 @@ def _normalize_model(sample: Dict[str, Any]) -> None:
 # === Conversion ===
 
 
-def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
+def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
     """XML エントリを BioSample インスタンスに変換する。"""
     sample = entry["BioSample"]
     accession = parse_accession(sample, is_ddbj)
@@ -314,11 +331,13 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
     return BioSample(
         identifier=accession,
         properties={"BioSample": sample},
-        distribution=[Distribution(
-            type="DataDownload",
-            encodingFormat="JSON",
-            contentUrl=f"{SEARCH_BASE_URL}/search/entry/biosample/{accession}.json",
-        )],
+        distribution=[
+            Distribution(
+                type="DataDownload",
+                encodingFormat="JSON",
+                contentUrl=f"{SEARCH_BASE_URL}/search/entry/biosample/{accession}.json",
+            )
+        ],
         isPartOf="BioSample",
         type="biosample",
         name=parse_name(sample, accession),
@@ -342,14 +361,12 @@ def xml_entry_to_bs_instance(entry: Dict[str, Any], is_ddbj: bool) -> BioSample:
 # === Processing ===
 
 
-def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
+def _fetch_dates_ddbj(config: Config, docs: dict[str, BioSample]) -> None:
     """DDBJ BioSample の日付を DuckDB キャッシュから取得して設定する。"""
-    from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
-        date_cache_exists, fetch_bs_dates_from_cache)
+    from ddbj_search_converter.date_cache.db import date_cache_exists, fetch_bs_dates_from_cache
+
     if not date_cache_exists(config):
-        raise RuntimeError(
-            "date cache not found. Run build_bp_bs_date_cache first."
-        )
+        raise RuntimeError("date cache not found. Run build_bp_bs_date_cache first.")
 
     date_map = fetch_bs_dates_from_cache(config, docs.keys())
     for acc, (dc, dm, dp) in date_map.items():
@@ -359,7 +376,7 @@ def _fetch_dates_ddbj(config: Config, docs: Dict[str, BioSample]) -> None:
             docs[acc].datePublished = dp
 
 
-def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool) -> None:
+def _fetch_dates_ncbi(xml_path: Path, docs: dict[str, BioSample], is_ddbj: bool) -> None:
     """NCBI BioSample の日付を XML から取得して設定する。"""
     for xml_element in iterate_xml_element(xml_path, "BioSample"):
         try:
@@ -372,15 +389,20 @@ def _fetch_dates_ncbi(xml_path: Path, docs: Dict[str, BioSample], is_ddbj: bool)
                 docs[accession].dateModified = date_modified
                 docs[accession].datePublished = date_published
         except Exception as e:
-            log_debug(f"failed to fetch ncbi dates from xml element: {e}", debug_category=DebugCategory.FETCH_DATES_FAILED)
+            log_debug(
+                f"failed to fetch ncbi dates from xml element: {e}", debug_category=DebugCategory.FETCH_DATES_FAILED
+            )
 
 
 def _process_xml_file_worker(
-    config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
-    bs_blacklist: Set[str],
-    umbrella_ids: Set[str],
-    target_accessions: Optional[Set[str]] = None,
-    since: Optional[str] = None,
+    config: Config,
+    xml_path: Path,
+    output_path: Path,
+    is_ddbj: bool,
+    bs_blacklist: set[str],
+    umbrella_ids: set[str],
+    target_accessions: set[str] | None = None,
+    since: str | None = None,
 ) -> int:
     """
     XML ファイルを処理して JSONL を出力するワーカー関数。
@@ -396,7 +418,7 @@ def _process_xml_file_worker(
     """
     log_info(f"processing {xml_path.name} -> {output_path.name}")
 
-    docs: Dict[str, BioSample] = {}
+    docs: dict[str, BioSample] = {}
     skipped_count = 0
     filtered_count = 0
 
@@ -411,10 +433,9 @@ def _process_xml_file_worker(
                 continue
 
             # DDBJ 差分更新: target_accessions に含まれないものはスキップ
-            if is_ddbj and target_accessions is not None:
-                if bs_instance.identifier not in target_accessions:
-                    filtered_count += 1
-                    continue
+            if is_ddbj and target_accessions is not None and bs_instance.identifier not in target_accessions:
+                filtered_count += 1
+                continue
 
             docs[bs_instance.identifier] = bs_instance
         except Exception as e:
@@ -440,10 +461,7 @@ def _process_xml_file_worker(
     # NCBI 差分更新: since 以降に更新されたもののみ残す
     if not is_ddbj and since is not None:
         original_count = len(docs)
-        docs = {
-            acc: doc for acc, doc in docs.items()
-            if doc.dateModified is not None and doc.dateModified >= since
-        }
+        docs = {acc: doc for acc, doc in docs.items() if doc.dateModified is not None and doc.dateModified >= since}
         ncbi_filtered = original_count - len(docs)
         if ncbi_filtered > 0:
             log_info(f"filtered {ncbi_filtered} ncbi entries (dateModified < {since})")
@@ -455,22 +473,24 @@ def _process_xml_file_worker(
 
 
 def process_xml_file(
-    config: Config, xml_path: Path, output_path: Path, is_ddbj: bool,
-    bs_blacklist: Optional[Set[str]] = None,
-    umbrella_ids: Optional[Set[str]] = None,
-    target_accessions: Optional[Set[str]] = None,
-    since: Optional[str] = None,
+    config: Config,
+    xml_path: Path,
+    output_path: Path,
+    is_ddbj: bool,
+    bs_blacklist: set[str] | None = None,
+    umbrella_ids: set[str] | None = None,
+    target_accessions: set[str] | None = None,
+    since: str | None = None,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bs_blacklist is None:
         _, bs_blacklist = load_blacklist(config)
     if umbrella_ids is None:
-        from ddbj_search_converter.dblink.db import \
-            get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+        from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
+
         umbrella_ids = get_umbrella_bioproject_ids(config)
     return _process_xml_file_worker(
-        config, xml_path, output_path, is_ddbj, bs_blacklist,
-        umbrella_ids, target_accessions, since
+        config, xml_path, output_path, is_ddbj, bs_blacklist, umbrella_ids, target_accessions, since
     )
 
 
@@ -502,13 +522,13 @@ def generate_bs_jsonl(
     _, bs_blacklist = load_blacklist(config)
 
     # umbrella-bioproject ID セットを取得
-    from ddbj_search_converter.dblink.db import \
-        get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+    from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
+
     umbrella_ids = get_umbrella_bioproject_ids(config)
 
     # 差分更新の基準日時を取得
-    since: Optional[str] = None
-    ddbj_target_accessions: Optional[Set[str]] = None
+    since: str | None = None
+    ddbj_target_accessions: set[str] | None = None
 
     if not full:
         last_run = read_last_run(config)
@@ -516,15 +536,17 @@ def generate_bs_jsonl(
         if since is not None:
             original_since = since
             since = apply_margin(since)
-            log_info(f"incremental update mode: since={since} (original={original_since}, margin_days={DEFAULT_MARGIN_DAYS})")
+            log_info(
+                f"incremental update mode: since={since} (original={original_since}, margin_days={DEFAULT_MARGIN_DAYS})"
+            )
             # DDBJ: DuckDB キャッシュから対象 accession を取得
-            from ddbj_search_converter.date_cache.db import (  # pylint: disable=import-outside-toplevel
+            from ddbj_search_converter.date_cache.db import (
                 date_cache_exists,
-                fetch_bs_accessions_modified_since_from_cache)
+                fetch_bs_accessions_modified_since_from_cache,
+            )
+
             if not date_cache_exists(config):
-                raise RuntimeError(
-                    "date cache not found. Run build_bp_bs_date_cache first."
-                )
+                raise RuntimeError("date cache not found. Run build_bp_bs_date_cache first.")
             ddbj_target_accessions = fetch_bs_accessions_modified_since_from_cache(config, since)
             log_info(f"ddbj target accessions: {len(ddbj_target_accessions)}")
         else:
@@ -538,7 +560,7 @@ def generate_bs_jsonl(
 
     log_info(f"found {len(ddbj_xml_files)} ddbj xml files and {len(ncbi_xml_files)} ncbi xml files")
 
-    tasks: List[Tuple[Path, Path, bool, Optional[Set[str]], Optional[str]]] = []
+    tasks: list[tuple[Path, Path, bool, set[str] | None, str | None]] = []
     skipped_existing = 0
     for xml_file in ddbj_xml_files:
         output_path = output_dir.joinpath(xml_file.stem + ".jsonl")
@@ -560,13 +582,20 @@ def generate_bs_jsonl(
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
         futures = {
             executor.submit(
-                _process_xml_file_worker, config, xml_path, output_path, is_ddbj,
-                bs_blacklist, umbrella_ids, target_accessions, since_param
+                _process_xml_file_worker,
+                config,
+                xml_path,
+                output_path,
+                is_ddbj,
+                bs_blacklist,
+                umbrella_ids,
+                target_accessions,
+                since_param,
             ): (xml_path, is_ddbj)
             for xml_path, output_path, is_ddbj, target_accessions, since_param in tasks
         }
         for future in as_completed(futures):
-            xml_path, is_ddbj = futures[future]
+            xml_path, _is_ddbj = futures[future]
             try:
                 count = future.result()
                 total_count += count
@@ -583,11 +612,9 @@ def generate_bs_jsonl(
 # === CLI ===
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, Path, int, bool, bool]:
+def parse_args(args: list[str]) -> tuple[Config, Path, Path, int, bool, bool]:
     """コマンドライン引数をパースする。"""
-    parser = argparse.ArgumentParser(
-        description="Generate BioSample JSONL files from split XML files."
-    )
+    parser = argparse.ArgumentParser(description="Generate BioSample JSONL files from split XML files.")
     parser.add_argument(
         "--parallel-num",
         help=f"Number of parallel workers. Default: {DEFAULT_PARALLEL_NUM}",

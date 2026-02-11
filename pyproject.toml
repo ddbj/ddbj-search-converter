@@ -26,13 +26,12 @@ Repository = "https://github.com/ddbj/ddbj-search-converter.git"
 [project.optional-dependencies]
 tests = [
     "hypothesis",
-    "isort",
     "lxml-stubs",
     "mypy",
-    "pylint",
     "pytest",
     "pytest-cov",
     "pytest-mock",
+    "ruff",
 ]
 
 [project.scripts]
@@ -75,31 +74,90 @@ addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"
 testpaths = ["tests/py_tests"]
 
 [tool.mypy]
-files = ["./ddbj_search_converter/**/*.py", "./tests/**/*.py"]
+files = ["./ddbj_search_converter/**/*.py", "./tests/py_tests/**/*.py"]
+namespace_packages = true
+explicit_package_bases = true
 follow_imports = "silent"
 strict = true
+python_version = "3.10"
+warn_unreachable = true
 
-[tool.pylint.messages_control]
-disable = [
-    "C0114", # Missing module docstring
-    "C0115", # Missing class docstring
-    "C0116", # Missing function or method docstring
-    "C0301", # Line too long
-    "R0801", # Similar lines in 2 files
-    "R0903", # Too few public methods
-    "R0911", # Too many return statements
-    "R0912", # Too many branches
-    "R0913", # Too many arguments
-    "R0917", # Too many positional arguments
-    "R0914", # Too many local variables
-    "R0915", # Too many statements
-    "R1702", # Too many nested blocks
-    "R1705", # Unnecessary "else" after "return"
-    "W0511", # Fixme
-    "W0718", # Broad exception caught
-    "W0719", # Exception type of Exception
-    "I1101", # c-extension-no-member
+[[tool.mypy.overrides]]
+module = "psycopg2"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "psycopg2.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.py_tests.*"
+disallow_untyped_defs = false
+warn_unreachable = false
+
+[[tool.mypy.overrides]]
+module = "py_tests.*"
+disallow_untyped_defs = false
+warn_unreachable = false
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D",       # pydocstyle (docstrings)
+    "ANN",     # flake8-annotations (strict は mypy に任せる)
+    "ERA",     # eradicate (commented-out code)
+    "FIX",     # fixme comments
+    "TD",      # todo comments
+    "S",       # flake8-bandit (security)
+    "INP",     # implicit namespace packages
+    "T20",     # flake8-print
+    "FBT",     # flake8-boolean-trap
+    "EM",      # flake8-errmsg
+    "TRY002",  # create own exception
+    "TRY003",  # long exception messages
+    "TRY300",  # consider moving into else block
+    "TRY301",  # abstract raise to inner function
+    "TRY004",  # prefer TypeError
+    "PLC0415", # import-outside-toplevel (intentional lazy imports)
+    "COM812",  # trailing comma (conflicts with formatter)
+    "ISC001",  # implicit string concat (conflicts with formatter)
+    "PLR0911", # too many return statements
+    "PLR0912", # too many branches
+    "PLR0913", # too many arguments
+    "PLR0915", # too many statements
+    "PLR2004", # magic value comparison
+    "C901",    # too complex
+    "BLE001",  # broad exception catching (intentional in pipeline code)
+    "N815",    # mixed case variable in class scope (Pydantic field names match JSON API)
+    "RUF002",  # ambiguous unicode in docstring (Japanese)
+    "RUF003",  # ambiguous unicode in comment (Japanese)
+    "RUF012",  # mutable class variable without ClassVar
+    "DTZ",     # datetime timezone (naive datetimes intentional for DB)
+    "PERF203", # try-except in loop (micro-optimization)
+    "TC",      # type checking imports
+    "PYI034",  # __enter__ should return Self
+    "SIM108",  # ternary operator (readability preference)
+    "RET504",  # unnecessary assignment before return
+    "SIM115",  # context manager for open (false positive for resource management classes)
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG",     # unused arguments (fixtures)
+    "PLR2004", # magic values in tests
+    "SLF001",  # private member access in tests
+    "PT011",   # pytest.raises too broad (intentional for testing error handling)
+    "B017",    # assert blind exception (intentional for testing error handling)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ddbj_search_converter"]

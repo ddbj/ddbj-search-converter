@@ -1,11 +1,9 @@
 """Elasticsearch client management."""
 
-from typing import Dict
-
 from ddbj_search_converter.config import Config
 from elasticsearch import Elasticsearch
 
-_clients: Dict[str, Elasticsearch] = {}
+_clients: dict[str, Elasticsearch] = {}
 
 
 def get_es_client(config: Config) -> Elasticsearch:

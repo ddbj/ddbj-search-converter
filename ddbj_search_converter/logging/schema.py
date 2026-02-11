@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,6 +24,7 @@ Lifecycle = Literal["start", "end", "failed"]
 
 class DebugCategory(str, Enum):
     """DEBUG log category for aggregation in log.duckdb."""
+
     # Configuration
     CONFIG = "config"
 
@@ -70,53 +71,54 @@ class Extra(BaseModel):
     Reserved fields have predefined meanings.
     Additional arbitrary fields are allowed via extra="allow".
     """
+
     model_config = ConfigDict(extra="allow")
 
-    lifecycle: Optional[Lifecycle] = Field(
+    lifecycle: Lifecycle | None = Field(
         default=None,
         description="Run lifecycle stage: start, end, or failed",
     )
-    file: Optional[str] = Field(
+    file: str | None = Field(
         default=None,
         description="File path being processed",
         examples=["/path/to/data.xml"],
     )
-    accession: Optional[str] = Field(
+    accession: str | None = Field(
         default=None,
         description="Accession ID being processed",
         examples=["PRJDB12345", "DRR000001"],
     )
-    index: Optional[str] = Field(
+    index: str | None = Field(
         default=None,
         description="Elasticsearch index name",
         examples=["bioproject", "sra-run"],
     )
-    table: Optional[str] = Field(
+    table: str | None = Field(
         default=None,
         description="Database table name",
         examples=["accessions", "relation"],
     )
-    row: Optional[int] = Field(
+    row: int | None = Field(
         default=None,
         description="Row number in file or table",
         ge=0,
     )
-    debug_category: Optional[DebugCategory] = Field(
+    debug_category: DebugCategory | None = Field(
         default=None,
         description="DEBUG log category for aggregation",
         examples=["invalid_biosample_id", "file_not_found"],
     )
-    source: Optional[str] = Field(
+    source: str | None = Field(
         default=None,
         description="Data source identifier",
         examples=["ncbi", "ddbj", "sra", "dra"],
     )
-    relation_type: Optional[str] = Field(
+    relation_type: str | None = Field(
         default=None,
         description="Type of relation being processed",
         examples=["umbrella", "hum_id", "geo"],
     )
-    count: Optional[int] = Field(
+    count: int | None = Field(
         default=None,
         description="Count of items (for summary logs)",
         ge=0,
@@ -125,6 +127,7 @@ class Extra(BaseModel):
 
 class LoggerContext(BaseModel):
     """Runtime context for logger."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     run_name: str = Field(
@@ -161,7 +164,7 @@ class ErrorInfo(BaseModel):
         ...,
         description="Exception message (str(e))",
     )
-    traceback: Optional[str] = Field(
+    traceback: str | None = Field(
         default=None,
         description="Full traceback string",
     )
@@ -206,11 +209,11 @@ class LogRecord(BaseModel):
         description="Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL",
     )
 
-    message: Optional[str] = Field(
+    message: str | None = Field(
         default=None,
         description="Human-readable log message",
     )
-    error: Optional[ErrorInfo] = Field(
+    error: ErrorInfo | None = Field(
         default=None,
         description="Error information (set when exception occurred)",
     )

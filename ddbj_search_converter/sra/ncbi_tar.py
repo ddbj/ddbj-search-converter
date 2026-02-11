@@ -10,18 +10,22 @@ Uses aria2c for fast, reliable downloads with:
 - Automatic retry (--max-tries=10)
 - Resume capability (-c)
 """
+
 import subprocess
+from collections.abc import Iterator
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Iterator, Optional
 
 import httpx
 
-from ddbj_search_converter.config import (NCBI_LAST_MERGED_FILE_NAME,
-                                          NCBI_SRA_METADATA_BASE_URL,
-                                          NCBI_SRA_METADATA_LOCAL_PATH,
-                                          NCBI_SRA_TAR_FILE_NAME, TODAY,
-                                          Config)
+from ddbj_search_converter.config import (
+    NCBI_LAST_MERGED_FILE_NAME,
+    NCBI_SRA_METADATA_BASE_URL,
+    NCBI_SRA_METADATA_LOCAL_PATH,
+    NCBI_SRA_TAR_FILE_NAME,
+    TODAY,
+    Config,
+)
 from ddbj_search_converter.logging.logger import log_info
 from ddbj_search_converter.sra.paths import get_sra_tar_dir
 
@@ -56,7 +60,7 @@ def get_ncbi_daily_tar_gz_local_path(date_str: str) -> Path:
     return NCBI_SRA_METADATA_LOCAL_PATH / f"NCBI_SRA_Metadata_{date_str}.tar.gz"
 
 
-def find_latest_ncbi_full_date(max_days_back: int = 60) -> Optional[str]:
+def find_latest_ncbi_full_date(max_days_back: int = 60) -> str | None:
     """Find the latest available NCBI Full tar.gz.
 
     First checks the local mirror, then falls back to HTTP HEAD.
@@ -88,23 +92,16 @@ def find_latest_ncbi_full_date(max_days_back: int = 60) -> Optional[str]:
     return None
 
 
-def _get_last_merged_date(config: Config) -> Optional[date]:
+def _get_last_merged_date(config: Config) -> date | None:
     """Get the last merged date from ncbi_last_merged.txt."""
     last_merged_path = get_ncbi_last_merged_path(config)
     if not last_merged_path.exists():
         return None
     last_merged_str = last_merged_path.read_text().strip()
-    return date(
-        int(last_merged_str[:4]),
-        int(last_merged_str[4:6]),
-        int(last_merged_str[6:8])
-    )
+    return date(int(last_merged_str[:4]), int(last_merged_str[4:6]), int(last_merged_str[6:8]))
 
 
-def find_ncbi_daily_dates_to_sync(
-    config: Config,
-    max_days_back: int = 30
-) -> Iterator[str]:
+def find_ncbi_daily_dates_to_sync(config: Config, max_days_back: int = 30) -> Iterator[str]:
     """Find daily tar.gz dates that need to be synced.
 
     Yields dates from (last_merged + 1) to today.
@@ -131,15 +128,19 @@ def _download_with_aria2c(url: str, output_path: Path) -> None:
 
     cmd = [
         "aria2c",
-        "-x", "16",           # 16 connections for parallel download
-        "-s", "16",           # 16 splits
-        "--max-tries=10",     # Retry up to 10 times
-        "--retry-wait=5",     # Wait 5 seconds between retries
-        "--timeout=600",      # 10 minute timeout
+        "-x",
+        "16",  # 16 connections for parallel download
+        "-s",
+        "16",  # 16 splits
+        "--max-tries=10",  # Retry up to 10 times
+        "--retry-wait=5",  # Wait 5 seconds between retries
+        "--timeout=600",  # 10 minute timeout
         "--connect-timeout=60",  # 60 second connection timeout
-        "-c",                 # Enable resume
-        "-d", str(output_dir),
-        "-o", output_name,
+        "-c",  # Enable resume
+        "-d",
+        str(output_dir),
+        "-o",
+        output_name,
         url,
     ]
     subprocess.run(cmd, check=True)
@@ -250,7 +251,7 @@ def append_daily_tar_gz(config: Config, date_str: str) -> bool:
     return True
 
 
-def _check_for_newer_full(config: Config) -> Optional[str]:
+def _check_for_newer_full(config: Config) -> str | None:
     """Check if a newer Full tar.gz is available than last_merged.
 
     First checks the local mirror, then falls back to HTTP HEAD.

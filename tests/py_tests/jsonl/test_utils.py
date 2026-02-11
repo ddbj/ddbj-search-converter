@@ -1,17 +1,14 @@
 """Tests for ddbj_search_converter.jsonl.utils module."""
+
 import duckdb
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.db import (finalize_relation_db,
-                                             init_dblink_db)
-from ddbj_search_converter.jsonl.utils import (URL_TEMPLATE, get_dbxref_map,
-                                               to_xref)
+from ddbj_search_converter.dblink.db import finalize_relation_db, init_dblink_db
+from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, get_dbxref_map, to_xref
 from ddbj_search_converter.schema import XrefType
-
-from ..strategies import ALL_ACCESSION_TYPES
 
 
 class TestToXref:
@@ -27,18 +24,21 @@ class TestToXref:
         assert xref.identifier == "PRJDB12345"
         assert xref.type_ == "bioproject"
 
-    @pytest.mark.parametrize("acc,expected_type", [
-        ("JGAS000001", "jga-study"),
-        ("JGAD000001", "jga-dataset"),
-        ("JGAC000001", "jga-dac"),
-        ("JGAP000001", "jga-policy"),
-        ("SRP123456", "sra-study"),
-        ("DRP123456", "sra-study"),
-        ("SRR123456", "sra-run"),
-        ("GCA_000001405.15", "insdc-assembly"),
-        ("MTBKS123", "metabobank"),
-        ("hum0001", "hum-id"),
-    ])
+    @pytest.mark.parametrize(
+        ("acc", "expected_type"),
+        [
+            ("JGAS000001", "jga-study"),
+            ("JGAD000001", "jga-dataset"),
+            ("JGAC000001", "jga-dac"),
+            ("JGAP000001", "jga-policy"),
+            ("SRP123456", "sra-study"),
+            ("DRP123456", "sra-study"),
+            ("SRR123456", "sra-run"),
+            ("GCA_000001405.15", "insdc-assembly"),
+            ("MTBKS123", "metabobank"),
+            ("hum0001", "hum-id"),
+        ],
+    )
     def test_auto_detection(self, acc: str, expected_type: str) -> None:
         xref = to_xref(acc)
         assert xref.type_ == expected_type
@@ -131,10 +131,7 @@ class TestGetDbxrefMapUmbrella:
         tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
         with duckdb.connect(str(tmp_db_path)) as conn:
             # biosample -> bioproject 関連 (bioproject type で格納)
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB999', 'biosample', 'SAMD1')"
-            )
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB999', 'biosample', 'SAMD1')")
         finalize_relation_db(test_config)
 
         umbrella_ids = {"PRJDB999"}
@@ -151,10 +148,7 @@ class TestGetDbxrefMapUmbrella:
         init_dblink_db(test_config)
         tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
         with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB100', 'biosample', 'SAMD1')"
-            )
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB100', 'biosample', 'SAMD1')")
         finalize_relation_db(test_config)
 
         umbrella_ids = {"PRJDB999"}  # PRJDB100 は含まれない
@@ -170,10 +164,7 @@ class TestGetDbxrefMapUmbrella:
         init_dblink_db(test_config)
         tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
         with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB999', 'biosample', 'SAMD1')"
-            )
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB999', 'biosample', 'SAMD1')")
         finalize_relation_db(test_config)
 
         # umbrella_ids=None (デフォルト)
@@ -189,14 +180,8 @@ class TestGetDbxrefMapUmbrella:
         init_dblink_db(test_config)
         tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
         with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB100', 'biosample', 'SAMD1')"
-            )
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB999', 'biosample', 'SAMD1')"
-            )
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB100', 'biosample', 'SAMD1')")
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB999', 'biosample', 'SAMD1')")
         finalize_relation_db(test_config)
 
         umbrella_ids = {"PRJDB999"}

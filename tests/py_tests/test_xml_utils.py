@@ -1,13 +1,12 @@
 """Tests for ddbj_search_converter.xml_utils module."""
+
 import gzip
 from pathlib import Path
 
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.xml_utils import (extract_gzip, get_tmp_xml_dir,
-                                             iterate_xml_element, parse_xml,
-                                             split_xml)
+from ddbj_search_converter.xml_utils import extract_gzip, get_tmp_xml_dir, iterate_xml_element, parse_xml, split_xml
 
 
 class TestParseXml:
@@ -285,11 +284,16 @@ class TestSplitXml:
 
         output_dir = tmp_path / "output"
         wrapper_start = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
-        wrapper_end = b'</BioSampleSet>'
+        wrapper_end = b"</BioSampleSet>"
 
         output_files = split_xml(
-            xml_file, output_dir, batch_size=2, tag="BioSample",
-            prefix="biosample", wrapper_start=wrapper_start, wrapper_end=wrapper_end,
+            xml_file,
+            output_dir,
+            batch_size=2,
+            tag="BioSample",
+            prefix="biosample",
+            wrapper_start=wrapper_start,
+            wrapper_end=wrapper_end,
         )
 
         assert len(output_files) == 2
@@ -304,8 +308,13 @@ class TestSplitXml:
         output_dir = tmp_path / "output"
 
         output_files = split_xml(
-            xml_file, output_dir, batch_size=10, tag="BioSample",
-            prefix="test", wrapper_start=b'<Root>', wrapper_end=b'</Root>',
+            xml_file,
+            output_dir,
+            batch_size=10,
+            tag="BioSample",
+            prefix="test",
+            wrapper_start=b"<Root>",
+            wrapper_end=b"</Root>",
         )
         assert output_files == []
 
@@ -342,17 +351,22 @@ class TestIntegration:
     """Integration tests: iterate_xml_element + split."""
 
     def test_iterate_then_split(self, tmp_path: Path) -> None:
-        elements_data = []
-        for i in range(5):
-            elements_data.append(f"""<BioSample accession="SAMN{i:08d}">
+        elements_data = [
+            f"""<BioSample accession="SAMN{i:08d}">
   <Title>Sample {i}</Title>
 </BioSample>
-""".encode())
+""".encode()
+            for i in range(5)
+        ]
 
-        xml_content = b"""<?xml version="1.0" encoding="UTF-8"?>
+        xml_content = (
+            b"""<?xml version="1.0" encoding="UTF-8"?>
 <BioSampleSet>
-""" + b"".join(elements_data) + b"""</BioSampleSet>
 """
+            + b"".join(elements_data)
+            + b"""</BioSampleSet>
+"""
+        )
         xml_file = tmp_path / "input.xml"
         xml_file.write_bytes(xml_content)
 
@@ -361,11 +375,16 @@ class TestIntegration:
 
         output_dir = tmp_path / "split"
         wrapper_start = b'<?xml version="1.0" encoding="UTF-8"?>\n<BioSampleSet>\n'
-        wrapper_end = b'</BioSampleSet>'
+        wrapper_end = b"</BioSampleSet>"
 
         output_files = split_xml(
-            xml_file, output_dir, batch_size=2, tag="BioSample",
-            prefix="batch", wrapper_start=wrapper_start, wrapper_end=wrapper_end,
+            xml_file,
+            output_dir,
+            batch_size=2,
+            tag="BioSample",
+            prefix="batch",
+            wrapper_start=wrapper_start,
+            wrapper_end=wrapper_end,
         )
         assert len(output_files) == 3
 

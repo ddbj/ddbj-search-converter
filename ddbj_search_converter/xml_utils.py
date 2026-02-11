@@ -1,10 +1,12 @@
 """
 BioProject/BioSample の大規模 XML を効率的に処理するための関数群。
 """
+
 import gzip
 import shutil
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from lxml import etree
 
@@ -13,10 +15,10 @@ from ddbj_search_converter.config import TODAY_STR, Config
 
 def _element_to_dict(
     element: etree._Element,
-    parent_nsmap: Optional[Dict[Optional[str], str]] = None,
-) -> Union[Dict[str, Any], str, None]:
+    parent_nsmap: dict[str | None, str] | None = None,
+) -> dict[str, Any] | str | None:
     """lxml Element を dict に変換する。xmltodict と同じ出力形式を維持。"""
-    result: Dict[str, Any] = {}
+    result: dict[str, Any] = {}
     parent_nsmap = parent_nsmap or {}
 
     # 名前空間宣言を属性として追加（xmltodict の挙動に合わせる）
@@ -45,7 +47,7 @@ def _element_to_dict(
                 return text
 
     # 子要素を処理
-    children: Dict[str, List[Any]] = {}
+    children: dict[str, list[Any]] = {}
     for child in element:
         child_tag: str = str(child.tag)
         if "}" in child_tag:
@@ -70,7 +72,7 @@ def _element_to_dict(
     return result
 
 
-def parse_xml(xml_bytes: bytes) -> Dict[str, Any]:
+def parse_xml(xml_bytes: bytes) -> dict[str, Any]:
     """XML bytes を dict にパースする。lxml ベースで高速化。"""
     root = etree.fromstring(xml_bytes)
     root_tag: str = str(root.tag)
@@ -92,7 +94,7 @@ def _is_tag_start(line: bytes, tag_start: bytes) -> bool:
         return False
     if len(line) == len(tag_start):
         return True
-    next_byte = line[len(tag_start):len(tag_start) + 1]
+    next_byte = line[len(tag_start) : len(tag_start) + 1]
     return next_byte in (b">", b" ", b"\t", b"\n", b"\r", b"/")
 
 
@@ -132,12 +134,12 @@ def split_xml(
     prefix: str,
     wrapper_start: bytes,
     wrapper_end: bytes,
-) -> List[Path]:
+) -> list[Path]:
     """並列処理用に XML を分割。出力: {prefix}_{n}.xml"""
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_files: List[Path] = []
-    batch_buffer: List[bytes] = []
+    output_files: list[Path] = []
+    batch_buffer: list[bytes] = []
     file_count = 1
 
     for element in iterate_xml_element(xml_file, tag):
@@ -162,7 +164,7 @@ def split_xml(
 
 def _write_split_file(
     output_file: Path,
-    elements: List[bytes],
+    elements: list[bytes],
     wrapper_start: bytes,
     wrapper_end: bytes,
 ) -> None:
@@ -178,8 +180,7 @@ def extract_gzip(gz_file: Path, output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     output_file = output_dir.joinpath(gz_file.stem)
 
-    with gzip.open(gz_file, "rb") as f_in:
-        with output_file.open("wb") as f_out:
-            shutil.copyfileobj(f_in, f_out)
+    with gzip.open(gz_file, "rb") as f_in, output_file.open("wb") as f_out:
+        shutil.copyfileobj(f_in, f_out)
 
     return output_file

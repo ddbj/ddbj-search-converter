@@ -1,4 +1,5 @@
 """Tests for ddbj_search_converter.id_patterns module."""
+
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -13,40 +14,52 @@ class TestIsValidAccession:
 
     # --- biosample ---
 
-    @pytest.mark.parametrize("acc", [
-        "SAMN12345678",
-        "SAMD00000001",
-        "SAME12345678",
-        "SAMEA12345678",
-    ])
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "SAMN12345678",
+            "SAMD00000001",
+            "SAME12345678",
+            "SAMEA12345678",
+        ],
+    )
     def test_biosample_valid(self, acc: str) -> None:
         assert is_valid_accession(acc, "biosample") is True
 
-    @pytest.mark.parametrize("acc", [
-        "SAM",
-        "12345",
-        "PRJDB12345",
-        "SAMX12345678",
-    ])
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "SAM",
+            "12345",
+            "PRJDB12345",
+            "SAMX12345678",
+        ],
+    )
     def test_biosample_invalid(self, acc: str) -> None:
         assert is_valid_accession(acc, "biosample") is False
 
     # --- bioproject ---
 
-    @pytest.mark.parametrize("acc", [
-        "PRJDB12345",
-        "PRJNA123456",
-        "PRJEB99999",
-    ])
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "PRJDB12345",
+            "PRJNA123456",
+            "PRJEB99999",
+        ],
+    )
     def test_bioproject_valid(self, acc: str) -> None:
         assert is_valid_accession(acc, "bioproject") is True
 
-    @pytest.mark.parametrize("acc", [
-        "PRJ",
-        "PRJD12345",
-        "12345",
-        "SAMN12345678",
-    ])
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "PRJ",
+            "PRJD12345",
+            "12345",
+            "SAMN12345678",
+        ],
+    )
     def test_bioproject_invalid(self, acc: str) -> None:
         assert is_valid_accession(acc, "bioproject") is False
 
@@ -58,51 +71,63 @@ class TestIsValidAccession:
 
     # --- sra types ---
 
-    @pytest.mark.parametrize("acc,acc_type", [
-        ("SRA123456", "sra-submission"),
-        ("DRA000001", "sra-submission"),
-        ("ERA999999", "sra-submission"),
-        ("SRP123456", "sra-study"),
-        ("DRP000001", "sra-study"),
-        ("SRX123456", "sra-experiment"),
-        ("DRX000001", "sra-experiment"),
-        ("SRR123456", "sra-run"),
-        ("DRR000001", "sra-run"),
-        ("SRS123456", "sra-sample"),
-        ("DRS000001", "sra-sample"),
-        ("SRZ123456", "sra-analysis"),
-        ("DRZ000001", "sra-analysis"),
-    ])
+    @pytest.mark.parametrize(
+        ("acc", "acc_type"),
+        [
+            ("SRA123456", "sra-submission"),
+            ("DRA000001", "sra-submission"),
+            ("ERA999999", "sra-submission"),
+            ("SRP123456", "sra-study"),
+            ("DRP000001", "sra-study"),
+            ("SRX123456", "sra-experiment"),
+            ("DRX000001", "sra-experiment"),
+            ("SRR123456", "sra-run"),
+            ("DRR000001", "sra-run"),
+            ("SRS123456", "sra-sample"),
+            ("DRS000001", "sra-sample"),
+            ("SRZ123456", "sra-analysis"),
+            ("DRZ000001", "sra-analysis"),
+        ],
+    )
     def test_sra_types_valid(self, acc: str, acc_type: str) -> None:
         assert is_valid_accession(acc, acc_type) is True  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("acc,acc_type", [
-        ("XRA123456", "sra-submission"),
-        ("SRP123456", "sra-submission"),
-        ("XRP123456", "sra-study"),
-        ("SRA123456", "sra-study"),
-    ])
+    @pytest.mark.parametrize(
+        ("acc", "acc_type"),
+        [
+            ("XRA123456", "sra-submission"),
+            ("SRP123456", "sra-submission"),
+            ("XRP123456", "sra-study"),
+            ("SRA123456", "sra-study"),
+        ],
+    )
     def test_sra_types_invalid(self, acc: str, acc_type: str) -> None:
         assert is_valid_accession(acc, acc_type) is False  # type: ignore[arg-type]
 
     # --- jga types ---
 
-    @pytest.mark.parametrize("acc,acc_type", [
-        ("JGAS000001", "jga-study"),
-        ("JGAD000001", "jga-dataset"),
-        ("JGAC000001", "jga-dac"),
-        ("JGAP000001", "jga-policy"),
-    ])
+    @pytest.mark.parametrize(
+        ("acc", "acc_type"),
+        [
+            ("JGAS000001", "jga-study"),
+            ("JGAD000001", "jga-dataset"),
+            ("JGAC000001", "jga-dac"),
+            ("JGAP000001", "jga-policy"),
+        ],
+    )
     def test_jga_types_valid(self, acc: str, acc_type: str) -> None:
         assert is_valid_accession(acc, acc_type) is True  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("acc,acc_type", [
-        ("JGAD000001", "jga-study"),
-        ("JGAS000001", "jga-dataset"),
-        ("JGAS000001", "jga-dac"),
-        ("JGAS000001", "jga-policy"),
-        ("jgas000001", "jga-study"),
-    ])
+    @pytest.mark.parametrize(
+        ("acc", "acc_type"),
+        [
+            ("JGAD000001", "jga-study"),
+            ("JGAS000001", "jga-dataset"),
+            ("JGAS000001", "jga-dac"),
+            ("JGAS000001", "jga-policy"),
+            ("jgas000001", "jga-study"),
+        ],
+    )
     def test_jga_types_invalid(self, acc: str, acc_type: str) -> None:
         assert is_valid_accession(acc, acc_type) is False  # type: ignore[arg-type]
 
@@ -138,12 +163,15 @@ class TestIsValidAccession:
 
     # --- insdc-master ---
 
-    @pytest.mark.parametrize("acc", [
-        "A00000",
-        "AB000000",
-        "ABCD00000000",
-        "BAA00000",
-    ])
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "A00000",
+            "AB000000",
+            "ABCD00000000",
+            "BAA00000",
+        ],
+    )
     def test_insdc_master_valid(self, acc: str) -> None:
         assert is_valid_accession(acc, "insdc-master") is True
 
@@ -211,7 +239,7 @@ class TestPBT:
     @given(acc_type=st_accession_type(), text=st.text(max_size=100))
     def test_result_matches_regex(self, acc_type: str, text: str) -> None:
         """is_valid_accession の結果は pattern.match と一致する。"""
-        pattern = ID_PATTERN_MAP[acc_type]
+        pattern = ID_PATTERN_MAP[acc_type]  # type: ignore[index]
         expected = bool(pattern.match(text))
         assert is_valid_accession(text, acc_type) is expected  # type: ignore[arg-type]
 
@@ -271,10 +299,9 @@ class TestEdgeCases:
         """null byte を含む文字列は invalid。"""
         assert is_valid_accession("PRJDB\x001", acc_type) is False  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("acc_type", [
-        t for t in ALL_ACCESSION_TYPES
-        if t not in ("bioproject", "umbrella-bioproject")
-    ])
+    @pytest.mark.parametrize(
+        "acc_type", [t for t in ALL_ACCESSION_TYPES if t not in ("bioproject", "umbrella-bioproject")]
+    )
     def test_newline_in_accession(self, acc_type: str) -> None:
         """改行を含む文字列は invalid。"""
         assert is_valid_accession("PRJDB1\n", acc_type) is False  # type: ignore[arg-type]

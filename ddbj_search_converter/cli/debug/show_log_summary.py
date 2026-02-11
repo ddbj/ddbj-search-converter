@@ -2,18 +2,18 @@
 
 Shows per-run_name summary for a given date: status, duration, and log level counts.
 """
+
 import argparse
 import json
 import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import duckdb
 
 from ddbj_search_converter.cli.debug.run_order import run_name_sort_key
-from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME, TODAY,
-                                          get_config)
+from ddbj_search_converter.config import DATE_FORMAT, LOG_DB_FILE_NAME, TODAY, get_config
 
 
 def _parse_date(value: str) -> date:
@@ -21,12 +21,10 @@ def _parse_date(value: str) -> date:
     try:
         return datetime.strptime(value, DATE_FORMAT).date()
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            f"Invalid date format: {value!r} (expected YYYYMMDD)"
-        ) from exc
+        raise argparse.ArgumentTypeError(f"Invalid date format: {value!r} (expected YYYYMMDD)") from exc
 
 
-def _run_date(parsed_date: Optional[date]) -> date:
+def _run_date(parsed_date: date | None) -> date:
     """Return the run_date from parsed arg or TODAY."""
     if parsed_date is not None:
         return parsed_date
@@ -37,9 +35,7 @@ def _get_db_path(result_dir: Path) -> Path:
     return result_dir.joinpath(LOG_DB_FILE_NAME)
 
 
-def _fetch_run_ids(
-    con: duckdb.DuckDBPyConnection, run_date: date
-) -> Dict[str, List[str]]:
+def _fetch_run_ids(con: duckdb.DuckDBPyConnection, run_date: date) -> dict[str, list[str]]:
     """Fetch run_name -> list of run_ids (latest first) for the given date.
 
     Keys are ordered by pipeline execution order (see run_order.py).
@@ -56,7 +52,7 @@ def _fetch_run_ids(
     ).fetchall()
 
     # Collect run_ids per run_name (already latest-first within each name)
-    unordered: Dict[str, List[str]] = {}
+    unordered: dict[str, list[str]] = {}
     for run_name, run_id, _ in rows:
         unordered.setdefault(str(run_name), []).append(str(run_id))
 
@@ -64,7 +60,7 @@ def _fetch_run_ids(
     return {k: unordered[k] for k in sorted(unordered, key=run_name_sort_key)}
 
 
-def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> Dict[str, Any]:
+def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> dict[str, Any]:
     """Fetch lifecycle info and log level counts for a single run_id."""
     row = con.execute(
         """
@@ -91,8 +87,9 @@ def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> Dict[str,
     if row is None:
         return {}
 
-    (start_time, end_time, has_end, has_failed,
-     debug_count, info_count, warning_count, error_count, critical_count) = row
+    (start_time, end_time, has_end, has_failed, debug_count, info_count, warning_count, error_count, critical_count) = (
+        row
+    )
 
     if has_failed:
         status = "FAILED"
@@ -104,7 +101,7 @@ def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> Dict[str,
     start_str = str(start_time)[:19] if start_time else None
     end_str = str(end_time)[:19] if end_time else None
 
-    duration_seconds: Optional[int] = None
+    duration_seconds: int | None = None
     if start_time and end_time:
         try:
             st = datetime.fromisoformat(str(start_time)[:19])
@@ -128,24 +125,26 @@ def _fetch_run_summary(con: duckdb.DuckDBPyConnection, run_id: str) -> Dict[str,
     }
 
 
-def _build_summary(con: duckdb.DuckDBPyConnection, run_date: date) -> Dict[str, Any]:
+def _build_summary(con: duckdb.DuckDBPyConnection, run_date: date) -> dict[str, Any]:
     """Build the full summary dict for the given date."""
     run_ids_map = _fetch_run_ids(con, run_date)
 
-    runs: List[Dict[str, Any]] = []
+    runs: list[dict[str, Any]] = []
     for run_name, run_id_list in run_ids_map.items():
         latest_run_id = run_id_list[0]
         summary = _fetch_run_summary(con, latest_run_id)
-        runs.append({
-            "run_name": run_name,
-            "status": summary.get("status", "IN_PROGRESS"),
-            "latest_run_id": latest_run_id,
-            "all_run_ids": run_id_list,
-            "start_time": summary.get("start_time"),
-            "end_time": summary.get("end_time"),
-            "duration_seconds": summary.get("duration_seconds"),
-            "log_levels": summary.get("log_levels", {}),
-        })
+        runs.append(
+            {
+                "run_name": run_name,
+                "status": summary.get("status", "IN_PROGRESS"),
+                "latest_run_id": latest_run_id,
+                "all_run_ids": run_id_list,
+                "start_time": summary.get("start_time"),
+                "end_time": summary.get("end_time"),
+                "duration_seconds": summary.get("duration_seconds"),
+                "log_levels": summary.get("log_levels", {}),
+            }
+        )
 
     return {
         "date": run_date.isoformat(),
@@ -153,7 +152,7 @@ def _build_summary(con: duckdb.DuckDBPyConnection, run_date: date) -> Dict[str, 
     }
 
 
-def _format_duration(seconds: Optional[int]) -> str:
+def _format_duration(seconds: int | None) -> str:
     """Format seconds as human-readable duration string."""
     if seconds is None:
         return "-"
@@ -169,7 +168,7 @@ def _format_duration(seconds: Optional[int]) -> str:
     return " ".join(parts)
 
 
-def _print_raw(summary: Dict[str, Any]) -> None:
+def _print_raw(summary: dict[str, Any]) -> None:
     """Print summary in human-readable format."""
     print()
     print(f"=== Log Summary ({summary['date']}) ===")
@@ -210,16 +209,14 @@ def _print_raw(summary: Dict[str, Any]) -> None:
         print()
 
 
-def _print_json(summary: Dict[str, Any]) -> None:
+def _print_json(summary: dict[str, Any]) -> None:
     """Print summary as JSON."""
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 
-def parse_args(args: List[str]) -> argparse.Namespace:
+def parse_args(args: list[str]) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Show per-run_name log summary (status, duration, log level counts)."
-    )
+    parser = argparse.ArgumentParser(description="Show per-run_name log summary (status, duration, log level counts).")
     parser.add_argument(
         "--date",
         type=_parse_date,

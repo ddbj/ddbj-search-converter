@@ -136,7 +136,7 @@ def build_jga_internal_relations() -> Dict[str, IdPairs]:
 # === XML parsing ===
 
 
-def _element_to_dict(element: etree._Element) -> Dict[str, Any]:
+def _element_to_dict(element: etree._Element) -> dict[str, Any] | str:
     """lxml Element を dict に変換する。属性はプレフィックスなし。"""
     result: Dict[str, Any] = {}
 
@@ -155,7 +155,7 @@ def _element_to_dict(element: etree._Element) -> Dict[str, Any]:
             if result:  # 属性がある場合
                 result["content"] = text
             elif len(element) == 0:  # 子要素がない場合
-                return {"content": text} if result else text  # type: ignore
+                return {"content": text} if result else text
 
     # 子要素を処理
     children: Dict[str, List[Any]] = {}
@@ -194,9 +194,11 @@ def load_jga_study_xml() -> List[Dict[str, Any]]:
     root = tree.getroot()
 
     # STUDY 要素を取得
-    studies: List[Dict[str, Any]] = []
+    studies: list[dict[str, Any]] = []
     for study_elem in root.findall("STUDY"):
-        studies.append(_element_to_dict(study_elem))
+        result = _element_to_dict(study_elem)
+        if isinstance(result, dict):
+            studies.append(result)
 
     return studies
 

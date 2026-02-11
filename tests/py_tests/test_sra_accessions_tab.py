@@ -2,11 +2,11 @@
 
 DB 構築パイプライン、relation イテレータ、JSONL クエリ関数を検証する。
 """
+
 import re
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 import duckdb
 import pytest
@@ -55,7 +55,7 @@ TSV_HEADER = (
 _TSV_COLUMNS = TSV_HEADER.split("\t")
 
 # デフォルト値 (全て `-` = NULL として扱われる)
-_TSV_DEFAULTS = {col: "-" for col in _TSV_COLUMNS}
+_TSV_DEFAULTS = dict.fromkeys(_TSV_COLUMNS, "-")
 
 
 def _make_tsv_row(**kwargs: str) -> str:
@@ -65,16 +65,15 @@ def _make_tsv_row(**kwargs: str) -> str:
     return "\t".join(vals[col] for col in _TSV_COLUMNS)
 
 
-def _write_tsv(path: Path, rows: List[str]) -> None:
+def _write_tsv(path: Path, rows: list[str]) -> None:
     """ヘッダー + 行リストを TSV ファイルに書き出す。"""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    with path.open("w", encoding="utf-8") as f:
         f.write(TSV_HEADER + "\n")
-        for row in rows:
-            f.write(row + "\n")
+        f.writelines(row + "\n" for row in rows)
 
 
-def _setup_accessions_db(db_path: Path, rows: list) -> None:
+def _setup_accessions_db(db_path: Path, rows: list) -> None:  # type: ignore[type-arg]
     """テスト用の accessions テーブルを作成しデータを挿入する。"""
     db_path.parent.mkdir(parents=True, exist_ok=True)
     with duckdb.connect(db_path) as conn:
@@ -113,7 +112,7 @@ def _make_config(tmp_path: Path) -> Config:
 def _make_config_with_db(
     tmp_path: Path,
     source: str,
-    rows: list,
+    rows: list,  # type: ignore[type-arg]
 ) -> Config:
     """Config 作成 + DB セットアップの一括ショートカット。"""
     config = _make_config(tmp_path)
@@ -138,7 +137,7 @@ class TestInitAccessionDb:
 
         with duckdb.connect(db_path) as conn:
             cols = conn.execute("DESCRIBE accessions").fetchall()
-            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]
+            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]  # type: ignore[index]
 
         assert len(cols) == 13
         assert count == 0
@@ -157,7 +156,7 @@ class TestInitAccessionDb:
         init_accession_db(db_path)
 
         with duckdb.connect(db_path) as conn:
-            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]
+            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]  # type: ignore[index]
 
         assert count == 0
 
@@ -177,15 +176,18 @@ class TestLoadTsvToTmpDb:
         tsv_path = tmp_path / "test.tsv"
 
         init_accession_db(db_path)
-        _write_tsv(tsv_path, [
-            _make_tsv_row(
-                Accession="SRR000001",
-                Submission="SRA000001",
-                Type="RUN",
-                Status="live",
-                Visibility="public",
-            ),
-        ])
+        _write_tsv(
+            tsv_path,
+            [
+                _make_tsv_row(
+                    Accession="SRR000001",
+                    Submission="SRA000001",
+                    Type="RUN",
+                    Status="live",
+                    Visibility="public",
+                ),
+            ],
+        )
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
@@ -199,15 +201,18 @@ class TestLoadTsvToTmpDb:
         tsv_path = tmp_path / "test.tsv"
 
         init_accession_db(db_path)
-        _write_tsv(tsv_path, [
-            _make_tsv_row(Accession="SRR000001", BioProject="-"),
-        ])
+        _write_tsv(
+            tsv_path,
+            [
+                _make_tsv_row(Accession="SRR000001", BioProject="-"),
+            ],
+        )
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
             row = conn.execute("SELECT BioProject FROM accessions").fetchone()
 
-        assert row[0] is None
+        assert row[0] is None  # type: ignore[index]
 
     def test_empty_string_is_null(self, tmp_path: Path) -> None:
         """空文字列は NULL として扱われる (DRA 形式)。"""
@@ -217,7 +222,7 @@ class TestLoadTsvToTmpDb:
         init_accession_db(db_path)
         # 空文字列を直接 TSV に書き込む
         tsv_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(tsv_path, "w", encoding="utf-8") as f:
+        with tsv_path.open("w", encoding="utf-8") as f:
             f.write(TSV_HEADER + "\n")
             cols = ["SRR000001"] + [""] * 19
             f.write("\t".join(cols) + "\n")
@@ -227,8 +232,8 @@ class TestLoadTsvToTmpDb:
         with duckdb.connect(db_path) as conn:
             row = conn.execute("SELECT Submission, BioProject FROM accessions").fetchone()
 
-        assert row[0] is None
-        assert row[1] is None
+        assert row[0] is None  # type: ignore[index]
+        assert row[1] is None  # type: ignore[index]
 
     def test_sra_datetime_format(self, tmp_path: Path) -> None:
         """SRA 日付 `2023-06-01T21:15:36Z` が TIMESTAMP に変換される。"""
@@ -236,24 +241,25 @@ class TestLoadTsvToTmpDb:
         tsv_path = tmp_path / "test.tsv"
 
         init_accession_db(db_path)
-        _write_tsv(tsv_path, [
-            _make_tsv_row(
-                Accession="SRR000001",
-                Updated="2023-06-01T21:15:36Z",
-                Published="2023-07-01T00:00:00Z",
-                Received="2023-05-01T12:30:45Z",
-            ),
-        ])
+        _write_tsv(
+            tsv_path,
+            [
+                _make_tsv_row(
+                    Accession="SRR000001",
+                    Updated="2023-06-01T21:15:36Z",
+                    Published="2023-07-01T00:00:00Z",
+                    Received="2023-05-01T12:30:45Z",
+                ),
+            ],
+        )
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
-            row = conn.execute(
-                "SELECT Updated, Published, Received FROM accessions"
-            ).fetchone()
+            row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
-        assert row[0] == datetime(2023, 6, 1, 21, 15, 36)
-        assert row[1] == datetime(2023, 7, 1, 0, 0, 0)
-        assert row[2] == datetime(2023, 5, 1, 12, 30, 45)
+        assert row[0] == datetime(2023, 6, 1, 21, 15, 36)  # type: ignore[index]
+        assert row[1] == datetime(2023, 7, 1, 0, 0, 0)  # type: ignore[index]
+        assert row[2] == datetime(2023, 5, 1, 12, 30, 45)  # type: ignore[index]
 
     def test_dra_date_format(self, tmp_path: Path) -> None:
         """DRA 日付 `2015-01-28` が TIMESTAMP に変換される (midnight)。"""
@@ -261,24 +267,25 @@ class TestLoadTsvToTmpDb:
         tsv_path = tmp_path / "test.tsv"
 
         init_accession_db(db_path)
-        _write_tsv(tsv_path, [
-            _make_tsv_row(
-                Accession="DRR000001",
-                Updated="2015-01-28",
-                Published="2015-02-01",
-                Received="2015-01-01",
-            ),
-        ])
+        _write_tsv(
+            tsv_path,
+            [
+                _make_tsv_row(
+                    Accession="DRR000001",
+                    Updated="2015-01-28",
+                    Published="2015-02-01",
+                    Received="2015-01-01",
+                ),
+            ],
+        )
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
-            row = conn.execute(
-                "SELECT Updated, Published, Received FROM accessions"
-            ).fetchone()
+            row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
-        assert row[0] == datetime(2015, 1, 28, 0, 0, 0)
-        assert row[1] == datetime(2015, 2, 1, 0, 0, 0)
-        assert row[2] == datetime(2015, 1, 1, 0, 0, 0)
+        assert row[0] == datetime(2015, 1, 28, 0, 0, 0)  # type: ignore[index]
+        assert row[1] == datetime(2015, 2, 1, 0, 0, 0)  # type: ignore[index]
+        assert row[2] == datetime(2015, 1, 1, 0, 0, 0)  # type: ignore[index]
 
     def test_null_date_preserved(self, tmp_path: Path) -> None:
         """NULL 日付 (`-`) は NULL のまま保持される。"""
@@ -286,19 +293,20 @@ class TestLoadTsvToTmpDb:
         tsv_path = tmp_path / "test.tsv"
 
         init_accession_db(db_path)
-        _write_tsv(tsv_path, [
-            _make_tsv_row(Accession="SRR000001", Updated="-", Published="-", Received="-"),
-        ])
+        _write_tsv(
+            tsv_path,
+            [
+                _make_tsv_row(Accession="SRR000001", Updated="-", Published="-", Received="-"),
+            ],
+        )
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
-            row = conn.execute(
-                "SELECT Updated, Published, Received FROM accessions"
-            ).fetchone()
+            row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
-        assert row[0] is None
-        assert row[1] is None
-        assert row[2] is None
+        assert row[0] is None  # type: ignore[index]
+        assert row[1] is None  # type: ignore[index]
+        assert row[2] is None  # type: ignore[index]
 
     def test_multiple_rows(self, tmp_path: Path) -> None:
         """複数行が正しくロードされる。"""
@@ -306,15 +314,18 @@ class TestLoadTsvToTmpDb:
         tsv_path = tmp_path / "test.tsv"
 
         init_accession_db(db_path)
-        _write_tsv(tsv_path, [
-            _make_tsv_row(Accession="SRR000001", Type="RUN"),
-            _make_tsv_row(Accession="SRR000002", Type="EXPERIMENT"),
-            _make_tsv_row(Accession="SRR000003", Type="STUDY"),
-        ])
+        _write_tsv(
+            tsv_path,
+            [
+                _make_tsv_row(Accession="SRR000001", Type="RUN"),
+                _make_tsv_row(Accession="SRR000002", Type="EXPERIMENT"),
+                _make_tsv_row(Accession="SRR000003", Type="STUDY"),
+            ],
+        )
         load_tsv_to_tmp_db(tsv_path, db_path)
 
         with duckdb.connect(db_path) as conn:
-            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]
+            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]  # type: ignore[index]
 
         assert count == 3
 
@@ -328,15 +339,18 @@ class TestLoadTsvToTmpDb:
             tsv_path = tmp_path / "test.tsv"
 
             init_accession_db(db_path)
-            _write_tsv(tsv_path, [
-                _make_tsv_row(Accession="SRR000001", Updated=ts),
-            ])
+            _write_tsv(
+                tsv_path,
+                [
+                    _make_tsv_row(Accession="SRR000001", Updated=ts),
+                ],
+            )
             load_tsv_to_tmp_db(tsv_path, db_path)
 
             with duckdb.connect(db_path) as conn:
                 row = conn.execute("SELECT Updated FROM accessions").fetchone()
 
-            assert row[0] is not None
+            assert row[0] is not None  # type: ignore[index]
 
     @given(
         acc=st.text(
@@ -355,18 +369,19 @@ class TestLoadTsvToTmpDb:
             tsv_path = tmp_path / "test.tsv"
 
             init_accession_db(db_path)
-            _write_tsv(tsv_path, [
-                _make_tsv_row(Accession=acc, Type=sra_type),
-            ])
+            _write_tsv(
+                tsv_path,
+                [
+                    _make_tsv_row(Accession=acc, Type=sra_type),
+                ],
+            )
             load_tsv_to_tmp_db(tsv_path, db_path)
 
             with duckdb.connect(db_path) as conn:
-                row = conn.execute(
-                    "SELECT Accession, Type FROM accessions"
-                ).fetchone()
+                row = conn.execute("SELECT Accession, Type FROM accessions").fetchone()
 
-            assert row[0] == acc
-            assert row[1] == sra_type
+            assert row[0] == acc  # type: ignore[index]
+            assert row[1] == sra_type  # type: ignore[index]
 
 
 class TestFinalizeDb:
@@ -381,9 +396,7 @@ class TestFinalizeDb:
         finalize_db(tmp_db, final_db)
 
         with duckdb.connect(final_db) as conn:
-            indexes = conn.execute(
-                "SELECT index_name FROM duckdb_indexes()"
-            ).fetchall()
+            indexes = conn.execute("SELECT index_name FROM duckdb_indexes()").fetchall()
             index_names = {row[0] for row in indexes}
 
         assert "idx_bp" in index_names
@@ -422,7 +435,7 @@ class TestFinalizeDb:
         with duckdb.connect(final_db) as conn:
             row = conn.execute("SELECT Accession FROM accessions").fetchone()
 
-        assert row[0] == "NEW"
+        assert row[0] == "NEW"  # type: ignore[index]
 
     def test_data_preserved(self, tmp_path: Path) -> None:
         """データが finalize 後も保持される。"""
@@ -445,7 +458,7 @@ class TestFinalizeDb:
         finalize_db(tmp_db, final_db)
 
         with duckdb.connect(final_db) as conn:
-            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]
+            count = conn.execute("SELECT COUNT(*) FROM accessions").fetchone()[0]  # type: ignore[index]
 
         assert count == 2
 
@@ -456,7 +469,7 @@ class TestFinalizeDb:
 
 # 各 relation イテレータの仕様を定義
 # (関数, Type フィルタ (None=フィルタなし), 出力の (col1, col2) カラム名)
-_RELATION_SPECS: list[tuple] = [
+_RELATION_SPECS: list[tuple] = [  # type: ignore[type-arg]
     (iter_bp_bs_relations, None, "BioProject", "BioSample"),
     (iter_study_experiment_relations, "EXPERIMENT", "Study", "Accession"),
     (iter_experiment_run_relations, "RUN", "Experiment", "Accession"),
@@ -478,17 +491,17 @@ _RELATION_SPECS: list[tuple] = [
 ]
 
 
-def _relation_id(spec: tuple) -> str:
-    return spec[0].__name__
+def _relation_id(spec: tuple) -> str:  # type: ignore[type-arg]
+    return spec[0].__name__  # type: ignore[no-any-return]
 
 
 def _make_row_for_relation(
-    type_val: Optional[str],
+    type_val: str | None,
     col1_name: str,
     col1_val: str,
     col2_name: str,
     col2_val: str,
-) -> tuple:
+) -> tuple:  # type: ignore[type-arg]
     """relation テスト用の 13 カラム行を生成する。"""
     mapping = {
         "Accession": None,
@@ -499,8 +512,8 @@ def _make_row_for_relation(
         "Experiment": None,
         "Sample": None,
     }
-    mapping[col1_name] = col1_val
-    mapping[col2_name] = col2_val
+    mapping[col1_name] = col1_val  # type: ignore[assignment]
+    mapping[col2_name] = col2_val  # type: ignore[assignment]
     return (
         mapping["Accession"],
         mapping["Submission"],
@@ -522,7 +535,7 @@ class TestRelationIterators:
     """全 8 relation イテレータの共通テスト。"""
 
     @pytest.mark.parametrize("spec", _RELATION_SPECS, ids=_relation_id)
-    def test_matching_row_returned(self, tmp_path: Path, spec: tuple) -> None:
+    def test_matching_row_returned(self, tmp_path: Path, spec: tuple) -> None:  # type: ignore[type-arg]
         """マッチする行が返される。"""
         func, type_filter, col1, col2 = spec
         row = _make_row_for_relation(type_filter, col1, "VAL1", col2, "VAL2")
@@ -535,7 +548,7 @@ class TestRelationIterators:
         [s for s in _RELATION_SPECS if s[1] is not None],
         ids=lambda s: s[0].__name__,
     )
-    def test_wrong_type_excluded(self, tmp_path: Path, spec: tuple) -> None:
+    def test_wrong_type_excluded(self, tmp_path: Path, spec: tuple) -> None:  # type: ignore[type-arg]
         """異なる Type の行は除外される。"""
         func, type_filter, col1, col2 = spec
         wrong_type = "SUBMISSION" if type_filter != "SUBMISSION" else "RUN"
@@ -545,9 +558,9 @@ class TestRelationIterators:
         assert result == []
 
     @pytest.mark.parametrize("spec", _RELATION_SPECS, ids=_relation_id)
-    def test_null_col_excluded(self, tmp_path: Path, spec: tuple) -> None:
+    def test_null_col_excluded(self, tmp_path: Path, spec: tuple) -> None:  # type: ignore[type-arg]
         """NULL カラムの行は除外される。"""
-        func, type_filter, col1, col2 = spec
+        func, type_filter, col1, _col2 = spec
         # col2 が NULL の行
         mapping = {
             "Accession": None,
@@ -558,7 +571,7 @@ class TestRelationIterators:
             "Experiment": None,
             "Sample": None,
         }
-        mapping[col1] = "VAL1"
+        mapping[col1] = "VAL1"  # type: ignore[assignment]
         # col2 は None のまま
         row = (
             mapping["Accession"],
@@ -580,7 +593,7 @@ class TestRelationIterators:
         assert result == []
 
     @pytest.mark.parametrize("spec", _RELATION_SPECS, ids=_relation_id)
-    def test_distinct_dedup(self, tmp_path: Path, spec: tuple) -> None:
+    def test_distinct_dedup(self, tmp_path: Path, spec: tuple) -> None:  # type: ignore[type-arg]
         """DISTINCT で重複が排除される。"""
         func, type_filter, col1, col2 = spec
         row = _make_row_for_relation(type_filter, col1, "VAL1", col2, "VAL2")
@@ -589,7 +602,7 @@ class TestRelationIterators:
         assert len(result) == 1
 
     @pytest.mark.parametrize("spec", _RELATION_SPECS, ids=_relation_id)
-    def test_empty_table(self, tmp_path: Path, spec: tuple) -> None:
+    def test_empty_table(self, tmp_path: Path, spec: tuple) -> None:  # type: ignore[type-arg]
         """空テーブル → 空リスト。"""
         func, _, _, _ = spec
         config = _make_config_with_db(tmp_path, "sra", [])
@@ -598,7 +611,7 @@ class TestRelationIterators:
 
     @pytest.mark.parametrize("spec", _RELATION_SPECS, ids=_relation_id)
     @pytest.mark.parametrize("source", ["sra", "dra"])
-    def test_both_sources(self, tmp_path: Path, spec: tuple, source: str) -> None:
+    def test_both_sources(self, tmp_path: Path, spec: tuple, source: str) -> None:  # type: ignore[type-arg]
         """sra/dra 両 source で動作する。"""
         func, type_filter, col1, col2 = spec
         row = _make_row_for_relation(type_filter, col1, "VAL1", col2, "VAL2")
@@ -617,13 +630,27 @@ class TestGetAccessionInfoBulk:
 
     def test_dates_are_iso8601(self, tmp_path: Path) -> None:
         """TIMESTAMP が 'YYYY-MM-DDTHH:MM:SSZ' に変換される。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                "RUN", "live", "public",
-                "2014-05-12 10:30:00", "2014-06-01 00:00:00", "2014-04-01 12:00:00",
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2014-05-12 10:30:00",
+                    "2014-06-01 00:00:00",
+                    "2014-04-01 12:00:00",
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000001"])
 
         assert "SRR000001" in result
@@ -634,13 +661,27 @@ class TestGetAccessionInfoBulk:
 
     def test_null_dates_remain_none(self, tmp_path: Path) -> None:
         """NULL の TIMESTAMP は None のまま返される。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000002", "SRA000002", None, None, None, None, None,
-                "RUN", "live", "public",
-                None, None, None,
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000002",
+                    "SRA000002",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000002"])
 
         assert "SRR000002" in result
@@ -671,13 +712,27 @@ class TestGetAccessionInfoBulk:
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             ts = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
-            config = _make_config_with_db(tmp_path, "sra", [
-                (
-                    "SRR999999", "SRA999999", None, None, None, None, None,
-                    "RUN", "live", "public",
-                    ts, ts, ts,
-                ),
-            ])
+            config = _make_config_with_db(
+                tmp_path,
+                "sra",
+                [
+                    (
+                        "SRR999999",
+                        "SRA999999",
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        "RUN",
+                        "live",
+                        "public",
+                        ts,
+                        ts,
+                        ts,
+                    ),
+                ],
+            )
             result = get_accession_info_bulk(config, "sra", ["SRR999999"])
 
             assert "SRR999999" in result
@@ -694,13 +749,27 @@ class TestGetAccessionInfoBulk:
 
     def test_dra_source(self, tmp_path: Path) -> None:
         """source='dra' でも同様に ISO 8601 形式で返される。"""
-        config = _make_config_with_db(tmp_path, "dra", [
-            (
-                "DRR000001", "DRA000001", None, None, None, None, None,
-                "RUN", "live", "public",
-                "2020-02-20 14:00:00", "2020-03-10 00:00:00", "2020-01-15 09:30:45",
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "dra",
+            [
+                (
+                    "DRR000001",
+                    "DRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2020-02-20 14:00:00",
+                    "2020-03-10 00:00:00",
+                    "2020-01-15 09:30:45",
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "dra", ["DRR000001"])
 
         assert "DRR000001" in result
@@ -711,52 +780,108 @@ class TestGetAccessionInfoBulk:
 
     def test_null_status_defaults_to_public(self, tmp_path: Path) -> None:
         """NULL Status は 'public' にデフォルトされる。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                "RUN", None, "public",
-                None, None, None,
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    None,
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000001"])
         status, _, _, _, _, _ = result["SRR000001"]
         assert status == "public"
 
     def test_null_visibility_defaults_to_public(self, tmp_path: Path) -> None:
         """NULL Visibility は 'public' にデフォルトされる。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                "RUN", "live", None,
-                None, None, None,
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    None,
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000001"])
         _, visibility, _, _, _, _ = result["SRR000001"]
         assert visibility == "public"
 
     def test_null_type_defaults_to_empty(self, tmp_path: Path) -> None:
         """NULL Type は空文字列にデフォルトされる。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                None, "live", "public",
-                None, None, None,
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000001"])
         _, _, _, _, _, type_ = result["SRR000001"]
         assert type_ == ""
 
     def test_nonexistent_accession_excluded(self, tmp_path: Path) -> None:
         """存在しない accession は結果に含まれない。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                "RUN", "live", "public",
-                None, None, None,
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000001", "SRR999999"])
         assert "SRR000001" in result
         assert "SRR999999" not in result
@@ -765,9 +890,19 @@ class TestGetAccessionInfoBulk:
         """10001 行でバッチ分割される。"""
         rows = [
             (
-                f"SRR{i:06d}", f"SRA{i:06d}", None, None, None, None, None,
-                "RUN", "live", "public",
-                None, None, None,
+                f"SRR{i:06d}",
+                f"SRA{i:06d}",
+                None,
+                None,
+                None,
+                None,
+                None,
+                "RUN",
+                "live",
+                "public",
+                None,
+                None,
+                None,
             )
             for i in range(10001)
         ]
@@ -780,9 +915,19 @@ class TestGetAccessionInfoBulk:
         """10000 行境界 (ちょうど 1 バッチ)。"""
         rows = [
             (
-                f"SRR{i:06d}", f"SRA{i:06d}", None, None, None, None, None,
-                "RUN", "live", "public",
-                None, None, None,
+                f"SRR{i:06d}",
+                f"SRA{i:06d}",
+                None,
+                None,
+                None,
+                None,
+                None,
+                "RUN",
+                "live",
+                "public",
+                None,
+                None,
+                None,
             )
             for i in range(10000)
         ]
@@ -793,18 +938,42 @@ class TestGetAccessionInfoBulk:
 
     def test_duplicate_accession_overwritten(self, tmp_path: Path) -> None:
         """同一 accession の複数行は dict 上書きで最後の値になる。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                "RUN", "live", "public",
-                None, None, None,
-            ),
-            (
-                "SRR000001", "SRA000001", None, None, None, None, None,
-                "RUN", "suppressed", "public",
-                None, None, None,
-            ),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "suppressed",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_accession_info_bulk(config, "sra", ["SRR000001"])
         assert "SRR000001" in result
         # 結果は 2 行のうちいずれかで dict 上書きされている
@@ -817,36 +986,125 @@ class TestIterAllSubmissions:
 
     def test_returns_submission_type_only(self, tmp_path: Path) -> None:
         """SUBMISSION Type のみ返す。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRA000001", "SRA000001", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRA000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = list(iter_all_submissions(config, "sra"))
         assert result == ["SRA000001"]
 
     def test_sorted_ascending(self, tmp_path: Path) -> None:
         """Accession 昇順ソート。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRA000003", "SRA000003", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-            ("SRA000001", "SRA000001", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-            ("SRA000002", "SRA000002", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRA000003",
+                    "SRA000003",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+                (
+                    "SRA000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+                (
+                    "SRA000002",
+                    "SRA000002",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = list(iter_all_submissions(config, "sra"))
         assert result == ["SRA000001", "SRA000002", "SRA000003"]
 
     def test_distinct_dedup(self, tmp_path: Path) -> None:
         """DISTINCT 重複排除。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRA000001", "SRA000001", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-            ("SRA000001", "SRA000001", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRA000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+                (
+                    "SRA000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = list(iter_all_submissions(config, "sra"))
         assert result == ["SRA000001"]
 
@@ -862,63 +1120,177 @@ class TestIterUpdatedSubmissions:
 
     def test_returns_submissions_since_margin(self, tmp_path: Path) -> None:
         """since - margin_days 以降の Submission を返す。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            # Updated = 2026-01-20 (since=2026-01-25, margin=30 → cutoff=2025-12-26)
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", "2026-01-20 00:00:00", None, None),
-            # Updated = 2025-12-01 (cutoff 以前)
-            ("SRR000002", "SRA000002", None, None, None, None, None,
-             "RUN", "live", "public", "2025-12-01 00:00:00", None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                # Updated = 2026-01-20 (since=2026-01-25, margin=30 → cutoff=2025-12-26)
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2026-01-20 00:00:00",
+                    None,
+                    None,
+                ),
+                # Updated = 2025-12-01 (cutoff 以前)
+                (
+                    "SRR000002",
+                    "SRA000002",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2025-12-01 00:00:00",
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = list(iter_updated_submissions(config, "sra", "2026-01-25T00:00:00Z", margin_days=30))
         assert "SRA000001" in result
         assert "SRA000002" not in result
 
     def test_margin_days_boundary(self, tmp_path: Path) -> None:
         """margin_days 境界値テスト (ちょうど cutoff 日の行が含まれる)。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            # Updated = 2026-01-10 (since=2026-01-20, margin=10 → cutoff=2026-01-10)
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", "2026-01-10 00:00:00", None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                # Updated = 2026-01-10 (since=2026-01-20, margin=10 → cutoff=2026-01-10)
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2026-01-10 00:00:00",
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = list(iter_updated_submissions(config, "sra", "2026-01-20T00:00:00Z", margin_days=10))
         assert "SRA000001" in result
 
     def test_null_submission_excluded(self, tmp_path: Path) -> None:
         """NULL Submission は除外される。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", None, None, None, None, None, None,
-             "RUN", "live", "public", "2026-01-20 00:00:00", None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2026-01-20 00:00:00",
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = list(iter_updated_submissions(config, "sra", "2026-01-01T00:00:00Z", margin_days=0))
         assert result == []
 
     def test_null_updated_excluded(self, tmp_path: Path) -> None:
         """NULL Updated は除外される (WHERE Updated >= ? に NULL はマッチしない)。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = list(iter_updated_submissions(config, "sra", "2020-01-01T00:00:00Z", margin_days=0))
         assert result == []
 
     def test_sorted_ascending(self, tmp_path: Path) -> None:
         """Submission 昇順ソート。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000002", "SRA000003", None, None, None, None, None,
-             "RUN", "live", "public", "2026-01-20 00:00:00", None, None),
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", "2026-01-20 00:00:00", None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000002",
+                    "SRA000003",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2026-01-20 00:00:00",
+                    None,
+                    None,
+                ),
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2026-01-20 00:00:00",
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = list(iter_updated_submissions(config, "sra", "2026-01-01T00:00:00Z", margin_days=0))
         assert result == ["SRA000001", "SRA000003"]
 
     def test_since_iso8601_parse(self, tmp_path: Path) -> None:
         """since の ISO8601 形式が正しくパースされる。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", "2026-01-15 12:00:00", None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    "2026-01-15 12:00:00",
+                    None,
+                    None,
+                ),
+            ],
+        )
         # since="2026-01-20T15:30:00Z" で margin_days=0 → cutoff=2026-01-20
         result = list(iter_updated_submissions(config, "sra", "2026-01-20T15:30:00Z", margin_days=0))
         assert result == []
@@ -932,10 +1304,13 @@ class TestLookupSubmissionsForAccessions:
 
     def test_basic_reverse_lookup(self, tmp_path: Path) -> None:
         """基本的な逆引き。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = lookup_submissions_for_accessions(config, "sra", ["SRR000001"])
         assert result == {"SRR000001": "SRA000001"}
 
@@ -947,19 +1322,25 @@ class TestLookupSubmissionsForAccessions:
 
     def test_null_submission_excluded(self, tmp_path: Path) -> None:
         """NULL Submission は除外される。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", None, None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                ("SRR000001", None, None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = lookup_submissions_for_accessions(config, "sra", ["SRR000001"])
         assert "SRR000001" not in result
 
     def test_nonexistent_accession_excluded(self, tmp_path: Path) -> None:
         """存在しない accession は結果にない。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = lookup_submissions_for_accessions(config, "sra", ["SRR999999"])
         assert result == {}
 
@@ -969,10 +1350,13 @@ class TestGetSubmissionAccessions:
 
     def test_basic_forward_lookup(self, tmp_path: Path) -> None:
         """基本的な正引き。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = get_submission_accessions(config, "sra", {"SRA000001"})
         assert result == {"SRA000001": ["SRR000001"]}
 
@@ -990,26 +1374,56 @@ class TestGetSubmissionAccessions:
 
     def test_sorted_accessions(self, tmp_path: Path) -> None:
         """結果のアクセッションがソートされている。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRR000003", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-            ("SRR000002", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                ("SRR000003", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+                ("SRR000002", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+            ],
+        )
         result = get_submission_accessions(config, "sra", {"SRA000001"})
         assert result["SRA000001"] == ["SRR000001", "SRR000002", "SRR000003"]
 
     def test_multiple_accessions_per_submission(self, tmp_path: Path) -> None:
         """1 submission に複数 accession。"""
-        config = _make_config_with_db(tmp_path, "sra", [
-            ("SRA000001", "SRA000001", None, None, None, None, None,
-             "SUBMISSION", "live", "public", None, None, None),
-            ("SRR000001", "SRA000001", None, None, None, None, None,
-             "RUN", "live", "public", None, None, None),
-            ("SRX000001", "SRA000001", None, None, None, None, None,
-             "EXPERIMENT", "live", "public", None, None, None),
-        ])
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRA000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+                ("SRR000001", "SRA000001", None, None, None, None, None, "RUN", "live", "public", None, None, None),
+                (
+                    "SRX000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "EXPERIMENT",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
+                ),
+            ],
+        )
         result = get_submission_accessions(config, "sra", {"SRA000001"})
         assert len(result["SRA000001"]) == 3

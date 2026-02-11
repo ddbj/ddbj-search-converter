@@ -1,6 +1,7 @@
 """Tests for ddbj_search_converter.jsonl.jga module."""
+
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from hypothesis import given
@@ -59,7 +60,7 @@ class TestFormatDateFromCsv:
         result = _format_date_from_csv("2014-07-07 14:00:37.208+09")
         assert result.endswith("Z")
         # 14:00:37 JST -> 05:00:37 UTC
-        assert "2014-07-07T05:00:37Z" == result
+        assert result == "2014-07-07T05:00:37Z"
 
     def test_utc_z_format(self) -> None:
         result = _format_date_from_csv("2024-01-01T12:00:00Z")
@@ -88,11 +89,10 @@ class TestBug15JgaDacWrapping:
 
     def test_single_dac_entry_gets_wrapped(self) -> None:
         """単一エントリ (dict) がリストにラップされる。"""
-        from ddbj_search_converter.jsonl.jga import generate_jga_jsonl  # noqa: F811
 
         # generate_jga_jsonl の内部ロジックの一部をテスト
         # entries が dict の場合は [entries] にラップ
-        entries: Dict[str, Any] = {"accession": "JGAC000001"}
+        entries: dict[str, Any] = {"accession": "JGAC000001"}
         if not isinstance(entries, list):
             entries_list = [entries]
         else:
@@ -143,7 +143,7 @@ class TestExtractTitle:
         assert extract_title(entry, "jga-dataset") == "Dataset Title"
 
     def test_jga_dac(self) -> None:
-        entry: Dict[str, Any] = {}
+        entry: dict[str, Any] = {}
         assert extract_title(entry, "jga-dac") is None
 
     def test_jga_policy(self) -> None:
@@ -151,7 +151,7 @@ class TestExtractTitle:
         assert extract_title(entry, "jga-policy") == "Policy Title"
 
     def test_none_title(self) -> None:
-        entry: Dict[str, Any] = {"DESCRIPTOR": {}}
+        entry: dict[str, Any] = {"DESCRIPTOR": {}}
         assert extract_title(entry, "jga-study") is None
 
 
@@ -167,7 +167,7 @@ class TestExtractDescription:
         assert extract_description(entry, "jga-dataset") == "Dataset desc"
 
     def test_no_description(self) -> None:
-        entry: Dict[str, Any] = {}
+        entry: dict[str, Any] = {}
         assert extract_description(entry, "jga-study") is None
 
 
@@ -194,7 +194,7 @@ class TestJgaEntryToJgaInstance:
         assert jga.name is None
 
     def test_no_alias(self) -> None:
-        entry: Dict[str, Any] = {"accession": "JGAS000001"}
+        entry: dict[str, Any] = {"accession": "JGAS000001"}
         jga = jga_entry_to_jga_instance(entry, "jga-study")
         assert jga.name is None
 
@@ -202,8 +202,8 @@ class TestJgaEntryToJgaInstance:
         """JGA は常に Homo sapiens。"""
         entry = {"accession": "JGAS000001"}
         jga = jga_entry_to_jga_instance(entry, "jga-study")
-        assert jga.organism.identifier == "9606"
-        assert jga.organism.name == "Homo sapiens"
+        assert jga.organism.identifier == "9606"  # type: ignore[union-attr]
+        assert jga.organism.name == "Homo sapiens"  # type: ignore[union-attr]
 
     def test_default_accessibility(self) -> None:
         entry = {"accession": "JGAS000001"}

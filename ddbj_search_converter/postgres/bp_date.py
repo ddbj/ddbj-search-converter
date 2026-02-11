@@ -3,12 +3,12 @@ PostgreSQL から DDBJ BioProject の日付情報を取得するモジュール�
 
 DDBJ BioProject の日付は XML に含まれていないため、PostgreSQL から取得する必要がある。
 """
-from typing import Dict, Iterable, Optional, Set, Tuple
+
+from collections.abc import Iterable
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import log_debug
-from ddbj_search_converter.postgres.utils import (format_date,
-                                                  postgres_connection)
+from ddbj_search_converter.postgres.utils import format_date, postgres_connection
 
 POSTGRES_DB_NAME = "bioproject"
 
@@ -16,7 +16,7 @@ POSTGRES_DB_NAME = "bioproject"
 def fetch_bp_dates_bulk(
     config: Config,
     accessions: Iterable[str],
-) -> Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]:
+) -> dict[str, tuple[str | None, str | None, str | None]]:
     """
     PostgreSQL から BioProject の日付情報をバルク取得する。
 
@@ -33,14 +33,13 @@ def fetch_bp_dates_bulk(
     if not accession_list:
         return {}
 
-    result: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]] = {}
+    result: dict[str, tuple[str | None, str | None, str | None]] = {}
 
     try:
-        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn:
-            with conn.cursor() as cur:
-                # IN 句のプレースホルダーを動的に生成
-                placeholders = ",".join(["%s"] * len(accession_list))
-                query = f"""
+        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
+            # IN 句のプレースホルダーを動的に生成
+            placeholders = ",".join(["%s"] * len(accession_list))
+            query = f"""
                     SELECT
                         s.accession,
                         p.create_date,
@@ -51,16 +50,16 @@ def fetch_bp_dates_bulk(
                     ON s.submission_id = p.submission_id
                     WHERE s.accession IN ({placeholders})
                 """
-                cur.execute(query, accession_list)
-                rows = cur.fetchall()
+            cur.execute(query, accession_list)
+            rows = cur.fetchall()
 
-                for row in rows:
-                    accession, create_date, modified_date, release_date = row
-                    result[accession] = (
-                        format_date(create_date),
-                        format_date(modified_date),
-                        format_date(release_date),
-                    )
+            for row in rows:
+                accession, create_date, modified_date, release_date = row
+                result[accession] = (
+                    format_date(create_date),
+                    format_date(modified_date),
+                    format_date(release_date),
+                )
     except Exception as e:
         log_debug(f"failed to fetch dates from postgresql: {e}")
         raise
@@ -72,7 +71,7 @@ def fetch_bp_dates_bulk(
 def fetch_bp_accessions_modified_since(
     config: Config,
     since: str,
-) -> Set[str]:
+) -> set[str]:
     """
     PostgreSQL から指定日時以降に更新された BioProject の accession を取得する。
 
@@ -89,23 +88,22 @@ def fetch_bp_accessions_modified_since(
         INNER JOIN mass.project p ON s.submission_id = p.submission_id
         WHERE p.modified_date >= %s
     """
-    result: Set[str] = set()
+    result: set[str] = set()
 
     try:
-        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn:
-            with conn.cursor() as cur:
-                query = """
+        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
+            query = """
                     SELECT s.accession
                     FROM mass.bioproject_summary s
                     INNER JOIN mass.project p
                     ON s.submission_id = p.submission_id
                     WHERE p.modified_date >= %s
                 """
-                cur.execute(query, (since,))
-                rows = cur.fetchall()
+            cur.execute(query, (since,))
+            rows = cur.fetchall()
 
-                for row in rows:
-                    result.add(row[0])
+            for row in rows:
+                result.add(row[0])
     except Exception as e:
         log_debug(f"failed to fetch accessions from postgresql: {e}")
         raise

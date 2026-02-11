@@ -1,4 +1,5 @@
 """Tests for ddbj_search_converter.cli.debug.show_log module."""
+
 import json
 
 from ddbj_search_converter.cli.debug.show_log import _row_to_dict
@@ -23,13 +24,15 @@ class TestRowToDict:
 
     def test_with_extra_json_string(self) -> None:
         """extra_json が文字列の場合。"""
-        extra = json.dumps({
-            "debug_category": "test_category",
-            "accession": "PRJDB1111",
-            "file": "/path/to/file",
-            "source": "test_source",
-            "custom_key": "custom_value",
-        })
+        extra = json.dumps(
+            {
+                "debug_category": "test_category",
+                "accession": "PRJDB1111",
+                "file": "/path/to/file",
+                "source": "test_source",
+                "custom_key": "custom_value",
+            }
+        )
 
         result = _row_to_dict(
             timestamp="2026-01-01 10:00:00",

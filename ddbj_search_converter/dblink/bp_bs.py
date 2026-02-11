@@ -106,18 +106,18 @@ def process_ncbi_xml_file(xml_path: Path) -> XmlProcessResult:
                 current_bs_is_valid = False
                 elem.clear()
 
-            elif current_bs_is_valid and event == "end":
+            elif current_bs_is_valid and current_bs is not None and event == "end":
                 if tag == "Link" and elem.attrib.get("target") == "bioproject":
                     bp = elem.attrib.get("label") or (elem.text or "").strip()
                     if bp and not bp.startswith("PRJ"):
                         bp = f"PRJNA{bp}"
                     if bp and is_valid_accession(bp, "bioproject"):
-                        results.append((current_bs, bp))  # type: ignore
+                        results.append((current_bs, bp))
 
                 elif tag == "Attribute" and elem.attrib.get("attribute_name") == "bioproject_accession":
                     bp = (elem.text or "").strip()
                     if bp and is_valid_accession(bp, "bioproject"):
-                        results.append((current_bs, bp))  # type: ignore
+                        results.append((current_bs, bp))
 
                 elem.clear()
 
@@ -169,13 +169,13 @@ def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
                 current_bs_is_valid = False
                 elem.clear()
 
-            elif current_bs_is_valid and event == "end":
+            elif current_bs_is_valid and current_bs is not None and event == "end":
                 attr_name = elem.attrib.get("attribute_name")
                 # DDBJ uses "bioproject_id", NCBI uses "bioproject_accession"
                 if tag == "Attribute" and attr_name in ("bioproject_id", "bioproject_accession"):
                     bp = (elem.text or "").strip()
                     if bp and is_valid_accession(bp, "bioproject"):
-                        results.append((current_bs, bp))  # type: ignore
+                        results.append((current_bs, bp))
                 elem.clear()
 
     # DDBJ XML does not have id attribute, so return empty mapping
@@ -218,7 +218,7 @@ def process_xml_files_parallel(
                 for acc in skipped:
                     log_debug(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path),
                               debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
-            except Exception as e:  # pylint: disable=broad-exception-caught
+            except Exception as e:
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
 

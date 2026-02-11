@@ -1,11 +1,13 @@
 """Tests for ES bulk insert operations."""
 
+import contextlib
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from ddbj_search_converter.es.bulk_insert import (
-    BulkInsertResult,
     bulk_insert_jsonl,
     generate_bulk_actions,
 )
@@ -68,10 +70,7 @@ class TestGenerateBulkActions:
     def test_processes_multiple_docs(self, tmp_path: Path) -> None:
         """Test processing multiple documents."""
         jsonl_file = tmp_path / "test.jsonl"
-        docs = [
-            {"identifier": f"ID{i}", "index": i}
-            for i in range(10)
-        ]
+        docs = [{"identifier": f"ID{i}", "index": i} for i in range(10)]
         jsonl_file.write_text("\n".join(json.dumps(d) for d in docs))
 
         actions = list(generate_bulk_actions(jsonl_file, "test"))
@@ -82,7 +81,7 @@ class TestGenerateBulkActions:
             assert action["_source"]["index"] == i
 
 
-def _make_jsonl_file(tmp_path: Path, docs: list[dict]) -> Path:
+def _make_jsonl_file(tmp_path: Path, docs: list[dict]) -> Path:  # type: ignore[type-arg]
     jsonl_file = tmp_path / "test.jsonl"
     jsonl_file.write_text("\n".join(json.dumps(d) for d in docs) + "\n")
     return jsonl_file
@@ -107,7 +106,7 @@ class TestBulkInsertJsonl:
         parallel_results = [(True, {"index": {"_id": f"ID{i}"}}) for i in range(5)]
 
         with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
-            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 5
         assert result.error_count == 0
@@ -125,13 +124,10 @@ class TestBulkInsertJsonl:
     ) -> None:
         docs = [{"identifier": f"ID{i}"} for i in range(3)]
         jsonl_file = _make_jsonl_file(tmp_path, docs)
-        parallel_results = [
-            (False, {"index": {"_id": f"ID{i}", "error": "mapping error"}})
-            for i in range(3)
-        ]
+        parallel_results = [(False, {"index": {"_id": f"ID{i}", "error": "mapping error"}}) for i in range(3)]
 
         with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
-            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 0
         assert result.error_count == 3
@@ -157,7 +153,7 @@ class TestBulkInsertJsonl:
         ]
 
         with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
-            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 2
         assert result.error_count == 2
@@ -175,13 +171,10 @@ class TestBulkInsertJsonl:
     ) -> None:
         docs = [{"identifier": f"ID{i}"} for i in range(5)]
         jsonl_file = _make_jsonl_file(tmp_path, docs)
-        parallel_results = [
-            (False, {"index": {"_id": f"ID{i}", "error": f"err{i}"}})
-            for i in range(5)
-        ]
+        parallel_results = [(False, {"index": {"_id": f"ID{i}", "error": f"err{i}"}}) for i in range(5)]
 
         with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
-            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index", max_errors=2)
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index", max_errors=2)  # type: ignore[arg-type]
 
         assert result.error_count == 5
         assert len(result.errors) == 2
@@ -199,7 +192,7 @@ class TestBulkInsertJsonl:
         jsonl_file.write_text("")
 
         with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter([])):
-            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 0
         assert result.error_count == 0
@@ -217,11 +210,8 @@ class TestBulkInsertJsonl:
         mock_check.return_value = False
         jsonl_file = _make_jsonl_file(tmp_path, [{"identifier": "ID0"}])
 
-        try:
-            bulk_insert_jsonl(test_config, [jsonl_file], "nonexistent")
-            assert False, "Should have raised"
-        except Exception as e:
-            assert "nonexistent" in str(e)
+        with pytest.raises(Exception, match="nonexistent"):
+            bulk_insert_jsonl(test_config, [jsonl_file], "nonexistent")  # type: ignore[arg-type]
 
     def test_multiple_jsonl_files(
         self,
@@ -245,7 +235,7 @@ class TestBulkInsertJsonl:
             return iter([(True, {"index": {"_id": f"file{call_count}"}})])
 
         with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", side_effect=fake_parallel_bulk):
-            result = bulk_insert_jsonl(test_config, [file1, file2], "test-index")
+            result = bulk_insert_jsonl(test_config, [file1, file2], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 2
         assert result.total_docs == 2
@@ -265,11 +255,11 @@ class TestBulkInsertJsonl:
         def raising_parallel_bulk(*args, **kwargs):
             raise RuntimeError("connection error")
 
-        with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", side_effect=raising_parallel_bulk):
-            try:
-                bulk_insert_jsonl(test_config, [jsonl_file], "test-index")
-            except RuntimeError:
-                pass
+        with (
+            patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", side_effect=raising_parallel_bulk),
+            contextlib.suppress(RuntimeError),
+        ):
+            bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert mock_set_refresh.call_count == 2
         assert mock_refresh.call_count == 1

@@ -3,9 +3,8 @@
 Defines the preferred display order that mirrors run_pipeline.sh execution
 sequence. Run names not listed here are sorted alphabetically at the end.
 """
-from typing import Dict, List, Tuple
 
-PIPELINE_ORDER: List[str] = [
+PIPELINE_ORDER: list[str] = [
     # Phase 0: Pre-check
     "check_external_resources",
     # Phase 1: DBLink Construction — prepare
@@ -49,15 +48,15 @@ PIPELINE_ORDER: List[str] = [
     "show_log",
 ]
 
-_ORDER_MAP: Dict[str, int] = {name: i for i, name in enumerate(PIPELINE_ORDER)}
+_ORDER_MAP: dict[str, int] = {name: i for i, name in enumerate(PIPELINE_ORDER)}
 _FALLBACK: int = len(PIPELINE_ORDER)
 
 
-def run_name_sort_key(name: str) -> Tuple[int, str]:
+def run_name_sort_key(name: str) -> tuple[int, str]:
     """Sort key: pipeline position first, then alphabetical for unknowns."""
     return (_ORDER_MAP.get(name, _FALLBACK), name)
 
 
-def sort_run_names(names: List[str]) -> List[str]:
+def sort_run_names(names: list[str]) -> list[str]:
     """Sort run_names in pipeline order."""
     return sorted(names, key=run_name_sort_key)

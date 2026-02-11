@@ -1,10 +1,11 @@
 """Accession ID のパターン定義とバリデーション。"""
+
 import re
-from typing import Dict, Pattern
+from re import Pattern
 
 from ddbj_search_converter.dblink.db import AccessionType
 
-ID_PATTERN_MAP: Dict[AccessionType, Pattern[str]] = {
+ID_PATTERN_MAP: dict[AccessionType, Pattern[str]] = {
     "biosample": re.compile(r"^SAM[NED](\w)?\d+\Z"),
     "bioproject": re.compile(r"^PRJ[DEN][A-Z]\d+\Z"),
     "umbrella-bioproject": re.compile(r"^PRJ[DEN][A-Z]\d+\Z"),  # bioproject と同じパターン
@@ -21,9 +22,7 @@ ID_PATTERN_MAP: Dict[AccessionType, Pattern[str]] = {
     "gea": re.compile(r"^E-GEAD-\d+\Z"),
     "geo": re.compile(r"^GSE\d+\Z"),
     "insdc-assembly": re.compile(r"^GCA_[0-9]{9}(\.[0-9]+)?\Z"),
-    "insdc-master": re.compile(
-        r"^([A-Z]0{5}|[A-Z]{2}0{6}|[A-Z]{4,6}0{8,10}|[A-J][A-Z]{2}0{5})\Z"
-    ),
+    "insdc-master": re.compile(r"^([A-Z]0{5}|[A-Z]{2}0{6}|[A-Z]{4,6}0{8,10}|[A-J][A-Z]{2}0{5})\Z"),
     "metabobank": re.compile(r"^MTBKS\d+\Z"),
     "hum-id": re.compile(r"^hum\d+\Z"),
     "pubmed-id": re.compile(r"^\d+\Z"),  # pubmed-id は数字のみ (to_xref では最後にフォールバック)

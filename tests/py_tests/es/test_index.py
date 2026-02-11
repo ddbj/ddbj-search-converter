@@ -1,8 +1,6 @@
 """Tests for ES index operations."""
 
-from ddbj_search_converter.es.index import (ALIASES, ALL_INDEXES,
-                                            get_indexes_for_group,
-                                            get_mapping_for_index)
+from ddbj_search_converter.es.index import ALIASES, ALL_INDEXES, get_indexes_for_group, get_mapping_for_index
 
 
 class TestAllIndexes:
@@ -25,7 +23,7 @@ class TestAllIndexes:
             "jga-dac",
             "jga-policy",
         ]
-        assert ALL_INDEXES == expected
+        assert expected == ALL_INDEXES
 
 
 class TestGetIndexesForGroup:
@@ -86,13 +84,13 @@ class TestGetMappingForIndex:
             "sra-sample",
             "sra-analysis",
         ]:
-            mapping = get_mapping_for_index(sra_type)  # type: ignore
+            mapping = get_mapping_for_index(sra_type)  # type: ignore[arg-type]
             props = mapping["mappings"]["properties"]
             assert "downloadUrl" not in props
 
     def test_jga_mappings(self) -> None:
         for jga_type in ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]:
-            mapping = get_mapping_for_index(jga_type)  # type: ignore
+            mapping = get_mapping_for_index(jga_type)  # type: ignore[arg-type]
             props = mapping["mappings"]["properties"]
             assert "identifier" in props
             assert "dbXrefs" in props

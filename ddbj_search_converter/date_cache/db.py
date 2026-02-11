@@ -8,19 +8,19 @@ JSONL 生成時にローカル読み取りを行う。
     - 一時 DB: {result_dir}/bp_bs_date.tmp.duckdb
     - 最終 DB: {result_dir}/bp_bs_date.duckdb
 """
+
 import shutil
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import duckdb
 
-from ddbj_search_converter.config import (DATE_CACHE_DB_FILE_NAME,
-                                          TMP_DATE_CACHE_DB_FILE_NAME, Config)
+from ddbj_search_converter.config import DATE_CACHE_DB_FILE_NAME, TMP_DATE_CACHE_DB_FILE_NAME, Config
 from ddbj_search_converter.logging.logger import log_info
 
 CHUNK_SIZE = 10000
 
-DateTuple = Tuple[Optional[str], Optional[str], Optional[str]]
+DateTuple = tuple[str | None, str | None, str | None]
 
 
 def _tmp_db_path(config: Config) -> Path:
@@ -62,25 +62,21 @@ def init_date_cache_db(config: Config) -> None:
 
 def insert_bp_dates(
     config: Config,
-    rows: Iterable[Tuple[str, Optional[str], Optional[str], Optional[str]]],
+    rows: Iterable[tuple[str, str | None, str | None, str | None]],
 ) -> int:
     db_path = _tmp_db_path(config)
     total = 0
-    chunk: List[Tuple[str, Optional[str], Optional[str], Optional[str]]] = []
+    chunk: list[tuple[str, str | None, str | None, str | None]] = []
 
     with duckdb.connect(str(db_path)) as conn:
         for row in rows:
             chunk.append(row)
             if len(chunk) >= CHUNK_SIZE:
-                conn.executemany(
-                    "INSERT INTO bp_date VALUES (?, ?, ?, ?)", chunk
-                )
+                conn.executemany("INSERT INTO bp_date VALUES (?, ?, ?, ?)", chunk)
                 total += len(chunk)
                 chunk.clear()
         if chunk:
-            conn.executemany(
-                "INSERT INTO bp_date VALUES (?, ?, ?, ?)", chunk
-            )
+            conn.executemany("INSERT INTO bp_date VALUES (?, ?, ?, ?)", chunk)
             total += len(chunk)
 
     return total
@@ -88,25 +84,21 @@ def insert_bp_dates(
 
 def insert_bs_dates(
     config: Config,
-    rows: Iterable[Tuple[str, Optional[str], Optional[str], Optional[str]]],
+    rows: Iterable[tuple[str, str | None, str | None, str | None]],
 ) -> int:
     db_path = _tmp_db_path(config)
     total = 0
-    chunk: List[Tuple[str, Optional[str], Optional[str], Optional[str]]] = []
+    chunk: list[tuple[str, str | None, str | None, str | None]] = []
 
     with duckdb.connect(str(db_path)) as conn:
         for row in rows:
             chunk.append(row)
             if len(chunk) >= CHUNK_SIZE:
-                conn.executemany(
-                    "INSERT INTO bs_date VALUES (?, ?, ?, ?)", chunk
-                )
+                conn.executemany("INSERT INTO bs_date VALUES (?, ?, ?, ?)", chunk)
                 total += len(chunk)
                 chunk.clear()
         if chunk:
-            conn.executemany(
-                "INSERT INTO bs_date VALUES (?, ?, ?, ?)", chunk
-            )
+            conn.executemany("INSERT INTO bs_date VALUES (?, ?, ?, ?)", chunk)
             total += len(chunk)
 
     return total
@@ -132,7 +124,7 @@ def finalize_date_cache_db(config: Config) -> None:
 def fetch_bp_dates_from_cache(
     config: Config,
     accessions: Iterable[str],
-) -> Dict[str, DateTuple]:
+) -> dict[str, DateTuple]:
     accession_list = list(accessions)
     if not accession_list:
         return {}
@@ -148,7 +140,7 @@ def fetch_bp_dates_from_cache(
             (accession_list,),
         ).fetchall()
 
-    result: Dict[str, DateTuple] = {}
+    result: dict[str, DateTuple] = {}
     for acc, dc, dm, dp in rows:
         result[acc] = (dc, dm, dp)
 
@@ -158,7 +150,7 @@ def fetch_bp_dates_from_cache(
 def fetch_bs_dates_from_cache(
     config: Config,
     accessions: Iterable[str],
-) -> Dict[str, DateTuple]:
+) -> dict[str, DateTuple]:
     accession_list = list(accessions)
     if not accession_list:
         return {}
@@ -174,7 +166,7 @@ def fetch_bs_dates_from_cache(
             (accession_list,),
         ).fetchall()
 
-    result: Dict[str, DateTuple] = {}
+    result: dict[str, DateTuple] = {}
     for acc, dc, dm, dp in rows:
         result[acc] = (dc, dm, dp)
 
@@ -184,7 +176,7 @@ def fetch_bs_dates_from_cache(
 def fetch_bp_accessions_modified_since_from_cache(
     config: Config,
     since: str,
-) -> Set[str]:
+) -> set[str]:
     db_path = _final_db_path(config)
     with duckdb.connect(str(db_path), read_only=True) as conn:
         rows = conn.execute(
@@ -202,7 +194,7 @@ def fetch_bp_accessions_modified_since_from_cache(
 def fetch_bs_accessions_modified_since_from_cache(
     config: Config,
     since: str,
-) -> Set[str]:
+) -> set[str]:
     db_path = _final_db_path(config)
     with duckdb.connect(str(db_path), read_only=True) as conn:
         rows = conn.execute(

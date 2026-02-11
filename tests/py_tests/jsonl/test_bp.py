@@ -1,7 +1,6 @@
 """Tests for ddbj_search_converter.jsonl.bp module."""
-from typing import Any, Dict, List
 
-import pytest
+from typing import Any
 
 from ddbj_search_converter.jsonl.bp import (
     normalize_properties,
@@ -19,9 +18,9 @@ from ddbj_search_converter.jsonl.bp import (
 )
 
 
-def _make_project(overrides: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def _make_project(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
     """Minimal valid project dict for testing."""
-    base: Dict[str, Any] = {
+    base: dict[str, Any] = {
         "Project": {
             "ProjectID": {"ArchiveID": {"accession": "PRJDB1"}},
             "ProjectType": {},
@@ -55,9 +54,7 @@ class TestParseOrganism:
     def test_ncbi_organism(self) -> None:
         project = _make_project()
         project["Project"]["ProjectType"]["ProjectTypeSubmission"] = {
-            "Target": {
-                "Organism": {"taxID": "9606", "OrganismName": "Homo sapiens"}
-            }
+            "Target": {"Organism": {"taxID": "9606", "OrganismName": "Homo sapiens"}}
         }
         result = parse_organism(project, is_ddbj=False)
         assert result is not None
@@ -94,13 +91,11 @@ class TestBug8TaxIdListDict:
     def test_taxid_list_should_handle_gracefully(self) -> None:
         project = _make_project()
         project["Project"]["ProjectType"]["ProjectTypeSubmission"] = {
-            "Target": {
-                "Organism": {"taxID": [9606, 10090], "OrganismName": "Mixed"}
-            }
+            "Target": {"Organism": {"taxID": [9606, 10090], "OrganismName": "Mixed"}}
         }
         result = parse_organism(project, is_ddbj=False)
         assert result is not None
-        assert result.identifier.isdigit()
+        assert result.identifier.isdigit()  # type: ignore[union-attr]
 
 
 class TestParseTitle:
@@ -150,7 +145,9 @@ class TestParseOrganization:
     def test_single_organization(self) -> None:
         project = _make_project()
         project["Submission"]["Description"]["Organization"] = {
-            "Name": "DDBJ Center", "type": "center", "role": "owner",
+            "Name": "DDBJ Center",
+            "type": "center",
+            "role": "owner",
         }
         orgs = parse_organization(project)
         assert len(orgs) == 1
@@ -173,7 +170,8 @@ class TestParseOrganization:
         project = _make_project()
         project["Submission"]["Description"]["Organization"] = {
             "Name": {"content": "DDBJ Center", "abbr": "DDBJ"},
-            "type": "center", "role": "owner",
+            "type": "center",
+            "role": "owner",
         }
         orgs = parse_organization(project)
         assert len(orgs) == 1
@@ -182,7 +180,7 @@ class TestParseOrganization:
 
     def test_ddbj_always_empty(self) -> None:
         """DDBJ BioProject には Submission がないため常に空。"""
-        project: Dict[str, Any] = {"Project": {"ProjectType": {}, "ProjectDescr": {}}}
+        project: dict[str, Any] = {"Project": {"ProjectType": {}, "ProjectDescr": {}}}
         orgs = parse_organization(project)
         assert orgs == []
 
@@ -193,28 +191,33 @@ class TestParsePublication:
     def test_single_publication(self) -> None:
         project = _make_project()
         project["Project"]["ProjectDescr"]["Publication"] = {
-            "id": "12345", "DbType": "ePubmed",
+            "id": "12345",
+            "DbType": "ePubmed",
             "StructuredCitation": {"Title": "A paper"},
         }
         pubs = parse_publication(project)
         assert len(pubs) == 1
         assert pubs[0].id_ == "12345"
-        assert pubs[0].url is not None and "pubmed" in pubs[0].url
+        assert pubs[0].url is not None
+        assert "pubmed" in pubs[0].url
 
     def test_publication_doi(self) -> None:
         project = _make_project()
         project["Project"]["ProjectDescr"]["Publication"] = {
-            "id": "10.1234/test", "DbType": "DOI",
+            "id": "10.1234/test",
+            "DbType": "DOI",
         }
         pubs = parse_publication(project)
         assert len(pubs) == 1
-        assert pubs[0].url is not None and "doi.org" in pubs[0].url
+        assert pubs[0].url is not None
+        assert "doi.org" in pubs[0].url
 
     def test_publication_numeric_dbtype(self) -> None:
         """DbType が数字の場合、ePubmed として扱う。"""
         project = _make_project()
         project["Project"]["ProjectDescr"]["Publication"] = {
-            "id": "12345", "DbType": "12345",
+            "id": "12345",
+            "DbType": "12345",
         }
         pubs = parse_publication(project)
         assert len(pubs) == 1
@@ -227,7 +230,8 @@ class TestParseGrant:
     def test_single_grant(self) -> None:
         project = _make_project()
         project["Project"]["ProjectDescr"]["Grant"] = {
-            "GrantId": "G001", "Title": "Grant Title",
+            "GrantId": "G001",
+            "Title": "Grant Title",
             "Agency": "NIH",
         }
         grants = parse_grant(project)
@@ -237,7 +241,8 @@ class TestParseGrant:
     def test_grant_with_dict_agency(self) -> None:
         project = _make_project()
         project["Project"]["ProjectDescr"]["Grant"] = {
-            "GrantId": "G001", "Title": "Grant Title",
+            "GrantId": "G001",
+            "Title": "Grant Title",
             "Agency": {"abbr": "NIH", "content": "National Institutes of Health"},
         }
         grants = parse_grant(project)
@@ -252,7 +257,8 @@ class TestParseExternalLink:
     def test_url_link(self) -> None:
         project = _make_project()
         project["Project"]["ProjectDescr"]["ExternalLink"] = {
-            "URL": "https://example.com", "label": "Example",
+            "URL": "https://example.com",
+            "label": "Example",
         }
         links = parse_external_link(project)
         assert len(links) == 1
@@ -325,11 +331,11 @@ class TestNormalizeProperties:
 
     def test_normalizes_biosample_set_id_string(self) -> None:
         project = _make_project()
-        project["Project"]["ProjectType"]["ProjectTypeSubmission"] = {
-            "Target": {"BioSampleSet": {"ID": "12345"}}
-        }
+        project["Project"]["ProjectType"]["ProjectTypeSubmission"] = {"Target": {"BioSampleSet": {"ID": "12345"}}}
         normalize_properties(project)
-        assert project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] == {"content": "12345"}
+        assert project["Project"]["ProjectType"]["ProjectTypeSubmission"]["Target"]["BioSampleSet"]["ID"] == {
+            "content": "12345"
+        }
 
     def test_normalizes_locus_tag_prefix_string(self) -> None:
         project = _make_project()
@@ -359,5 +365,5 @@ class TestNormalizeProperties:
         assert project["Project"]["ProjectDescr"]["Grant"]["Agency"] == {"abbr": "NIH", "content": "NIH"}
 
     def test_no_crash_on_empty_project(self) -> None:
-        project: Dict[str, Any] = {"Project": {"ProjectType": {}, "ProjectDescr": {}}}
+        project: dict[str, Any] = {"Project": {"ProjectType": {}, "ProjectDescr": {}}}
         normalize_properties(project)

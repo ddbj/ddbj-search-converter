@@ -16,21 +16,27 @@ BioProject/BioSample と SRA Accession 間の関連を高速に取得できる�
 - {const_dir}/sra/sra_accessions.duckdb
 - {const_dir}/sra/dra_accessions.duckdb
 """
+
 import datetime
 import shutil
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Dict, Iterator, List, Literal, Optional, Set, Tuple
+from typing import Literal
 
 import duckdb
 
-from ddbj_search_converter.config import (DEFAULT_MARGIN_DAYS,
-                                          DRA_ACCESSIONS_BASE_PATH,
-                                          DRA_DB_FILE_NAME,
-                                          SRA_ACCESSIONS_BASE_PATH,
-                                          SRA_DB_FILE_NAME,
-                                          TMP_DRA_DB_FILE_NAME,
-                                          TMP_SRA_DB_FILE_NAME, TODAY, Config,
-                                          get_config)
+from ddbj_search_converter.config import (
+    DEFAULT_MARGIN_DAYS,
+    DRA_ACCESSIONS_BASE_PATH,
+    DRA_DB_FILE_NAME,
+    SRA_ACCESSIONS_BASE_PATH,
+    SRA_DB_FILE_NAME,
+    TMP_DRA_DB_FILE_NAME,
+    TMP_SRA_DB_FILE_NAME,
+    TODAY,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 TABLE_NAME = "accessions"
@@ -52,7 +58,7 @@ def _final_dra_db_path(config: Config) -> Path:
     return config.const_dir.joinpath("sra", DRA_DB_FILE_NAME)
 
 
-def find_latest_sra_accessions_tab_file() -> Optional[Path]:
+def find_latest_sra_accessions_tab_file() -> Path | None:
     """
     最新の SRA_Accessions.tab ファイルを探す。
 
@@ -71,7 +77,7 @@ def find_latest_sra_accessions_tab_file() -> Optional[Path]:
     return None
 
 
-def find_latest_dra_accessions_tab_file() -> Optional[Path]:
+def find_latest_dra_accessions_tab_file() -> Path | None:
     """
     最新の DRA_Accessions.tab ファイルを探す。
 
@@ -81,9 +87,7 @@ def find_latest_dra_accessions_tab_file() -> Optional[Path]:
         check_date = TODAY - datetime.timedelta(days=days)
         yyyymmdd = check_date.strftime("%Y%m%d")
 
-        path = DRA_ACCESSIONS_BASE_PATH.joinpath(
-            f"{yyyymmdd}.DRA_Accessions.tab"
-        )
+        path = DRA_ACCESSIONS_BASE_PATH.joinpath(f"{yyyymmdd}.DRA_Accessions.tab")
         if path.exists():
             return path
 
@@ -216,18 +220,14 @@ def iter_bp_bs_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     BioProject <-> BioSample 関連をイテレートする。
 
     accessions テーブルから DISTINCT な (BioProject, BioSample) ペアを抽出する。
     NULL 値は除外される。
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -249,7 +249,7 @@ def iter_study_experiment_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Study <-> Experiment 関連をイテレートする。
 
@@ -259,11 +259,7 @@ def iter_study_experiment_relations(
     Returns:
         (study_accession, experiment_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -286,7 +282,7 @@ def iter_experiment_run_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Experiment <-> Run 関連をイテレートする。
 
@@ -296,11 +292,7 @@ def iter_experiment_run_relations(
     Returns:
         (experiment_accession, run_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -323,7 +315,7 @@ def iter_experiment_sample_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Experiment <-> Sample 関連をイテレートする。
 
@@ -333,11 +325,7 @@ def iter_experiment_sample_relations(
     Returns:
         (experiment_accession, sample_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -360,7 +348,7 @@ def iter_run_sample_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Run <-> Sample 関連をイテレートする。
 
@@ -370,11 +358,7 @@ def iter_run_sample_relations(
     Returns:
         (run_accession, sample_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -397,7 +381,7 @@ def iter_submission_study_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Submission <-> Study 関連をイテレートする。
 
@@ -407,11 +391,7 @@ def iter_submission_study_relations(
     Returns:
         (submission_accession, study_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -434,7 +414,7 @@ def iter_study_analysis_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Study <-> Analysis 関連をイテレートする。
 
@@ -444,11 +424,7 @@ def iter_study_analysis_relations(
     Returns:
         (study_accession, analysis_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -471,7 +447,7 @@ def iter_submission_analysis_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """
     Submission <-> Analysis 関連をイテレートする。
 
@@ -482,11 +458,7 @@ def iter_submission_analysis_relations(
     Returns:
         (submission_accession, analysis_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -512,7 +484,7 @@ def iter_bp_study_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioProject <-> Study 関連をイテレートする。
 
     STUDY 行から BioProject と Accession (Study) の関連を抽出する。
@@ -520,11 +492,7 @@ def iter_bp_study_relations(
     Returns:
         (bioproject, study_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -547,7 +515,7 @@ def iter_bp_experiment_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioProject <-> Experiment 関連をイテレートする。
 
     EXPERIMENT 行から BioProject と Accession (Experiment) の関連を抽出する。
@@ -555,11 +523,7 @@ def iter_bp_experiment_relations(
     Returns:
         (bioproject, experiment_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -582,7 +546,7 @@ def iter_bp_run_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioProject <-> Run 関連をイテレートする。
 
     RUN 行から BioProject と Accession (Run) の関連を抽出する。
@@ -590,11 +554,7 @@ def iter_bp_run_relations(
     Returns:
         (bioproject, run_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -617,7 +577,7 @@ def iter_bp_analysis_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioProject <-> Analysis 関連をイテレートする。
 
     ANALYSIS 行から BioProject と Accession (Analysis) の関連を抽出する。
@@ -625,11 +585,7 @@ def iter_bp_analysis_relations(
     Returns:
         (bioproject, analysis_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -652,7 +608,7 @@ def iter_bs_sample_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioSample <-> Sample 関連をイテレートする。
 
     SAMPLE 行から BioSample と Accession (Sample) の関連を抽出する。
@@ -660,11 +616,7 @@ def iter_bs_sample_relations(
     Returns:
         (biosample, sample_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -687,7 +639,7 @@ def iter_bs_experiment_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioSample <-> Experiment 関連をイテレートする。
 
     EXPERIMENT 行から BioSample と Accession (Experiment) の関連を抽出する。
@@ -695,11 +647,7 @@ def iter_bs_experiment_relations(
     Returns:
         (biosample, experiment_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -722,7 +670,7 @@ def iter_bs_run_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioSample <-> Run 関連をイテレートする。
 
     RUN 行から BioSample と Accession (Run) の関連を抽出する。
@@ -730,11 +678,7 @@ def iter_bs_run_relations(
     Returns:
         (biosample, run_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -757,7 +701,7 @@ def iter_bs_analysis_relations(
     config: Config,
     *,
     source: SourceKind,
-) -> Iterator[Tuple[str, str]]:
+) -> Iterator[tuple[str, str]]:
     """BioSample <-> Analysis 関連をイテレートする。
 
     ANALYSIS 行から BioSample と Accession (Analysis) の関連を抽出する。
@@ -765,11 +709,7 @@ def iter_bs_analysis_relations(
     Returns:
         (biosample, analysis_accession) のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(
@@ -791,15 +731,15 @@ def iter_bs_analysis_relations(
 # === Query functions for JSONL generation ===
 
 
-AccessionInfo = Tuple[str, str, Optional[str], Optional[str], Optional[str], str]
+AccessionInfo = tuple[str, str, str | None, str | None, str | None, str]
 # (status, visibility, received, updated, published, type)
 
 
 def get_accession_info_bulk(
     config: Config,
     source: SourceKind,
-    accessions: List[str],
-) -> Dict[str, AccessionInfo]:
+    accessions: list[str],
+) -> dict[str, AccessionInfo]:
     """
     Accessions DB から status, visibility, 日付を一括取得する。
 
@@ -814,19 +754,15 @@ def get_accession_info_bulk(
     if not accessions:
         return {}
 
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
-    result: Dict[str, AccessionInfo] = {}
+    result: dict[str, AccessionInfo] = {}
 
     with duckdb.connect(db_path, read_only=True) as conn:
         # バッチサイズを制限してクエリを実行
         batch_size = 10000
         for i in range(0, len(accessions), batch_size):
-            batch = accessions[i:i + batch_size]
+            batch = accessions[i : i + batch_size]
             placeholders = ", ".join(["?"] * len(batch))
             rows = conn.execute(
                 f"""
@@ -872,11 +808,7 @@ def iter_all_submissions(
     Returns:
         submission accession のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     with duckdb.connect(db_path, read_only=True) as conn:
         rows = conn.execute(
@@ -913,15 +845,11 @@ def iter_updated_submissions(
     Returns:
         submission accession のイテレータ
     """
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
     # since から margin_days を引いた日付を計算
     # 形式: "2026-01-19T00:00:00Z" -> "2026-01-16"
-    since_date = since.split("T")[0]
+    since_date = since.split("T", maxsplit=1)[0]
     since_dt = datetime.datetime.strptime(since_date, "%Y-%m-%d")
     margin_dt = since_dt - datetime.timedelta(days=margin_days)
     margin_date = margin_dt.strftime("%Y-%m-%d")
@@ -945,8 +873,8 @@ def iter_updated_submissions(
 def lookup_submissions_for_accessions(
     config: Config,
     source: SourceKind,
-    accessions: List[str],
-) -> Dict[str, str]:
+    accessions: list[str],
+) -> dict[str, str]:
     """
     Accession から所属 Submission を逆引きする。
 
@@ -961,18 +889,14 @@ def lookup_submissions_for_accessions(
     if not accessions:
         return {}
 
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
-    result: Dict[str, str] = {}
+    result: dict[str, str] = {}
 
     with duckdb.connect(db_path, read_only=True) as conn:
         batch_size = 10000
         for i in range(0, len(accessions), batch_size):
-            batch = accessions[i:i + batch_size]
+            batch = accessions[i : i + batch_size]
             placeholders = ", ".join(["?"] * len(batch))
             rows = conn.execute(
                 f"""
@@ -984,8 +908,7 @@ def lookup_submissions_for_accessions(
                 batch,
             ).fetchall()
 
-            for acc, sub in rows:
-                result[acc] = sub
+            result.update(dict(rows))
 
     return result
 
@@ -993,8 +916,8 @@ def lookup_submissions_for_accessions(
 def get_submission_accessions(
     config: Config,
     source: SourceKind,
-    submissions: Set[str],
-) -> Dict[str, List[str]]:
+    submissions: set[str],
+) -> dict[str, list[str]]:
     """
     指定された submission に含まれる全 accession を取得する。
 
@@ -1009,20 +932,16 @@ def get_submission_accessions(
     if not submissions:
         return {}
 
-    db_path = (
-        _final_sra_db_path(config)
-        if source == "sra"
-        else _final_dra_db_path(config)
-    )
+    db_path = _final_sra_db_path(config) if source == "sra" else _final_dra_db_path(config)
 
-    result: Dict[str, List[str]] = {s: [] for s in submissions}
+    result: dict[str, list[str]] = {s: [] for s in submissions}
 
     with duckdb.connect(db_path, read_only=True) as conn:
         # バッチサイズを制限してクエリを実行
         batch_size = 10000
         submission_list = list(submissions)
         for i in range(0, len(submission_list), batch_size):
-            batch = submission_list[i:i + batch_size]
+            batch = submission_list[i : i + batch_size]
             placeholders = ", ".join(["?"] * len(batch))
             rows = conn.execute(
                 f"""

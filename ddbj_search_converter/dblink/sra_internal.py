@@ -388,7 +388,7 @@ def main() -> None:
             log_info(f"processing {source_label.upper()} internal relations")
             process_sra_internal_relations(
                 config,
-                source=source_label,  # type: ignore[arg-type]
+                source=source_label,
                 sra_blacklist=sra_blacklist,
                 bp_blacklist=bp_blacklist,
                 bs_blacklist=bs_blacklist,

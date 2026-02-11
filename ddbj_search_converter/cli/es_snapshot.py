@@ -15,22 +15,22 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Optional
 
 from ddbj_search_converter.config import Config, get_config
-from ddbj_search_converter.es.snapshot import (create_snapshot,
-                                               delete_repository,
-                                               delete_snapshot,
-                                               export_index_settings,
-                                               list_repositories,
-                                               list_snapshots,
-                                               register_repository,
-                                               restore_snapshot)
-from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, run_logger)
+from ddbj_search_converter.es.snapshot import (
+    create_snapshot,
+    delete_repository,
+    delete_snapshot,
+    export_index_settings,
+    list_repositories,
+    list_snapshots,
+    register_repository,
+    restore_snapshot,
+)
+from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, run_logger
 
 
-def get_config_with_es_url(es_url: Optional[str]) -> Config:
+def get_config_with_es_url(es_url: str | None) -> Config:
     """Get config, optionally overriding ES URL."""
     config = get_config()
     if es_url:
@@ -150,7 +150,7 @@ def cmd_create(args: argparse.Namespace) -> None:
                 indexes=indexes,
                 include_global_state=args.include_global_state,
                 wait_for_completion=not args.no_wait,
-                metadata=metadata if metadata else None,
+                metadata=metadata or None,
             )
 
             if "snapshot" in result:
@@ -196,9 +196,7 @@ def cmd_list(args: argparse.Namespace) -> None:
                 if start_time and start_time != "-":
                     start_time = start_time[:19].replace("T", " ")
                 indices_count = len(snap.get("indices", []))
-                print(
-                    f"{snap['snapshot']:<30} {snap['state']:<12} {start_time:<25} {indices_count:<10}"
-                )
+                print(f"{snap['snapshot']:<30} {snap['state']:<12} {start_time:<25} {indices_count:<10}")
 
             print("-" * 80)
 
@@ -211,9 +209,11 @@ def cmd_list(args: argparse.Namespace) -> None:
                         print(f"    Metadata: {snap['metadata']}")
                     shards = snap.get("shards", {})
                     if shards:
-                        print(f"    Shards: total={shards.get('total', 0)}, "
-                              f"successful={shards.get('successful', 0)}, "
-                              f"failed={shards.get('failed', 0)}")
+                        print(
+                            f"    Shards: total={shards.get('total', 0)}, "
+                            f"successful={shards.get('successful', 0)}, "
+                            f"failed={shards.get('failed', 0)}"
+                        )
 
         except Exception as e:
             log_error("failed to list snapshots", error=e)
@@ -277,8 +277,7 @@ def cmd_delete(args: argparse.Namespace) -> None:
 
         if not args.force:
             confirm = input(
-                f"Are you sure you want to delete snapshot '{args.snapshot}' "
-                f"from repository '{args.repo}'? [y/N]: "
+                f"Are you sure you want to delete snapshot '{args.snapshot}' from repository '{args.repo}'? [y/N]: "
             )
             if confirm.lower() != "y":
                 log_info("operation cancelled")

@@ -1,10 +1,12 @@
 """Tests for ES mapping generation."""
 
-from ddbj_search_converter.es.mappings import (INDEX_SETTINGS,
-                                               get_bioproject_mapping,
-                                               get_biosample_mapping,
-                                               get_jga_mapping,
-                                               get_sra_mapping)
+from ddbj_search_converter.es.mappings import (
+    INDEX_SETTINGS,
+    get_bioproject_mapping,
+    get_biosample_mapping,
+    get_jga_mapping,
+    get_sra_mapping,
+)
 from ddbj_search_converter.es.mappings.common import get_common_mapping
 from ddbj_search_converter.es.mappings.jga import JGA_INDEXES
 from ddbj_search_converter.es.mappings.sra import SRA_INDEXES
@@ -164,16 +166,23 @@ class TestSraMapping:
     def test_sra_no_old_specific_fields(self) -> None:
         """Removed fields should not be present in any SRA mapping."""
         removed_fields = [
-            "centerName", "labName", "studyType", "instrumentModel",
-            "libraryStrategy", "librarySource", "librarySelection",
-            "libraryLayout", "runDate", "runCenter", "analysisType",
+            "centerName",
+            "labName",
+            "studyType",
+            "instrumentModel",
+            "libraryStrategy",
+            "librarySource",
+            "librarySelection",
+            "libraryLayout",
+            "runDate",
+            "runCenter",
+            "analysisType",
         ]
         for sra_type in SRA_INDEXES:
             mapping = get_sra_mapping(sra_type)
             props = mapping["mappings"]["properties"]
             for field in removed_fields:
-                assert field not in props, \
-                    f"{field} should not be in {sra_type}"
+                assert field not in props, f"{field} should not be in {sra_type}"
 
 
 class TestJgaMapping:

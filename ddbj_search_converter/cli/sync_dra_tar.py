@@ -4,20 +4,17 @@ Sync DRA Metadata tar with latest data.
 Builds or updates DRA Metadata tar from DRA XML files.
 Uses DRA_Accessions.tab Updated field to identify changed submissions.
 """
+
 import argparse
 import sys
-from typing import List, Tuple
 
 from ddbj_search_converter.config import Config, get_config
 from ddbj_search_converter.logging.logger import log_info, run_logger
-from ddbj_search_converter.sra.dra_tar import (build_dra_tar, get_dra_tar_path,
-                                               sync_dra_tar)
+from ddbj_search_converter.sra.dra_tar import build_dra_tar, get_dra_tar_path, sync_dra_tar
 
 
-def parse_args(args: List[str]) -> Tuple[Config, bool]:
-    parser = argparse.ArgumentParser(
-        description="Sync DRA Metadata tar with latest data"
-    )
+def parse_args(args: list[str]) -> tuple[Config, bool]:
+    parser = argparse.ArgumentParser(description="Sync DRA Metadata tar with latest data")
     parser.add_argument(
         "--force-rebuild",
         action="store_true",

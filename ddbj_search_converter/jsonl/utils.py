@@ -1,14 +1,14 @@
 """JSONL 生成用の共通ユーティリティ関数。"""
+
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
-from ddbj_search_converter.dblink.db import (AccessionType,
-                                             get_related_entities_bulk)
+from ddbj_search_converter.dblink.db import AccessionType, get_related_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Xref, XrefType
 
-URL_TEMPLATE: Dict[XrefType, str] = {
+URL_TEMPLATE: dict[XrefType, str] = {
     "biosample": f"{SEARCH_BASE_URL}/search/entry/biosample/{{id}}",
     "bioproject": f"{SEARCH_BASE_URL}/search/entry/bioproject/{{id}}",
     "umbrella-bioproject": f"{SEARCH_BASE_URL}/search/entry/bioproject/{{id}}",
@@ -33,7 +33,7 @@ URL_TEMPLATE: Dict[XrefType, str] = {
 }
 
 
-def to_xref(id_: str, *, type_hint: Optional[XrefType] = None) -> Xref:
+def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     """
     ID パターンから Xref を自動生成する。
 
@@ -58,7 +58,7 @@ def to_xref(id_: str, *, type_hint: Optional[XrefType] = None) -> Xref:
 
     # pubmed-id と taxonomy は数字のみなので最後にチェックする
     # umbrella-bioproject は bioproject と同じパターンなのでパターンマッチでは判定できない
-    priority_types: List[XrefType] = [
+    priority_types: list[XrefType] = [
         "biosample",
         "bioproject",
         "sra-submission",
@@ -92,12 +92,10 @@ def to_xref(id_: str, *, type_hint: Optional[XrefType] = None) -> Xref:
             return Xref(identifier=id_, type=db_type, url=url)
 
     # default は taxonomy を返す
-    return Xref(
-        identifier=id_, type="taxonomy", url=URL_TEMPLATE["taxonomy"].format(id=id_)
-    )
+    return Xref(identifier=id_, type="taxonomy", url=URL_TEMPLATE["taxonomy"].format(id=id_))
 
 
-def write_jsonl(output_path: Path, docs: List[Any]) -> None:
+def write_jsonl(output_path: Path, docs: list[Any]) -> None:
     """Pydantic モデルインスタンスのリストを JSONL ファイルに書き込む。"""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as f:
@@ -109,9 +107,9 @@ def write_jsonl(output_path: Path, docs: List[Any]) -> None:
 def get_dbxref_map(
     config: Config,
     entity_type: AccessionType,
-    accessions: List[str],
-    umbrella_ids: Optional[Set[str]] = None,
-) -> Dict[str, List[Xref]]:
+    accessions: list[str],
+    umbrella_ids: set[str] | None = None,
+) -> dict[str, list[Xref]]:
     """dblink DB から関連エントリを取得し、Xref リストに変換する。
 
     umbrella_ids が指定されている場合、related_type が "bioproject" でも
@@ -120,19 +118,16 @@ def get_dbxref_map(
     if not accessions:
         return {}
 
-    relations = get_related_entities_bulk(
-        config, entity_type=entity_type, accessions=accessions
-    )
+    relations = get_related_entities_bulk(config, entity_type=entity_type, accessions=accessions)
 
-    result: Dict[str, List[Xref]] = {}
+    result: dict[str, list[Xref]] = {}
     for accession, related_list in relations.items():
-        xrefs: List[Xref] = []
+        xrefs: list[Xref] = []
         for related_type, related_id in related_list:
-            if (umbrella_ids is not None
-                    and related_type == "bioproject"
-                    and related_id in umbrella_ids):
-                related_type = "umbrella-bioproject"
-            xref = to_xref(related_id, type_hint=related_type)
+            effective_type = related_type
+            if umbrella_ids is not None and related_type == "bioproject" and related_id in umbrella_ids:
+                effective_type = "umbrella-bioproject"
+            xref = to_xref(related_id, type_hint=effective_type)
             xrefs.append(xref)
         xrefs.sort(key=lambda x: x.identifier)
         result[accession] = xrefs

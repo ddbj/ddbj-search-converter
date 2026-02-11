@@ -13,34 +13,27 @@ Usage:
 import argparse
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 from ddbj_search_converter.config import Config, get_config
-from ddbj_search_converter.dblink.utils import (load_blacklist,
-                                                load_jga_blacklist,
-                                                load_sra_blacklist)
+from ddbj_search_converter.dblink.utils import load_blacklist, load_jga_blacklist, load_sra_blacklist
 from ddbj_search_converter.es.bulk_delete import bulk_delete_by_ids
-from ddbj_search_converter.es.bulk_insert import (bulk_insert_from_dir,
-                                                  bulk_insert_jsonl)
-from ddbj_search_converter.es.index import (create_index, delete_index,
-                                            get_indexes_for_group,
-                                            list_indexes)
-from ddbj_search_converter.es.monitoring import (check_health, format_bytes,
-                                                 get_cluster_health,
-                                                 get_index_stats,
-                                                 get_node_stats)
+from ddbj_search_converter.es.bulk_insert import bulk_insert_from_dir, bulk_insert_jsonl
+from ddbj_search_converter.es.index import create_index, delete_index, get_indexes_for_group, list_indexes
+from ddbj_search_converter.es.monitoring import (
+    check_health,
+    format_bytes,
+    get_cluster_health,
+    get_index_stats,
+    get_node_stats,
+)
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
-from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, log_warn,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 
 # === Create Index ===
 
 
-def parse_create_index_args(args: List[str]) -> Tuple[Config, str, bool]:
-    parser = argparse.ArgumentParser(
-        description="Create Elasticsearch indexes."
-    )
+def parse_create_index_args(args: list[str]) -> tuple[Config, str, bool]:
+    parser = argparse.ArgumentParser(description="Create Elasticsearch indexes.")
     parser.add_argument(
         "--index",
         required=True,
@@ -65,7 +58,7 @@ def main_create_index() -> None:
         log_info("creating elasticsearch indexes", index=index)
 
         try:
-            created = create_index(config, index, skip_existing=skip_existing)  # type: ignore
+            created = create_index(config, index, skip_existing=skip_existing)  # type: ignore[arg-type]
             if created:
                 log_info("created indexes", indexes=created)
             else:
@@ -78,10 +71,8 @@ def main_create_index() -> None:
 # === Delete Index ===
 
 
-def parse_delete_index_args(args: List[str]) -> Tuple[Config, str, bool, bool]:
-    parser = argparse.ArgumentParser(
-        description="Delete Elasticsearch indexes."
-    )
+def parse_delete_index_args(args: list[str]) -> tuple[Config, str, bool, bool]:
+    parser = argparse.ArgumentParser(description="Delete Elasticsearch indexes.")
     parser.add_argument(
         "--index",
         required=True,
@@ -110,7 +101,7 @@ def main_delete_index() -> None:
         log_debug("config loaded", config=config.model_dump())
 
         # Show warning for destructive operation
-        indexes_to_delete = get_indexes_for_group(index)  # type: ignore
+        indexes_to_delete = get_indexes_for_group(index)  # type: ignore[arg-type]
         log_info("indexes to delete", indexes=indexes_to_delete)
 
         if not force:
@@ -120,7 +111,7 @@ def main_delete_index() -> None:
                 return
 
         try:
-            deleted = delete_index(config, index, skip_missing=skip_missing)  # type: ignore
+            deleted = delete_index(config, index, skip_missing=skip_missing)  # type: ignore[arg-type]
             if deleted:
                 log_info("deleted indexes", indexes=deleted)
             else:
@@ -133,10 +124,8 @@ def main_delete_index() -> None:
 # === Bulk Insert ===
 
 
-def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Path], str, int]:
-    parser = argparse.ArgumentParser(
-        description="Bulk insert JSONL files into Elasticsearch."
-    )
+def parse_bulk_insert_args(args: list[str]) -> tuple[Config, str, Path, list[Path], str, int]:
+    parser = argparse.ArgumentParser(description="Bulk insert JSONL files into Elasticsearch.")
     parser.add_argument(
         "--index",
         required=True,
@@ -170,7 +159,7 @@ def parse_bulk_insert_args(args: List[str]) -> Tuple[Config, str, Path, List[Pat
     if not parsed.dir and not parsed.files:
         parser.error("Either --dir or --file must be specified")
 
-    jsonl_dir = Path(parsed.dir) if parsed.dir else Path(".")
+    jsonl_dir = Path(parsed.dir) if parsed.dir else Path()
     jsonl_files = [Path(f) for f in (parsed.files or [])]
 
     return config, parsed.index, jsonl_dir, jsonl_files, parsed.pattern, parsed.batch_size
@@ -187,14 +176,14 @@ def main_bulk_insert() -> None:
                 result = bulk_insert_jsonl(
                     config=config,
                     jsonl_files=jsonl_files,
-                    index=index,  # type: ignore
+                    index=index,  # type: ignore[arg-type]
                     batch_size=batch_size,
                 )
             else:
                 result = bulk_insert_from_dir(
                     config=config,
                     jsonl_dir=jsonl_dir,
-                    index=index,  # type: ignore
+                    index=index,  # type: ignore[arg-type]
                     pattern=pattern,
                     batch_size=batch_size,
                 )
@@ -219,10 +208,8 @@ def main_bulk_insert() -> None:
 # === List Indexes ===
 
 
-def parse_list_indexes_args(args: List[str]) -> Config:
-    parser = argparse.ArgumentParser(
-        description="List Elasticsearch indexes and their document counts."
-    )
+def parse_list_indexes_args(args: list[str]) -> Config:
+    parser = argparse.ArgumentParser(description="List Elasticsearch indexes and their document counts.")
 
     parser.parse_args(args)
     config = get_config()
@@ -258,12 +245,11 @@ def main_list_indexes() -> None:
 # === Health Check ===
 
 
-def parse_health_check_args(args: List[str]) -> Tuple[Config, bool]:
-    parser = argparse.ArgumentParser(
-        description="Check Elasticsearch cluster health."
-    )
+def parse_health_check_args(args: list[str]) -> tuple[Config, bool]:
+    parser = argparse.ArgumentParser(description="Check Elasticsearch cluster health.")
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Show detailed node and index information",
     )
@@ -305,10 +291,14 @@ def main_health_check() -> None:
                 nodes = get_node_stats(config)
                 for node in nodes:
                     print(f"\nNode: {node.name} ({node.host})")
-                    print(f"  Disk: {format_bytes(node.disk_total_bytes - node.disk_free_bytes)} / "
-                          f"{format_bytes(node.disk_total_bytes)} ({node.disk_used_percent:.1f}% used)")
-                    print(f"  Heap: {format_bytes(node.heap_used_bytes)} / "
-                          f"{format_bytes(node.heap_max_bytes)} ({node.heap_used_percent:.1f}% used)")
+                    print(
+                        f"  Disk: {format_bytes(node.disk_total_bytes - node.disk_free_bytes)} / "
+                        f"{format_bytes(node.disk_total_bytes)} ({node.disk_used_percent:.1f}% used)"
+                    )
+                    print(
+                        f"  Heap: {format_bytes(node.heap_used_bytes)} / "
+                        f"{format_bytes(node.heap_max_bytes)} ({node.heap_used_percent:.1f}% used)"
+                    )
 
                 # Index stats
                 print("\n=== Index Statistics ===")
@@ -319,8 +309,9 @@ def main_health_check() -> None:
                 index_stats = get_index_stats(config)
                 for idx in sorted(index_stats, key=lambda x: x.name):
                     shards_str = f"{idx.primary_shards}p/{idx.replica_shards}r"
-                    print(f"{idx.name:<25} {idx.docs_count:<12} "
-                          f"{format_bytes(idx.store_size_bytes):<12} {shards_str:<10}")
+                    print(
+                        f"{idx.name:<25} {idx.docs_count:<12} {format_bytes(idx.store_size_bytes):<12} {shards_str:<10}"
+                    )
 
                 print("-" * 60)
 
@@ -347,7 +338,7 @@ def main_health_check() -> None:
 # === Delete Blacklist ===
 
 # AccessionType -> ES インデックス名のマッピング
-ACCESSION_TYPE_TO_INDEX: Dict[str, str] = {
+ACCESSION_TYPE_TO_INDEX: dict[str, str] = {
     "bioproject": "bioproject",
     "umbrella-bioproject": "bioproject",
     "biosample": "biosample",
@@ -364,7 +355,7 @@ ACCESSION_TYPE_TO_INDEX: Dict[str, str] = {
 }
 
 
-def classify_accession(accession: str) -> Optional[str]:
+def classify_accession(accession: str) -> str | None:
     """accession の ID パターンからインデックス名を判定する。"""
     for acc_type, pattern in ID_PATTERN_MAP.items():
         if acc_type in ACCESSION_TYPE_TO_INDEX and pattern.match(accession):
@@ -373,10 +364,10 @@ def classify_accession(accession: str) -> Optional[str]:
 
 
 def classify_blacklist_by_index(
-    blacklist: Set[str],
-) -> Dict[str, Set[str]]:
+    blacklist: set[str],
+) -> dict[str, set[str]]:
     """blacklist の各 accession を ID パターンからインデックスごとに分類する。"""
-    result: Dict[str, Set[str]] = {}
+    result: dict[str, set[str]] = {}
     for accession in blacklist:
         index = classify_accession(accession)
         if index:
@@ -386,11 +377,9 @@ def classify_blacklist_by_index(
     return result
 
 
-def parse_delete_blacklist_args(args: List[str]) -> Tuple[Config, str, bool, bool, int]:
+def parse_delete_blacklist_args(args: list[str]) -> tuple[Config, str, bool, bool, int]:
     """Delete blacklist コマンドの引数をパースする。"""
-    parser = argparse.ArgumentParser(
-        description="Delete blacklisted documents from Elasticsearch indexes."
-    )
+    parser = argparse.ArgumentParser(description="Delete blacklisted documents from Elasticsearch indexes.")
     parser.add_argument(
         "--index",
         default="all",
@@ -436,17 +425,19 @@ def main_delete_blacklist() -> None:
             log_info("No blacklist entries found")
             return
 
-        log_info("loaded blacklist entries",
-                 bioproject=len(bp_blacklist),
-                 biosample=len(bs_blacklist),
-                 sra=len(sra_blacklist),
-                 jga=len(jga_blacklist))
+        log_info(
+            "loaded blacklist entries",
+            bioproject=len(bp_blacklist),
+            biosample=len(bs_blacklist),
+            sra=len(sra_blacklist),
+            jga=len(jga_blacklist),
+        )
 
         # ID パターンでインデックスごとに分類
         index_blacklist_map = classify_blacklist_by_index(all_blacklist)
 
         # 対象インデックスを取得
-        target_indexes = get_indexes_for_group(index_group)  # type: ignore
+        target_indexes = get_indexes_for_group(index_group)  # type: ignore[arg-type]
 
         # サマリ表示
         total_to_delete = 0
@@ -481,10 +472,12 @@ def main_delete_blacklist() -> None:
                 continue
 
             result = bulk_delete_by_ids(config, idx, blacklist, batch_size)
-            log_info(f"deleted from {idx}",
-                     success=result.success_count,
-                     not_found=result.not_found_count,
-                     errors=result.error_count)
+            log_info(
+                f"deleted from {idx}",
+                success=result.success_count,
+                not_found=result.not_found_count,
+                errors=result.error_count,
+            )
 
             total_success += result.success_count
             total_not_found += result.not_found_count
@@ -494,10 +487,12 @@ def main_delete_blacklist() -> None:
                 for err in result.errors[:5]:
                     log_error(f"delete error: {err}")
 
-        log_info("Blacklist deletion completed",
-                 total_success=total_success,
-                 total_not_found=total_not_found,
-                 total_errors=total_errors)
+        log_info(
+            "Blacklist deletion completed",
+            total_success=total_success,
+            total_not_found=total_not_found,
+            total_errors=total_errors,
+        )
 
         if total_errors > 0:
             sys.exit(1)

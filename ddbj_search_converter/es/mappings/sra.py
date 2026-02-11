@@ -1,9 +1,8 @@
 """SRA Elasticsearch mapping definitions for 6 types."""
 
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
-from ddbj_search_converter.es.mappings.common import (INDEX_SETTINGS,
-                                                      get_common_mapping)
+from ddbj_search_converter.es.mappings.common import INDEX_SETTINGS, get_common_mapping
 
 SraIndexType = Literal[
     "sra-submission",
@@ -14,7 +13,7 @@ SraIndexType = Literal[
     "sra-analysis",
 ]
 
-SRA_INDEXES: List[SraIndexType] = [
+SRA_INDEXES: list[SraIndexType] = [
     "sra-submission",
     "sra-study",
     "sra-experiment",
@@ -24,7 +23,7 @@ SRA_INDEXES: List[SraIndexType] = [
 ]
 
 
-def get_sra_mapping(index_type: SraIndexType) -> Dict[str, Any]:  # pylint: disable=unused-argument
+def get_sra_mapping(_index_type: SraIndexType) -> dict[str, Any]:
     """Return the complete SRA mapping for the specified index type.
 
     Args:
@@ -34,7 +33,5 @@ def get_sra_mapping(index_type: SraIndexType) -> Dict[str, Any]:  # pylint: disa
     """
     return {
         "settings": INDEX_SETTINGS,
-        "mappings": {
-            "properties": get_common_mapping()
-        },
+        "mappings": {"properties": get_common_mapping()},
     }

@@ -180,7 +180,7 @@ def convert_id_if_needed(
     Returns:
         Converted accession, or None if conversion failed.
     """
-    if is_valid_accession(raw_id, id_type):  # type: ignore
+    if is_valid_accession(raw_id, id_type):  # type: ignore[arg-type]
         return raw_id
 
     # Try to convert numeric ID to accession

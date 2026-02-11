@@ -3,8 +3,10 @@
 SRA モジュールは tar ファイル読み込みに強く依存するため、
 ここではパース関数と正規化関数のユニットテストを中心に行う。
 """
+
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Set, Tuple, cast
+from typing import Any
 
 import pytest
 
@@ -19,7 +21,7 @@ from ddbj_search_converter.jsonl.sra import (
     process_submission_xml,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
-from ddbj_search_converter.schema import SRA, Accessibility, Status
+from ddbj_search_converter.schema import SRA
 from ddbj_search_converter.sra.tar_reader import SraXmlType
 
 
@@ -32,22 +34,25 @@ def clean_ctx() -> Generator[None, None, None]:
 class TestNormalizeStatus:
     """Tests for _normalize_status function."""
 
-    @pytest.mark.parametrize("input_val,expected", [
-        (None, "live"),
-        ("live", "live"),
-        ("Live", "live"),
-        ("unpublished", "unpublished"),
-        ("suppressed", "suppressed"),
-        ("withdrawn", "withdrawn"),
-        ("public", "live"),
-        ("replaced", "withdrawn"),
-        ("killed", "withdrawn"),
-        ("LIVE", "live"),
-        ("PUBLIC", "live"),
-        ("unknown_status", "live"),
-        ("", "live"),
-    ])
-    def test_normalize_status(self, input_val: Optional[str], expected: str) -> None:
+    @pytest.mark.parametrize(
+        ("input_val", "expected"),
+        [
+            (None, "live"),
+            ("live", "live"),
+            ("Live", "live"),
+            ("unpublished", "unpublished"),
+            ("suppressed", "suppressed"),
+            ("withdrawn", "withdrawn"),
+            ("public", "live"),
+            ("replaced", "withdrawn"),
+            ("killed", "withdrawn"),
+            ("LIVE", "live"),
+            ("PUBLIC", "live"),
+            ("unknown_status", "live"),
+            ("", "live"),
+        ],
+    )
+    def test_normalize_status(self, input_val: str | None, expected: str) -> None:
         result = _normalize_status(input_val)
         assert result == expected
 
@@ -55,18 +60,21 @@ class TestNormalizeStatus:
 class TestNormalizeAccessibility:
     """Tests for _normalize_accessibility function."""
 
-    @pytest.mark.parametrize("input_val,expected", [
-        (None, "public-access"),
-        ("public", "public-access"),
-        ("controlled", "controlled-access"),
-        ("controlled-access", "controlled-access"),
-        ("controlled_access", "controlled-access"),
-        ("Public", "public-access"),
-        ("CONTROLLED", "controlled-access"),
-        ("unknown", "public-access"),
-        ("", "public-access"),
-    ])
-    def test_normalize_accessibility(self, input_val: Optional[str], expected: str) -> None:
+    @pytest.mark.parametrize(
+        ("input_val", "expected"),
+        [
+            (None, "public-access"),
+            ("public", "public-access"),
+            ("controlled", "controlled-access"),
+            ("controlled-access", "controlled-access"),
+            ("controlled_access", "controlled-access"),
+            ("Public", "public-access"),
+            ("CONTROLLED", "controlled-access"),
+            ("unknown", "public-access"),
+            ("", "public-access"),
+        ],
+    )
+    def test_normalize_accessibility(self, input_val: str | None, expected: str) -> None:
         result = _normalize_accessibility(input_val)
         assert result == expected
 
@@ -180,11 +188,11 @@ class TestProcessSubmissionXml:
 
     def test_dra_uses_received_from_accessions_tab(self) -> None:
         """DRA でも Accessions.tab の Received が dateCreated に使われる。"""
-        accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]] = {
+        accession_info: dict[str, tuple[str, str, str | None, str | None, str | None, str]] = {
             "DRA000001": ("live", "public", "2024-06-15", "2024-07-01", "2024-08-01", "submission"),
             "DRP000001": ("live", "public", "2024-06-15", "2024-07-01", "2024-08-01", "study"),
         }
-        xml_cache: Dict[SraXmlType, Optional[bytes]] = {
+        xml_cache: dict[SraXmlType, bytes | None] = {
             "submission": self._SUBMISSION_XML,
             "study": self._STUDY_XML,
             "experiment": None,
@@ -210,11 +218,11 @@ class TestProcessSubmissionXml:
 
     def test_received_none_results_in_date_created_none(self) -> None:
         """Received が None の場合、dateCreated が None になる。"""
-        accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]] = {
+        accession_info: dict[str, tuple[str, str, str | None, str | None, str | None, str]] = {
             "DRA000001": ("live", "public", None, None, None, "submission"),
             "DRP000001": ("live", "public", None, None, None, "study"),
         }
-        xml_cache: Dict[SraXmlType, Optional[bytes]] = {
+        xml_cache: dict[SraXmlType, bytes | None] = {
             "submission": self._SUBMISSION_XML,
             "study": self._STUDY_XML,
             "experiment": None,
@@ -239,7 +247,7 @@ class TestProcessSubmissionXml:
 
 def _make_sra_entry(identifier: str, sra_type: SraXmlType = "study") -> SRA:
     """テスト用の SRA エントリを作成するヘルパー。"""
-    parsed: Dict[str, Any] = {
+    parsed: dict[str, Any] = {
         "accession": identifier,
         "properties": {},
         "alias": None,
@@ -273,8 +281,8 @@ class TestBatchDedup:
             _make_sra_entry("SRP000003", "study"),
         ]
 
-        batch_entries: List[SRA] = []
-        seen_ids: Set[str] = set()
+        batch_entries: list[SRA] = []
+        seen_ids: set[str] = set()
         for entry in entries:
             if entry.identifier not in seen_ids:
                 batch_entries.append(entry)
@@ -295,8 +303,8 @@ class TestBatchDedup:
             _make_sra_entry("SRP000003", "study"),
         ]
 
-        batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
-        seen_ids: Dict[SraXmlType, Set[str]] = {t: set() for t in XML_TYPES}
+        batch_entries: dict[SraXmlType, list[SRA]] = {t: [] for t in XML_TYPES}
+        seen_ids: dict[SraXmlType, set[str]] = {t: set() for t in XML_TYPES}
 
         for results in [sub1_results, sub2_results]:
             for entry in results:
@@ -313,8 +321,8 @@ class TestBatchDedup:
         study_entries = [_make_sra_entry("SRP000001", "study")]
         sample_entries = [_make_sra_entry("SRS000001", "sample")]
 
-        batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
-        seen_ids: Dict[SraXmlType, Set[str]] = {t: set() for t in XML_TYPES}
+        batch_entries: dict[SraXmlType, list[SRA]] = {t: [] for t in XML_TYPES}
+        seen_ids: dict[SraXmlType, set[str]] = {t: set() for t in XML_TYPES}
 
         for entry in study_entries:
             if entry.identifier not in seen_ids["study"]:
@@ -334,8 +342,8 @@ class TestBatchDedup:
         entry1 = _make_sra_entry("SRP000001", "study")
         entry1_dup = _make_sra_entry("SRP000001", "study")
 
-        batch_entries: List[SRA] = []
-        seen_ids: Set[str] = set()
+        batch_entries: list[SRA] = []
+        seen_ids: set[str] = set()
         for entry in [entry1, entry1_dup]:
             if entry.identifier not in seen_ids:
                 batch_entries.append(entry)
@@ -352,8 +360,8 @@ class TestBatchDedup:
             _make_sra_entry("SRP000003", "study"),
         ]
 
-        batch_entries: List[SRA] = []
-        seen_ids: Set[str] = set()
+        batch_entries: list[SRA] = []
+        seen_ids: set[str] = set()
         for entry in entries:
             if entry.identifier not in seen_ids:
                 batch_entries.append(entry)

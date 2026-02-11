@@ -34,14 +34,14 @@ jobs:
       - name: Install Python Dependencies
         run: uv sync --frozen --extra tests
 
-      - name: Run pylint
+      - name: Run ruff check
         run: |
-          uv run pylint ./ddbj_search_converter
+          uv run ruff check ddbj_search_converter tests
+
+      - name: Run ruff format
+        run: |
+          uv run ruff format --check ddbj_search_converter tests
 
       - name: Run mypy
         run: |
-          uv run mypy ./ddbj_search_converter
-
-      - name: Run isort
-        run: |
-          uv run isort --check-only ./ddbj_search_converter
+          uv run mypy

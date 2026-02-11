@@ -1,11 +1,14 @@
 """sra/dra_tar.py のテスト。"""
+
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from ddbj_search_converter.sra.dra_tar import (get_dra_accessions_db_path,
-                                                get_dra_last_updated_path,
-                                                get_dra_tar_path,
-                                                get_dra_xml_dir_path)
+from ddbj_search_converter.sra.dra_tar import (
+    get_dra_accessions_db_path,
+    get_dra_last_updated_path,
+    get_dra_tar_path,
+    get_dra_xml_dir_path,
+)
 
 
 class TestGetDraTarPath:

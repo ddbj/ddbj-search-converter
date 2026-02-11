@@ -1,4 +1,5 @@
 """Tests for logging schema."""
+
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
@@ -103,9 +104,10 @@ class TestExtra:
 
     def test_extra_allow_additional_fields(self) -> None:
         """Test that Extra allows arbitrary additional fields."""
-        extra = Extra(
+        extra = Extra(  # type: ignore[call-arg]
             lifecycle="end",
-            **{"custom_field": "custom_value", "another_field": 123},  # type: ignore[arg-type]
+            custom_field="custom_value",
+            another_field=123,
         )
 
         assert extra.lifecycle == "end"

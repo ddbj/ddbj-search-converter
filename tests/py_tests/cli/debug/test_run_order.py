@@ -1,4 +1,5 @@
 """Tests for ddbj_search_converter.cli.debug.run_order module."""
+
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -55,6 +56,7 @@ class TestSortRunNames:
     def test_full_pipeline_order_preserved(self) -> None:
         """PIPELINE_ORDER をシャッフルしてもソート後は元の順序に戻る。"""
         import random
+
         shuffled = list(PIPELINE_ORDER)
         random.shuffle(shuffled)
         assert sort_run_names(shuffled) == list(PIPELINE_ORDER)

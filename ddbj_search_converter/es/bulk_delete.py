@@ -1,13 +1,14 @@
 """Elasticsearch からドキュメントを一括削除するモジュール。"""
-from typing import Any, Dict, Iterator, List, Set
+
+from collections.abc import Iterator
+from typing import Any
 
 from pydantic import BaseModel
-
-from elasticsearch import helpers
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.client import get_es_client
 from ddbj_search_converter.logging.logger import log_info
+from elasticsearch import helpers
 
 
 class BulkDeleteResult(BaseModel):
@@ -18,13 +19,13 @@ class BulkDeleteResult(BaseModel):
     success_count: int
     not_found_count: int
     error_count: int
-    errors: List[Dict[str, Any]]
+    errors: list[dict[str, Any]]
 
 
 def generate_delete_actions(
-    accessions: Set[str],
+    accessions: set[str],
     index: str,
-) -> Iterator[Dict[str, Any]]:
+) -> Iterator[dict[str, Any]]:
     """削除アクションを生成する。"""
     for accession in accessions:
         yield {
@@ -37,7 +38,7 @@ def generate_delete_actions(
 def bulk_delete_by_ids(
     config: Config,
     index: str,
-    accessions: Set[str],
+    accessions: set[str],
     batch_size: int = 1000,
 ) -> BulkDeleteResult:
     """指定された accession を ES から一括削除。
@@ -71,7 +72,7 @@ def bulk_delete_by_ids(
 
     actions = generate_delete_actions(accessions, index)
 
-    errors: List[Dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
     not_found_count = 0
 
     # helpers.bulk で一括削除

@@ -1,20 +1,18 @@
 import inspect
 import sys
 import traceback
+from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import datetime
 from pathlib import Path
 from secrets import token_hex
-from typing import Any, Dict, Iterator, Optional
+from typing import Any
 
-from ddbj_search_converter.config import (LOCAL_TZ, LOG_DIR_NAME, TODAY,
-                                          TODAY_STR, Config, default_config)
-from ddbj_search_converter.logging.schema import (ErrorInfo, Extra,
-                                                  LoggerContext, LogLevel,
-                                                  LogRecord)
+from ddbj_search_converter.config import LOCAL_TZ, LOG_DIR_NAME, TODAY, TODAY_STR, Config, default_config
+from ddbj_search_converter.logging.schema import ErrorInfo, Extra, LoggerContext, LogLevel, LogRecord
 
-_ctx: ContextVar[Optional[LoggerContext]] = ContextVar("_ctx", default=None)
+_ctx: ContextVar[LoggerContext | None] = ContextVar("_ctx", default=None)
 
 
 def _get_ctx() -> LoggerContext:
@@ -59,7 +57,7 @@ def _infer_run_name() -> str:
 def init_logger(
     *,
     run_name: str,
-    config: Optional[Config] = None,
+    config: Config | None = None,
 ) -> None:
     if config is None:
         config = default_config
@@ -82,8 +80,8 @@ def init_logger(
 @contextmanager
 def run_logger(
     *,
-    run_name: Optional[str] = None,
-    config: Optional[Config] = None,
+    run_name: str | None = None,
+    config: Config | None = None,
 ) -> Iterator[None]:
     """
     Context manager for logging a run.
@@ -111,9 +109,9 @@ def run_logger(
 def log(
     *,
     log_level: LogLevel,
-    message: Optional[str] = None,
-    error: Optional[BaseException | ErrorInfo] = None,
-    extra: Optional[Dict[str, Any] | Extra] = None,
+    message: str | None = None,
+    error: BaseException | ErrorInfo | None = None,
+    extra: dict[str, Any] | Extra | None = None,
 ) -> None:
     ctx = _get_ctx()
     source = _detect_source()
@@ -121,7 +119,7 @@ def log(
     if extra is not None and not isinstance(extra, Extra):
         extra = Extra(**extra)
 
-    error_info: Optional[ErrorInfo] = None
+    error_info: ErrorInfo | None = None
     if error is not None:
         if isinstance(error, ErrorInfo):
             error_info = error
@@ -181,7 +179,7 @@ def _emit_stderr(record: LogRecord) -> None:
         sys.stderr.write(line + "\n")
         sys.stderr.flush()
 
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         pass
 
 
@@ -201,7 +199,7 @@ def _detect_source() -> str:
         del frame
 
 
-def _convert_path_to_str(kwargs: Dict[str, Any]) -> None:
+def _convert_path_to_str(kwargs: dict[str, Any]) -> None:
     """Convert Path objects in kwargs to strings."""
     if "file" in kwargs and hasattr(kwargs["file"], "__fspath__"):
         kwargs["file"] = str(kwargs["file"])
@@ -230,7 +228,7 @@ def log_warn(message: str, **kwargs: Any) -> None:
 
 def log_error(
     message: str,
-    error: Optional[BaseException] = None,
+    error: BaseException | None = None,
     **kwargs: Any,
 ) -> None:
     """ERROR level log. Pass file, accession, etc. via kwargs."""
@@ -275,8 +273,7 @@ def finalize_logger() -> None:
     Bulk insert JSONL file to DuckDB.
     Call at run end.
     """
-    from ddbj_search_converter.logging.db import \
-        insert_log_records  # pylint: disable=import-outside-toplevel
+    from ddbj_search_converter.logging.db import insert_log_records
 
     ctx = _ctx.get()
     if ctx is None:

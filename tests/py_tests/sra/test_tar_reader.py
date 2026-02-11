@@ -1,4 +1,5 @@
 """Tests for TarXMLReader class."""
+
 import io
 import tarfile
 from pathlib import Path
@@ -40,53 +41,38 @@ def sample_tar(tmp_path: Path) -> Path:
 class TestTarXMLReader:
     """Tests for TarXMLReader class."""
 
-    def test_exists_returns_true_for_existing_file(
-        self, sample_tar: Path, test_config: Config
-    ) -> None:
+    def test_exists_returns_true_for_existing_file(self, sample_tar: Path, test_config: Config) -> None:
         """Test exists() returns True for existing XML file."""
-        with run_logger(config=test_config):
-            with TarXMLReader(sample_tar) as reader:
-                assert reader.exists("DRA000001", "submission") is True
-                assert reader.exists("DRA000001", "run") is True
-                assert reader.exists("ERA123456", "submission") is True
+        with run_logger(config=test_config), TarXMLReader(sample_tar) as reader:
+            assert reader.exists("DRA000001", "submission") is True
+            assert reader.exists("DRA000001", "run") is True
+            assert reader.exists("ERA123456", "submission") is True
 
-    def test_exists_returns_false_for_missing_file(
-        self, sample_tar: Path, test_config: Config
-    ) -> None:
+    def test_exists_returns_false_for_missing_file(self, sample_tar: Path, test_config: Config) -> None:
         """Test exists() returns False for non-existing XML file."""
-        with run_logger(config=test_config):
-            with TarXMLReader(sample_tar) as reader:
-                assert reader.exists("DRA000001", "experiment") is False
-                assert reader.exists("DRA000002", "submission") is False
+        with run_logger(config=test_config), TarXMLReader(sample_tar) as reader:
+            assert reader.exists("DRA000001", "experiment") is False
+            assert reader.exists("DRA000002", "submission") is False
 
-    def test_read_xml_returns_content(
-        self, sample_tar: Path, test_config: Config
-    ) -> None:
+    def test_read_xml_returns_content(self, sample_tar: Path, test_config: Config) -> None:
         """Test read_xml() returns XML content."""
-        with run_logger(config=test_config):
-            with TarXMLReader(sample_tar) as reader:
-                content = reader.read_xml("DRA000001", "submission")
-                assert content == b"<SUBMISSION>test</SUBMISSION>"
+        with run_logger(config=test_config), TarXMLReader(sample_tar) as reader:
+            content = reader.read_xml("DRA000001", "submission")
+            assert content == b"<SUBMISSION>test</SUBMISSION>"
 
-                content = reader.read_xml("DRA000001", "run")
-                assert content == b"<RUN_SET><RUN accession='DRR000001'/></RUN_SET>"
+            content = reader.read_xml("DRA000001", "run")
+            assert content == b"<RUN_SET><RUN accession='DRR000001'/></RUN_SET>"
 
-    def test_read_xml_returns_none_for_missing_file(
-        self, sample_tar: Path, test_config: Config
-    ) -> None:
+    def test_read_xml_returns_none_for_missing_file(self, sample_tar: Path, test_config: Config) -> None:
         """Test read_xml() returns None for non-existing file."""
-        with run_logger(config=test_config):
-            with TarXMLReader(sample_tar) as reader:
-                content = reader.read_xml("DRA000001", "experiment")
-                assert content is None
+        with run_logger(config=test_config), TarXMLReader(sample_tar) as reader:
+            content = reader.read_xml("DRA000001", "experiment")
+            assert content is None
 
-    def test_get_member_count(
-        self, sample_tar: Path, test_config: Config
-    ) -> None:
+    def test_get_member_count(self, sample_tar: Path, test_config: Config) -> None:
         """Test get_member_count() returns correct count."""
-        with run_logger(config=test_config):
-            with TarXMLReader(sample_tar) as reader:
-                assert reader.get_member_count() == 3
+        with run_logger(config=test_config), TarXMLReader(sample_tar) as reader:
+            assert reader.get_member_count() == 3
 
 
 class TestTarXMLReaderWithDuplicates:
@@ -113,12 +99,9 @@ class TestTarXMLReaderWithDuplicates:
 
         return tar_path
 
-    def test_later_entry_wins(
-        self, tar_with_duplicates: Path, test_config: Config
-    ) -> None:
+    def test_later_entry_wins(self, tar_with_duplicates: Path, test_config: Config) -> None:
         """Test that later entry overwrites earlier one in index."""
-        with run_logger(config=test_config):
-            with TarXMLReader(tar_with_duplicates) as reader:
-                content = reader.read_xml("DRA000001", "submission")
-                # Should get the second (later) version
-                assert content == b"<SUBMISSION>version2</SUBMISSION>"
+        with run_logger(config=test_config), TarXMLReader(tar_with_duplicates) as reader:
+            content = reader.read_xml("DRA000001", "submission")
+            # Should get the second (later) version
+            assert content == b"<SUBMISSION>version2</SUBMISSION>"

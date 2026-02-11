@@ -1,6 +1,6 @@
 """Elasticsearch monitoring utilities."""
 
-from typing import List
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -11,12 +11,14 @@ from ddbj_search_converter.es.settings import get_health_thresholds
 
 class HealthStatus(BaseModel):
     """Health status information."""
+
     level: str  # "ok", "warning", "critical"
     message: str
 
 
 class ClusterHealth(BaseModel):
     """Cluster health information."""
+
     status: str  # "green", "yellow", "red"
     cluster_name: str
     number_of_nodes: int
@@ -30,6 +32,7 @@ class ClusterHealth(BaseModel):
 
 class NodeStats(BaseModel):
     """Node statistics."""
+
     name: str
     host: str
     disk_total_bytes: int
@@ -42,6 +45,7 @@ class NodeStats(BaseModel):
 
 class IndexStats(BaseModel):
     """Index statistics."""
+
     name: str
     docs_count: int
     store_size_bytes: int
@@ -74,7 +78,7 @@ def get_cluster_health(config: Config) -> ClusterHealth:
     )
 
 
-def get_node_stats(config: Config) -> List[NodeStats]:
+def get_node_stats(config: Config) -> list[NodeStats]:
     """Get node statistics.
 
     Args:
@@ -101,21 +105,23 @@ def get_node_stats(config: Config) -> List[NodeStats]:
         heap_max = jvm_data.get("heap_max_in_bytes", 0)
         heap_used_percent = jvm_data.get("heap_used_percent", 0)
 
-        nodes.append(NodeStats(
-            name=node_data.get("name", node_id),
-            host=node_data.get("host", "unknown"),
-            disk_total_bytes=disk_total,
-            disk_free_bytes=disk_free,
-            disk_used_percent=disk_used_percent,
-            heap_used_bytes=heap_used,
-            heap_max_bytes=heap_max,
-            heap_used_percent=heap_used_percent,
-        ))
+        nodes.append(
+            NodeStats(
+                name=node_data.get("name", node_id),
+                host=node_data.get("host", "unknown"),
+                disk_total_bytes=disk_total,
+                disk_free_bytes=disk_free,
+                disk_used_percent=disk_used_percent,
+                heap_used_bytes=heap_used,
+                heap_max_bytes=heap_max,
+                heap_used_percent=heap_used_percent,
+            )
+        )
 
     return nodes
 
 
-def get_index_stats(config: Config) -> List[IndexStats]:
+def get_index_stats(config: Config) -> list[IndexStats]:
     """Get statistics for all indexes.
 
     Args:
@@ -132,17 +138,20 @@ def get_index_stats(config: Config) -> List[IndexStats]:
     except Exception:
         return []
 
-    stats: List[IndexStats] = []
-    for idx in indices:
-        if not isinstance(idx, dict):
+    stats: list[IndexStats] = []
+    for raw_idx in indices:
+        idx: dict[str, Any] = raw_idx if isinstance(raw_idx, dict) else {}  # type: ignore[unreachable]
+        if not idx:
             continue
-        stats.append(IndexStats(
-            name=str(idx.get("index", "unknown")),
-            docs_count=int(idx.get("docs.count", 0) or 0),
-            store_size_bytes=_parse_size(str(idx.get("store.size", "0"))),
-            primary_shards=int(idx.get("pri", 0) or 0),
-            replica_shards=int(idx.get("rep", 0) or 0),
-        ))
+        stats.append(
+            IndexStats(
+                name=str(idx.get("index", "unknown")),
+                docs_count=int(idx.get("docs.count", 0) or 0),
+                store_size_bytes=_parse_size(str(idx.get("store.size", "0"))),
+                primary_shards=int(idx.get("pri", 0) or 0),
+                replica_shards=int(idx.get("rep", 0) or 0),
+            )
+        )
 
     return stats
 
@@ -157,15 +166,15 @@ def _parse_size(size_str: str) -> int:
     multipliers = {
         "b": 1,
         "kb": 1024,
-        "mb": 1024 ** 2,
-        "gb": 1024 ** 3,
-        "tb": 1024 ** 4,
+        "mb": 1024**2,
+        "gb": 1024**3,
+        "tb": 1024**4,
     }
 
     for suffix, multiplier in multipliers.items():
         if size_str.endswith(suffix):
             try:
-                value = float(size_str[:-len(suffix)])
+                value = float(size_str[: -len(suffix)])
                 return int(value * multiplier)
             except ValueError:
                 return 0
@@ -176,7 +185,7 @@ def _parse_size(size_str: str) -> int:
         return 0
 
 
-def check_health(config: Config) -> List[HealthStatus]:
+def check_health(config: Config) -> list[HealthStatus]:
     """Run health checks and return any warnings or issues.
 
     Args:
@@ -186,32 +195,24 @@ def check_health(config: Config) -> List[HealthStatus]:
         List of HealthStatus objects (empty if all OK)
     """
     thresholds = get_health_thresholds()
-    issues: List[HealthStatus] = []
+    issues: list[HealthStatus] = []
 
     # Check cluster health
     try:
         cluster = get_cluster_health(config)
         if cluster.status == "red":
-            issues.append(HealthStatus(
-                level="critical",
-                message="Cluster status is RED - some primary shards are unassigned"
-            ))
+            issues.append(
+                HealthStatus(level="critical", message="Cluster status is RED - some primary shards are unassigned")
+            )
         elif cluster.status == "yellow":
-            issues.append(HealthStatus(
-                level="warning",
-                message="Cluster status is YELLOW - some replica shards are unassigned"
-            ))
+            issues.append(
+                HealthStatus(level="warning", message="Cluster status is YELLOW - some replica shards are unassigned")
+            )
 
         if cluster.unassigned_shards > 0:
-            issues.append(HealthStatus(
-                level="warning",
-                message=f"{cluster.unassigned_shards} unassigned shards"
-            ))
+            issues.append(HealthStatus(level="warning", message=f"{cluster.unassigned_shards} unassigned shards"))
     except Exception as e:
-        issues.append(HealthStatus(
-            level="critical",
-            message=f"Failed to get cluster health: {e}"
-        ))
+        issues.append(HealthStatus(level="critical", message=f"Failed to get cluster health: {e}"))
         return issues
 
     # Check node stats
@@ -220,32 +221,45 @@ def check_health(config: Config) -> List[HealthStatus]:
         for node in nodes:
             # Disk usage
             if node.disk_used_percent >= thresholds["disk_critical_percent"]:
-                issues.append(HealthStatus(
-                    level="critical",
-                    message=f"Node '{node.name}' disk usage is {node.disk_used_percent:.1f}% (critical threshold: {thresholds['disk_critical_percent']}%)"
-                ))
+                threshold = thresholds["disk_critical_percent"]
+                issues.append(
+                    HealthStatus(
+                        level="critical",
+                        message=f"Node '{node.name}' disk usage is {node.disk_used_percent:.1f}%"
+                        f" (critical threshold: {threshold}%)",
+                    )
+                )
             elif node.disk_used_percent >= thresholds["disk_warning_percent"]:
-                issues.append(HealthStatus(
-                    level="warning",
-                    message=f"Node '{node.name}' disk usage is {node.disk_used_percent:.1f}% (warning threshold: {thresholds['disk_warning_percent']}%)"
-                ))
+                threshold = thresholds["disk_warning_percent"]
+                issues.append(
+                    HealthStatus(
+                        level="warning",
+                        message=f"Node '{node.name}' disk usage is {node.disk_used_percent:.1f}%"
+                        f" (warning threshold: {threshold}%)",
+                    )
+                )
 
             # JVM heap
             if node.heap_used_percent >= thresholds["heap_critical_percent"]:
-                issues.append(HealthStatus(
-                    level="critical",
-                    message=f"Node '{node.name}' JVM heap usage is {node.heap_used_percent:.1f}% (critical threshold: {thresholds['heap_critical_percent']}%)"
-                ))
+                threshold = thresholds["heap_critical_percent"]
+                issues.append(
+                    HealthStatus(
+                        level="critical",
+                        message=f"Node '{node.name}' JVM heap usage is {node.heap_used_percent:.1f}%"
+                        f" (critical threshold: {threshold}%)",
+                    )
+                )
             elif node.heap_used_percent >= thresholds["heap_warning_percent"]:
-                issues.append(HealthStatus(
-                    level="warning",
-                    message=f"Node '{node.name}' JVM heap usage is {node.heap_used_percent:.1f}% (warning threshold: {thresholds['heap_warning_percent']}%)"
-                ))
+                threshold = thresholds["heap_warning_percent"]
+                issues.append(
+                    HealthStatus(
+                        level="warning",
+                        message=f"Node '{node.name}' JVM heap usage is {node.heap_used_percent:.1f}%"
+                        f" (warning threshold: {threshold}%)",
+                    )
+                )
     except Exception as e:
-        issues.append(HealthStatus(
-            level="warning",
-            message=f"Failed to get node stats: {e}"
-        ))
+        issues.append(HealthStatus(level="warning", message=f"Failed to get node stats: {e}"))
 
     return issues
 

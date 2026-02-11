@@ -242,7 +242,7 @@ def process_xml_files_parallel(
                               accession=acc, file=str(xml_path),
                               debug_category=DebugCategory.INVALID_ACCESSION_ID)
 
-            except Exception as e:  # pylint: disable=broad-exception-caught
+            except Exception as e:
                 log_error(f"error processing {xml_path.name}: {e}",
                           error=e, file=str(xml_path))
 

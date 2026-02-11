@@ -1,7 +1,8 @@
 """Tests for ddbj_search_converter.jsonl.regenerate module."""
+
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, Set
 
 import pytest
 from hypothesis import given, settings
@@ -105,7 +106,7 @@ class TestValidateAccessionsPBT:
 
     @settings(deadline=2000)
     @given(accessions=st.frozensets(st.text(min_size=1, max_size=20), max_size=20))
-    def test_result_is_subset(self, accessions: frozenset) -> None:
+    def test_result_is_subset(self, accessions: frozenset) -> None:  # type: ignore[type-arg]
         """validate_accessions の結果は常に入力の部分集合。"""
         with tempfile.TemporaryDirectory() as td:
             tmp = Path(td)

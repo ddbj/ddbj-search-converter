@@ -1,12 +1,11 @@
 """postgres/utils.py のテスト。"""
+
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ddbj_search_converter.postgres.utils import (format_date,
-                                                  parse_postgres_url,
-                                                  postgres_connection)
+from ddbj_search_converter.postgres.utils import format_date, parse_postgres_url, postgres_connection
 
 
 class TestFormatDate:
@@ -87,8 +86,7 @@ class TestPostgresConnection:
         mock_conn = MagicMock()
         mock_connect.return_value = mock_conn
 
-        with pytest.raises(ValueError):
-            with postgres_connection("postgresql://user:pass@localhost:5432", "testdb"):
-                raise ValueError("test error")
+        with pytest.raises(ValueError), postgres_connection("postgresql://user:pass@localhost:5432", "testdb"):
+            raise ValueError("test error")
 
         mock_conn.close.assert_called_once()

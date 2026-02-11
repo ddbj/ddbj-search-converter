@@ -1,7 +1,7 @@
 """Elasticsearch snapshot management."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 from ddbj_search_converter.config import LOCAL_TZ, Config
 from ddbj_search_converter.es.client import get_es_client
@@ -14,7 +14,7 @@ def register_repository(
     repo_name: str,
     repo_path: str,
     compress: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Register a snapshot repository.
 
     Args:
@@ -37,10 +37,10 @@ def register_repository(
             },
         },
     )
-    return cast(Dict[str, Any], response.body)
+    return cast("dict[str, Any]", response.body)
 
 
-def list_repositories(config: Config) -> List[Dict[str, Any]]:
+def list_repositories(config: Config) -> list[dict[str, Any]]:
     """List all snapshot repositories.
 
     Returns:
@@ -50,15 +50,17 @@ def list_repositories(config: Config) -> List[Dict[str, Any]]:
     response = es_client.snapshot.get_repository()
     repos = []
     for name, info in response.body.items():
-        repos.append({
-            "name": name,
-            "type": info.get("type"),
-            "settings": info.get("settings", {}),
-        })
+        repos.append(
+            {
+                "name": name,
+                "type": info.get("type"),
+                "settings": info.get("settings", {}),
+            }
+        )
     return repos
 
 
-def delete_repository(config: Config, repo_name: str) -> Dict[str, Any]:
+def delete_repository(config: Config, repo_name: str) -> dict[str, Any]:
     """Delete a snapshot repository.
 
     Args:
@@ -70,18 +72,18 @@ def delete_repository(config: Config, repo_name: str) -> Dict[str, Any]:
     """
     es_client = get_es_client(config)
     response = es_client.snapshot.delete_repository(name=repo_name)
-    return cast(Dict[str, Any], response.body)
+    return cast("dict[str, Any]", response.body)
 
 
 def create_snapshot(
     config: Config,
     repo_name: str,
-    snapshot_name: Optional[str] = None,
-    indexes: Optional[List[str]] = None,
+    snapshot_name: str | None = None,
+    indexes: list[str] | None = None,
     include_global_state: bool = SNAPSHOT_SETTINGS["include_global_state"],
     wait_for_completion: bool = True,
-    metadata: Optional[Dict[str, str]] = None,
-) -> Dict[str, Any]:
+    metadata: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Create a snapshot.
 
     Args:
@@ -105,7 +107,7 @@ def create_snapshot(
     if indexes is None:
         indexes = list(ALL_INDEXES)
 
-    body: Dict[str, Any] = {
+    body: dict[str, Any] = {
         "indices": ",".join(indexes),
         "include_global_state": include_global_state,
     }
@@ -120,13 +122,13 @@ def create_snapshot(
         wait_for_completion=wait_for_completion,
     )
 
-    return cast(Dict[str, Any], response.body)
+    return cast("dict[str, Any]", response.body)
 
 
 def list_snapshots(
     config: Config,
     repo_name: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """List snapshots in a repository.
 
     Args:
@@ -139,9 +141,8 @@ def list_snapshots(
     es_client = get_es_client(config)
     response = es_client.snapshot.get(repository=repo_name, snapshot="*")
 
-    snapshots = []
-    for snap in response.body.get("snapshots", []):
-        snapshots.append({
+    snapshots = [
+        {
             "snapshot": snap.get("snapshot"),
             "state": snap.get("state"),
             "start_time": snap.get("start_time"),
@@ -150,7 +151,9 @@ def list_snapshots(
             "indices": snap.get("indices", []),
             "shards": snap.get("shards", {}),
             "metadata": snap.get("metadata", {}),
-        })
+        }
+        for snap in response.body.get("snapshots", [])
+    ]
 
     return snapshots
 
@@ -159,7 +162,7 @@ def get_snapshot(
     config: Config,
     repo_name: str,
     snapshot_name: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get details of a specific snapshot.
 
     Args:
@@ -175,14 +178,14 @@ def get_snapshot(
     snapshots = response.body.get("snapshots", [])
     if not snapshots:
         raise ValueError(f"Snapshot '{snapshot_name}' not found in repository '{repo_name}'")
-    return cast(Dict[str, Any], snapshots[0])
+    return cast("dict[str, Any]", snapshots[0])
 
 
 def delete_snapshot(
     config: Config,
     repo_name: str,
     snapshot_name: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Delete a snapshot.
 
     Args:
@@ -195,19 +198,19 @@ def delete_snapshot(
     """
     es_client = get_es_client(config)
     response = es_client.snapshot.delete(repository=repo_name, snapshot=snapshot_name)
-    return cast(Dict[str, Any], response.body)
+    return cast("dict[str, Any]", response.body)
 
 
 def restore_snapshot(
     config: Config,
     repo_name: str,
     snapshot_name: str,
-    indexes: Optional[List[str]] = None,
-    rename_pattern: Optional[str] = None,
-    rename_replacement: Optional[str] = None,
+    indexes: list[str] | None = None,
+    rename_pattern: str | None = None,
+    rename_replacement: str | None = None,
     include_global_state: bool = False,
     wait_for_completion: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Restore a snapshot.
 
     Args:
@@ -225,7 +228,7 @@ def restore_snapshot(
     """
     es_client = get_es_client(config)
 
-    body: Dict[str, Any] = {
+    body: dict[str, Any] = {
         "include_global_state": include_global_state,
     }
 
@@ -243,13 +246,13 @@ def restore_snapshot(
         wait_for_completion=wait_for_completion,
     )
 
-    return cast(Dict[str, Any], response.body)
+    return cast("dict[str, Any]", response.body)
 
 
 def export_index_settings(
     config: Config,
-    indexes: Optional[List[str]] = None,
-) -> Dict[str, Dict[str, Any]]:
+    indexes: list[str] | None = None,
+) -> dict[str, dict[str, Any]]:
     """Export index settings and mappings for migration verification.
 
     Args:
@@ -286,8 +289,8 @@ def export_index_settings(
 def get_snapshot_status(
     config: Config,
     repo_name: str,
-    snapshot_name: Optional[str] = None,
-) -> Dict[str, Any]:
+    snapshot_name: str | None = None,
+) -> dict[str, Any]:
     """Get the status of a snapshot operation.
 
     Args:
@@ -305,4 +308,4 @@ def get_snapshot_status(
     else:
         response = es_client.snapshot.status(repository=repo_name)
 
-    return cast(Dict[str, Any], response.body)
+    return cast("dict[str, Any]", response.body)

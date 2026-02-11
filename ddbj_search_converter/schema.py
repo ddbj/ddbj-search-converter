@@ -1,5 +1,6 @@
 """JSONL 出力用 Pydantic モデル定義。"""
-from typing import Any, List, Literal, Optional
+
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -19,37 +20,37 @@ class Distribution(BaseModel):
 
 
 class Organism(BaseModel):
-    identifier: Optional[str]
-    name: Optional[str]
+    identifier: str | None
+    name: str | None
 
 
 class Organization(BaseModel):
-    name: Optional[str]
-    organizationType: Optional[str]
-    role: Optional[str]
-    url: Optional[str]
-    abbreviation: Optional[str]
+    name: str | None
+    organizationType: str | None
+    role: str | None
+    url: str | None
+    abbreviation: str | None
 
 
 class Publication(BaseModel):
-    id_: Optional[str] = Field(default=None, alias="id")
-    title: Optional[str]
-    date: Optional[str]
-    Reference: Optional[str]
-    url: Optional[str]
-    DbType: Optional[str]
-    status: Optional[str]
+    id_: str | None = Field(default=None, alias="id")
+    title: str | None
+    date: str | None
+    Reference: str | None
+    url: str | None
+    DbType: str | None
+    status: str | None
 
 
 class Agency(BaseModel):
-    abbreviation: Optional[str]
-    name: Optional[str]
+    abbreviation: str | None
+    name: str | None
 
 
 class Grant(BaseModel):
-    id_: Optional[str] = Field(default=None, alias="id")
-    title: Optional[str]
-    agency: List[Agency]
+    id_: str | None = Field(default=None, alias="id")
+    title: str | None
+    agency: list[Agency]
 
 
 class ExternalLink(BaseModel):
@@ -91,36 +92,36 @@ class Xref(BaseModel):
 class BioProject(BaseModel):
     identifier: str
     properties: Any
-    distribution: List[Distribution]
+    distribution: list[Distribution]
     isPartOf: Literal["BioProject"]
     type_: Literal["bioproject"] = Field(alias="type")
     objectType: Literal["UmbrellaBioProject", "BioProject"]
-    name: Optional[str]
+    name: str | None
     url: str
-    organism: Optional[Organism]
-    title: Optional[str]
-    description: Optional[str]
-    organization: List[Organization]
-    publication: List[Publication]
-    grant: List[Grant]
-    externalLink: List[ExternalLink]
-    dbXrefs: List[Xref]
-    sameAs: List[Xref]
+    organism: Organism | None
+    title: str | None
+    description: str | None
+    organization: list[Organization]
+    publication: list[Publication]
+    grant: list[Grant]
+    externalLink: list[ExternalLink]
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
-    dateCreated: Optional[str]
-    dateModified: Optional[str]
-    datePublished: Optional[str]
+    dateCreated: str | None
+    dateModified: str | None
+    datePublished: str | None
 
 
 # === BioSample ===
 
 
 class Attribute(BaseModel):
-    attribute_name: Optional[str]
-    display_name: Optional[str]
-    harmonized_name: Optional[str]
-    content: Optional[str]
+    attribute_name: str | None
+    display_name: str | None
+    harmonized_name: str | None
+    content: str | None
 
 
 class Model(BaseModel):
@@ -135,24 +136,24 @@ class Package(BaseModel):
 class BioSample(BaseModel):
     identifier: str
     properties: Any
-    distribution: List[Distribution]
+    distribution: list[Distribution]
     isPartOf: Literal["BioSample"]
     type_: Literal["biosample"] = Field(alias="type")
-    name: Optional[str]
+    name: str | None
     url: str
-    organism: Optional[Organism]
-    title: Optional[str]
-    description: Optional[str]
-    attributes: List[Attribute]
-    model: List[Model]
-    package: Optional[Package]
-    dbXrefs: List[Xref]
-    sameAs: List[Xref]
+    organism: Organism | None
+    title: str | None
+    description: str | None
+    attributes: list[Attribute]
+    model: list[Model]
+    package: Package | None
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
-    dateCreated: Optional[str]
-    dateModified: Optional[str]
-    datePublished: Optional[str]
+    dateCreated: str | None
+    dateModified: str | None
+    datePublished: str | None
 
 
 # === SRA ===
@@ -161,21 +162,23 @@ class BioSample(BaseModel):
 class SRA(BaseModel):
     identifier: str
     properties: Any
-    distribution: List[Distribution]
+    distribution: list[Distribution]
     isPartOf: Literal["sra"]
-    type_: Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"] = Field(alias="type")
-    name: Optional[str]
+    type_: Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"] = Field(
+        alias="type"
+    )
+    name: str | None
     url: str
-    organism: Optional[Organism]
-    title: Optional[str]
-    description: Optional[str]
-    dbXrefs: List[Xref]
-    sameAs: List[Xref]
+    organism: Organism | None
+    title: str | None
+    description: str | None
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
-    dateCreated: Optional[str]
-    dateModified: Optional[str]
-    datePublished: Optional[str]
+    dateCreated: str | None
+    dateModified: str | None
+    datePublished: str | None
 
 
 # === JGA ===
@@ -184,18 +187,18 @@ class SRA(BaseModel):
 class JGA(BaseModel):
     identifier: str
     properties: Any
-    distribution: List[Distribution]
+    distribution: list[Distribution]
     isPartOf: Literal["jga"]
     type_: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"] = Field(alias="type")
-    name: Optional[str]
+    name: str | None
     url: str
-    organism: Optional[Organism]
-    title: Optional[str]
-    description: Optional[str]
-    dbXrefs: List[Xref]
-    sameAs: List[Xref]
+    organism: Organism | None
+    title: str | None
+    description: str | None
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Literal["live"]
     accessibility: Literal["controlled-access"]
-    dateCreated: Optional[str]
-    dateModified: Optional[str]
-    datePublished: Optional[str]
+    dateCreated: str | None
+    dateModified: str | None
+    datePublished: str | None

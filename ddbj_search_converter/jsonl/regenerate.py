@@ -3,71 +3,82 @@
 hotfix/debug 用途。通常パイプライン (full/incremental) とは独立し、
 last_run.json は更新しない。
 """
+
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
-from ddbj_search_converter.config import (BP_BASE_DIR_NAME, BS_BASE_DIR_NAME,
-                                          JGA_BASE_PATH, TMP_XML_DIR_NAME,
-                                          TODAY_STR, Config, get_config)
+from ddbj_search_converter.config import (
+    BP_BASE_DIR_NAME,
+    BS_BASE_DIR_NAME,
+    JGA_BASE_PATH,
+    TMP_XML_DIR_NAME,
+    TODAY_STR,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.dblink.db import AccessionType
-from ddbj_search_converter.dblink.utils import (load_blacklist,
-                                                load_jga_blacklist,
-                                                load_sra_blacklist)
+from ddbj_search_converter.dblink.utils import load_blacklist, load_jga_blacklist, load_sra_blacklist
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
-from ddbj_search_converter.jsonl.bp import \
-    _fetch_dates_ddbj as bp_fetch_dates_ddbj
-from ddbj_search_converter.jsonl.bp import \
-    _fetch_dates_ncbi as bp_fetch_dates_ncbi
+from ddbj_search_converter.jsonl.bp import _fetch_dates_ddbj as bp_fetch_dates_ddbj
+from ddbj_search_converter.jsonl.bp import _fetch_dates_ncbi as bp_fetch_dates_ncbi
 from ddbj_search_converter.jsonl.bp import xml_entry_to_bp_instance
-from ddbj_search_converter.jsonl.bs import \
-    _fetch_dates_ddbj as bs_fetch_dates_ddbj
-from ddbj_search_converter.jsonl.bs import \
-    _fetch_dates_ncbi as bs_fetch_dates_ncbi
+from ddbj_search_converter.jsonl.bs import _fetch_dates_ddbj as bs_fetch_dates_ddbj
+from ddbj_search_converter.jsonl.bs import _fetch_dates_ncbi as bs_fetch_dates_ncbi
 from ddbj_search_converter.jsonl.bs import xml_entry_to_bs_instance
-from ddbj_search_converter.jsonl.jga import (INDEX_TO_ACCESSION_TYPE, XML_KEYS,
-                                             IndexName,
-                                             jga_entry_to_jga_instance,
-                                             load_date_map, load_jga_xml)
+from ddbj_search_converter.jsonl.jga import (
+    INDEX_TO_ACCESSION_TYPE,
+    XML_KEYS,
+    IndexName,
+    jga_entry_to_jga_instance,
+    load_date_map,
+    load_jga_xml,
+)
 from ddbj_search_converter.jsonl.sra import XML_TYPES, process_submission_xml
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
 from ddbj_search_converter.schema import XrefType
-from ddbj_search_converter.sra.tar_reader import (SraXmlType,
-                                                  get_dra_tar_reader,
-                                                  get_ncbi_tar_reader)
+from ddbj_search_converter.sra.tar_reader import SraXmlType, get_dra_tar_reader, get_ncbi_tar_reader
 from ddbj_search_converter.sra_accessions_tab import (
-    SourceKind, get_accession_info_bulk, lookup_submissions_for_accessions)
+    SourceKind,
+    get_accession_info_bulk,
+    lookup_submissions_for_accessions,
+)
 from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 # type ごとに受け入れる accession パターンを定義
-TYPE_PATTERNS: Dict[str, List[AccessionType]] = {
+TYPE_PATTERNS: dict[str, list[AccessionType]] = {
     "bioproject": ["bioproject", "umbrella-bioproject"],
     "biosample": ["biosample"],
     "sra": [
-        "sra-submission", "sra-study", "sra-experiment",
-        "sra-run", "sra-sample", "sra-analysis",
+        "sra-submission",
+        "sra-study",
+        "sra-experiment",
+        "sra-run",
+        "sra-sample",
+        "sra-analysis",
     ],
     "jga": ["jga-study", "jga-dataset", "jga-dac", "jga-policy"],
 }
 
 
-def load_accessions_from_file(file_path: Path) -> Set[str]:
+def load_accessions_from_file(file_path: Path) -> set[str]:
     """ファイルから accession ID を読み込む (1行1件、空行・#コメント除外)。"""
-    accessions: Set[str] = set()
+    accessions: set[str] = set()
     with file_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                accessions.add(line)
+        for raw_line in f:
+            stripped = raw_line.strip()
+            if stripped and not stripped.startswith("#"):
+                accessions.add(stripped)
+
     return accessions
 
 
-def validate_accessions(data_type: str, accessions: Set[str]) -> Set[str]:
+def validate_accessions(data_type: str, accessions: set[str]) -> set[str]:
     """type に合わない accession を警告ログに出力する。処理は続行する。"""
     valid_types = TYPE_PATTERNS.get(data_type, [])
-    valid: Set[str] = set()
+    valid: set[str] = set()
     for acc in accessions:
         matched = False
         for acc_type in valid_types:
@@ -92,8 +103,8 @@ def regenerate_bp_jsonl(
     config: Config,
     tmp_xml_dir: Path,
     output_dir: Path,
-    target_accessions: Set[str],
-    umbrella_ids: Optional[Set[str]] = None,
+    target_accessions: set[str],
+    umbrella_ids: set[str] | None = None,
 ) -> None:
     """指定された accession の BioProject JSONL を再生成する。"""
     if not tmp_xml_dir.exists():
@@ -102,13 +113,11 @@ def regenerate_bp_jsonl(
     bp_blacklist, _ = load_blacklist(config)
 
     # DDBJ XML + NCBI XML の全ファイルを処理
-    xml_files = sorted(
-        list(tmp_xml_dir.glob("ddbj_*.xml")) + list(tmp_xml_dir.glob("ncbi_*.xml"))
-    )
+    xml_files = sorted(list(tmp_xml_dir.glob("ddbj_*.xml")) + list(tmp_xml_dir.glob("ncbi_*.xml")))
     log_info(f"found {len(xml_files)} xml files in {tmp_xml_dir}")
 
-    docs: Dict[str, Any] = {}
-    found_accessions: Set[str] = set()
+    docs: dict[str, Any] = {}
+    found_accessions: set[str] = set()
 
     for xml_path in xml_files:
         is_ddbj = xml_path.name.startswith("ddbj_")
@@ -165,8 +174,8 @@ def regenerate_bs_jsonl(
     config: Config,
     tmp_xml_dir: Path,
     output_dir: Path,
-    target_accessions: Set[str],
-    umbrella_ids: Optional[Set[str]] = None,
+    target_accessions: set[str],
+    umbrella_ids: set[str] | None = None,
 ) -> None:
     """指定された accession の BioSample JSONL を再生成する。"""
     if not tmp_xml_dir.exists():
@@ -174,13 +183,11 @@ def regenerate_bs_jsonl(
 
     _, bs_blacklist = load_blacklist(config)
 
-    xml_files = sorted(
-        list(tmp_xml_dir.glob("ddbj_*.xml")) + list(tmp_xml_dir.glob("ncbi_*.xml"))
-    )
+    xml_files = sorted(list(tmp_xml_dir.glob("ddbj_*.xml")) + list(tmp_xml_dir.glob("ncbi_*.xml")))
     log_info(f"found {len(xml_files)} xml files in {tmp_xml_dir}")
 
-    docs: Dict[str, Any] = {}
-    found_accessions: Set[str] = set()
+    docs: dict[str, Any] = {}
+    found_accessions: set[str] = set()
 
     for xml_path in xml_files:
         is_ddbj = xml_path.name.startswith("ddbj_")
@@ -233,7 +240,7 @@ def regenerate_bs_jsonl(
 # === SRA ===
 
 
-def _classify_sra_source(accession: str) -> Optional[SourceKind]:
+def _classify_sra_source(accession: str) -> SourceKind | None:
     """SRA accession のプレフィックスから source を判定する。"""
     if not accession:
         return None
@@ -248,14 +255,14 @@ def _classify_sra_source(accession: str) -> Optional[SourceKind]:
 def regenerate_sra_jsonl(
     config: Config,
     output_dir: Path,
-    target_accessions: Set[str],
-    umbrella_ids: Optional[Set[str]] = None,
+    target_accessions: set[str],
+    umbrella_ids: set[str] | None = None,
 ) -> None:
     """指定された accession の SRA JSONL を再生成する。"""
     blacklist = load_sra_blacklist(config)
 
     # source ごとに accession を分類
-    source_accessions: Dict[SourceKind, List[str]] = {"dra": [], "sra": []}
+    source_accessions: dict[SourceKind, list[str]] = {"dra": [], "sra": []}
     for acc in target_accessions:
         source = _classify_sra_source(acc)
         if source:
@@ -264,7 +271,7 @@ def regenerate_sra_jsonl(
             log_warn(f"cannot determine source for accession '{acc}', skipping")
 
     # entity type 別に結果を集約
-    all_entries: Dict[str, List[Any]] = {t: [] for t in XML_TYPES}
+    all_entries: dict[str, list[Any]] = {t: [] for t in XML_TYPES}
 
     source_kind: SourceKind
     for source_kind in ("dra", "sra"):
@@ -280,7 +287,9 @@ def regenerate_sra_jsonl(
 
         not_found = set(accs) - set(acc_to_sub.keys())
         if not_found:
-            log_warn(f"{len(not_found)} accession(s) not found in {source_kind.upper()} accessions DB: {sorted(not_found)}")
+            log_warn(
+                f"{len(not_found)} accession(s) not found in {source_kind.upper()} accessions DB: {sorted(not_found)}"
+            )
 
         if not acc_to_sub:
             continue
@@ -297,12 +306,12 @@ def regenerate_sra_jsonl(
 
         for sub in submissions:
             # submission に含まれる全 XML を読み込む
-            xml_cache: Dict[SraXmlType, Optional[bytes]] = {}
+            xml_cache: dict[SraXmlType, bytes | None] = {}
             for xml_type in XML_TYPES:
                 xml_cache[xml_type] = tar_reader.read_xml(sub, xml_type)
 
             # submission に含まれる全 accession を収集
-            sub_accessions: List[str] = [sub]
+            sub_accessions: list[str] = [sub]
             for xml_type in XML_TYPES:
                 if xml_type == "submission":
                     continue
@@ -331,7 +340,6 @@ def regenerate_sra_jsonl(
                 submission=sub,
                 blacklist=blacklist,
                 accession_info=accession_info,
-                is_dra=is_dra,
                 xml_cache=xml_cache,
             )
 
@@ -344,7 +352,7 @@ def regenerate_sra_jsonl(
         tar_reader.close()
 
     # dbXrefs を更新
-    xref_type_map: Dict[SraXmlType, XrefType] = {
+    xref_type_map: dict[SraXmlType, XrefType] = {
         "submission": "sra-submission",
         "study": "sra-study",
         "experiment": "sra-experiment",
@@ -378,7 +386,7 @@ def regenerate_sra_jsonl(
 # === JGA ===
 
 # accession prefix → IndexName
-JGA_PREFIX_MAP: Dict[str, IndexName] = {
+JGA_PREFIX_MAP: dict[str, IndexName] = {
     "JGAS": "jga-study",
     "JGAD": "jga-dataset",
     "JGAC": "jga-dac",
@@ -390,14 +398,14 @@ def regenerate_jga_jsonl(
     config: Config,
     output_dir: Path,
     jga_base_path: Path,
-    target_accessions: Set[str],
-    umbrella_ids: Optional[Set[str]] = None,
+    target_accessions: set[str],
+    umbrella_ids: set[str] | None = None,
 ) -> None:
     """指定された accession の JGA JSONL を再生成する。"""
     jga_blacklist = load_jga_blacklist(config)
 
     # 必要な index_name を判定
-    needed_indexes: Dict[IndexName, Set[str]] = {}
+    needed_indexes: dict[IndexName, set[str]] = {}
     for acc in target_accessions:
         prefix = acc[:4]
         index_name = JGA_PREFIX_MAP.get(prefix)
@@ -428,7 +436,7 @@ def regenerate_jga_jsonl(
             continue
 
         # accession でフィルタ
-        jga_instances: Dict[str, Any] = {}
+        jga_instances: dict[str, Any] = {}
         for entry in entries:
             jga_instance = jga_entry_to_jga_instance(entry, index_name)
             if jga_instance.identifier in accs:
@@ -447,7 +455,9 @@ def regenerate_jga_jsonl(
 
         # dbXrefs
         accession_list = list(jga_instances.keys())
-        dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accession_list, umbrella_ids=umbrella_ids)
+        dbxref_map = get_dbxref_map(
+            config, INDEX_TO_ACCESSION_TYPE[index_name], accession_list, umbrella_ids=umbrella_ids
+        )
         for accession, xrefs in dbxref_map.items():
             if accession in jga_instances:
                 jga_instances[accession].dbXrefs = xrefs
@@ -473,11 +483,9 @@ def regenerate_jga_jsonl(
 REGENERATE_DIR_NAME = "regenerate"
 
 
-def parse_args(args: List[str]) -> argparse.Namespace:
+def parse_args(args: list[str]) -> argparse.Namespace:
     """コマンドライン引数をパースする。"""
-    parser = argparse.ArgumentParser(
-        description="Regenerate JSONL for specific accession IDs (hotfix/debug use)."
-    )
+    parser = argparse.ArgumentParser(description="Regenerate JSONL for specific accession IDs (hotfix/debug use).")
     parser.add_argument(
         "--type",
         required=True,
@@ -518,7 +526,7 @@ def main() -> None:
     data_type: str = parsed.type
 
     # accession を収集
-    accessions: Set[str] = set()
+    accessions: set[str] = set()
     if parsed.accessions:
         accessions.update(parsed.accessions)
     if parsed.accession_file:
@@ -536,8 +544,8 @@ def main() -> None:
         log_info(f"target accessions ({len(accessions)}): {sorted(accessions)}")
 
         # umbrella-bioproject ID セットを取得
-        from ddbj_search_converter.dblink.db import \
-            get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+        from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
+
         umbrella_ids = get_umbrella_bioproject_ids(config)
 
         # 出力ディレクトリ

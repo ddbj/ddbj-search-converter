@@ -4,18 +4,18 @@ Shows logs filtered by date, run_name, run_id, and optionally log level.
 Output is JSON Lines (default) or human-readable text to stdout.
 Metadata and jq examples are printed to stderr.
 """
+
 import argparse
 import json
 import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import duckdb
 
 from ddbj_search_converter.cli.debug.run_order import sort_run_names
-from ddbj_search_converter.config import (DATE_FORMAT, LOG_DB_FILE_NAME, TODAY,
-                                          get_config)
+from ddbj_search_converter.config import DATE_FORMAT, LOG_DB_FILE_NAME, TODAY, get_config
 
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
@@ -30,9 +30,9 @@ def _row_to_dict(
     message: str,
     extra_json: Any,
     error_json: Any = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Convert a log row to a dict for JSONL output."""
-    record: Dict[str, Any] = {
+    record: dict[str, Any] = {
         "timestamp": str(timestamp)[:19] if timestamp else None,
         "run_name": run_name,
         "message": message,
@@ -49,9 +49,13 @@ def _row_to_dict(
                 record["file"] = extra["file"]
             if extra.get("source"):
                 record["source"] = extra["source"]
-            for key, value in extra.items():
-                if key not in ("debug_category", "accession", "file", "source", "lifecycle"):
-                    record[key] = value
+            record.update(
+                {
+                    key: value
+                    for key, value in extra.items()
+                    if key not in ("debug_category", "accession", "file", "source", "lifecycle")
+                }
+            )
         except (json.JSONDecodeError, TypeError):
             pass
 
@@ -66,7 +70,7 @@ def _row_to_dict(
     return record
 
 
-def _select_interactively(label: str, items: List[str], hint_flag: str) -> str:
+def _select_interactively(label: str, items: list[str], hint_flag: str) -> str:
     """Present a numbered list on stderr and prompt user to select one.
 
     If stdin is not a TTY, prints the list and exits with an error message
@@ -99,7 +103,7 @@ def _resolve_run_name(con: duckdb.DuckDBPyConnection, run_date: date) -> str:
         "SELECT DISTINCT run_name FROM log_records WHERE run_date = ?",
         [run_date],
     ).fetchall()
-    names: List[str] = sort_run_names([str(r[0]) for r in rows])
+    names: list[str] = sort_run_names([str(r[0]) for r in rows])
 
     date_str = run_date.strftime(DATE_FORMAT)
     if len(names) == 0:
@@ -132,9 +136,7 @@ def _resolve_run_id(
         """,
         [run_date, run_name],
     ).fetchall()
-    ids_with_ts: List[tuple[str, str]] = [
-        (str(r[0]), str(r[1])[:19]) for r in rows
-    ]
+    ids_with_ts: list[tuple[str, str]] = [(str(r[0]), str(r[1])[:19]) for r in rows]
 
     date_str = run_date.strftime(DATE_FORMAT)
     if len(ids_with_ts) == 0:
@@ -155,7 +157,7 @@ def _resolve_run_id(
     return ids_with_ts[idx][0]
 
 
-def _format_raw_record(record: Dict[str, Any], log_level: str) -> str:
+def _format_raw_record(record: dict[str, Any], log_level: str) -> str:
     """Format a record as human-readable text."""
     ts = record.get("timestamp", "")
     category = record.get("debug_category", "")
@@ -180,8 +182,7 @@ def _format_raw_record(record: Dict[str, Any], log_level: str) -> str:
             lines.append(f"  Error: {error_type}: {error_message}")
         if traceback_str:
             lines.append("  Traceback:")
-            for tb_line in traceback_str.strip().split("\n"):
-                lines.append(f"    {tb_line}")
+            lines.extend(f"    {tb_line}" for tb_line in traceback_str.strip().split("\n"))
 
     return "\n".join(lines)
 
@@ -189,16 +190,16 @@ def _format_raw_record(record: Dict[str, Any], log_level: str) -> str:
 def _fetch_logs(
     con: duckdb.DuckDBPyConnection,
     run_id: str,
-    level: Optional[str],
+    level: str | None,
     limit: int,
-) -> List[Any]:
+) -> list[Any]:
     """Fetch log rows for a given run_id, optionally filtered by level."""
     query = """
         SELECT timestamp, run_name, log_level, message, extra, error
         FROM log_records
         WHERE run_id = ?
     """
-    params: List[Any] = [run_id]
+    params: list[Any] = [run_id]
 
     if level is not None:
         query += " AND log_level = ?"
@@ -215,14 +216,14 @@ def _fetch_logs(
 def _count_logs(
     con: duckdb.DuckDBPyConnection,
     run_id: str,
-    level: Optional[str],
+    level: str | None,
 ) -> int:
     """Count log rows for a given run_id, optionally filtered by level."""
     query = """
         SELECT COUNT(*) FROM log_records
         WHERE run_id = ?
     """
-    params: List[Any] = [run_id]
+    params: list[Any] = [run_id]
 
     if level is not None:
         query += " AND log_level = ?"
@@ -240,9 +241,13 @@ def _print_jq_examples(run_name: str) -> None:
     print("  # Count by log_level", file=sys.stderr)
     print(f"  {cmd} | jq -s 'group_by(.log_level) | map({{level: .[0].log_level, count: length}})'", file=sys.stderr)
     print("  # Count by category (DEBUG logs)", file=sys.stderr)
-    print(f"  {cmd} --level DEBUG | jq -s 'group_by(.debug_category) | map({{category: .[0].debug_category, count: length}})'", file=sys.stderr)
+    print(
+        f"  {cmd} --level DEBUG"
+        " | jq -s 'group_by(.debug_category) | map({category: .[0].debug_category, count: length})'",
+        file=sys.stderr,
+    )
     print("  # Filter by category", file=sys.stderr)
-    print(f'  {cmd} --level DEBUG | jq \'select(.debug_category == "invalid_biosample_id")\'', file=sys.stderr)
+    print(f"  {cmd} --level DEBUG | jq 'select(.debug_category == \"invalid_biosample_id\")'", file=sys.stderr)
     print("  # Unique accessions", file=sys.stderr)
     print(f"  {cmd} | jq -r '.accession // empty' | sort -u", file=sys.stderr)
     print("  # Count per accession", file=sys.stderr)
@@ -255,16 +260,12 @@ def _parse_date(value: str) -> date:
     try:
         return datetime.strptime(value, DATE_FORMAT).date()
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            f"Invalid date format: {value!r} (expected YYYYMMDD)"
-        ) from exc
+        raise argparse.ArgumentTypeError(f"Invalid date format: {value!r} (expected YYYYMMDD)") from exc
 
 
-def parse_args(args: List[str]) -> argparse.Namespace:
+def parse_args(args: list[str]) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Show logs as JSON Lines (default) or human-readable text."
-    )
+    parser = argparse.ArgumentParser(description="Show logs as JSON Lines (default) or human-readable text.")
     parser.add_argument(
         "--date",
         type=_parse_date,
@@ -320,7 +321,7 @@ def parse_args(args: List[str]) -> argparse.Namespace:
     return parsed
 
 
-def _run_date(parsed_date: Optional[date]) -> date:
+def _run_date(parsed_date: date | None) -> date:
     """Return the run_date from parsed arg or TODAY."""
     if parsed_date is not None:
         return parsed_date

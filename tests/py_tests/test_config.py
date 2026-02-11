@@ -1,12 +1,9 @@
 """config.py のテスト。"""
+
 import json
 from pathlib import Path
 
-import pytest
-
-from ddbj_search_converter.config import (Config, apply_margin,
-                                          get_last_run_path, read_last_run,
-                                          write_last_run)
+from ddbj_search_converter.config import Config, apply_margin, get_last_run_path, read_last_run, write_last_run
 
 
 class TestLastRunUtilities:
@@ -33,12 +30,16 @@ class TestLastRunUtilities:
         """ファイルが存在する場合は値を返す。"""
         config = Config(result_dir=tmp_path)
         last_run_path = tmp_path / "last_run.json"
-        last_run_path.write_text(json.dumps({
-            "bioproject": "2026-01-19T00:00:00Z",
-            "biosample": "2026-01-18T00:00:00Z",
-            "sra": None,
-            "jga": None,
-        }))
+        last_run_path.write_text(
+            json.dumps(
+                {
+                    "bioproject": "2026-01-19T00:00:00Z",
+                    "biosample": "2026-01-18T00:00:00Z",
+                    "sra": None,
+                    "jga": None,
+                }
+            )
+        )
 
         result = read_last_run(config)
         assert result == {
@@ -67,12 +68,16 @@ class TestLastRunUtilities:
         """既存ファイルを更新する。"""
         config = Config(result_dir=tmp_path)
         last_run_path = tmp_path / "last_run.json"
-        last_run_path.write_text(json.dumps({
-            "bioproject": "2026-01-19T00:00:00Z",
-            "biosample": "2026-01-18T00:00:00Z",
-            "sra": None,
-            "jga": None,
-        }))
+        last_run_path.write_text(
+            json.dumps(
+                {
+                    "bioproject": "2026-01-19T00:00:00Z",
+                    "biosample": "2026-01-18T00:00:00Z",
+                    "sra": None,
+                    "jga": None,
+                }
+            )
+        )
 
         write_last_run(config, "bioproject", "2026-01-20T00:00:00Z")
 

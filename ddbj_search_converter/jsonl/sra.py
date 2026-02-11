@@ -8,49 +8,51 @@ DRA (DDBJ) と NCBI SRA の XML を tar ファイルから読み込み、
     batch 分の XML を読み込んだら ProcessPoolExecutor の worker に submit する。
     各 worker は独立して DB クエリ、XML パース、dbXrefs 取得、JSONL 出力を行う。
 """
+
 from __future__ import annotations
 
 import argparse
 import gc
 import sys
-from concurrent.futures import (FIRST_COMPLETED, Future, ProcessPoolExecutor,
-                                wait)
+from collections.abc import Callable, Iterator
+from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
 from pathlib import Path
-from typing import (Any, Callable, Dict, Iterator, List, Literal, Optional,
-                    Set, Tuple, cast)
+from typing import Any, Literal, cast
 
-from ddbj_search_converter.config import (JSONL_DIR_NAME, SEARCH_BASE_URL,
-                                          SRA_BASE_DIR_NAME, TODAY_STR, Config,
-                                          get_config, read_last_run,
-                                          write_last_run)
+from ddbj_search_converter.config import (
+    JSONL_DIR_NAME,
+    SEARCH_BASE_URL,
+    SRA_BASE_DIR_NAME,
+    TODAY_STR,
+    Config,
+    get_config,
+    read_last_run,
+    write_last_run,
+)
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  log_warn, run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
-from ddbj_search_converter.schema import (SRA, Accessibility, Distribution,
-                                          Organism, Status, XrefType)
-from ddbj_search_converter.sra.tar_reader import (SraXmlType, TarXMLReader,
-                                                  get_dra_tar_path,
-                                                  get_ncbi_tar_path)
-from ddbj_search_converter.sra_accessions_tab import (SourceKind,
-                                                      get_accession_info_bulk,
-                                                      iter_all_submissions,
-                                                      iter_updated_submissions)
+from ddbj_search_converter.schema import SRA, Accessibility, Distribution, Organism, Status, XrefType
+from ddbj_search_converter.sra.tar_reader import SraXmlType, TarXMLReader, get_dra_tar_path, get_ncbi_tar_path
+from ddbj_search_converter.sra_accessions_tab import (
+    SourceKind,
+    get_accession_info_bulk,
+    iter_all_submissions,
+    iter_updated_submissions,
+)
 from ddbj_search_converter.xml_utils import parse_xml
 
 DEFAULT_BATCH_SIZE = 5000
 DEFAULT_PARALLEL_NUM = 8
 
 # XML types
-XML_TYPES: List[SraXmlType] = [
-    "submission", "study", "experiment", "run", "sample", "analysis"
-]
+XML_TYPES: list[SraXmlType] = ["submission", "study", "experiment", "run", "sample", "analysis"]
 
 # SRA type -> entry type
 SraEntryType = Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"]
 
-SRA_TYPE_MAP: Dict[SraXmlType, SraEntryType] = {
+SRA_TYPE_MAP: dict[SraXmlType, SraEntryType] = {
     "submission": "sra-submission",
     "study": "sra-study",
     "experiment": "sra-experiment",
@@ -59,7 +61,7 @@ SRA_TYPE_MAP: Dict[SraXmlType, SraEntryType] = {
     "analysis": "sra-analysis",
 }
 
-XREF_TYPE_MAP: Dict[SraXmlType, XrefType] = {
+XREF_TYPE_MAP: dict[SraXmlType, XrefType] = {
     "submission": "sra-submission",
     "study": "sra-study",
     "experiment": "sra-experiment",
@@ -72,7 +74,7 @@ XREF_TYPE_MAP: Dict[SraXmlType, XrefType] = {
 # === Parse functions ===
 
 
-def _get_entries(parsed: Dict[str, Any], set_key: str, entry_key: str) -> List[Dict[str, Any]]:
+def _get_entries(parsed: dict[str, Any], set_key: str, entry_key: str) -> list[dict[str, Any]]:
     """SET から entry のリストを取得する。"""
     entry_set = parsed.get(set_key) or {}
     entries = entry_set.get(entry_key)
@@ -83,7 +85,7 @@ def _get_entries(parsed: Dict[str, Any], set_key: str, entry_key: str) -> List[D
     return entries
 
 
-def _get_text(d: Any, key: str) -> Optional[str]:
+def _get_text(d: Any, key: str) -> str | None:
     """辞書から文字列を取得する。"""
     if d is None or not isinstance(d, dict):
         return None
@@ -97,7 +99,7 @@ def _get_text(d: Any, key: str) -> Optional[str]:
     return str(v)
 
 
-def _normalize_status(status: Optional[str]) -> Status:
+def _normalize_status(status: str | None) -> Status:
     """
     status を INSDC 標準に正規化する。
 
@@ -115,7 +117,7 @@ def _normalize_status(status: Optional[str]) -> Status:
         return "live"
     status_lower = status.lower()
     if status_lower in ("live", "unpublished", "suppressed", "withdrawn"):
-        return cast(Status, status_lower)
+        return cast("Status", status_lower)
     if status_lower == "public":
         return "live"
     if status_lower in ("replaced", "killed"):
@@ -123,7 +125,7 @@ def _normalize_status(status: Optional[str]) -> Status:
     return "live"
 
 
-def _normalize_accessibility(accessibility: Optional[str]) -> Accessibility:
+def _normalize_accessibility(accessibility: str | None) -> Accessibility:
     """
     accessibility を正規化する。
 
@@ -147,7 +149,7 @@ def _normalize_accessibility(accessibility: Optional[str]) -> Accessibility:
 def parse_submission(
     xml_bytes: bytes,
     accession: str,
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     """submission XML をパースする。"""
     try:
         parsed = parse_xml(xml_bytes)
@@ -170,22 +172,25 @@ def parse_submission(
 def parse_study(
     xml_bytes: bytes,
     accession: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """study XML をパースする。複数の STUDY を返す。"""
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     try:
         parsed = parse_xml(xml_bytes)
         studies = _get_entries(parsed, "STUDY_SET", "STUDY")
 
         for study in studies:
-            descriptor = (study.get("DESCRIPTOR") or {})
-            results.append({
-                "accession": study.get("accession"),
-                "alias": study.get("alias"),
-                "title": _get_text(descriptor, "STUDY_TITLE"),
-                "description": _get_text(descriptor, "STUDY_ABSTRACT") or _get_text(descriptor, "STUDY_DESCRIPTION"),
-                "properties": {"STUDY_SET": {"STUDY": study}},
-            })
+            descriptor = study.get("DESCRIPTOR") or {}
+            results.append(
+                {
+                    "accession": study.get("accession"),
+                    "alias": study.get("alias"),
+                    "title": _get_text(descriptor, "STUDY_TITLE"),
+                    "description": _get_text(descriptor, "STUDY_ABSTRACT")
+                    or _get_text(descriptor, "STUDY_DESCRIPTION"),
+                    "properties": {"STUDY_SET": {"STUDY": study}},
+                }
+            )
     except Exception as e:
         log_warn(f"failed to parse study xml: {e}", accession=accession)
     return results
@@ -194,22 +199,24 @@ def parse_study(
 def parse_experiment(
     xml_bytes: bytes,
     accession: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """experiment XML をパースする。複数の EXPERIMENT を返す。"""
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     try:
         parsed = parse_xml(xml_bytes)
         experiments = _get_entries(parsed, "EXPERIMENT_SET", "EXPERIMENT")
 
         for exp in experiments:
-            design = (exp.get("DESIGN") or {})
-            results.append({
-                "accession": exp.get("accession"),
-                "alias": exp.get("alias"),
-                "title": _get_text(exp, "TITLE"),
-                "description": _get_text(design, "DESIGN_DESCRIPTION"),
-                "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
-            })
+            design = exp.get("DESIGN") or {}
+            results.append(
+                {
+                    "accession": exp.get("accession"),
+                    "alias": exp.get("alias"),
+                    "title": _get_text(exp, "TITLE"),
+                    "description": _get_text(design, "DESIGN_DESCRIPTION"),
+                    "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
+                }
+            )
     except Exception as e:
         log_warn(f"failed to parse experiment xml: {e}", accession=accession)
     return results
@@ -218,38 +225,40 @@ def parse_experiment(
 def parse_run(
     xml_bytes: bytes,
     accession: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """run XML をパースする。複数の RUN を返す。"""
-    results: List[Dict[str, Any]] = []
     try:
         parsed = parse_xml(xml_bytes)
         runs = _get_entries(parsed, "RUN_SET", "RUN")
 
-        for run in runs:
-            results.append({
+        return [
+            {
                 "accession": run.get("accession"),
                 "alias": run.get("alias"),
                 "title": _get_text(run, "TITLE"),
                 "description": None,
                 "properties": {"RUN_SET": {"RUN": run}},
-            })
+            }
+            for run in runs
+        ]
     except Exception as e:
         log_warn(f"failed to parse run xml: {e}", accession=accession)
-    return results
+
+    return []
 
 
 def parse_sample(
     xml_bytes: bytes,
     accession: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """sample XML をパースする。複数の SAMPLE を返す。"""
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     try:
         parsed = parse_xml(xml_bytes)
         samples = _get_entries(parsed, "SAMPLE_SET", "SAMPLE")
 
         for sample in samples:
-            sample_name = (sample.get("SAMPLE_NAME") or {})
+            sample_name = sample.get("SAMPLE_NAME") or {}
             organism = None
             tax_id = sample_name.get("TAXON_ID")
             sci_name = sample_name.get("SCIENTIFIC_NAME")
@@ -259,14 +268,16 @@ def parse_sample(
                     name=sci_name,
                 )
 
-            results.append({
-                "accession": sample.get("accession"),
-                "alias": sample.get("alias"),
-                "title": _get_text(sample, "TITLE"),
-                "description": _get_text(sample, "DESCRIPTION"),
-                "organism": organism,
-                "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
-            })
+            results.append(
+                {
+                    "accession": sample.get("accession"),
+                    "alias": sample.get("alias"),
+                    "title": _get_text(sample, "TITLE"),
+                    "description": _get_text(sample, "DESCRIPTION"),
+                    "organism": organism,
+                    "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
+                }
+            )
     except Exception as e:
         log_warn(f"failed to parse sample xml: {e}", accession=accession)
     return results
@@ -275,36 +286,40 @@ def parse_sample(
 def parse_analysis(
     xml_bytes: bytes,
     accession: str,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """analysis XML をパースする。複数の ANALYSIS を返す。"""
-    results: List[Dict[str, Any]] = []
     try:
         parsed = parse_xml(xml_bytes)
         analyses = _get_entries(parsed, "ANALYSIS_SET", "ANALYSIS")
 
-        for analysis in analyses:
-            results.append({
+        return [
+            {
                 "accession": analysis.get("accession"),
                 "alias": analysis.get("alias"),
                 "title": _get_text(analysis, "TITLE"),
                 "description": _get_text(analysis, "DESCRIPTION"),
                 "properties": {"ANALYSIS_SET": {"ANALYSIS": analysis}},
-            })
+            }
+            for analysis in analyses
+        ]
     except Exception as e:
         log_warn(f"failed to parse analysis xml: {e}", accession=accession)
-    return results
+
+    return []
 
 
 # === Model creation ===
 
 
-def _make_distribution(entry_type: str, identifier: str) -> List[Distribution]:
+def _make_distribution(entry_type: str, identifier: str) -> list[Distribution]:
     """Distribution を作成する。"""
-    return [Distribution(
-        type="DataDownload",
-        encodingFormat="JSON",
-        contentUrl=f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}.json",
-    )]
+    return [
+        Distribution(
+            type="DataDownload",
+            encodingFormat="JSON",
+            contentUrl=f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}.json",
+        )
+    ]
 
 
 def _make_url(entry_type: str, identifier: str) -> str:
@@ -312,7 +327,7 @@ def _make_url(entry_type: str, identifier: str) -> str:
     return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}"
 
 
-def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:
+def _get_name_from_alias(accession: str, alias: str | None) -> str | None:
     """alias が accession と異なる場合のみ name として返す。"""
     if alias is None:
         return None
@@ -323,12 +338,12 @@ def _get_name_from_alias(accession: str, alias: Optional[str]) -> Optional[str]:
 
 def create_sra_entry(
     sra_type: SraXmlType,
-    parsed: Dict[str, Any],
+    parsed: dict[str, Any],
     status: Status,
     accessibility: Accessibility,
-    date_created: Optional[str],
-    date_modified: Optional[str],
-    date_published: Optional[str],
+    date_created: str | None,
+    date_modified: str | None,
+    date_published: str | None,
 ) -> SRA:
     """SRA エントリを作成する。"""
     entry_type = SRA_TYPE_MAP[sra_type]
@@ -357,7 +372,7 @@ def create_sra_entry(
 # === Submission processing ===
 
 # parse 関数ディスパッチ
-_PARSE_FNS: Dict[SraXmlType, Callable[..., Any]] = {
+_PARSE_FNS: dict[SraXmlType, Callable[..., Any]] = {
     "submission": parse_submission,
     "study": parse_study,
     "experiment": parse_experiment,
@@ -369,10 +384,10 @@ _PARSE_FNS: Dict[SraXmlType, Callable[..., Any]] = {
 
 def process_submission_xml(
     submission: str,
-    blacklist: Set[str],
-    accession_info: Dict[str, Tuple[str, str, Optional[str], Optional[str], Optional[str], str]],
-    xml_cache: Dict[SraXmlType, Optional[bytes]],
-) -> Dict[SraXmlType, List[Any]]:
+    blacklist: set[str],
+    accession_info: dict[str, tuple[str, str, str | None, str | None, str | None, str]],
+    xml_cache: dict[SraXmlType, bytes | None],
+) -> dict[SraXmlType, list[Any]]:
     """
     1つの submission から全 XML タイプを処理する。
 
@@ -385,7 +400,7 @@ def process_submission_xml(
     Returns:
         {xml_type: [model_instance, ...]}
     """
-    results: Dict[SraXmlType, List[Any]] = {t: [] for t in XML_TYPES}
+    results: dict[SraXmlType, list[Any]] = {t: [] for t in XML_TYPES}
 
     for xml_type in XML_TYPES:
         xml_bytes = xml_cache.get(xml_type)
@@ -413,8 +428,7 @@ def process_submission_xml(
             date_published = info[4]
 
             sra_entry = create_sra_entry(
-                xml_type, entry, status, accessibility,
-                date_created, date_modified, date_published
+                xml_type, entry, status, accessibility, date_created, date_modified, date_published
             )
             results[xml_type].append(sra_entry)
 
@@ -426,8 +440,8 @@ def process_submission_xml(
 
 def _read_batch_xml(
     tar_reader: TarXMLReader,
-    batch_subs: List[str],
-) -> Dict[str, Dict[SraXmlType, Optional[bytes]]]:
+    batch_subs: list[str],
+) -> dict[str, dict[SraXmlType, bytes | None]]:
     """
     バッチ分の submission から全 XML を読み込む。
 
@@ -438,7 +452,7 @@ def _read_batch_xml(
     Returns:
         {submission: {xml_type: xml_bytes or None}}
     """
-    xml_data: Dict[str, Dict[SraXmlType, Optional[bytes]]] = {}
+    xml_data: dict[str, dict[SraXmlType, bytes | None]] = {}
     for sub in batch_subs:
         xml_data[sub] = {}
         for xml_type in XML_TYPES:
@@ -447,10 +461,10 @@ def _read_batch_xml(
 
 
 def _extract_accessions_from_xml(
-    xml_bytes: Optional[bytes],
+    xml_bytes: bytes | None,
     xml_type: SraXmlType,
     sub: str,
-) -> List[str]:
+) -> list[str]:
     """XML から accession を抽出する。"""
     if not xml_bytes:
         return []
@@ -472,7 +486,7 @@ def _extract_accessions_from_xml(
         log_debug(
             f"failed to collect accessions from {xml_type} xml: {e}",
             accession=sub,
-            debug_category=DebugCategory.XML_ACCESSION_COLLECT_FAILED
+            debug_category=DebugCategory.XML_ACCESSION_COLLECT_FAILED,
         )
         return []
 
@@ -482,13 +496,13 @@ def _process_batch_worker(
     source: SourceKind,
     batch_num: int,
     total_batches: int,
-    batch_subs: List[str],
-    xml_data: Dict[str, Dict[SraXmlType, Optional[bytes]]],
-    blacklist: Set[str],
+    batch_subs: list[str],
+    xml_data: dict[str, dict[SraXmlType, bytes | None]],
+    blacklist: set[str],
     output_dir: Path,
     is_dra: bool,
-    umbrella_ids: Set[str],
-) -> Dict[str, int]:
+    umbrella_ids: set[str],
+) -> dict[str, int]:
     """
     1 batch を処理して JSONL を出力するワーカー関数。
 
@@ -509,7 +523,7 @@ def _process_batch_worker(
     prefix = "dra" if is_dra else "ncbi"
 
     # Step 1: accession 収集
-    all_accessions: List[str] = []
+    all_accessions: list[str] = []
     for sub in batch_subs:
         all_accessions.append(sub)
         for xml_type in XML_TYPES:
@@ -524,9 +538,9 @@ def _process_batch_worker(
     accession_info = get_accession_info_bulk(config, source, all_accessions)
 
     # Step 3: XML パース + モデル作成
-    counts: Dict[str, int] = {t: 0 for t in XML_TYPES}
-    batch_entries: Dict[SraXmlType, List[SRA]] = {t: [] for t in XML_TYPES}
-    seen_ids: Dict[SraXmlType, Set[str]] = {t: set() for t in XML_TYPES}
+    counts: dict[str, int] = dict.fromkeys(XML_TYPES, 0)
+    batch_entries: dict[SraXmlType, list[SRA]] = {t: [] for t in XML_TYPES}
+    seen_ids: dict[SraXmlType, set[str]] = {t: set() for t in XML_TYPES}
 
     for sub in batch_subs:
         results = process_submission_xml(
@@ -567,11 +581,11 @@ def process_source(
     config: Config,
     source: SourceKind,
     output_dir: Path,
-    blacklist: Set[str],
+    blacklist: set[str],
     full: bool,
-    since: Optional[str],
+    since: str | None,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
-) -> Dict[str, int]:
+) -> dict[str, int]:
     """
     DRA または NCBI SRA を処理する。
 
@@ -594,8 +608,8 @@ def process_source(
     is_dra = source == "dra"
 
     # umbrella-bioproject ID セットを取得
-    from ddbj_search_converter.dblink.db import \
-        get_umbrella_bioproject_ids  # pylint: disable=import-outside-toplevel
+    from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
+
     umbrella_ids = get_umbrella_bioproject_ids(config)
 
     log_info(f"processing {source.upper()}...")
@@ -616,7 +630,7 @@ def process_source(
 
     if not submissions:
         log_info(f"no submissions to process for {source}")
-        return {t: 0 for t in XML_TYPES}
+        return dict.fromkeys(XML_TYPES, 0)
 
     # tar を開く
     tar_reader = TarXMLReader(tar_path)
@@ -631,22 +645,22 @@ def process_source(
     log_info(f"batch_size={batch_size}, total_batches={total_batches}, parallel_num={parallel_num}")
 
     # バッチイテレータ
-    def batch_iter() -> Iterator[Tuple[int, List[str]]]:
+    def batch_iter() -> Iterator[tuple[int, list[str]]]:
         for i in range(0, len(sorted_submissions), batch_size):
             batch_num = i // batch_size + 1
-            batch_subs = sorted_submissions[i:i + batch_size]
+            batch_subs = sorted_submissions[i : i + batch_size]
             yield batch_num, batch_subs
 
     batches = batch_iter()
-    buffer: List[Tuple[int, List[str], Dict[str, Dict[SraXmlType, Optional[bytes]]]]] = []
+    buffer: list[tuple[int, list[str], dict[str, dict[SraXmlType, bytes | None]]]] = []
     batches_exhausted = False
 
     # 合計カウント
-    total_counts: Dict[str, int] = {t: 0 for t in XML_TYPES}
+    total_counts: dict[str, int] = dict.fromkeys(XML_TYPES, 0)
     completed_batches = 0
 
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
-        pending: Set[Future[Dict[str, int]]] = set()
+        pending: set[Future[dict[str, int]]] = set()
 
         while True:
             # バッファが空いていれば先読み（tar reader は止まらない）
@@ -665,8 +679,16 @@ def process_source(
                 batch_num, batch_subs, xml_data = buffer.pop(0)
                 future = executor.submit(
                     _process_batch_worker,
-                    config, source, batch_num, total_batches, batch_subs, xml_data,
-                    blacklist, output_dir, is_dra, umbrella_ids,
+                    config,
+                    source,
+                    batch_num,
+                    total_batches,
+                    batch_subs,
+                    xml_data,
+                    blacklist,
+                    output_dir,
+                    is_dra,
+                    umbrella_ids,
                 )
                 pending.add(future)
                 log_info(f"submitted batch {batch_num}/{total_batches}")
@@ -726,7 +748,7 @@ def generate_sra_jsonl(
     log_info(f"loaded {len(blacklist)} blacklisted accessions")
 
     # 差分更新の基準日時を取得
-    since: Optional[str] = None
+    since: str | None = None
     if not full:
         last_run = read_last_run(config)
         since = last_run.get("sra")
@@ -741,16 +763,12 @@ def generate_sra_jsonl(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # DRA を処理
-    dra_counts = process_source(
-        config, "dra", output_dir, blacklist, full, since, parallel_num
-    )
+    dra_counts = process_source(config, "dra", output_dir, blacklist, full, since, parallel_num)
     total_dra = sum(dra_counts.values())
     log_info(f"dra total: {total_dra} entries")
 
     # NCBI SRA を処理
-    sra_counts = process_source(
-        config, "sra", output_dir, blacklist, full, since, parallel_num
-    )
+    sra_counts = process_source(config, "sra", output_dir, blacklist, full, since, parallel_num)
     total_sra = sum(sra_counts.values())
     log_info(f"ncbi sra total: {total_sra} entries")
 
@@ -767,11 +785,9 @@ def generate_sra_jsonl(
 # === CLI ===
 
 
-def parse_args(args: List[str]) -> Tuple[Config, Path, int, bool]:
+def parse_args(args: list[str]) -> tuple[Config, Path, int, bool]:
     """コマンドライン引数をパースする。"""
-    parser = argparse.ArgumentParser(
-        description="Generate SRA JSONL files from tar archives."
-    )
+    parser = argparse.ArgumentParser(description="Generate SRA JSONL files from tar archives.")
     parser.add_argument(
         "--parallel-num",
         help=f"Number of consumer processes for XML parsing. Default: {DEFAULT_PARALLEL_NUM}",

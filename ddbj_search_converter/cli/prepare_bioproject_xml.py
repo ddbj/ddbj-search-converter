@@ -12,13 +12,16 @@ BioProject XML を <Package> 単位で batch 分割する。
 - {result_dir}/bioproject/tmp_xml/{YYYYMMDD}/ncbi_{n}.xml
 - {result_dir}/bioproject/tmp_xml/{YYYYMMDD}/ddbj_{n}.xml
 """
-from pathlib import Path
-from typing import List
 
-from ddbj_search_converter.config import (BIOPROJECT_WRAPPER_END,
-                                          BIOPROJECT_WRAPPER_START,
-                                          DDBJ_BIOPROJECT_XML,
-                                          NCBI_BIOPROJECT_XML, get_config)
+from pathlib import Path
+
+from ddbj_search_converter.config import (
+    BIOPROJECT_WRAPPER_END,
+    BIOPROJECT_WRAPPER_START,
+    DDBJ_BIOPROJECT_XML,
+    NCBI_BIOPROJECT_XML,
+    get_config,
+)
 from ddbj_search_converter.logging.logger import log_info, run_logger
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir, split_xml
 
@@ -30,7 +33,7 @@ def process_bioproject_xml(
     output_dir: Path,
     prefix: str,
     batch_size: int,
-) -> List[Path]:
+) -> list[Path]:
     """Process BioProject XML file.
 
     Raises:
@@ -61,13 +64,19 @@ def main() -> None:
 
         # Process NCBI BioProject XML
         ncbi_files = process_bioproject_xml(
-            NCBI_BIOPROJECT_XML, output_dir, "ncbi", DEFAULT_BATCH_SIZE,
+            NCBI_BIOPROJECT_XML,
+            output_dir,
+            "ncbi",
+            DEFAULT_BATCH_SIZE,
         )
         log_info(f"created {len(ncbi_files)} NCBI BioProject XML files")
 
         # Process DDBJ BioProject XML
         ddbj_files = process_bioproject_xml(
-            DDBJ_BIOPROJECT_XML, output_dir, "ddbj", DEFAULT_BATCH_SIZE,
+            DDBJ_BIOPROJECT_XML,
+            output_dir,
+            "ddbj",
+            DEFAULT_BATCH_SIZE,
         )
         log_info(f"created {len(ddbj_files)} DDBJ BioProject XML files")
 

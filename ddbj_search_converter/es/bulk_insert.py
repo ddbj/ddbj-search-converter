@@ -1,15 +1,14 @@
 """Elasticsearch bulk insert operations."""
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List
+from typing import Any
 
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.es.client import (check_index_exists, get_es_client,
-                                             refresh_index,
-                                             set_refresh_interval)
+from ddbj_search_converter.es.client import check_index_exists, get_es_client, refresh_index, set_refresh_interval
 from ddbj_search_converter.es.index import IndexName
 from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
 from elasticsearch import helpers
@@ -22,13 +21,13 @@ class BulkInsertResult(BaseModel):
     total_docs: int
     success_count: int
     error_count: int
-    errors: List[Dict[str, Any]]
+    errors: list[dict[str, Any]]
 
 
 def generate_bulk_actions(
     jsonl_file: Path,
     index: str,
-) -> Iterator[Dict[str, Any]]:
+) -> Iterator[dict[str, Any]]:
     """Generate bulk actions from a JSONL file.
 
     Args:
@@ -39,8 +38,8 @@ def generate_bulk_actions(
         Bulk action dictionaries
     """
     with jsonl_file.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        for raw_line in f:
+            line = raw_line.strip()
             if not line:
                 continue
             doc = json.loads(line)
@@ -57,7 +56,7 @@ def generate_bulk_actions(
 
 def bulk_insert_jsonl(
     config: Config,
-    jsonl_files: List[Path],
+    jsonl_files: list[Path],
     index: IndexName,
     batch_size: int = BULK_INSERT_SETTINGS["batch_size"],
     max_errors: int = 100,
@@ -85,7 +84,7 @@ def bulk_insert_jsonl(
     total_docs = 0
     success_count = 0
     error_count = 0
-    errors: List[Dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
 
     # Disable refresh during bulk insert for better performance
     set_refresh_interval(es_client, index, BULK_INSERT_SETTINGS["bulk_refresh_interval"])

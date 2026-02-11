@@ -1,10 +1,11 @@
 """PostgreSQL 関連のユーティリティ関数。"""
+
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Iterator, Optional, Tuple
 from urllib.parse import urlparse
 
-import psycopg2  # type: ignore[import-untyped]
+import psycopg2
 
 
 @contextmanager
@@ -27,14 +28,14 @@ def postgres_connection(
         conn.close()
 
 
-def format_date(dt: Optional[datetime]) -> Optional[str]:
+def format_date(dt: datetime | None) -> str | None:
     """datetime を ISO 8601 形式の文字列に変換する。"""
     if dt is None:
         return None
     return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def parse_postgres_url(postgres_url: str) -> Tuple[str, int, str, str]:
+def parse_postgres_url(postgres_url: str) -> tuple[str, int, str, str]:
     """
     PostgreSQL URL を解析して (host, port, user, password) を返す。
 

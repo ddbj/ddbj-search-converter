@@ -1,8 +1,8 @@
 """DuckDB operations for logging."""
+
 import json
 from datetime import date
 from pathlib import Path
-from typing import Optional
 
 import duckdb
 
@@ -33,15 +33,9 @@ def init_log_db(config: Config) -> None:
                 extra JSON
             )
         """)
-        con.execute(
-            "CREATE INDEX IF NOT EXISTS idx_run_name ON log_records(run_name)"
-        )
-        con.execute(
-            "CREATE INDEX IF NOT EXISTS idx_run_date ON log_records(run_date)"
-        )
-        con.execute(
-            "CREATE INDEX IF NOT EXISTS idx_log_level ON log_records(log_level)"
-        )
+        con.execute("CREATE INDEX IF NOT EXISTS idx_run_name ON log_records(run_name)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_run_date ON log_records(run_date)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_log_level ON log_records(log_level)")
     finally:
         con.close()
 
@@ -59,17 +53,19 @@ def insert_log_records(config: Config, jsonl_path: Path) -> None:
             if not line.strip():
                 continue
             record = json.loads(line)
-            records.append((
-                record.get("timestamp"),
-                record.get("run_date"),
-                record.get("run_id"),
-                record.get("run_name"),
-                record.get("source"),
-                record.get("log_level"),
-                record.get("message"),
-                json.dumps(record.get("error")) if record.get("error") else None,
-                json.dumps(record.get("extra")) if record.get("extra") else None,
-            ))
+            records.append(
+                (
+                    record.get("timestamp"),
+                    record.get("run_date"),
+                    record.get("run_id"),
+                    record.get("run_name"),
+                    record.get("source"),
+                    record.get("log_level"),
+                    record.get("message"),
+                    json.dumps(record.get("error")) if record.get("error") else None,
+                    json.dumps(record.get("extra")) if record.get("extra") else None,
+                )
+            )
 
     if not records:
         return
@@ -92,7 +88,7 @@ def insert_log_records(config: Config, jsonl_path: Path) -> None:
 def get_last_successful_run_date(
     config: Config,
     run_name: str,
-) -> Optional[date]:
+) -> date | None:
     """
     Get the last successful run date for a given run_name.
 

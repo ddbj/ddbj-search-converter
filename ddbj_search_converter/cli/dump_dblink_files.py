@@ -35,14 +35,13 @@ Outputs:
 - /lustre9/open/shared_data/dblink/jga_study-jga_dataset/jga_study2jga_dataset.tsv
     - Mapping: JGA Study ID -> JGA Dataset ID
 """
-from typing import List, Tuple
 
 from ddbj_search_converter.config import DBLINK_OUTPUT_PATH, get_config
 from ddbj_search_converter.dblink.db import AccessionType, export_relations
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 # Export target relations
-EXPORT_RELATIONS: List[Tuple[AccessionType, AccessionType, str]] = [
+EXPORT_RELATIONS: list[tuple[AccessionType, AccessionType, str]] = [
     ("insdc-assembly", "bioproject", "assembly_genome-bp/assembly_genome2bp.tsv"),
     ("insdc-assembly", "biosample", "assembly_genome-bs/assembly_genome2bs.tsv"),
     ("insdc-assembly", "insdc-master", "assembly_genome-insdc/assembly_genome2insdc.tsv"),
