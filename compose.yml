@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ddbj-search-converter-${DDBJ_SEARCH_ENV}
+    user: "${CONTAINER_UID:-0}:${CONTAINER_GID:-0}"
     depends_on:
       elasticsearch:
         condition: service_healthy

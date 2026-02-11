@@ -30,9 +30,14 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY ddbj_search_converter ./ddbj_search_converter
 
-RUN uv sync --frozen --extra tests
+RUN uv sync --frozen --extra tests && \
+    chmod -R a+rwX .venv
 
 COPY . .
+
+# Writable home for arbitrary UID
+ENV HOME=/home/app
+RUN mkdir -p /home/app && chmod 777 /home/app
 
 ENV PATH="/app/.venv/bin:$PATH"
 
