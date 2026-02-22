@@ -1,8 +1,10 @@
 FROM python:3.12-bookworm
 
+ARG VERSION=dev
+
 LABEL org.opencontainers.image.title="ddbj-search-converter" \
     org.opencontainers.image.description="Data converter for DDBJ Search" \
-    org.opencontainers.image.version="0.1.0" \
+    org.opencontainers.image.version="${VERSION}" \
     org.opencontainers.image.authors="Bioinformatics and DDBJ Center" \
     org.opencontainers.image.url="https://github.com/ddbj/ddbj-search-converter" \
     org.opencontainers.image.source="https://github.com/ddbj/ddbj-search-converter" \
@@ -11,8 +13,8 @@ LABEL org.opencontainers.image.title="ddbj-search-converter" \
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN apt update && \
-    apt install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     aria2 \
     curl \
     iputils-ping \
@@ -22,24 +24,24 @@ RUN apt update && \
     procps \
     tree \
     vim-tiny && \
-    apt clean && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md ./
-COPY ddbj_search_converter ./ddbj_search_converter
 
-RUN uv sync --frozen --extra tests && \
+RUN uv sync --frozen --extra tests --no-install-project && \
     chmod -R a+rwX .venv
 
 COPY . .
 
-# Writable home for arbitrary UID
+RUN SETUPTOOLS_SCM_PRETEND_VERSION=${VERSION} uv sync --frozen --extra tests
+
 ENV HOME=/home/app
 RUN mkdir -p /home/app && chmod 777 /home/app
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-ENTRYPOINT [""]
+ENTRYPOINT []
 CMD ["sleep", "infinity"]

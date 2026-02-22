@@ -1,6 +1,11 @@
 services:
   app:
     userns_mode: "keep-id"
+    volumes:
+      - app-venv:/app/.venv:U
 
   elasticsearch:
     userns_mode: "keep-id:uid=1000,gid=1000"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data:U
+      - es-backup:/usr/share/elasticsearch/backup:U

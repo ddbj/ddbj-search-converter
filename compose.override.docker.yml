@@ -1,3 +1,0 @@
-services:
-  app:
-    user: "${CONTAINER_UID:-1000}:${CONTAINER_GID:-1000}"

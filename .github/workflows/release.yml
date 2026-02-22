@@ -6,39 +6,38 @@ on:
       - "*.*.*"
 
 jobs:
-  build_wheel:
+  build:
     if: github.repository == 'ddbj/ddbj-search-converter'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
 
-      - name: Build Binary Wheel and Source Tarball
+      - name: Build
         run: uv build
 
-      - name: Upload sdist as Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
         with:
-          name: sdist
-          path: dist/ddbj-search-converter-${{ github.ref_name }}.tar.gz
+          name: dist
+          path: dist/
 
-      - name: Upload wheel as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheel
-          path: dist/ddbj-search-converter-${{ github.ref_name }}-py3-none-any.whl
-
-  deploy_ghcr:
+  docker-push:
     if: github.repository == 'ddbj/ddbj-search-converter'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -54,31 +53,32 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            VERSION=${{ github.ref_name }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/ddbj-search-converter:${{ github.ref_name }}
             ghcr.io/${{ github.repository_owner }}/ddbj-search-converter:latest
 
-  create_release:
+  github-release:
     if: github.repository == 'ddbj/ddbj-search-converter'
-    needs: [build_wheel]
+    needs: [build, docker-push]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
-      - name: Download sdist
-        uses: actions/download-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
         with:
-          name: sdist
+          name: dist
 
-      - name: Download wheel
-        uses: actions/download-artifact@v4
-        with:
-          name: wheel
-
-      - name: Release
-        run: gh release --repo ${{ github.repository }} create ${{ github.ref_name }} --title ${{ github.ref_name }} --generate-notes ddbj-search-converter-${{ github.ref_name }}.tar.gz ddbj-search-converter-${{ github.ref_name }}-py3-none-any.whl
+      - name: Create Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --repo "$GH_REPO" --title "$TAG" --generate-notes ddbj_search_converter-"$TAG".tar.gz ddbj_search_converter-"$TAG"-py3-none-any.whl

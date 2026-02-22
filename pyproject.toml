@@ -1,12 +1,12 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "ddbj-search-converter"
 authors = [{ name = "Bioinformatics and DDBJ Center" }]
 readme = { file = "README.md", content-type = "text/markdown" }
-version = "0.1.0"
+dynamic = ["version"]
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 dependencies = [
@@ -147,6 +147,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"ddbj_search_converter/_version.py" = ["ALL"]
 "tests/**/*.py" = [
     "ARG",     # unused arguments (fixtures)
     "PLR2004", # magic values in tests
@@ -158,6 +159,13 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "ddbj_search_converter/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ddbj_search_converter"]
