@@ -172,6 +172,6 @@ elasticsearch/data*
 elasticsearch/backup
 ddbj_search_converter_results
 w3ddbjld_const
-dblink
+/dblink
 tests/fixtures
 compose.override.yml
