@@ -28,6 +28,7 @@ tests = [
     "hypothesis",
     "lxml-stubs",
     "mypy",
+    "pytz",
     "pytest",
     "pytest-cov",
     "pytest-mock",

@@ -118,9 +118,9 @@ def init_accession_db(tmp_db_path: Path) -> None:
                 Type        TEXT,
                 Status      TEXT,
                 Visibility  TEXT,
-                Updated     TIMESTAMP,
-                Published   TIMESTAMP,
-                Received    TIMESTAMP
+                Updated     TIMESTAMPTZ,
+                Published   TIMESTAMPTZ,
+                Received    TIMESTAMPTZ
             )
             """
         )
@@ -155,9 +155,9 @@ def load_tsv_to_tmp_db(
                 Type,
                 Status,
                 Visibility,
-                CAST(Updated AS TIMESTAMP),
-                CAST(Published AS TIMESTAMP),
-                CAST(Received AS TIMESTAMP)
+                CAST(Updated AS TIMESTAMPTZ),
+                CAST(Published AS TIMESTAMPTZ),
+                CAST(Received AS TIMESTAMPTZ)
             FROM read_csv(
                 '{tsv_path}',
                 delim='\\t',

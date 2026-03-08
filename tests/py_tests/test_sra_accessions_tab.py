@@ -5,7 +5,7 @@ DB 構築パイプライン、relation イテレータ、JSONL クエリ関数�
 
 import re
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import duckdb
@@ -89,9 +89,9 @@ def _setup_accessions_db(db_path: Path, rows: list) -> None:  # type: ignore[typ
                 Type        TEXT,
                 Status      TEXT,
                 Visibility  TEXT,
-                Updated     TIMESTAMP,
-                Published   TIMESTAMP,
-                Received    TIMESTAMP
+                Updated     TIMESTAMPTZ,
+                Published   TIMESTAMPTZ,
+                Received    TIMESTAMPTZ
             )
         """)
         for row in rows:
@@ -257,12 +257,12 @@ class TestLoadTsvToTmpDb:
         with duckdb.connect(db_path) as conn:
             row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
-        assert row[0] == datetime(2023, 6, 1, 21, 15, 36)  # type: ignore[index]
-        assert row[1] == datetime(2023, 7, 1, 0, 0, 0)  # type: ignore[index]
-        assert row[2] == datetime(2023, 5, 1, 12, 30, 45)  # type: ignore[index]
+        assert row[0] == datetime(2023, 6, 1, 21, 15, 36, tzinfo=timezone.utc)  # type: ignore[index]
+        assert row[1] == datetime(2023, 7, 1, 0, 0, 0, tzinfo=timezone.utc)  # type: ignore[index]
+        assert row[2] == datetime(2023, 5, 1, 12, 30, 45, tzinfo=timezone.utc)  # type: ignore[index]
 
     def test_dra_date_format(self, tmp_path: Path) -> None:
-        """DRA 日付 `2015-01-28` が TIMESTAMP に変換される (midnight)。"""
+        """DRA 日付 `2015-01-28T13:36:34+09:00` が TIMESTAMPTZ で UTC に変換される。"""
         db_path = tmp_path / "test.duckdb"
         tsv_path = tmp_path / "test.tsv"
 
@@ -272,9 +272,9 @@ class TestLoadTsvToTmpDb:
             [
                 _make_tsv_row(
                     Accession="DRR000001",
-                    Updated="2015-01-28",
-                    Published="2015-02-01",
-                    Received="2015-01-01",
+                    Updated="2015-01-28T13:36:34+09:00",
+                    Published="2015-02-01T00:00:00+09:00",
+                    Received="2015-01-01T09:00:00+09:00",
                 ),
             ],
         )
@@ -283,9 +283,10 @@ class TestLoadTsvToTmpDb:
         with duckdb.connect(db_path) as conn:
             row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
-        assert row[0] == datetime(2015, 1, 28, 0, 0, 0)  # type: ignore[index]
-        assert row[1] == datetime(2015, 2, 1, 0, 0, 0)  # type: ignore[index]
-        assert row[2] == datetime(2015, 1, 1, 0, 0, 0)  # type: ignore[index]
+        # JST (+09:00) → UTC に変換される
+        assert row[0] == datetime(2015, 1, 28, 4, 36, 34, tzinfo=timezone.utc)  # type: ignore[index]
+        assert row[1] == datetime(2015, 1, 31, 15, 0, 0, tzinfo=timezone.utc)  # type: ignore[index]
+        assert row[2] == datetime(2015, 1, 1, 0, 0, 0, tzinfo=timezone.utc)  # type: ignore[index]
 
     def test_null_date_preserved(self, tmp_path: Path) -> None:
         """NULL 日付 (`-`) は NULL のまま保持される。"""
