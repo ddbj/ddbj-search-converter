@@ -314,6 +314,38 @@ def regenerate_sra_jsonl(
         else:
             tar_reader = get_ncbi_tar_reader(config)
 
+        # DRA の場合はファイルインデックスをクエリ
+        fastq_dirs_map: dict[str, set[str]] = {}
+        sra_file_runs: set[str] = set()
+        if is_dra:
+            from ddbj_search_converter.sra.dra_file_index import (
+                dra_file_index_exists,
+                query_fastq_dirs_bulk,
+                query_sra_files_bulk,
+            )
+
+            if dra_file_index_exists(config):
+                fastq_dirs_map = query_fastq_dirs_bulk(config, submissions)
+                # run accession を全 submission から収集
+                all_run_accs: list[str] = []
+                for sub in submissions:
+                    run_bytes = tar_reader.read_xml(sub, "run")
+                    if run_bytes:
+                        try:
+                            parsed_run = parse_xml(run_bytes)
+                            run_entries = (parsed_run.get("RUN_SET") or {}).get("RUN")
+                            if run_entries:
+                                if not isinstance(run_entries, list):
+                                    run_entries = [run_entries]
+                                for run_entry in run_entries:
+                                    run_acc = run_entry.get("accession")
+                                    if run_acc:
+                                        all_run_accs.append(run_acc)
+                        except Exception:
+                            pass
+                if all_run_accs:
+                    sra_file_runs = query_sra_files_bulk(config, all_run_accs)
+
         for sub in submissions:
             # submission に含まれる全 XML を読み込む
             xml_cache: dict[SraXmlType, bytes | None] = {}
@@ -351,6 +383,9 @@ def regenerate_sra_jsonl(
                 blacklist=blacklist,
                 accession_info=accession_info,
                 xml_cache=xml_cache,
+                is_dra=is_dra,
+                fastq_dirs=fastq_dirs_map.get(sub, set()),
+                sra_file_runs=sra_file_runs,
             )
 
             # target_accessions に含まれるもののみフィルタ

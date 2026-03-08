@@ -62,7 +62,7 @@ build_bp_bs_status_cache
 # 7. SRA/DRA Metadata tar 構築 (SRA JSONL 生成前に必須)
 sync_ncbi_tar
 sync_dra_tar
-# 出力: {result_dir}/sra_tar/NCBI_SRA_Metadata.tar, DRA_Metadata.tar
+# 出力: {result_dir}/sra_tar/NCBI_SRA_Metadata.tar, DRA_Metadata.tar, dra_file_index.duckdb
 
 # 8. JSONL 生成 (初回は --full)
 generate_bp_jsonl --full
@@ -367,7 +367,7 @@ es_bulk_insert --index jga-study \
 |---------|----------|------|
 | `build_sra_and_dra_accessions_db` | - | SRA/DRA Accessions.tab を DuckDB にロード |
 | `sync_ncbi_tar` | `--force-full` | NCBI SRA Metadata tar を同期 |
-| `sync_dra_tar` | `--force-rebuild` | DRA Metadata tar を同期 |
+| `sync_dra_tar` | `--force-rebuild` | DRA Metadata tar を同期、ファイルインデックス構築 |
 
 ### DBLink 構築
 

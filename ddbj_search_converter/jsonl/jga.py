@@ -19,9 +19,10 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
+from ddbj_search_converter.jsonl.distribution import make_jga_distribution
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, run_logger
-from ddbj_search_converter.schema import JGA, Distribution, Organism
+from ddbj_search_converter.schema import JGA, Organism
 from ddbj_search_converter.xml_utils import parse_xml
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -154,13 +155,7 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
     return JGA(
         identifier=accession,
         properties=entry,
-        distribution=[
-            Distribution(
-                type="DataDownload",
-                encodingFormat="JSON",
-                contentUrl=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{accession}.json",
-            )
-        ],
+        distribution=make_jga_distribution(index_name, accession),
         isPartOf="jga",
         type=index_name,
         name=_get_name_from_alias(accession, entry.get("alias")),

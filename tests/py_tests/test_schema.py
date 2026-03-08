@@ -1,6 +1,25 @@
 """Tests for ddbj_search_converter.schema module."""
 
+import pytest
+from pydantic import ValidationError
+
 from ddbj_search_converter.schema import JGA, Distribution, Organism, Xref
+
+
+class TestEncodingFormat:
+    """Tests for EncodingFormat Literal type."""
+
+    def test_valid_values(self) -> None:
+        """全ての有効な値を受け入れる。"""
+        for fmt in ("JSON", "JSON-LD", "XML", "FASTQ", "SRA"):
+            dist = Distribution(type="DataDownload", encodingFormat=fmt, contentUrl="https://example.com")
+
+            assert dist.encodingFormat == fmt
+
+    def test_invalid_value_rejected(self) -> None:
+        """無効な値を拒否する。"""
+        with pytest.raises(ValidationError):
+            Distribution(type="DataDownload", encodingFormat="INVALID", contentUrl="https://example.com")
 
 
 class TestDistribution:

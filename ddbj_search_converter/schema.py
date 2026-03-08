@@ -12,10 +12,12 @@ Accessibility = Literal["public-access", "controlled-access"]
 
 # === BioProject ===
 
+EncodingFormat = Literal["JSON", "JSON-LD", "XML", "FASTQ", "SRA"]
+
 
 class Distribution(BaseModel):
     type_: str = Field(alias="type")
-    encodingFormat: str
+    encodingFormat: EncodingFormat
     contentUrl: str
 
 

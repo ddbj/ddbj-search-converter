@@ -192,6 +192,11 @@ def build_dra_tar(config: Config) -> None:
     last_updated_path.write_text(TODAY.strftime("%Y%m%d"))
     log_info(f"updated dra_last_updated: {TODAY.strftime('%Y%m%d')}")
 
+    # Build DRA file index
+    from ddbj_search_converter.sra.dra_file_index import build_dra_file_index
+
+    build_dra_file_index(config)
+
 
 def sync_dra_tar(config: Config) -> None:
     """Sync DRA Metadata tar with latest data.
@@ -261,3 +266,8 @@ def sync_dra_tar(config: Config) -> None:
     # Update last_updated file
     last_updated_path.write_text(TODAY.strftime("%Y%m%d"))
     log_info(f"updated dra_last_updated: {TODAY.strftime('%Y%m%d')}")
+
+    # Build DRA file index
+    from ddbj_search_converter.sra.dra_file_index import build_dra_file_index
+
+    build_dra_file_index(config)

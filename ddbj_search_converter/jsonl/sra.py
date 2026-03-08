@@ -30,10 +30,11 @@ from ddbj_search_converter.config import (
     write_last_run,
 )
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
+from ddbj_search_converter.jsonl.distribution import make_sra_distribution
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
-from ddbj_search_converter.schema import SRA, Accessibility, Distribution, Organism, Status, XrefType
+from ddbj_search_converter.schema import SRA, Accessibility, Organism, Status, XrefType
 from ddbj_search_converter.sra.tar_reader import SraXmlType, TarXMLReader, get_dra_tar_path, get_ncbi_tar_path
 from ddbj_search_converter.sra_accessions_tab import (
     SourceKind,
@@ -311,17 +312,6 @@ def parse_analysis(
 # === Model creation ===
 
 
-def _make_distribution(entry_type: str, identifier: str) -> list[Distribution]:
-    """Distribution を作成する。"""
-    return [
-        Distribution(
-            type="DataDownload",
-            encodingFormat="JSON",
-            contentUrl=f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}.json",
-        )
-    ]
-
-
 def _make_url(entry_type: str, identifier: str) -> str:
     """URL を作成する。"""
     return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}"
@@ -336,6 +326,20 @@ def _get_name_from_alias(accession: str, alias: str | None) -> str | None:
     return alias
 
 
+def _extract_experiment_from_run(parsed: dict[str, Any]) -> str | None:
+    """run の parsed dict から EXPERIMENT_REF の accession を取得する。"""
+    props = parsed.get("properties", {})
+    run_set = props.get("RUN_SET", {})
+    run = run_set.get("RUN", {})
+    if isinstance(run, list):
+        run = run[0] if run else {}
+    exp_ref = run.get("EXPERIMENT_REF", {})
+    if isinstance(exp_ref, dict):
+        return exp_ref.get("accession")
+
+    return None
+
+
 def create_sra_entry(
     sra_type: SraXmlType,
     parsed: dict[str, Any],
@@ -344,14 +348,36 @@ def create_sra_entry(
     date_created: str | None,
     date_modified: str | None,
     date_published: str | None,
+    *,
+    is_dra: bool = False,
+    submission: str = "",
+    fastq_dirs: set[str] | None = None,
+    sra_file_runs: set[str] | None = None,
 ) -> SRA:
     """SRA エントリを作成する。"""
     entry_type = SRA_TYPE_MAP[sra_type]
     identifier = parsed["accession"]
+
+    # run の場合は experiment accession を取得
+    experiment: str | None = None
+    if sra_type == "run":
+        experiment = _extract_experiment_from_run(parsed)
+
+    distribution = make_sra_distribution(
+        entry_type,
+        identifier,
+        is_dra=is_dra,
+        sra_type=sra_type,
+        submission=submission,
+        experiment=experiment,
+        fastq_dirs=fastq_dirs,
+        sra_file_runs=sra_file_runs,
+    )
+
     return SRA(
         identifier=identifier,
         properties=parsed["properties"],
-        distribution=_make_distribution(entry_type, identifier),
+        distribution=distribution,
         isPartOf="sra",
         type=entry_type,
         name=_get_name_from_alias(identifier, parsed.get("alias")),
@@ -387,6 +413,10 @@ def process_submission_xml(
     blacklist: set[str],
     accession_info: dict[str, tuple[str, str, str | None, str | None, str | None, str]],
     xml_cache: dict[SraXmlType, bytes | None],
+    *,
+    is_dra: bool = False,
+    fastq_dirs: set[str] | None = None,
+    sra_file_runs: set[str] | None = None,
 ) -> dict[SraXmlType, list[Any]]:
     """
     1つの submission から全 XML タイプを処理する。
@@ -396,6 +426,9 @@ def process_submission_xml(
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
         xml_cache: 事前に読み込んだ XML データのキャッシュ
+        is_dra: DRA かどうか
+        fastq_dirs: FASTQ ディレクトリが存在する experiment の集合
+        sra_file_runs: .sra ファイルが存在する run の集合
 
     Returns:
         {xml_type: [model_instance, ...]}
@@ -428,7 +461,17 @@ def process_submission_xml(
             date_published = info[4]
 
             sra_entry = create_sra_entry(
-                xml_type, entry, status, accessibility, date_created, date_modified, date_published
+                xml_type,
+                entry,
+                status,
+                accessibility,
+                date_created,
+                date_modified,
+                date_published,
+                is_dra=is_dra,
+                submission=submission,
+                fastq_dirs=fastq_dirs,
+                sra_file_runs=sra_file_runs,
             )
             results[xml_type].append(sra_entry)
 
@@ -537,6 +580,24 @@ def _process_batch_worker(
     # Step 2: Accessions DB クエリ（バッチ全体で1回）
     accession_info = get_accession_info_bulk(config, source, all_accessions)
 
+    # Step 2.5: DRA ファイルインデックスクエリ
+    fastq_dirs_map: dict[str, set[str]] = {}
+    sra_file_runs: set[str] = set()
+    if is_dra:
+        from ddbj_search_converter.sra.dra_file_index import (
+            dra_file_index_exists,
+            query_fastq_dirs_bulk,
+            query_sra_files_bulk,
+        )
+
+        if dra_file_index_exists(config):
+            fastq_dirs_map = query_fastq_dirs_bulk(config, batch_subs)
+            all_runs: list[str] = []
+            for sub in batch_subs:
+                all_runs.extend(_extract_accessions_from_xml(xml_data[sub].get("run"), "run", sub))
+            if all_runs:
+                sra_file_runs = query_sra_files_bulk(config, all_runs)
+
     # Step 3: XML パース + モデル作成
     counts: dict[str, int] = dict.fromkeys(XML_TYPES, 0)
     batch_entries: dict[SraXmlType, list[SRA]] = {t: [] for t in XML_TYPES}
@@ -548,6 +609,9 @@ def _process_batch_worker(
             blacklist=blacklist,
             accession_info=accession_info,
             xml_cache=xml_data[sub],
+            is_dra=is_dra,
+            fastq_dirs=fastq_dirs_map.get(sub, set()),
+            sra_file_runs=sra_file_runs,
         )
         for xml_type in XML_TYPES:
             for entry in results[xml_type]:
