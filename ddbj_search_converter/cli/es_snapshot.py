@@ -37,7 +37,8 @@ def get_config_with_es_url(es_url: str | None) -> Config:
         config = Config(
             result_dir=config.result_dir,
             const_dir=config.const_dir,
-            postgres_url=config.postgres_url,
+            xsm_postgres_url=config.xsm_postgres_url,
+            trad_postgres_url=config.trad_postgres_url,
             es_url=es_url,
         )
     return config

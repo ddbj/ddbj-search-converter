@@ -37,6 +37,7 @@ STEP_NAMES=(
     "dblink_metabobank"
     "dblink_jga"
     "dblink_sra"
+    "dblink_insdc"
     "finalize_dblink"
     "dump_dblink"
     "sync_tar"
@@ -65,6 +66,7 @@ declare -A STEP_DESC=(
     ["dblink_metabobank"]="Create MetaboBank relations"
     ["dblink_jga"]="Create JGA relations"
     ["dblink_sra"]="Create SRA internal relations"
+    ["dblink_insdc"]="Create INSDC sequence accession relations"
     ["finalize_dblink"]="Finalize DBLink database"
     ["dump_dblink"]="Dump DBLink files"
     ["sync_tar"]="Sync tar files and build date cache"
@@ -88,6 +90,7 @@ declare -A STEP_PHASE=(
     ["dblink_metabobank"]="PHASE 1: DBLink Construction"
     ["dblink_jga"]="PHASE 1: DBLink Construction"
     ["dblink_sra"]="PHASE 1: DBLink Construction"
+    ["dblink_insdc"]="PHASE 1: DBLink Construction"
     ["finalize_dblink"]="PHASE 1: DBLink Construction"
     ["dump_dblink"]="PHASE 1: DBLink Construction"
     ["sync_tar"]="PHASE 2: JSONL Generation"
@@ -437,6 +440,13 @@ phase1_dblink() {
         log_info "[SKIP] dblink_sra (--from-step)"
     else
         run_cmd "create_dblink_sra_internal_relations"
+    fi
+
+    # Step: dblink_insdc
+    if should_skip_step "dblink_insdc"; then
+        log_info "[SKIP] dblink_insdc (--from-step)"
+    else
+        run_cmd "create_dblink_insdc_relations"
     fi
 
     # Step: finalize_dblink

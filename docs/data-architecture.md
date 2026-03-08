@@ -9,7 +9,7 @@ DDBJ Search Converter のデータフローと構造。
 | External Resources                                                          |
 |   BioProject XML, BioSample XML, SRA/DRA Accessions.tab, SRA/DRA XML,       |
 |   JGA XML/CSV, GEA IDF/SDRF, MetaboBank IDF/SDRF,                           |
-|   NCBI Assembly summary, TRAD ORGANISM_LIST                                 |
+|   NCBI Assembly summary, TRAD ORGANISM_LIST, TRAD PostgreSQL (g/e/w-actual) |
 +-----------------------------------------------------------------------------+
                                       |
                                       v
@@ -28,8 +28,9 @@ DDBJ Search Converter のデータフローと構造。
 |   create_dblink_metabobank_relations -- parse IDF/SDRF, preserved.tsv       |
 |   create_dblink_jga_relations        -- parse XML/CSV                       |
 |   create_dblink_sra_internal         -- SRA internal + BP/BS <-> SRA        |
+|   create_dblink_insdc_relations     -- TRAD PostgreSQL (g/e/w-actual)       |
 |   finalize_dblink_db -------------> {const}/dblink/dblink.duckdb            |
-|   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (16 files)          |
+|   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (18 files)          |
 +-----------------------------------------------------------------------------+
                                       |
                                       v
@@ -96,6 +97,16 @@ DDBJ Search Converter のデータフローと構造。
 | TPA WGS | `/usr/local/resources/trad/tpa/wgs/TPA_WGS_ORGANISM_LIST.txt` |
 | TPA TSA | `/usr/local/resources/trad/tpa/tsa/TPA_TSA_ORGANISM_LIST.txt` |
 | TPA TLS | `/usr/local/resources/trad/tpa/tls/TPA_TLS_ORGANISM_LIST.txt` |
+
+### TRAD PostgreSQL
+
+INSDC 配列 accession と BioProject/BioSample のマッピングを保持する PostgreSQL データベース。`DDBJ_SEARCH_CONVERTER_TRAD_POSTGRES_URL` で接続先を指定する。
+
+| DB 名 | ポート | 内容 |
+|--------|--------|------|
+| `g-actual` | 54308 | GenBank 由来の配列データ |
+| `e-actual` | 54309 | EMBL 由来の配列データ |
+| `w-actual` | 54310 | WGS 由来の配列データ |
 
 ## const ディレクトリ
 
@@ -269,7 +280,7 @@ CREATE TABLE dra_sra_file (run TEXT NOT NULL);
 
 ## AccessionType 一覧
 
-DBLink では以下の 21 種類の accession タイプを管理する。
+DBLink では以下の 22 種類の accession タイプを管理する。
 
 | AccessionType | 例 |
 |--------------|-----|
@@ -288,6 +299,7 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `jga-policy` | JGAP000001 |
 | `gea` | E-GEAD-1 |
 | `metabobank` | MTBKS1 |
+| `insdc` | AB000001, CP035466 |
 | `insdc-assembly` | GCA_000000001.1 |
 | `insdc-master` | ABCD00000000 |
 | `hum-id` | hum0001 |
@@ -295,7 +307,7 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `geo` | GSE12345 |
 | `taxonomy` | 9606 |
 
-## DBLink TSV 出力（16 種類）
+## DBLink TSV 出力（18 種類）
 
 `{DBLINK_PATH}/` 以下に出力される。relation を表す 2 カラムの TSV。
 
@@ -317,6 +329,8 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `jga_study-humID/jga_study2humID.tsv` | jga-study - hum-id |
 | `jga_study-pubmed_id/jga_study2pubmed_id.tsv` | jga-study - pubmed-id |
 | `jga_study-jga_dataset/jga_study2jga_dataset.tsv` | jga-study - jga-dataset |
+| `insdc-bioproject/insdc2bioproject.tsv` | insdc - bioproject |
+| `insdc-biosample/insdc2biosample.tsv` | insdc - biosample |
 
 ## JSONL 出力
 

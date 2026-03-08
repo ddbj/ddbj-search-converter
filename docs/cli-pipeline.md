@@ -45,12 +45,13 @@ create_dblink_gea_relations
 create_dblink_metabobank_relations
 create_dblink_jga_relations
 create_dblink_sra_internal_relations
+create_dblink_insdc_relations
 finalize_dblink_db
 # 出力: {const_dir}/dblink/dblink.duckdb
 
 # 5. TSV 出力
 dump_dblink_files
-# 出力: {DBLINK_PATH}/*.tsv (16 files)
+# 出力: {DBLINK_PATH}/*.tsv (18 files)
 
 # === Phase 2: JSONL 生成 ===
 
@@ -203,6 +204,7 @@ generate_jga_jsonl
   dblink_metabobank    Create MetaboBank relations
   dblink_jga           Create JGA relations
   dblink_sra           Create SRA internal relations
+  dblink_insdc         Create INSDC sequence accession relations
   finalize_dblink      Finalize DBLink database
   dump_dblink          Dump DBLink files
 
@@ -232,7 +234,7 @@ PHASE 1: DBLink Construction
     ↓
 init_dblink_db
     ↓
-[順次] create_dblink_* (7 コマンド, DuckDB single-writer 制約)
+[順次] create_dblink_* (8 コマンド, DuckDB single-writer 制約)
     ↓
 finalize_dblink_db → dump_dblink_files
 
@@ -351,7 +353,8 @@ es_bulk_insert --index jga-study \
 | `DDBJ_SEARCH_CONVERTER_DATE` | 処理日付 (YYYYMMDD) |
 | `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL |
 | `DDBJ_SEARCH_BASE_URL` | DDBJ Search ベース URL |
-| `DDBJ_SEARCH_CONVERTER_POSTGRES_URL` | PostgreSQL URL |
+| `DDBJ_SEARCH_CONVERTER_XSM_POSTGRES_URL` | XSM PostgreSQL URL (BioProject/BioSample 日付取得) |
+| `DDBJ_SEARCH_CONVERTER_TRAD_POSTGRES_URL` | TRAD PostgreSQL URL (INSDC 配列 accession 取得) |
 
 ### 外部リソース確認・前処理
 
@@ -381,6 +384,7 @@ es_bulk_insert --index jga-study \
 | `create_dblink_metabobank_relations` | - | MetaboBank 関連を抽出 |
 | `create_dblink_jga_relations` | - | JGA 関連を抽出 |
 | `create_dblink_sra_internal_relations` | - | SRA 内部関連 + BioProject/BioSample ↔ SRA 関連を抽出 |
+| `create_dblink_insdc_relations` | - | TRAD PostgreSQL から INSDC 配列 accession 関連を抽出 |
 | `finalize_dblink_db` | - | DBLink DB を確定 |
 | `dump_dblink_files` | - | DBLink DB から TSV ファイルを出力 |
 

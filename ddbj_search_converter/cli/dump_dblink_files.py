@@ -34,6 +34,10 @@ Outputs:
     - Mapping: JGA Study ID -> PubMed ID
 - /lustre9/open/shared_data/dblink/jga_study-jga_dataset/jga_study2jga_dataset.tsv
     - Mapping: JGA Study ID -> JGA Dataset ID
+- /lustre9/open/shared_data/dblink/insdc-bioproject/insdc2bioproject.tsv
+    - Mapping: INSDC sequence accession -> BioProject ID
+- /lustre9/open/shared_data/dblink/insdc-biosample/insdc2biosample.tsv
+    - Mapping: INSDC sequence accession -> BioSample ID
 """
 
 from ddbj_search_converter.config import DBLINK_OUTPUT_PATH, get_config
@@ -58,6 +62,8 @@ EXPORT_RELATIONS: list[tuple[AccessionType, AccessionType, str]] = [
     ("jga-study", "hum-id", "jga_study-humID/jga_study2humID.tsv"),
     ("jga-study", "pubmed-id", "jga_study-pubmed_id/jga_study2pubmed_id.tsv"),
     ("jga-study", "jga-dataset", "jga_study-jga_dataset/jga_study2jga_dataset.tsv"),
+    ("insdc", "bioproject", "insdc-bioproject/insdc2bioproject.tsv"),
+    ("insdc", "biosample", "insdc-biosample/insdc2biosample.tsv"),
 ]
 
 

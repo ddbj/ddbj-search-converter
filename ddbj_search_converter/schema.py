@@ -76,6 +76,7 @@ XrefType = Literal[
     "gea",
     "geo",
     "hum-id",
+    "insdc",
     "insdc-assembly",
     "insdc-master",
     "metabobank",

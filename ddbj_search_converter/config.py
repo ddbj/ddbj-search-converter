@@ -130,7 +130,8 @@ class Config(BaseModel):
     debug: bool = False
     result_dir: Path = RESULT_DIR
     const_dir: Path = CONST_DIR
-    postgres_url: str = ""
+    xsm_postgres_url: str = ""
+    trad_postgres_url: str = ""
     es_url: str = "http://ddbj-search-elasticsearch:9200"
 
 
@@ -142,7 +143,8 @@ def get_config() -> Config:
     return Config(
         result_dir=Path(os.environ.get(f"{ENV_PREFIX}_RESULT_DIR", default_config.result_dir)),
         const_dir=Path(os.environ.get(f"{ENV_PREFIX}_CONST_DIR", default_config.const_dir)),
-        postgres_url=os.environ.get(f"{ENV_PREFIX}_POSTGRES_URL", default_config.postgres_url),
+        xsm_postgres_url=os.environ.get(f"{ENV_PREFIX}_XSM_POSTGRES_URL", default_config.xsm_postgres_url),
+        trad_postgres_url=os.environ.get(f"{ENV_PREFIX}_TRAD_POSTGRES_URL", default_config.trad_postgres_url),
         es_url=os.environ.get(f"{ENV_PREFIX}_ES_URL", default_config.es_url),
     )
 

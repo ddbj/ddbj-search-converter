@@ -41,7 +41,7 @@ def fetch_bs_dates_bulk(
     result: dict[str, tuple[str | None, str | None, str | None]] = {}
 
     try:
-        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
+        with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
             placeholders = ",".join(["%s"] * len(accession_list))
             query = f"""
                     SELECT
@@ -104,7 +104,7 @@ def fetch_bs_accessions_modified_since(
     result: set[str] = set()
 
     try:
-        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
+        with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
             query = """
                     SELECT s.accession_id
                     FROM mass.biosample_summary s

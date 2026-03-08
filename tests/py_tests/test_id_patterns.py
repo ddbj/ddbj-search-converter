@@ -217,8 +217,12 @@ class TestIsValidAccession:
 class TestIdPatternMap:
     """Tests for ID_PATTERN_MAP completeness."""
 
+    # insdc は多様すぎて正規表現で網羅できないため、ID_PATTERN_MAP に含めない
+    PATTERN_EXCLUDED_TYPES = {"insdc"}
+
     def test_all_accession_types_covered(self) -> None:
-        assert set(ID_PATTERN_MAP.keys()) == set(ALL_ACCESSION_TYPES)
+        expected = set(ALL_ACCESSION_TYPES) - self.PATTERN_EXCLUDED_TYPES
+        assert set(ID_PATTERN_MAP.keys()) == expected
 
 
 class TestBug1UnknownAccessionType:
@@ -236,14 +240,20 @@ class TestBug1UnknownAccessionType:
 class TestPBT:
     """Property-based tests for is_valid_accession."""
 
-    @given(acc_type=st_accession_type(), text=st.text(max_size=100))
+    # insdc は ID_PATTERN_MAP にパターンがないため除外
+    PATTERN_TYPES = [t for t in ALL_ACCESSION_TYPES if t != "insdc"]
+
+    @given(
+        acc_type=st.sampled_from(PATTERN_TYPES),
+        text=st.text(max_size=100),
+    )
     def test_result_matches_regex(self, acc_type: str, text: str) -> None:
         """is_valid_accession の結果は pattern.match と一致する。"""
         pattern = ID_PATTERN_MAP[acc_type]  # type: ignore[index]
         expected = bool(pattern.match(text))
         assert is_valid_accession(text, acc_type) is expected  # type: ignore[arg-type]
 
-    @given(acc_type=st_accession_type())
+    @given(acc_type=st.sampled_from(PATTERN_TYPES))
     def test_empty_string_is_invalid(self, acc_type: str) -> None:
         """空文字列は（pubmed-id/taxonomy を除き）常に invalid。"""
         result = is_valid_accession("", acc_type)  # type: ignore[arg-type]
@@ -284,7 +294,10 @@ class TestBug12TrailingNewline:
         "taxonomy": "9606",
     }
 
-    @pytest.mark.parametrize("acc_type", ALL_ACCESSION_TYPES)
+    # insdc は ID_PATTERN_MAP にパターンがないため除外
+    PATTERN_TYPES = [t for t in ALL_ACCESSION_TYPES if t != "insdc"]
+
+    @pytest.mark.parametrize("acc_type", PATTERN_TYPES)
     def test_valid_with_trailing_newline_is_rejected(self, acc_type: str) -> None:
         valid_acc = self.VALID_EXAMPLES[acc_type]
         assert is_valid_accession(valid_acc, acc_type) is True  # type: ignore[arg-type]
@@ -294,13 +307,16 @@ class TestBug12TrailingNewline:
 class TestEdgeCases:
     """Edge case tests for is_valid_accession."""
 
-    @pytest.mark.parametrize("acc_type", ALL_ACCESSION_TYPES)
+    # insdc は ID_PATTERN_MAP にパターンがないため除外
+    PATTERN_TYPES = [t for t in ALL_ACCESSION_TYPES if t != "insdc"]
+
+    @pytest.mark.parametrize("acc_type", PATTERN_TYPES)
     def test_null_byte_in_accession(self, acc_type: str) -> None:
         """null byte を含む文字列は invalid。"""
         assert is_valid_accession("PRJDB\x001", acc_type) is False  # type: ignore[arg-type]
 
     @pytest.mark.parametrize(
-        "acc_type", [t for t in ALL_ACCESSION_TYPES if t not in ("bioproject", "umbrella-bioproject")]
+        "acc_type", [t for t in ALL_ACCESSION_TYPES if t not in ("bioproject", "umbrella-bioproject", "insdc")]
     )
     def test_newline_in_accession(self, acc_type: str) -> None:
         """改行を含む文字列は invalid。"""
@@ -311,7 +327,7 @@ class TestEdgeCases:
         """Bug #11 (fixed): 改行を含む bioproject 文字列は invalid。"""
         assert is_valid_accession("PRJDB1\n", acc_type) is False  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("acc_type", ALL_ACCESSION_TYPES)
+    @pytest.mark.parametrize("acc_type", PATTERN_TYPES)
     def test_very_long_string(self, acc_type: str) -> None:
         """超長文字列は invalid (pubmed-id/taxonomy 以外)。"""
         long_str = "A" * 10000

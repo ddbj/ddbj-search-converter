@@ -13,6 +13,7 @@ ALL_ACCESSION_TYPES: list[AccessionType] = [
     "gea",
     "geo",
     "hum-id",
+    "insdc",
     "insdc-assembly",
     "insdc-master",
     "jga-dac",

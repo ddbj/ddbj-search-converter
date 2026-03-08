@@ -24,6 +24,7 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "jga-policy": f"{SEARCH_BASE_URL}/search/entry/jga-policy/{{id}}",
     "gea": f"{SEARCH_BASE_URL}/public/ddbj_database/gea/experiment/{{prefix}}/{{id}}/",
     "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
+    "insdc": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
     "insdc-master": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
     "metabobank": "https://mb2.ddbj.nig.ac.jp/study/{id}.html",
@@ -58,6 +59,7 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
 
     # pubmed-id と taxonomy は数字のみなので最後にチェックする
     # umbrella-bioproject は bioproject と同じパターンなのでパターンマッチでは判定できない
+    # insdc は ID_PATTERN_MAP にパターンがないため含めない（type_hint 経由でのみ使用）
     priority_types: list[XrefType] = [
         "biosample",
         "bioproject",

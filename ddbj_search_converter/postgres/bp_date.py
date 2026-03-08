@@ -36,7 +36,7 @@ def fetch_bp_dates_bulk(
     result: dict[str, tuple[str | None, str | None, str | None]] = {}
 
     try:
-        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
+        with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
             # IN 句のプレースホルダーを動的に生成
             placeholders = ",".join(["%s"] * len(accession_list))
             query = f"""
@@ -91,7 +91,7 @@ def fetch_bp_accessions_modified_since(
     result: set[str] = set()
 
     try:
-        with postgres_connection(config.postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
+        with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
             query = """
                     SELECT s.accession
                     FROM mass.bioproject_summary s

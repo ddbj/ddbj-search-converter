@@ -101,12 +101,12 @@ def build_date_cache(config: Config) -> None:
     init_date_cache_db(config)
 
     log_info("fetching all bp dates from postgresql")
-    bp_rows = _fetch_all_bp_dates(config.postgres_url)
+    bp_rows = _fetch_all_bp_dates(config.xsm_postgres_url)
     bp_count = insert_bp_dates(config, bp_rows)
     log_info(f"inserted {bp_count} bp_date rows")
 
     log_info("fetching all bs dates from postgresql")
-    bs_rows = _fetch_all_bs_dates(config.postgres_url)
+    bs_rows = _fetch_all_bs_dates(config.xsm_postgres_url)
     bs_count = insert_bs_dates(config, bs_rows)
     log_info(f"inserted {bs_count} bs_date rows")
 

@@ -26,6 +26,7 @@ AccessionType = Literal[
     "gea",
     "geo",
     "hum-id",
+    "insdc",
     "insdc-assembly",
     "insdc-master",
     "jga-dac",
