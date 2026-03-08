@@ -1,0 +1,11 @@
+Accession	Updated	Status
+PRJDB2	2020-03-30	public
+PRJDB3	2012-02-16	public
+PRJDB4	2011-11-01	public
+PRJDB5	2019-06-03	public
+PRJDB6	2012-07-06	public
+PRJDB7	2014-07-18	public
+PRJDB8	2011-12-01	public
+PRJDB9	2012-05-14	public
+PRJDB10	2011-11-17	public
+PRJDB11	2011-11-17	public
