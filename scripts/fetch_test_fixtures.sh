@@ -156,6 +156,8 @@ mkdir -p "$FIXTURES_DIR/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Ac
 mkdir -p "$FIXTURES_DIR/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
 mkdir -p "$FIXTURES_DIR/usr/local/shared_data/"{dblink,metabobank/study}
 mkdir -p "$FIXTURES_DIR/usr/local/shared_data/jga/metadata-history/metadata"
+mkdir -p "$FIXTURES_DIR/lustre9/open/archive/tape/ddbj-dbt/bp-collab/bioproject"
+mkdir -p "$FIXTURES_DIR/lustre9/open/archive/tape/ddbj-dbt/bs-collab/biosample"
 mkdir -p "$FIXTURES_DIR/usr/local/resources/"{bioproject,biosample,dra,trad}
 mkdir -p "$FIXTURES_DIR/usr/local/resources/gea/experiment"
 
@@ -412,6 +414,25 @@ if [ -d "$MB_SRC" ]; then
 else
     echo "  MetaboBank: スキップ (ディレクトリなし)"
 fi
+
+# === Livelist (BP/BS status) ===
+echo ""
+echo "--- Livelist (BP/BS status) ---"
+BP_LL_SRC="/lustre9/open/archive/tape/ddbj-dbt/bp-collab/bioproject"
+BP_LL_DST="$FIXTURES_DIR/lustre9/open/archive/tape/ddbj-dbt/bp-collab/bioproject"
+BS_LL_SRC="/lustre9/open/archive/tape/ddbj-dbt/bs-collab/biosample"
+BS_LL_DST="$FIXTURES_DIR/lustre9/open/archive/tape/ddbj-dbt/bs-collab/biosample"
+
+ll_date_str=$(date +%Y%m%d)
+
+for status in public suppressed withdrawn; do
+    fetch_text_file "$BP_LL_SRC/$ll_date_str.bioproject.ddbj.$status.txt" \
+        "$BP_LL_DST/$ll_date_str.bioproject.ddbj.$status.txt" 11 \
+        "bioproject.$status"
+    fetch_text_file "$BS_LL_SRC/$ll_date_str.biosample.ddbj.$status.txt" \
+        "$BS_LL_DST/$ll_date_str.biosample.ddbj.$status.txt" 11 \
+        "biosample.$status"
+done
 
 # === TRAD ===
 # check_external_resources.py で使用するファイル:

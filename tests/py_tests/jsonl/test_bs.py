@@ -372,3 +372,65 @@ class TestNormalizeProperties:
     def test_no_crash_on_empty_sample(self) -> None:
         sample: dict[str, Any] = {}
         normalize_properties(sample)
+
+
+def _make_bs_instance(identifier: str):
+    from ddbj_search_converter.schema import BioSample
+
+    return BioSample(
+        identifier=identifier,
+        properties={},
+        distribution=[],
+        isPartOf="BioSample",
+        type="biosample",
+        name=None,
+        url="https://example.com",
+        organism=None,
+        title=None,
+        description=None,
+        attributes=[],
+        model=[],
+        package=None,
+        dbXrefs=[],
+        sameAs=[],
+        status="live",
+        accessibility="public-access",
+        dateCreated=None,
+        dateModified=None,
+        datePublished=None,
+    )
+
+
+class TestFetchStatuses:
+    """Tests for _fetch_statuses function."""
+
+    def test_fetch_statuses_overwrites_status(self, tmp_path):
+        from ddbj_search_converter.config import Config
+        from ddbj_search_converter.jsonl.bs import _fetch_statuses
+        from ddbj_search_converter.logging.logger import run_logger
+        from ddbj_search_converter.status_cache.db import (
+            finalize_status_cache_db,
+            init_status_cache_db,
+            insert_bs_statuses,
+        )
+
+        config = Config(result_dir=tmp_path)
+        with run_logger(config=config):
+            init_status_cache_db(config)
+            insert_bs_statuses(config, [("SAMD00000001", "suppressed")])
+            finalize_status_cache_db(config)
+
+            docs = {"SAMD00000001": _make_bs_instance("SAMD00000001")}
+            _fetch_statuses(config, docs)
+
+        assert docs["SAMD00000001"].status == "suppressed"
+
+    def test_fetch_statuses_skips_when_no_cache(self, tmp_path):
+        from ddbj_search_converter.config import Config
+        from ddbj_search_converter.jsonl.bs import _fetch_statuses
+
+        config = Config(result_dir=tmp_path)
+        docs = {"SAMD00000001": _make_bs_instance("SAMD00000001")}
+        _fetch_statuses(config, docs)
+
+        assert docs["SAMD00000001"].status == "live"

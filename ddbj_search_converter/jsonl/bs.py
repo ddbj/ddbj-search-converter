@@ -361,6 +361,19 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
 # === Processing ===
 
 
+def _fetch_statuses(config: Config, docs: dict[str, BioSample]) -> None:
+    """status cache から status を取得して上書きする。cache がない場合はスキップ。"""
+    from ddbj_search_converter.status_cache.db import fetch_bs_statuses_from_cache, status_cache_exists
+
+    if not status_cache_exists(config):
+        return
+
+    status_map = fetch_bs_statuses_from_cache(config, docs.keys())
+    for acc, status in status_map.items():
+        if acc in docs:
+            docs[acc].status = status  # type: ignore[assignment]
+
+
 def _fetch_dates_ddbj(config: Config, docs: dict[str, BioSample]) -> None:
     """DDBJ BioSample の日付を DuckDB キャッシュから取得して設定する。"""
     from ddbj_search_converter.date_cache.db import date_cache_exists, fetch_bs_dates_from_cache
@@ -457,6 +470,9 @@ def _process_xml_file_worker(
         _fetch_dates_ddbj(config, docs)
     else:
         _fetch_dates_ncbi(xml_path, docs, is_ddbj)
+
+    # ステータスをキャッシュから取得して上書き
+    _fetch_statuses(config, docs)
 
     # NCBI 差分更新: since 以降に更新されたもののみ残す
     if not is_ddbj and since is not None:

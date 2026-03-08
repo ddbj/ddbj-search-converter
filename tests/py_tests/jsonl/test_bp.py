@@ -367,3 +367,71 @@ class TestNormalizeProperties:
     def test_no_crash_on_empty_project(self) -> None:
         project: dict[str, Any] = {"Project": {"ProjectType": {}, "ProjectDescr": {}}}
         normalize_properties(project)
+
+
+def _make_bp_instance(identifier: str):
+    from ddbj_search_converter.schema import BioProject
+
+    return BioProject(
+        identifier=identifier,
+        properties={},
+        distribution=[],
+        isPartOf="BioProject",
+        type="bioproject",
+        objectType="BioProject",
+        name=None,
+        url="https://example.com",
+        organism=None,
+        title="Test",
+        description=None,
+        organization=[],
+        publication=[],
+        grant=[],
+        externalLink=[],
+        dbXrefs=[],
+        sameAs=[],
+        status="live",
+        accessibility="public-access",
+        dateCreated=None,
+        dateModified=None,
+        datePublished=None,
+    )
+
+
+class TestFetchStatuses:
+    """Tests for _fetch_statuses function."""
+
+    def test_fetch_statuses_overwrites_status(self, tmp_path):
+        from ddbj_search_converter.config import Config
+        from ddbj_search_converter.jsonl.bp import _fetch_statuses
+        from ddbj_search_converter.logging.logger import run_logger
+        from ddbj_search_converter.status_cache.db import (
+            finalize_status_cache_db,
+            init_status_cache_db,
+            insert_bp_statuses,
+        )
+
+        config = Config(result_dir=tmp_path)
+        with run_logger(config=config):
+            init_status_cache_db(config)
+            insert_bp_statuses(config, [("PRJDB1", "suppressed"), ("PRJDB2", "withdrawn")])
+            finalize_status_cache_db(config)
+
+            docs = {
+                "PRJDB1": _make_bp_instance("PRJDB1"),
+                "PRJDB2": _make_bp_instance("PRJDB2"),
+            }
+            _fetch_statuses(config, docs)
+
+        assert docs["PRJDB1"].status == "suppressed"
+        assert docs["PRJDB2"].status == "withdrawn"
+
+    def test_fetch_statuses_skips_when_no_cache(self, tmp_path):
+        from ddbj_search_converter.config import Config
+        from ddbj_search_converter.jsonl.bp import _fetch_statuses
+
+        config = Config(result_dir=tmp_path)
+        docs = {"PRJDB1": _make_bp_instance("PRJDB1")}
+        _fetch_statuses(config, docs)
+
+        assert docs["PRJDB1"].status == "live"

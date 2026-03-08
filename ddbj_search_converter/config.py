@@ -48,6 +48,8 @@ DBLINK_DB_FILE_NAME = "dblink.duckdb"
 TMP_DBLINK_DB_FILE_NAME = "dblink.tmp.duckdb"
 DATE_CACHE_DB_FILE_NAME = "bp_bs_date.duckdb"
 TMP_DATE_CACHE_DB_FILE_NAME = "bp_bs_date.tmp.duckdb"
+STATUS_CACHE_DB_FILE_NAME = "bp_bs_status.duckdb"
+TMP_STATUS_CACHE_DB_FILE_NAME = "bp_bs_status.tmp.duckdb"
 
 # ID to accession mapping files (for numeric ID conversion)
 BP_ID_TO_ACCESSION_FILE_NAME = "bp_id_to_accession.tsv"
@@ -68,6 +70,10 @@ SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mir
 DRA_ACCESSIONS_BASE_PATH = Path(
     "/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
 )
+
+# Livelist base paths (BP/BS status)
+BP_LIVELIST_BASE_PATH = Path("/lustre9/open/archive/tape/ddbj-dbt/bp-collab/bioproject")
+BS_LIVELIST_BASE_PATH = Path("/lustre9/open/archive/tape/ddbj-dbt/bs-collab/biosample")
 
 # TRAD ORGANISM_LIST paths
 TRAD_WGS_ORGANISM_LIST = TRAD_BASE_PATH.joinpath("wgs/WGS_ORGANISM_LIST.txt")

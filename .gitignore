@@ -175,3 +175,4 @@ w3ddbjld_const
 /dblink
 tests/fixtures
 compose.override.yml
+.playwright-cli

@@ -162,6 +162,11 @@ def regenerate_bp_jsonl(
         for xml_path in sorted(tmp_xml_dir.glob("ncbi_*.xml")):
             bp_fetch_dates_ncbi(xml_path, ncbi_docs)
 
+    # ステータスをキャッシュから取得して上書き
+    from ddbj_search_converter.jsonl.bp import _fetch_statuses as bp_fetch_statuses
+
+    bp_fetch_statuses(config, docs)
+
     output_path = output_dir / "bioproject.jsonl"
     write_jsonl(output_path, list(docs.values()))
     log_info(f"wrote {len(docs)} bioproject entries to {output_path}")
@@ -231,6 +236,11 @@ def regenerate_bs_jsonl(
         for xml_path in sorted(tmp_xml_dir.glob("ncbi_*.xml")):
             is_ddbj = False
             bs_fetch_dates_ncbi(xml_path, ncbi_docs, is_ddbj)
+
+    # ステータスをキャッシュから取得して上書き
+    from ddbj_search_converter.jsonl.bs import _fetch_statuses as bs_fetch_statuses
+
+    bs_fetch_statuses(config, docs)
 
     output_path = output_dir / "biosample.jsonl"
     write_jsonl(output_path, list(docs.values()))

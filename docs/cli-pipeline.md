@@ -54,9 +54,10 @@ dump_dblink_files
 
 # === Phase 2: JSONL 生成 ===
 
-# 6. 日付キャッシュ構築 (BP/BS の JSONL 生成前に必須)
+# 6. 日付キャッシュ構築 + ステータスキャッシュ構築
 build_bp_bs_date_cache
-# 出力: {const_dir}/bp_bs_date.duckdb
+build_bp_bs_status_cache
+# 出力: {const_dir}/bp_bs_date.duckdb, {result_dir}/bp_bs_status.duckdb
 
 # 7. SRA/DRA Metadata tar 構築 (SRA JSONL 生成前に必須)
 sync_ncbi_tar
@@ -206,7 +207,7 @@ generate_jga_jsonl
   dump_dblink          Dump DBLink files
 
 === PHASE 2: JSONL Generation ===
-  sync_tar             Sync tar files and build date cache
+  sync_tar             Sync tar files, build date cache and status cache
   jsonl_bp             Generate BioProject JSONL
   jsonl_bs             Generate BioSample JSONL
   jsonl_sra            Generate SRA JSONL
@@ -238,7 +239,8 @@ finalize_dblink_db → dump_dblink_files
 PHASE 2: JSONL Generation
 ├── [並列] sync_ncbi_tar
 ├── [並列] sync_dra_tar
-└── [並列] build_bp_bs_date_cache
+├── [並列] build_bp_bs_date_cache
+└── [並列] build_bp_bs_status_cache
     ↓
 ├── [逐次] generate_bp_jsonl [--full] [--parallel-num N]
 ├── [逐次] generate_bs_jsonl [--full] [--parallel-num N]
@@ -387,6 +389,7 @@ es_bulk_insert --index jga-study \
 | コマンド | オプション | 説明 |
 |---------|----------|------|
 | `build_bp_bs_date_cache` | - | BP/BS 日付情報を PostgreSQL から DuckDB キャッシュに構築 |
+| `build_bp_bs_status_cache` | - | BP/BS ステータス情報を Livelist ファイルから DuckDB キャッシュに構築 |
 | `generate_bp_jsonl` | `--full`, `--parallel-num`, `--resume` | BioProject JSONL 生成 |
 | `generate_bs_jsonl` | `--full`, `--parallel-num`, `--resume` | BioSample JSONL 生成 |
 | `generate_sra_jsonl` | `--full`, `--parallel-num` | SRA JSONL 生成 |

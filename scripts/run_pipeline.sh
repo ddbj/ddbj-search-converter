@@ -470,7 +470,8 @@ phase2_jsonl() {
         run_parallel \
             "sync_ncbi_tar" \
             "sync_dra_tar" \
-            "build_bp_bs_date_cache"
+            "build_bp_bs_date_cache" \
+            "build_bp_bs_status_cache"
     fi
 
     # Determine JSONL generation mode
