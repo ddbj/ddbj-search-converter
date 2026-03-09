@@ -10,17 +10,16 @@ GEA (Gene Expression Archive) の IDF/SDRF ファイルから関連を抽出し�
 - gea -> bioproject (IDF の Comment[BioProject] から)
 - gea -> biosample (SDRF の Comment[BioSample] カラムから)
 """
+
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 from ddbj_search_converter.config import GEA_BASE_PATH, get_config
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
-from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
-                                                load_blacklist)
+from ddbj_search_converter.dblink.utils import filter_pairs_by_blacklist, load_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 
 

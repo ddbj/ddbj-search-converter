@@ -22,15 +22,15 @@ DDBJ Search Converter のデータフローと構造。
 |                                                                             |
 |   init_dblink_db                                                            |
 |   create_dblink_bp_bs_relations      -- parse XML, preserved.tsv            |
-|   create_dblink_bp_relations         -- umbrella, hum-id                    |
+|   create_dblink_bp_relations         -- umbrella (-> umbrella.duckdb), hum-id|
 |   create_dblink_assembly_and_master  -- fetch assembly_summary, ORGANISM    |
 |   create_dblink_gea_relations        -- parse IDF/SDRF                      |
 |   create_dblink_metabobank_relations -- parse IDF/SDRF, preserved.tsv       |
 |   create_dblink_jga_relations        -- parse XML/CSV                       |
 |   create_dblink_sra_internal         -- SRA internal + BP/BS <-> SRA        |
 |   create_dblink_insdc_relations     -- TRAD PostgreSQL (g/e/w-actual)       |
-|   finalize_dblink_db -------------> {const}/dblink/dblink.duckdb            |
-|   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (18 files)          |
+|   finalize_dblink_db -----> {const}/dblink/dblink.duckdb, umbrella.duckdb   |
+|   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (17 files)          |
 +-----------------------------------------------------------------------------+
                                       |
                                       v
@@ -248,6 +248,30 @@ CREATE TABLE relation (
 
 無向グラフとして管理（`(A, B)` と `(B, A)` は正規化により同一）。
 
+### Umbrella DB
+
+BioProject の umbrella 階層構造（親子関連）を有向グラフとして管理する DuckDB。
+
+- `{const_dir}/dblink/umbrella.duckdb`
+
+```sql
+CREATE TABLE umbrella_relation (
+    parent_accession TEXT NOT NULL,  -- 親 BioProject (umbrella)
+    child_accession TEXT NOT NULL    -- 子 BioProject
+)
+```
+
+- 有向グラフ: `parent_accession` → `child_accession` の方向が明確
+- 1 つの child が複数の parent を持つ DAG（有向非巡回グラフ）構造に対応
+- `init_dblink_db` で初期化、`create_dblink_bp_relations` でデータ挿入、`finalize_dblink_db` で確定
+- JSONL 生成時に `parentBioProjects` / `childBioProjects` フィールドを設定するために使用
+
+**階層構造の特性:**
+
+- 木構造ではなく DAG。1 つの child が複数の parent を持つケースが約 6,700 件ある
+- 最大深度は 5 だが、99.6% は depth 1（umbrella → leaf のみ）
+- XML に `ProjectTypeTopAdmin` がないが TopAdmin Link で子を持つ BioProject が 138 件存在する。これらは `objectType=BioProject` のまま `childBioProjects` にデータが入る
+
 ### Date Cache DB
 
 PostgreSQL から取得した BioProject/BioSample の日付情報をキャッシュした DuckDB。
@@ -280,12 +304,11 @@ CREATE TABLE dra_sra_file (run TEXT NOT NULL);
 
 ## AccessionType 一覧
 
-DBLink では以下の 22 種類の accession タイプを管理する。
+DBLink では以下の 21 種類の accession タイプを管理する。
 
 | AccessionType | 例 |
 |--------------|-----|
 | `bioproject` | PRJDB12345, PRJNA123456 |
-| `umbrella-bioproject` | PRJDB99999 |
 | `biosample` | SAMD00000001, SAMN12345678 |
 | `sra-submission` | DRA000001, SRA000001 |
 | `sra-study` | DRP000001, SRP000001 |
@@ -307,7 +330,7 @@ DBLink では以下の 22 種類の accession タイプを管理する。
 | `geo` | GSE12345 |
 | `taxonomy` | 9606 |
 
-## DBLink TSV 出力（18 種類）
+## DBLink TSV 出力（17 種類）
 
 `{DBLINK_PATH}/` 以下に出力される。relation を表す 2 カラムの TSV。
 
@@ -320,7 +343,6 @@ DBLink では以下の 22 種類の accession タイプを管理する。
 | `insdc_master-biosample/insdc_master2biosample.tsv` | insdc-master - biosample |
 | `biosample-bioproject/biosample2bioproject.tsv` | biosample - bioproject |
 | `bioproject-biosample/bioproject2biosample.tsv` | bioproject - biosample |
-| `bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv` | bioproject - umbrella-bioproject |
 | `bioproject-humID/bioproject2humID.tsv` | bioproject - hum-id |
 | `gea-bioproject/gea2bioproject.tsv` | gea - bioproject |
 | `gea-biosample/gea2biosample.tsv` | gea - biosample |
@@ -331,6 +353,8 @@ DBLink では以下の 22 種類の accession タイプを管理する。
 | `jga_study-jga_dataset/jga_study2jga_dataset.tsv` | jga-study - jga-dataset |
 | `insdc-bioproject/insdc2bioproject.tsv` | insdc - bioproject |
 | `insdc-biosample/insdc2biosample.tsv` | insdc - biosample |
+
+umbrella 関連は Umbrella DB (`umbrella.duckdb`) で管理し、TSV エクスポートは行わない。
 
 ## JSONL 出力
 
@@ -344,6 +368,8 @@ DBLink では以下の 22 種類の accession タイプを管理する。
 | `ddbj_*.jsonl`, `ncbi_*.jsonl` | `biosample` |
 
 XML ファイル単位で分割されたファイルが出力される。
+
+BioProject エントリーは umbrella 階層構造に対応しており、`parentBioProjects` / `childBioProjects` フィールドで直接の親子関係（推移的閉包ではない）を保持する。これらのフィールドの値は Umbrella DB から取得される。Xref の type は `"bioproject"` で統一し、フィールド名自体が方向を示す。後方互換性のため `dbXrefs` にも同じ関連を含める。
 
 ### SRA
 

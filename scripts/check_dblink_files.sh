@@ -18,7 +18,6 @@ FILES=(
     "insdc_master-biosample/insdc_master2biosample.tsv"
     "biosample-bioproject/biosample2bioproject.tsv"
     "bioproject-biosample/bioproject2biosample.tsv"
-    "bioproject_umbrella-bioproject/bioproject_umbrella2bioproject.tsv"
     "bioproject-humID/bioproject2humID.tsv"
     "gea-bioproject/gea2bioproject.tsv"
     "gea-biosample/gea2biosample.tsv"
@@ -27,6 +26,8 @@ FILES=(
     "jga_study-humID/jga_study2humID.tsv"
     "jga_study-pubmed_id/jga_study2pubmed_id.tsv"
     "jga_study-jga_dataset/jga_study2jga_dataset.tsv"
+    "insdc-bioproject/insdc2bioproject.tsv"
+    "insdc-biosample/insdc2biosample.tsv"
 )
 
 # Build JSON output

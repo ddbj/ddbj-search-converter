@@ -82,7 +82,6 @@ XrefType = Literal[
     "metabobank",
     "pubmed-id",
     "taxonomy",
-    "umbrella-bioproject",
 ]
 
 
@@ -109,6 +108,8 @@ class BioProject(BaseModel):
     grant: list[Grant]
     externalLink: list[ExternalLink]
     dbXrefs: list[Xref]
+    parentBioProjects: list[Xref]
+    childBioProjects: list[Xref]
     sameAs: list[Xref]
     status: Status
     accessibility: Accessibility

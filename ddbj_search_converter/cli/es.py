@@ -340,7 +340,6 @@ def main_health_check() -> None:
 # AccessionType -> ES インデックス名のマッピング
 ACCESSION_TYPE_TO_INDEX: dict[str, str] = {
     "bioproject": "bioproject",
-    "umbrella-bioproject": "bioproject",
     "biosample": "biosample",
     "sra-submission": "sra-submission",
     "sra-study": "sra-study",

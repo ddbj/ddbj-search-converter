@@ -3,8 +3,9 @@
 bp_bs は外部 XML ファイルと DB に依存するため、
 ここではユーティリティ関数のテストのみ行う。
 """
+
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 

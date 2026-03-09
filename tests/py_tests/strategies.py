@@ -29,7 +29,6 @@ ALL_ACCESSION_TYPES: list[AccessionType] = [
     "sra-study",
     "sra-submission",
     "taxonomy",
-    "umbrella-bioproject",
 ]
 
 

@@ -544,7 +544,6 @@ def _process_batch_worker(
     blacklist: set[str],
     output_dir: Path,
     is_dra: bool,
-    umbrella_ids: set[str],
 ) -> dict[str, int]:
     """
     1 batch を処理して JSONL を出力するワーカー関数。
@@ -623,7 +622,7 @@ def _process_batch_worker(
     for xml_type in XML_TYPES:
         accessions = [e.identifier for e in batch_entries[xml_type]]
         if accessions:
-            dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions, umbrella_ids=umbrella_ids)
+            dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions)
             for entry in batch_entries[xml_type]:
                 if entry.identifier in dbxref_map:
                     entry.dbXrefs = dbxref_map[entry.identifier]
@@ -670,11 +669,6 @@ def process_source(
         {xml_type: count}
     """
     is_dra = source == "dra"
-
-    # umbrella-bioproject ID セットを取得
-    from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
-
-    umbrella_ids = get_umbrella_bioproject_ids(config)
 
     log_info(f"processing {source.upper()}...")
 
@@ -752,7 +746,6 @@ def process_source(
                     blacklist,
                     output_dir,
                     is_dra,
-                    umbrella_ids,
                 )
                 pending.add(future)
                 log_info(f"submitted batch {batch_num}/{total_batches}")

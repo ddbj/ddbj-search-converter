@@ -1,5 +1,7 @@
 """Tests for ddbj_search_converter.jsonl.bs module."""
 
+from __future__ import annotations
+
 from typing import Any
 
 import pytest
@@ -18,6 +20,7 @@ from ddbj_search_converter.jsonl.bs import (
     parse_status,
     parse_title,
 )
+from ddbj_search_converter.schema import BioSample
 
 
 def _make_sample(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -374,7 +377,7 @@ class TestNormalizeProperties:
         normalize_properties(sample)
 
 
-def _make_bs_instance(identifier: str):
+def _make_bs_instance(identifier: str) -> BioSample:
     from ddbj_search_converter.schema import BioSample
 
     return BioSample(

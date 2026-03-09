@@ -179,7 +179,6 @@ def generate_jga_jsonl(
     output_dir: Path,
     jga_base_path: Path,
     jga_blacklist: set[str],
-    umbrella_ids: set[str] | None = None,
 ) -> None:
     """単一の JGA タイプの JSONL ファイルを生成する。"""
     xml_path = jga_base_path.joinpath(f"{index_name}.xml")
@@ -221,7 +220,7 @@ def generate_jga_jsonl(
     accessions = list(jga_instances.keys())
 
     # dbXrefs を取得して更新
-    dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions, umbrella_ids=umbrella_ids)
+    dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
     for accession, xrefs in dbxref_map.items():
         jga_instances[accession].dbXrefs = xrefs
 
@@ -266,12 +265,8 @@ def main() -> None:
 
         jga_blacklist = load_jga_blacklist(config)
 
-        from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
-
-        umbrella_ids = get_umbrella_bioproject_ids(config)
-
         for index_name in INDEX_NAMES:
-            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist, umbrella_ids)
+            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist)
 
 
 if __name__ == "__main__":

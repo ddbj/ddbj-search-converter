@@ -58,6 +58,8 @@ def get_bioproject_specific_mapping() -> dict[str, Any]:
                 "label": {"type": "keyword"},
             },
         },
+        "parentBioProjects": {"type": "object", "enabled": False},
+        "childBioProjects": {"type": "object", "enabled": False},
     }
 
 

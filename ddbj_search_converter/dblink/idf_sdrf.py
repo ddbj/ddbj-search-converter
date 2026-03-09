@@ -2,15 +2,15 @@
 IDF/SDRF ファイルのパース共通ユーティリティ。
 GEA と MetaboBank で使用する。
 """
+
 from pathlib import Path
-from typing import Optional, Set, Tuple
 
 
-def parse_idf_file(idf_path: Path) -> Optional[str]:
+def parse_idf_file(idf_path: Path) -> str | None:
     """IDF ファイルから BioProject ID を抽出する。"""
     with idf_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        for raw_line in f:
+            line = raw_line.strip()
             if line.startswith("Comment[BioProject]"):
                 parts = line.split("\t")
                 if len(parts) >= 2 and parts[1]:
@@ -18,9 +18,9 @@ def parse_idf_file(idf_path: Path) -> Optional[str]:
     return None
 
 
-def parse_sdrf_file(sdrf_path: Path) -> Set[str]:
+def parse_sdrf_file(sdrf_path: Path) -> set[str]:
     """SDRF ファイルから BioSample ID を抽出する。"""
-    result: Set[str] = set()
+    result: set[str] = set()
 
     with sdrf_path.open("r", encoding="utf-8") as f:
         header = f.readline().strip().split("\t")
@@ -43,7 +43,7 @@ def parse_sdrf_file(sdrf_path: Path) -> Set[str]:
     return result
 
 
-def process_idf_sdrf_dir(dir_path: Path) -> Tuple[str, Optional[str], Set[str]]:
+def process_idf_sdrf_dir(dir_path: Path) -> tuple[str, str | None, set[str]]:
     """
     IDF/SDRF を含むディレクトリを処理し、ID, BioProject, BioSample IDs を返す。
 
@@ -56,12 +56,12 @@ def process_idf_sdrf_dir(dir_path: Path) -> Tuple[str, Optional[str], Set[str]]:
     entry_id = dir_path.name
 
     idf_files = list(dir_path.glob("*.idf.txt"))
-    bp_id: Optional[str] = None
+    bp_id: str | None = None
     if idf_files:
         bp_id = parse_idf_file(idf_files[0])
 
     sdrf_files = list(dir_path.glob("*.sdrf.txt"))
-    bs_ids: Set[str] = set()
+    bs_ids: set[str] = set()
     if sdrf_files:
         bs_ids = parse_sdrf_file(sdrf_files[0])
 

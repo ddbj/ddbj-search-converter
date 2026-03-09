@@ -1,22 +1,25 @@
 """Tests for ddbj_search_converter.dblink.assembly_and_master module."""
+
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ddbj_search_converter.dblink.assembly_and_master import (
-    normalize_master_id, strip_version_suffix)
+from ddbj_search_converter.dblink.assembly_and_master import normalize_master_id, strip_version_suffix
 
 
 class TestStripVersionSuffix:
     """Tests for strip_version_suffix function."""
 
-    @pytest.mark.parametrize("raw_id,expected", [
-        ("GCA_000001215.4", "GCA_000001215"),
-        ("GCF_000001405.40", "GCF_000001405"),
-        ("ABC.1.2", "ABC"),
-        ("GCA_000001215", "GCA_000001215"),
-        ("na", "na"),
-    ])
+    @pytest.mark.parametrize(
+        ("raw_id", "expected"),
+        [
+            ("GCA_000001215.4", "GCA_000001215"),
+            ("GCF_000001405.40", "GCF_000001405"),
+            ("ABC.1.2", "ABC"),
+            ("GCA_000001215", "GCA_000001215"),
+            ("na", "na"),
+        ],
+    )
     def test_known_inputs(self, raw_id: str, expected: str) -> None:
         assert strip_version_suffix(raw_id) == expected
 
@@ -41,22 +44,25 @@ class TestStripVersionSuffixPBT:
 class TestNormalizeMasterId:
     """Tests for normalize_master_id function."""
 
-    @pytest.mark.parametrize("raw_id,expected", [
-        ("AABU00000000.1", "AABU00000000"),
-        ("CP035466.1", "CP000000"),
-        ("BAAA01000001-1", "BAAA00000000"),
-        ("ABCD12345-2", "ABCD00000"),
-        ("ABC12345", "ABC00000"),
-        ("ABC00000-1", "ABC00000"),
-        ("ABC00000.1", "ABC00000"),
-        ("ABC00000", "ABC00000"),
-        ("A12345-1", "A00000"),
-        ("A12345.1", "A00000"),
-        ("ABCDEF12345678-1", "ABCDEF00000000"),
-        ("na", "na"),
-        ("ABC123.1-2", "ABC000"),
-        ("ABC123-1.2", "ABC000"),
-    ])
+    @pytest.mark.parametrize(
+        ("raw_id", "expected"),
+        [
+            ("AABU00000000.1", "AABU00000000"),
+            ("CP035466.1", "CP000000"),
+            ("BAAA01000001-1", "BAAA00000000"),
+            ("ABCD12345-2", "ABCD00000"),
+            ("ABC12345", "ABC00000"),
+            ("ABC00000-1", "ABC00000"),
+            ("ABC00000.1", "ABC00000"),
+            ("ABC00000", "ABC00000"),
+            ("A12345-1", "A00000"),
+            ("A12345.1", "A00000"),
+            ("ABCDEF12345678-1", "ABCDEF00000000"),
+            ("na", "na"),
+            ("ABC123.1-2", "ABC000"),
+            ("ABC123-1.2", "ABC000"),
+        ],
+    )
     def test_known_inputs(self, raw_id: str, expected: str) -> None:
         assert normalize_master_id(raw_id) == expected
 

@@ -13,20 +13,22 @@ MetaboBank の IDF/SDRF ファイルから関連を抽出し、DBLink DB に挿�
 - metabobank -> bioproject (IDF の Comment[BioProject] + preserve から)
 - metabobank -> biosample (SDRF の Comment[BioSample] + preserve から)
 """
-from pathlib import Path
-from typing import Iterator, Tuple
 
-from ddbj_search_converter.config import (METABOBANK_BASE_PATH,
-                                          MTB_BP_PRESERVED_REL_PATH,
-                                          MTB_BS_PRESERVED_REL_PATH, Config,
-                                          get_config)
+from collections.abc import Iterator
+from pathlib import Path
+
+from ddbj_search_converter.config import (
+    METABOBANK_BASE_PATH,
+    MTB_BP_PRESERVED_REL_PATH,
+    MTB_BS_PRESERVED_REL_PATH,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
 from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
-from ddbj_search_converter.dblink.utils import (filter_pairs_by_blacklist,
-                                                load_blacklist)
+from ddbj_search_converter.dblink.utils import filter_pairs_by_blacklist, load_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 
 
@@ -43,7 +45,7 @@ def iterate_metabobank_dirs(base_path: Path) -> Iterator[Path]:
             yield mtb_dir
 
 
-def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
+def load_preserve_file(config: Config) -> tuple[IdPairs, IdPairs]:
     """Preserve ファイルから MetaboBank -> BP/BS 関連を読み込む。"""
     mtb_to_bp: IdPairs = set()
     mtb_to_bs: IdPairs = set()
@@ -52,12 +54,10 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
     bs_preserve_path = config.const_dir.joinpath(MTB_BS_PRESERVED_REL_PATH)
 
     if not bp_preserve_path.exists():
-        raise FileNotFoundError(
-            f"MetaboBank BP preserve file not found: {bp_preserve_path}"
-        )
-    with open(bp_preserve_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        raise FileNotFoundError(f"MetaboBank BP preserve file not found: {bp_preserve_path}")
+    with bp_preserve_path.open(encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
             if not line:
                 continue
             parts = line.split("\t")
@@ -73,16 +73,13 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
                         debug_category=DebugCategory.INVALID_ACCESSION_ID,
                         source="metabobank-preserve",
                     )
-    log_info(f"loaded {len(mtb_to_bp)} MetaboBank -> BioProject from preserve",
-             file=str(bp_preserve_path))
+    log_info(f"loaded {len(mtb_to_bp)} MetaboBank -> BioProject from preserve", file=str(bp_preserve_path))
 
     if not bs_preserve_path.exists():
-        raise FileNotFoundError(
-            f"MetaboBank BS preserve file not found: {bs_preserve_path}"
-        )
-    with open(bs_preserve_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        raise FileNotFoundError(f"MetaboBank BS preserve file not found: {bs_preserve_path}")
+    with bs_preserve_path.open(encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
             if not line:
                 continue
             parts = line.split("\t")
@@ -98,8 +95,7 @@ def load_preserve_file(config: Config) -> Tuple[IdPairs, IdPairs]:
                         debug_category=DebugCategory.INVALID_ACCESSION_ID,
                         source="metabobank-preserve",
                     )
-    log_info(f"loaded {len(mtb_to_bs)} MetaboBank -> BioSample from preserve",
-             file=str(bs_preserve_path))
+    log_info(f"loaded {len(mtb_to_bs)} MetaboBank -> BioSample from preserve", file=str(bs_preserve_path))
 
     return mtb_to_bp, mtb_to_bs
 

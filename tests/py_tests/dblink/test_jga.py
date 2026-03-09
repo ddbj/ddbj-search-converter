@@ -1,14 +1,16 @@
 """Tests for ddbj_search_converter.dblink.jga module."""
+
 from pathlib import Path
-from typing import Set, Tuple
 
 import pytest
 
-from ddbj_search_converter.dblink.jga import (extract_hum_id,
-                                              extract_pubmed_ids,
-                                              join_relations,
-                                              read_relation_csv,
-                                              reverse_relation)
+from ddbj_search_converter.dblink.jga import (
+    extract_hum_id,
+    extract_pubmed_ids,
+    join_relations,
+    read_relation_csv,
+    reverse_relation,
+)
 
 
 class TestReadRelationCsv:
@@ -44,9 +46,9 @@ class TestReadRelationCsv:
     def test_raises_when_file_not_exists(self, test_config: pytest.fixture) -> None:  # type: ignore[valid-type]
         """ファイルが存在しない場合は FileNotFoundError を発生する。"""
         from ddbj_search_converter.logging.logger import run_logger
-        with run_logger(config=test_config):
-            with pytest.raises(FileNotFoundError):
-                read_relation_csv(Path("/nonexistent/path/test.csv"))
+
+        with run_logger(config=test_config), pytest.raises(FileNotFoundError):
+            read_relation_csv(Path("/nonexistent/path/test.csv"))
 
 
 class TestJoinRelations:
@@ -54,8 +56,8 @@ class TestJoinRelations:
 
     def test_simple_join(self) -> None:
         """シンプルな join。"""
-        ab: Set[Tuple[str, str]] = {("A1", "B1"), ("A2", "B2")}
-        bc: Set[Tuple[str, str]] = {("B1", "C1"), ("B2", "C2")}
+        ab: set[tuple[str, str]] = {("A1", "B1"), ("A2", "B2")}
+        bc: set[tuple[str, str]] = {("B1", "C1"), ("B2", "C2")}
 
         result = join_relations(ab, bc)
 
@@ -63,8 +65,8 @@ class TestJoinRelations:
 
     def test_one_to_many(self) -> None:
         """1 対多の join。"""
-        ab: Set[Tuple[str, str]] = {("A1", "B1")}
-        bc: Set[Tuple[str, str]] = {("B1", "C1"), ("B1", "C2")}
+        ab: set[tuple[str, str]] = {("A1", "B1")}
+        bc: set[tuple[str, str]] = {("B1", "C1"), ("B1", "C2")}
 
         result = join_relations(ab, bc)
 
@@ -72,8 +74,8 @@ class TestJoinRelations:
 
     def test_no_match(self) -> None:
         """マッチがない場合は空。"""
-        ab: Set[Tuple[str, str]] = {("A1", "B1")}
-        bc: Set[Tuple[str, str]] = {("B2", "C1")}
+        ab: set[tuple[str, str]] = {("A1", "B1")}
+        bc: set[tuple[str, str]] = {("B2", "C1")}
 
         result = join_relations(ab, bc)
 
@@ -81,8 +83,8 @@ class TestJoinRelations:
 
     def test_empty_input(self) -> None:
         """空の入力。"""
-        ab: Set[Tuple[str, str]] = set()
-        bc: Set[Tuple[str, str]] = {("B1", "C1")}
+        ab: set[tuple[str, str]] = set()
+        bc: set[tuple[str, str]] = {("B1", "C1")}
 
         result = join_relations(ab, bc)
 
@@ -94,7 +96,7 @@ class TestReverseRelation:
 
     def test_reverse(self) -> None:
         """関連を逆転する。"""
-        relation: Set[Tuple[str, str]] = {("A1", "B1"), ("A2", "B2")}
+        relation: set[tuple[str, str]] = {("A1", "B1"), ("A2", "B2")}
 
         result = reverse_relation(relation)
 
@@ -102,7 +104,7 @@ class TestReverseRelation:
 
     def test_empty(self) -> None:
         """空の入力。"""
-        relation: Set[Tuple[str, str]] = set()
+        relation: set[tuple[str, str]] = set()
 
         result = reverse_relation(relation)
 
@@ -132,9 +134,7 @@ class TestExtractHumId:
         """単一の STUDY_ATTRIBUTE の場合 (dict)。"""
         study_entry = {
             "accession": "JGAS000001",
-            "STUDY_ATTRIBUTES": {
-                "STUDY_ATTRIBUTE": {"TAG": "NBDC Number", "VALUE": "hum0005"}
-            },
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "NBDC Number", "VALUE": "hum0005"}},
         }
 
         result = extract_hum_id(study_entry)
@@ -145,9 +145,7 @@ class TestExtractHumId:
         """NBDC Number がない場合は None。"""
         study_entry = {
             "accession": "JGAS000001",
-            "STUDY_ATTRIBUTES": {
-                "STUDY_ATTRIBUTE": [{"TAG": "Other", "VALUE": "value"}]
-            },
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": [{"TAG": "Other", "VALUE": "value"}]},
         }
 
         result = extract_hum_id(study_entry)
@@ -186,9 +184,7 @@ class TestExtractPubmedIds:
         """単一の PUBLICATION の場合 (dict)。"""
         study_entry = {
             "accession": "JGAS000001",
-            "PUBLICATIONS": {
-                "PUBLICATION": {"id": "12345678", "DB_TYPE": "PUBMED"}
-            },
+            "PUBLICATIONS": {"PUBLICATION": {"id": "12345678", "DB_TYPE": "PUBMED"}},
         }
 
         result = extract_pubmed_ids(study_entry)
@@ -223,9 +219,7 @@ class TestExtractPubmedIds:
         """ID が整数の場合も文字列として返す。"""
         study_entry = {
             "accession": "JGAS000001",
-            "PUBLICATIONS": {
-                "PUBLICATION": {"id": 12345678, "DB_TYPE": "PUBMED"}
-            },
+            "PUBLICATIONS": {"PUBLICATION": {"id": 12345678, "DB_TYPE": "PUBMED"}},
         }
 
         result = extract_pubmed_ids(study_entry)

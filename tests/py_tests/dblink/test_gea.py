@@ -1,4 +1,5 @@
 """Tests for ddbj_search_converter.dblink.gea module (pure logic only)."""
+
 from pathlib import Path
 
 from ddbj_search_converter.dblink.gea import iterate_gea_dirs

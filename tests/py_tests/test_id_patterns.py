@@ -4,9 +4,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
+from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP, is_valid_accession
 
-from .strategies import ALL_ACCESSION_TYPES, st_accession_type
+from .strategies import ALL_ACCESSION_TYPES
 
 
 class TestIsValidAccession:
@@ -62,12 +63,6 @@ class TestIsValidAccession:
     )
     def test_bioproject_invalid(self, acc: str) -> None:
         assert is_valid_accession(acc, "bioproject") is False
-
-    # --- umbrella-bioproject ---
-
-    @pytest.mark.parametrize("acc", ["PRJDB12345", "PRJNA123456"])
-    def test_umbrella_bioproject_valid(self, acc: str) -> None:
-        assert is_valid_accession(acc, "umbrella-bioproject") is True
 
     # --- sra types ---
 
@@ -218,7 +213,7 @@ class TestIdPatternMap:
     """Tests for ID_PATTERN_MAP completeness."""
 
     # insdc は多様すぎて正規表現で網羅できないため、ID_PATTERN_MAP に含めない
-    PATTERN_EXCLUDED_TYPES = {"insdc"}
+    PATTERN_EXCLUDED_TYPES: set[AccessionType] = {"insdc"}
 
     def test_all_accession_types_covered(self) -> None:
         expected = set(ALL_ACCESSION_TYPES) - self.PATTERN_EXCLUDED_TYPES
@@ -273,7 +268,6 @@ class TestBug12TrailingNewline:
     VALID_EXAMPLES: dict[str, str] = {
         "biosample": "SAMN12345678",
         "bioproject": "PRJDB12345",
-        "umbrella-bioproject": "PRJDB12345",
         "sra-submission": "SRA123456",
         "sra-study": "SRP123456",
         "sra-experiment": "SRX123456",
@@ -315,14 +309,12 @@ class TestEdgeCases:
         """null byte を含む文字列は invalid。"""
         assert is_valid_accession("PRJDB\x001", acc_type) is False  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize(
-        "acc_type", [t for t in ALL_ACCESSION_TYPES if t not in ("bioproject", "umbrella-bioproject", "insdc")]
-    )
+    @pytest.mark.parametrize("acc_type", [t for t in ALL_ACCESSION_TYPES if t not in ("bioproject", "insdc")])
     def test_newline_in_accession(self, acc_type: str) -> None:
         """改行を含む文字列は invalid。"""
         assert is_valid_accession("PRJDB1\n", acc_type) is False  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("acc_type", ["bioproject", "umbrella-bioproject"])
+    @pytest.mark.parametrize("acc_type", ["bioproject"])
     def test_newline_in_accession_bioproject(self, acc_type: str) -> None:
         """Bug #11 (fixed): 改行を含む bioproject 文字列は invalid。"""
         assert is_valid_accession("PRJDB1\n", acc_type) is False  # type: ignore[arg-type]

@@ -407,7 +407,6 @@ def _process_xml_file_worker(
     output_path: Path,
     is_ddbj: bool,
     bs_blacklist: set[str],
-    umbrella_ids: set[str],
     target_accessions: set[str] | None = None,
     since: str | None = None,
 ) -> int:
@@ -454,7 +453,7 @@ def _process_xml_file_worker(
         log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXrefs を一括取得
-    dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()), umbrella_ids=umbrella_ids)
+    dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
             docs[accession].dbXrefs = xrefs
@@ -488,20 +487,13 @@ def process_xml_file(
     output_path: Path,
     is_ddbj: bool,
     bs_blacklist: set[str] | None = None,
-    umbrella_ids: set[str] | None = None,
     target_accessions: set[str] | None = None,
     since: str | None = None,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bs_blacklist is None:
         _, bs_blacklist = load_blacklist(config)
-    if umbrella_ids is None:
-        from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
-
-        umbrella_ids = get_umbrella_bioproject_ids(config)
-    return _process_xml_file_worker(
-        config, xml_path, output_path, is_ddbj, bs_blacklist, umbrella_ids, target_accessions, since
-    )
+    return _process_xml_file_worker(config, xml_path, output_path, is_ddbj, bs_blacklist, target_accessions, since)
 
 
 def generate_bs_jsonl(
@@ -530,11 +522,6 @@ def generate_bs_jsonl(
 
     # blacklist を読み込む
     _, bs_blacklist = load_blacklist(config)
-
-    # umbrella-bioproject ID セットを取得
-    from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
-
-    umbrella_ids = get_umbrella_bioproject_ids(config)
 
     # 差分更新の基準日時を取得
     since: str | None = None
@@ -598,7 +585,6 @@ def generate_bs_jsonl(
                 output_path,
                 is_ddbj,
                 bs_blacklist,
-                umbrella_ids,
                 target_accessions,
                 since_param,
             ): (xml_path, is_ddbj)

@@ -33,40 +33,47 @@ BioSample <-> SRA:
 出力:
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
-from typing import Set
 
-from ddbj_search_converter.config import (BP_ID_TO_ACCESSION_FILE_NAME,
-                                          BS_ID_TO_ACCESSION_FILE_NAME,
-                                          Config, get_config)
+from ddbj_search_converter.config import BP_ID_TO_ACCESSION_FILE_NAME, BS_ID_TO_ACCESSION_FILE_NAME, Config, get_config
 from ddbj_search_converter.dblink.bp_bs import IdMapping, load_id_mapping_tsv
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.utils import (convert_id_if_needed,
-                                                filter_pairs_by_blacklist,
-                                                filter_sra_pairs_by_blacklist,
-                                                load_blacklist,
-                                                load_sra_blacklist)
+from ddbj_search_converter.dblink.utils import (
+    convert_id_if_needed,
+    filter_pairs_by_blacklist,
+    filter_sra_pairs_by_blacklist,
+    load_blacklist,
+    load_sra_blacklist,
+)
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.sra_accessions_tab import (
-    SourceKind, iter_bp_analysis_relations, iter_bp_experiment_relations,
-    iter_bp_run_relations, iter_bp_study_relations,
-    iter_bs_analysis_relations, iter_bs_experiment_relations,
-    iter_bs_run_relations, iter_bs_sample_relations,
-    iter_experiment_run_relations, iter_experiment_sample_relations,
-    iter_run_sample_relations, iter_study_analysis_relations,
-    iter_study_experiment_relations, iter_submission_analysis_relations,
-    iter_submission_study_relations)
+    SourceKind,
+    iter_bp_analysis_relations,
+    iter_bp_experiment_relations,
+    iter_bp_run_relations,
+    iter_bp_study_relations,
+    iter_bs_analysis_relations,
+    iter_bs_experiment_relations,
+    iter_bs_run_relations,
+    iter_bs_sample_relations,
+    iter_experiment_run_relations,
+    iter_experiment_sample_relations,
+    iter_run_sample_relations,
+    iter_study_analysis_relations,
+    iter_study_experiment_relations,
+    iter_submission_analysis_relations,
+    iter_submission_study_relations,
+)
 
 
 def process_sra_internal_relations(
     config: Config,
     *,
     source: SourceKind,
-    sra_blacklist: Set[str],
-    bp_blacklist: Set[str],
-    bs_blacklist: Set[str],
+    sra_blacklist: set[str],
+    bp_blacklist: set[str],
+    bs_blacklist: set[str],
     bp_id_to_accession: IdMapping,
     bs_id_to_accession: IdMapping,
 ) -> None:
@@ -92,12 +99,20 @@ def process_sra_internal_relations(
         if not submission or not study:
             continue
         if not is_valid_accession(submission, "sra-submission"):
-            log_debug(f"skipping invalid sra-submission: {submission}", accession=submission,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-submission: {submission}",
+                accession=submission,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(study, "sra-study"):
-            log_debug(f"skipping invalid sra-study: {study}", accession=study,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-study: {study}",
+                accession=study,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         submission_study.add((submission, study))
     log_info(f"extracted {len(submission_study)} {source_label} Submission <-> Study relations")
@@ -111,12 +126,20 @@ def process_sra_internal_relations(
         if not study or not experiment:
             continue
         if not is_valid_accession(study, "sra-study"):
-            log_debug(f"skipping invalid sra-study: {study}", accession=study,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-study: {study}",
+                accession=study,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(experiment, "sra-experiment"):
-            log_debug(f"skipping invalid sra-experiment: {experiment}", accession=experiment,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-experiment: {experiment}",
+                accession=experiment,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         study_experiment.add((study, experiment))
     log_info(f"extracted {len(study_experiment)} {source_label} Study <-> Experiment relations")
@@ -130,12 +153,20 @@ def process_sra_internal_relations(
         if not study or not analysis:
             continue
         if not is_valid_accession(study, "sra-study"):
-            log_debug(f"skipping invalid sra-study: {study}", accession=study,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-study: {study}",
+                accession=study,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(analysis, "sra-analysis"):
-            log_debug(f"skipping invalid sra-analysis: {analysis}", accession=analysis,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-analysis: {analysis}",
+                accession=analysis,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         study_analysis.add((study, analysis))
     log_info(f"extracted {len(study_analysis)} {source_label} Study <-> Analysis relations")
@@ -149,12 +180,20 @@ def process_sra_internal_relations(
         if not submission or not analysis:
             continue
         if not is_valid_accession(submission, "sra-submission"):
-            log_debug(f"skipping invalid sra-submission: {submission}", accession=submission,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-submission: {submission}",
+                accession=submission,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(analysis, "sra-analysis"):
-            log_debug(f"skipping invalid sra-analysis: {analysis}", accession=analysis,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-analysis: {analysis}",
+                accession=analysis,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         submission_analysis.add((submission, analysis))
     log_info(f"extracted {len(submission_analysis)} {source_label} Submission <-> Analysis relations")
@@ -168,12 +207,20 @@ def process_sra_internal_relations(
         if not experiment or not run:
             continue
         if not is_valid_accession(experiment, "sra-experiment"):
-            log_debug(f"skipping invalid sra-experiment: {experiment}", accession=experiment,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-experiment: {experiment}",
+                accession=experiment,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(run, "sra-run"):
-            log_debug(f"skipping invalid sra-run: {run}", accession=run,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-run: {run}",
+                accession=run,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         experiment_run.add((experiment, run))
     log_info(f"extracted {len(experiment_run)} {source_label} Experiment <-> Run relations")
@@ -187,12 +234,20 @@ def process_sra_internal_relations(
         if not experiment or not sample:
             continue
         if not is_valid_accession(experiment, "sra-experiment"):
-            log_debug(f"skipping invalid sra-experiment: {experiment}", accession=experiment,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-experiment: {experiment}",
+                accession=experiment,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(sample, "sra-sample"):
-            log_debug(f"skipping invalid sra-sample: {sample}", accession=sample,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-sample: {sample}",
+                accession=sample,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         experiment_sample.add((experiment, sample))
     log_info(f"extracted {len(experiment_sample)} {source_label} Experiment <-> Sample relations")
@@ -206,12 +261,20 @@ def process_sra_internal_relations(
         if not run or not sample:
             continue
         if not is_valid_accession(run, "sra-run"):
-            log_debug(f"skipping invalid sra-run: {run}", accession=run,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-run: {run}",
+                accession=run,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         if not is_valid_accession(sample, "sra-sample"):
-            log_debug(f"skipping invalid sra-sample: {sample}", accession=sample,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-sample: {sample}",
+                accession=sample,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         run_sample.add((run, sample))
     log_info(f"extracted {len(run_sample)} {source_label} Run <-> Sample relations")
@@ -230,8 +293,12 @@ def process_sra_internal_relations(
         if not converted_bp:
             continue
         if not is_valid_accession(study, "sra-study"):
-            log_debug(f"skipping invalid sra-study: {study}", accession=study,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-study: {study}",
+                accession=study,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bp_study.add((converted_bp, study))
     log_info(f"extracted {len(bp_study)} {source_label} BioProject <-> Study relations")
@@ -249,8 +316,12 @@ def process_sra_internal_relations(
         if not converted_bp:
             continue
         if not is_valid_accession(experiment, "sra-experiment"):
-            log_debug(f"skipping invalid sra-experiment: {experiment}", accession=experiment,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-experiment: {experiment}",
+                accession=experiment,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bp_experiment.add((converted_bp, experiment))
     log_info(f"extracted {len(bp_experiment)} {source_label} BioProject <-> Experiment relations")
@@ -268,8 +339,12 @@ def process_sra_internal_relations(
         if not converted_bp:
             continue
         if not is_valid_accession(run, "sra-run"):
-            log_debug(f"skipping invalid sra-run: {run}", accession=run,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-run: {run}",
+                accession=run,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bp_run.add((converted_bp, run))
     log_info(f"extracted {len(bp_run)} {source_label} BioProject <-> Run relations")
@@ -287,8 +362,12 @@ def process_sra_internal_relations(
         if not converted_bp:
             continue
         if not is_valid_accession(analysis, "sra-analysis"):
-            log_debug(f"skipping invalid sra-analysis: {analysis}", accession=analysis,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-analysis: {analysis}",
+                accession=analysis,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bp_analysis.add((converted_bp, analysis))
     log_info(f"extracted {len(bp_analysis)} {source_label} BioProject <-> Analysis relations")
@@ -308,8 +387,12 @@ def process_sra_internal_relations(
         if not converted_bs:
             continue
         if not is_valid_accession(sample, "sra-sample"):
-            log_debug(f"skipping invalid sra-sample: {sample}", accession=sample,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-sample: {sample}",
+                accession=sample,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bs_sample.add((converted_bs, sample))
     log_info(f"extracted {len(bs_sample)} {source_label} BioSample <-> Sample relations")
@@ -327,8 +410,12 @@ def process_sra_internal_relations(
         if not converted_bs:
             continue
         if not is_valid_accession(experiment, "sra-experiment"):
-            log_debug(f"skipping invalid sra-experiment: {experiment}", accession=experiment,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-experiment: {experiment}",
+                accession=experiment,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bs_experiment.add((converted_bs, experiment))
     log_info(f"extracted {len(bs_experiment)} {source_label} BioSample <-> Experiment relations")
@@ -346,8 +433,12 @@ def process_sra_internal_relations(
         if not converted_bs:
             continue
         if not is_valid_accession(run, "sra-run"):
-            log_debug(f"skipping invalid sra-run: {run}", accession=run,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-run: {run}",
+                accession=run,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bs_run.add((converted_bs, run))
     log_info(f"extracted {len(bs_run)} {source_label} BioSample <-> Run relations")
@@ -365,8 +456,12 @@ def process_sra_internal_relations(
         if not converted_bs:
             continue
         if not is_valid_accession(analysis, "sra-analysis"):
-            log_debug(f"skipping invalid sra-analysis: {analysis}", accession=analysis,
-                      debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+            log_debug(
+                f"skipping invalid sra-analysis: {analysis}",
+                accession=analysis,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
             continue
         bs_analysis.add((converted_bs, analysis))
     log_info(f"extracted {len(bs_analysis)} {source_label} BioSample <-> Analysis relations")

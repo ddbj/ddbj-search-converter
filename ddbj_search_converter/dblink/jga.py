@@ -18,33 +18,35 @@ JGA (Japanese Genotype-phenotype Archive) の XML/CSV から関連を抽出し�
 - jga-dataset <-> jga-dac
 - jga-policy <-> jga-dac
 """
+
 import csv
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from lxml import etree
 
-from ddbj_search_converter.config import (JGA_ANALYSIS_STUDY_CSV,
-                                          JGA_DATA_EXPERIMENT_CSV,
-                                          JGA_DATASET_ANALYSIS_CSV,
-                                          JGA_DATASET_DATA_CSV,
-                                          JGA_DATASET_POLICY_CSV,
-                                          JGA_EXPERIMENT_STUDY_CSV,
-                                          JGA_POLICY_DAC_CSV, JGA_STUDY_XML,
-                                          get_config)
+from ddbj_search_converter.config import (
+    JGA_ANALYSIS_STUDY_CSV,
+    JGA_DATA_EXPERIMENT_CSV,
+    JGA_DATASET_ANALYSIS_CSV,
+    JGA_DATASET_DATA_CSV,
+    JGA_DATASET_POLICY_CSV,
+    JGA_EXPERIMENT_STUDY_CSV,
+    JGA_POLICY_DAC_CSV,
+    JGA_STUDY_XML,
+    get_config,
+)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.utils import (filter_sra_pairs_by_blacklist,
-                                                load_jga_blacklist)
+from ddbj_search_converter.dblink.utils import filter_sra_pairs_by_blacklist, load_jga_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 
 # === CSV relation operations ===
 
 
-def read_relation_csv(csv_path: Path) -> Set[Tuple[str, str]]:
+def read_relation_csv(csv_path: Path) -> set[tuple[str, str]]:
     """
     JGA relation CSV を読み込み、(from_id, to_id) の set を返す。
     CSV format: id, from_id, to_id (header あり、1 列目は無視)
@@ -55,7 +57,7 @@ def read_relation_csv(csv_path: Path) -> Set[Tuple[str, str]]:
     if not csv_path.exists():
         raise FileNotFoundError(f"CSV file not found: {csv_path}")
 
-    result: Set[Tuple[str, str]] = set()
+    result: set[tuple[str, str]] = set()
     with csv_path.open("r", encoding="utf-8") as f:
         reader = csv.reader(f)
         next(reader)  # skip header
@@ -68,23 +70,23 @@ def read_relation_csv(csv_path: Path) -> Set[Tuple[str, str]]:
 
 
 def join_relations(
-    ab: Set[Tuple[str, str]],
-    bc: Set[Tuple[str, str]],
-) -> Set[Tuple[str, str]]:
+    ab: set[tuple[str, str]],
+    bc: set[tuple[str, str]],
+) -> set[tuple[str, str]]:
     """(a, b) と (b, c) を join して (a, c) を返す。"""
-    b_to_c: Dict[str, Set[str]] = defaultdict(set)
+    b_to_c: dict[str, set[str]] = defaultdict(set)
     for b, c in bc:
         b_to_c[b].add(c)
 
     return {(a, c) for a, b in ab for c in b_to_c.get(b, ())}
 
 
-def reverse_relation(relation: Set[Tuple[str, str]]) -> Set[Tuple[str, str]]:
+def reverse_relation(relation: set[tuple[str, str]]) -> set[tuple[str, str]]:
     """(a, b) set を (b, a) set に変換。"""
     return {(b, a) for a, b in relation}
 
 
-def build_jga_internal_relations() -> Dict[str, IdPairs]:
+def build_jga_internal_relations() -> dict[str, IdPairs]:
     """
     CSV から JGA 内部関連を構築する。
 
@@ -138,7 +140,7 @@ def build_jga_internal_relations() -> Dict[str, IdPairs]:
 
 def _element_to_dict(element: etree._Element) -> dict[str, Any] | str:
     """lxml Element を dict に変換する。属性はプレフィックスなし。"""
-    result: Dict[str, Any] = {}
+    result: dict[str, Any] = {}
 
     # 属性を追加
     for attr_key, attr_value in element.attrib.items():
@@ -158,7 +160,7 @@ def _element_to_dict(element: etree._Element) -> dict[str, Any] | str:
                 return {"content": text} if result else text
 
     # 子要素を処理
-    children: Dict[str, List[Any]] = {}
+    children: dict[str, list[Any]] = {}
     for child in element:
         child_tag: str = str(child.tag)
         if "}" in child_tag:
@@ -180,7 +182,7 @@ def _element_to_dict(element: etree._Element) -> dict[str, Any] | str:
     return result
 
 
-def load_jga_study_xml() -> List[Dict[str, Any]]:
+def load_jga_study_xml() -> list[dict[str, Any]]:
     """jga-study.xml を読み込み、STUDY エントリのリストを返す。
 
     Raises:
@@ -203,7 +205,7 @@ def load_jga_study_xml() -> List[Dict[str, Any]]:
     return studies
 
 
-def extract_hum_id(study_entry: Dict[str, Any]) -> Optional[str]:
+def extract_hum_id(study_entry: dict[str, Any]) -> str | None:
     """STUDY_ATTRIBUTES から NBDC Number (hum-id) を抽出する。"""
     attrs = (study_entry.get("STUDY_ATTRIBUTES") or {}).get("STUDY_ATTRIBUTE", [])
 
@@ -219,7 +221,7 @@ def extract_hum_id(study_entry: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def extract_pubmed_ids(study_entry: Dict[str, Any]) -> Set[str]:
+def extract_pubmed_ids(study_entry: dict[str, Any]) -> set[str]:
     """PUBLICATIONS から PUBMED ID を抽出する。"""
     pubs = (study_entry.get("PUBLICATIONS") or {}).get("PUBLICATION", [])
 
@@ -227,7 +229,7 @@ def extract_pubmed_ids(study_entry: Dict[str, Any]) -> Set[str]:
     if isinstance(pubs, dict):
         pubs = [pubs]
 
-    pubmed_ids: Set[str] = set()
+    pubmed_ids: set[str] = set()
     for pub in pubs:
         if pub.get("DB_TYPE") == "PUBMED":
             pub_id = pub.get("id")
@@ -237,7 +239,7 @@ def extract_pubmed_ids(study_entry: Dict[str, Any]) -> Set[str]:
     return pubmed_ids
 
 
-def process_jga_study_xml() -> Tuple[IdPairs, IdPairs]:
+def process_jga_study_xml() -> tuple[IdPairs, IdPairs]:
     """
     jga-study.xml を処理して hum-id と pubmed-id の関連を返す。
 
@@ -320,9 +322,7 @@ def main() -> None:
 
         # Blacklist でフィルタ
         for name in internal_relations:
-            internal_relations[name] = filter_sra_pairs_by_blacklist(
-                internal_relations[name], jga_blacklist
-            )
+            internal_relations[name] = filter_sra_pairs_by_blacklist(internal_relations[name], jga_blacklist)
 
         # Load to DB: XML-based relations
         if study_to_hum_id:

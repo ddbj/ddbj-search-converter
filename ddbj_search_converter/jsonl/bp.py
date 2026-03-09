@@ -185,7 +185,7 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
             id_ = item.get("id")
             dbtype = item.get("DbType")
             publication_url = None
-            if dbtype == "DOI":
+            if dbtype in ("DOI", "eDOI"):
                 publication_url = f"https://doi.org/{id_}"
             elif dbtype == "ePubmed":
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
@@ -509,6 +509,8 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
         grant=parse_grant(project, accession),
         externalLink=parse_external_link(project, accession),
         dbXrefs=[],  # 後で更新
+        parentBioProjects=[],  # 後で更新
+        childBioProjects=[],  # 後で更新
         sameAs=parse_same_as(project, accession),
         status=parse_status(project, is_ddbj),
         accessibility=parse_accessibility(project, is_ddbj),
@@ -573,7 +575,6 @@ def _process_xml_file_worker(
     output_path: Path,
     is_ddbj: bool,
     bp_blacklist: set[str],
-    umbrella_ids: set[str],
     target_accessions: set[str] | None = None,
     since: str | None = None,
 ) -> int:
@@ -620,10 +621,15 @@ def _process_xml_file_worker(
         log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXrefs を一括取得
-    dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()), umbrella_ids=umbrella_ids)
+    dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
     for accession, xrefs in dbxref_map.items():
         if accession in docs:
             docs[accession].dbXrefs = xrefs
+
+    # parent/child BioProject 関連を取得
+    from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+    enrich_umbrella_relations(config, docs)
 
     # 日付を取得
     if is_ddbj:
@@ -654,20 +660,13 @@ def process_xml_file(
     output_path: Path,
     is_ddbj: bool,
     bp_blacklist: set[str] | None = None,
-    umbrella_ids: set[str] | None = None,
     target_accessions: set[str] | None = None,
     since: str | None = None,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bp_blacklist is None:
         bp_blacklist, _ = load_blacklist(config)
-    if umbrella_ids is None:
-        from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
-
-        umbrella_ids = get_umbrella_bioproject_ids(config)
-    return _process_xml_file_worker(
-        config, xml_path, output_path, is_ddbj, bp_blacklist, umbrella_ids, target_accessions, since
-    )
+    return _process_xml_file_worker(config, xml_path, output_path, is_ddbj, bp_blacklist, target_accessions, since)
 
 
 def generate_bp_jsonl(
@@ -696,11 +695,6 @@ def generate_bp_jsonl(
 
     # blacklist を読み込む
     bp_blacklist, _ = load_blacklist(config)
-
-    # umbrella-bioproject ID セットを取得
-    from ddbj_search_converter.dblink.db import get_umbrella_bioproject_ids
-
-    umbrella_ids = get_umbrella_bioproject_ids(config)
 
     # 差分更新の基準日時を取得
     since: str | None = None
@@ -764,7 +758,6 @@ def generate_bp_jsonl(
                 output_path,
                 is_ddbj,
                 bp_blacklist,
-                umbrella_ids,
                 target_accessions,
                 since_param,
             ): (xml_path, is_ddbj)

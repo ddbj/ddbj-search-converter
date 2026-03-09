@@ -8,7 +8,6 @@ from ddbj_search_converter.dblink.db import AccessionType
 ID_PATTERN_MAP: dict[AccessionType, Pattern[str]] = {
     "biosample": re.compile(r"^SAM[NED](\w)?\d+\Z"),
     "bioproject": re.compile(r"^PRJ[DEN][A-Z]\d+\Z"),
-    "umbrella-bioproject": re.compile(r"^PRJ[DEN][A-Z]\d+\Z"),  # bioproject と同じパターン
     "sra-submission": re.compile(r"^[SDE]RA\d+\Z"),
     "sra-study": re.compile(r"^[SDE]RP\d+\Z"),
     "sra-experiment": re.compile(r"^[SDE]RX\d+\Z"),

@@ -47,11 +47,11 @@ create_dblink_jga_relations
 create_dblink_sra_internal_relations
 create_dblink_insdc_relations
 finalize_dblink_db
-# 出力: {const_dir}/dblink/dblink.duckdb
+# 出力: {const_dir}/dblink/dblink.duckdb, umbrella.duckdb
 
 # 5. TSV 出力
 dump_dblink_files
-# 出力: {DBLINK_PATH}/*.tsv (18 files)
+# 出力: {DBLINK_PATH}/*.tsv (17 files)
 
 # === Phase 2: JSONL 生成 ===
 
@@ -376,16 +376,16 @@ es_bulk_insert --index jga-study \
 
 | コマンド | オプション | 説明 |
 |---------|----------|------|
-| `init_dblink_db` | - | DBLink DB を初期化 |
+| `init_dblink_db` | - | DBLink DB と Umbrella DB を初期化 |
 | `create_dblink_bp_bs_relations` | - | BioProject-BioSample 関連を抽出 |
-| `create_dblink_bp_relations` | - | BioProject 内部関連 (umbrella, hum-id) を抽出 |
+| `create_dblink_bp_relations` | - | BioProject 内部関連 (hum-id) を DBLink DB に、umbrella 親子関連を Umbrella DB に抽出 |
 | `create_dblink_assembly_and_master_relations` | - | Assembly/INSDC Master 関連を抽出 |
 | `create_dblink_gea_relations` | - | GEA 関連を抽出 |
 | `create_dblink_metabobank_relations` | - | MetaboBank 関連を抽出 |
 | `create_dblink_jga_relations` | - | JGA 関連を抽出 |
 | `create_dblink_sra_internal_relations` | - | SRA 内部関連 + BioProject/BioSample ↔ SRA 関連を抽出 |
 | `create_dblink_insdc_relations` | - | TRAD PostgreSQL から INSDC 配列 accession 関連を抽出 |
-| `finalize_dblink_db` | - | DBLink DB を確定 |
+| `finalize_dblink_db` | - | DBLink DB と Umbrella DB を確定 |
 | `dump_dblink_files` | - | DBLink DB から TSV ファイルを出力 |
 
 ### JSONL 生成

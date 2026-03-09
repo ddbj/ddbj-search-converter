@@ -11,7 +11,6 @@ from ddbj_search_converter.schema import Xref, XrefType
 URL_TEMPLATE: dict[XrefType, str] = {
     "biosample": f"{SEARCH_BASE_URL}/search/entry/biosample/{{id}}",
     "bioproject": f"{SEARCH_BASE_URL}/search/entry/bioproject/{{id}}",
-    "umbrella-bioproject": f"{SEARCH_BASE_URL}/search/entry/bioproject/{{id}}",
     "sra-submission": f"{SEARCH_BASE_URL}/search/entry/sra-submission/{{id}}",
     "sra-study": f"{SEARCH_BASE_URL}/search/entry/sra-study/{{id}}",
     "sra-experiment": f"{SEARCH_BASE_URL}/search/entry/sra-experiment/{{id}}",
@@ -58,7 +57,6 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
         return Xref(identifier=id_, type=type_hint, url=url)
 
     # pubmed-id と taxonomy は数字のみなので最後にチェックする
-    # umbrella-bioproject は bioproject と同じパターンなのでパターンマッチでは判定できない
     # insdc は ID_PATTERN_MAP にパターンがないため含めない（type_hint 経由でのみ使用）
     priority_types: list[XrefType] = [
         "biosample",
@@ -106,17 +104,38 @@ def write_jsonl(output_path: Path, docs: list[Any]) -> None:
             f.write("\n")
 
 
+def enrich_umbrella_relations(config: Config, docs: dict[str, Any]) -> None:
+    """BioProject の docs に parent/child 関連と dbXrefs を設定する。
+
+    Umbrella DB から親子関連を取得し、各 doc の parentBioProjects / childBioProjects を設定する。
+    同時に dbXrefs にも追加し、identifier 順にソートする。
+    """
+    if not docs:
+        return
+
+    from ddbj_search_converter.dblink.db import get_umbrella_parent_child_maps
+
+    parent_map, child_map = get_umbrella_parent_child_maps(config, list(docs.keys()))
+    for acc, parent_accs in parent_map.items():
+        if acc in docs:
+            parent_xrefs = [to_xref(pid, type_hint="bioproject") for pid in parent_accs]
+            docs[acc].parentBioProjects = sorted(parent_xrefs, key=lambda x: x.identifier)
+            docs[acc].dbXrefs.extend(parent_xrefs)
+    for acc, child_accs in child_map.items():
+        if acc in docs:
+            child_xrefs = [to_xref(cid, type_hint="bioproject") for cid in child_accs]
+            docs[acc].childBioProjects = sorted(child_xrefs, key=lambda x: x.identifier)
+            docs[acc].dbXrefs.extend(child_xrefs)
+    for doc in docs.values():
+        doc.dbXrefs.sort(key=lambda x: x.identifier)
+
+
 def get_dbxref_map(
     config: Config,
     entity_type: AccessionType,
     accessions: list[str],
-    umbrella_ids: set[str] | None = None,
 ) -> dict[str, list[Xref]]:
-    """dblink DB から関連エントリを取得し、Xref リストに変換する。
-
-    umbrella_ids が指定されている場合、related_type が "bioproject" でも
-    related_id が umbrella_ids に含まれていれば "umbrella-bioproject" に変換する。
-    """
+    """dblink DB から関連エントリを取得し、Xref リストに変換する。"""
     if not accessions:
         return {}
 
@@ -126,10 +145,7 @@ def get_dbxref_map(
     for accession, related_list in relations.items():
         xrefs: list[Xref] = []
         for related_type, related_id in related_list:
-            effective_type = related_type
-            if umbrella_ids is not None and related_type == "bioproject" and related_id in umbrella_ids:
-                effective_type = "umbrella-bioproject"
-            xref = to_xref(related_id, type_hint=effective_type)
+            xref = to_xref(related_id, type_hint=related_type)
             xrefs.append(xref)
         xrefs.sort(key=lambda x: x.identifier)
         result[accession] = xrefs

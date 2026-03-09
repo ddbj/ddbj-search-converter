@@ -1,19 +1,22 @@
 """Tests for ddbj_search_converter.dblink.utils module."""
+
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.utils import (convert_id_if_needed,
-                                                filter_by_blacklist,
-                                                filter_pairs_by_blacklist,
-                                                filter_sra_pairs_by_blacklist,
-                                                load_blacklist,
-                                                load_sra_blacklist)
+from ddbj_search_converter.dblink.utils import (
+    convert_id_if_needed,
+    filter_by_blacklist,
+    filter_pairs_by_blacklist,
+    filter_sra_pairs_by_blacklist,
+    load_blacklist,
+    load_sra_blacklist,
+)
 from ddbj_search_converter.logging.logger import _ctx, run_logger
 
 
@@ -52,14 +55,21 @@ class TestFilterByBlacklist:
 class TestFilterPairsByBlacklist:
     """Tests for filter_pairs_by_blacklist function."""
 
-    @pytest.mark.parametrize("position,blacklist,expected", [
-        ("left", {"A1"}, {("A2", "B2"), ("A3", "B3")}),
-        ("right", {"B1"}, {("A2", "B2"), ("A3", "B3")}),
-        ("both", {"A1", "B2"}, {("A3", "B3")}),
-    ])
+    @pytest.mark.parametrize(
+        ("position", "blacklist", "expected"),
+        [
+            ("left", {"A1"}, {("A2", "B2"), ("A3", "B3")}),
+            ("right", {"B1"}, {("A2", "B2"), ("A3", "B3")}),
+            ("both", {"A1", "B2"}, {("A3", "B3")}),
+        ],
+    )
     def test_filter_positions(
-        self, tmp_path: Path, clean_ctx: None,
-        position: str, blacklist: set, expected: set,  # type: ignore[type-arg]
+        self,
+        tmp_path: Path,
+        clean_ctx: None,
+        position: str,
+        blacklist: set[str],
+        expected: set[tuple[str, str]],
     ) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         with run_logger(config=config):
@@ -124,9 +134,7 @@ class TestBug4TrailingWhitespace:
         const_dir = tmp_path / "const"
         (const_dir / "bp").mkdir(parents=True)
         (const_dir / "bs").mkdir(parents=True)
-        (const_dir / "bp" / "blacklist.txt").write_text(
-            "PRJDB1111  \nPRJDB2222\t\n", encoding="utf-8"
-        )
+        (const_dir / "bp" / "blacklist.txt").write_text("PRJDB1111  \nPRJDB2222\t\n", encoding="utf-8")
         (const_dir / "bs" / "blacklist.txt").write_text("", encoding="utf-8")
 
         config = Config(result_dir=tmp_path, const_dir=const_dir)
@@ -143,9 +151,7 @@ class TestBug5CommentLines:
         const_dir = tmp_path / "const"
         (const_dir / "bp").mkdir(parents=True)
         (const_dir / "bs").mkdir(parents=True)
-        (const_dir / "bp" / "blacklist.txt").write_text(
-            "# This is a comment\nPRJDB1111\n", encoding="utf-8"
-        )
+        (const_dir / "bp" / "blacklist.txt").write_text("# This is a comment\nPRJDB1111\n", encoding="utf-8")
         (const_dir / "bs" / "blacklist.txt").write_text("", encoding="utf-8")
 
         config = Config(result_dir=tmp_path, const_dir=const_dir)

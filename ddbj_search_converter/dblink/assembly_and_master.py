@@ -32,21 +32,15 @@ dump_dblink_files CLI コマンドで出力する。
 出力:
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
-from typing import Dict, Optional
 
 import httpx
 
-from ddbj_search_converter.config import (ASSEMBLY_SUMMARY_URL,
-                                          BP_ID_TO_ACCESSION_FILE_NAME,
-                                          TRAD_BASE_PATH, get_config)
+from ddbj_search_converter.config import ASSEMBLY_SUMMARY_URL, BP_ID_TO_ACCESSION_FILE_NAME, TRAD_BASE_PATH, get_config
 from ddbj_search_converter.dblink.bp_bs import IdMapping, load_id_mapping_tsv
 from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
-from ddbj_search_converter.dblink.utils import (filter_by_blacklist,
-                                                filter_pairs_by_blacklist,
-                                                load_blacklist)
+from ddbj_search_converter.dblink.utils import filter_by_blacklist, filter_pairs_by_blacklist, load_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import (log_debug, log_info,
-                                                  run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 
 TRAD_FILES = [
@@ -85,7 +79,7 @@ def process_assembly_summary_file(
     """cols: [0]=assembly, [1]=bioproject, [2]=biosample, [3]=wgs_master"""
     log_info("streaming assembly_summary_genbank.txt", url=ASSEMBLY_SUMMARY_URL)
 
-    key_to_type: Dict[str, AccessionType] = {
+    key_to_type: dict[str, AccessionType] = {
         "asm": "insdc-assembly",
         "bp": "bioproject",
         "bs": "biosample",
@@ -101,61 +95,63 @@ def process_assembly_summary_file(
         ("bs", "bp", bs_to_bp),
     ]
 
-    with httpx.Client(follow_redirects=True, timeout=60.0) as client:
-        with client.stream("GET", ASSEMBLY_SUMMARY_URL) as response:
-            response.raise_for_status()
+    with (
+        httpx.Client(follow_redirects=True, timeout=60.0) as client,
+        client.stream("GET", ASSEMBLY_SUMMARY_URL) as response,
+    ):
+        response.raise_for_status()
 
-            for line in response.iter_lines():
-                if not line or line.startswith("#"):
+        for line in response.iter_lines():
+            if not line or line.startswith("#"):
+                continue
+
+            cols = line.rstrip("\r\n").split("\t")
+            if len(cols) < 4:
+                continue
+
+            values = {
+                "asm": strip_version_suffix(cols[0]),
+                "bp": cols[1],
+                "bs": cols[2],
+                "master": normalize_master_id(cols[3]),
+            }
+
+            for left, right, target_set in relations:
+                left_val = values[left]
+                right_val = values[right]
+                if left_val == "na" or right_val == "na":
                     continue
 
-                cols = line.rstrip("\r\n").split("\t")
-                if len(cols) < 4:
+                left_type = key_to_type[left]
+                right_type = key_to_type[right]
+
+                if not is_valid_accession(left_val, left_type):
+                    log_debug(
+                        f"skipping invalid {left_type}: {left_val}",
+                        accession=left_val,
+                        file="assembly_summary_genbank.txt",
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="assembly",
+                    )
+                    continue
+                if not is_valid_accession(right_val, right_type):
+                    log_debug(
+                        f"skipping invalid {right_type}: {right_val}",
+                        accession=right_val,
+                        file="assembly_summary_genbank.txt",
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="assembly",
+                    )
                     continue
 
-                values = {
-                    "asm": strip_version_suffix(cols[0]),
-                    "bp": cols[1],
-                    "bs": cols[2],
-                    "master": normalize_master_id(cols[3]),
-                }
-
-                for left, right, target_set in relations:
-                    left_val = values[left]
-                    right_val = values[right]
-                    if left_val == "na" or right_val == "na":
-                        continue
-
-                    left_type = key_to_type[left]
-                    right_type = key_to_type[right]
-
-                    if not is_valid_accession(left_val, left_type):
-                        log_debug(
-                            f"skipping invalid {left_type}: {left_val}",
-                            accession=left_val,
-                            file="assembly_summary_genbank.txt",
-                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                            source="assembly",
-                        )
-                        continue
-                    if not is_valid_accession(right_val, right_type):
-                        log_debug(
-                            f"skipping invalid {right_type}: {right_val}",
-                            accession=right_val,
-                            file="assembly_summary_genbank.txt",
-                            debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                            source="assembly",
-                        )
-                        continue
-
-                    target_set.add((left_val, right_val))
+                target_set.add((left_val, right_val))
 
 
 def _convert_bp_id_if_needed(
     raw_bp: str,
     bp_id_to_accession: IdMapping,
     file_path: str,
-) -> Optional[str]:
+) -> str | None:
     """Convert BioProject numeric ID to accession if needed.
 
     Returns:

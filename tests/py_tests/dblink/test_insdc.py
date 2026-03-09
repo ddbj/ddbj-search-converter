@@ -197,8 +197,10 @@ class TestMain:
         config.const_dir.joinpath("bp").mkdir(parents=True, exist_ok=True)
         config.const_dir.joinpath("bs").mkdir(parents=True, exist_ok=True)
 
-        with patch("ddbj_search_converter.dblink.insdc.get_config", return_value=config), \
-             patch("ddbj_search_converter.dblink.insdc._write_insdc_relations") as mock_write:
+        with (
+            patch("ddbj_search_converter.dblink.insdc.get_config", return_value=config),
+            patch("ddbj_search_converter.dblink.insdc._write_insdc_relations") as mock_write,
+        ):
             main()
 
         mock_write.assert_not_called()
@@ -206,8 +208,10 @@ class TestMain:
     def test_calls_write_for_both_types(self, insdc_config: Config) -> None:
         init_dblink_db(insdc_config)
 
-        with patch("ddbj_search_converter.dblink.insdc.get_config", return_value=insdc_config), \
-             patch("ddbj_search_converter.dblink.insdc._write_insdc_relations") as mock_write:
+        with (
+            patch("ddbj_search_converter.dblink.insdc.get_config", return_value=insdc_config),
+            patch("ddbj_search_converter.dblink.insdc._write_insdc_relations") as mock_write,
+        ):
             main()
 
         assert mock_write.call_count == 2

@@ -40,23 +40,25 @@ dump_dblink_files CLI コマンドで出力する。
 8. blacklist でフィルタリング
 9. 全ての関連を DuckDB にロード
 """
+
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from concurrent.futures import Future, ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
 
-from ddbj_search_converter.config import (BP_BS_PRESERVED_REL_PATH,
-                                          BP_ID_TO_ACCESSION_FILE_NAME,
-                                          BS_ID_TO_ACCESSION_FILE_NAME,
-                                          DRA_DB_FILE_NAME, SRA_DB_FILE_NAME,
-                                          Config, get_config)
+from ddbj_search_converter.config import (
+    BP_BS_PRESERVED_REL_PATH,
+    BP_ID_TO_ACCESSION_FILE_NAME,
+    BS_ID_TO_ACCESSION_FILE_NAME,
+    DRA_DB_FILE_NAME,
+    SRA_DB_FILE_NAME,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.dblink.db import IdPairs, load_to_db
-from ddbj_search_converter.dblink.utils import (convert_id_if_needed,
-                                                filter_by_blacklist,
-                                                load_blacklist)
+from ddbj_search_converter.dblink.utils import convert_id_if_needed, filter_by_blacklist, load_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import (log_debug, log_error,
-                                                  log_info, run_logger)
+from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.sra_accessions_tab import iter_bp_bs_relations
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir
@@ -64,12 +66,12 @@ from ddbj_search_converter.xml_utils import get_tmp_xml_dir
 DEFAULT_PARALLEL_NUM = 32
 
 # Type aliases
-IdMapping = Dict[str, str]  # numeric_id -> accession
+IdMapping = dict[str, str]  # numeric_id -> accession
 
 # === XML processing functions ===
 
 # (relations, skipped_accessions, id_to_accession_mapping)
-XmlProcessResult = Tuple[List[Tuple[str, str]], List[str], Dict[str, str]]
+XmlProcessResult = tuple[list[tuple[str, str]], list[str], dict[str, str]]
 
 
 def process_ncbi_xml_file(xml_path: Path) -> XmlProcessResult:
@@ -81,10 +83,10 @@ def process_ncbi_xml_file(xml_path: Path) -> XmlProcessResult:
     Returns:
         (relations, skipped_accessions, id_to_accession_mapping)
     """
-    results: List[Tuple[str, str]] = []
-    skipped: List[str] = []
-    id_to_accession: Dict[str, str] = {}
-    current_bs: Optional[str] = None
+    results: list[tuple[str, str]] = []
+    skipped: list[str] = []
+    id_to_accession: dict[str, str] = {}
+    current_bs: str | None = None
     current_bs_is_valid = False
 
     with xml_path.open("r", encoding="utf-8") as f:
@@ -135,9 +137,9 @@ def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
     Returns:
         (relations, skipped_accessions, id_to_accession_mapping)
     """
-    results: List[Tuple[str, str]] = []
-    skipped: List[str] = []
-    current_bs: Optional[str] = None
+    results: list[tuple[str, str]] = []
+    skipped: list[str] = []
+    current_bs: str | None = None
     current_bs_is_valid = False
     in_ids = False
 
@@ -183,11 +185,11 @@ def process_ddbj_xml_file(xml_path: Path) -> XmlProcessResult:
 
 
 def process_xml_files_parallel(
-    xml_files: List[Path],
+    xml_files: list[Path],
     worker_func: Callable[[Path], XmlProcessResult],
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     source: str = "ncbi",
-) -> Tuple[IdPairs, IdMapping]:
+) -> tuple[IdPairs, IdMapping]:
     """Process XML files in parallel and collect relations and id mappings.
 
     Returns:
@@ -202,9 +204,8 @@ def process_xml_files_parallel(
     log_info(f"processing {len(xml_files)} XML files with {parallel_num} workers")
 
     with ProcessPoolExecutor(max_workers=parallel_num) as executor:
-        futures: Dict[Future[XmlProcessResult], Path] = {
-            executor.submit(worker_func, xml_path): xml_path
-            for xml_path in xml_files
+        futures: dict[Future[XmlProcessResult], Path] = {
+            executor.submit(worker_func, xml_path): xml_path for xml_path in xml_files
         }
 
         for future in as_completed(futures):
@@ -213,14 +214,20 @@ def process_xml_files_parallel(
                 file_results, skipped, id_mappings = future.result()
                 results.update(file_results)
                 all_id_mappings.update(id_mappings)
-                log_info(f"processed {xml_path.name}: {len(file_results)} relations, {len(id_mappings)} id mappings",
-                         file=str(xml_path))
+                log_info(
+                    f"processed {xml_path.name}: {len(file_results)} relations, {len(id_mappings)} id mappings",
+                    file=str(xml_path),
+                )
                 for acc in skipped:
-                    log_debug(f"skipping invalid biosample: {acc}", accession=acc, file=str(xml_path),
-                              debug_category=DebugCategory.INVALID_ACCESSION_ID, source=source)
+                    log_debug(
+                        f"skipping invalid biosample: {acc}",
+                        accession=acc,
+                        file=str(xml_path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source=source,
+                    )
             except Exception as e:
-                log_error(f"error processing {xml_path.name}: {e}",
-                          error=e, file=str(xml_path))
+                log_error(f"error processing {xml_path.name}: {e}", error=e, file=str(xml_path))
 
     return results, all_id_mappings
 
@@ -283,7 +290,7 @@ def process_ncbi_bioproject_xml_file(xml_path: Path) -> XmlProcessResult:
     Returns:
         ([], [], id_to_accession_mapping)
     """
-    id_to_accession: Dict[str, str] = {}
+    id_to_accession: dict[str, str] = {}
 
     with xml_path.open("r", encoding="utf-8") as f:
         for _, elem in ET.iterparse(f, events=("end",)):
@@ -341,8 +348,8 @@ def load_id_mapping_tsv(tsv_path: Path) -> IdMapping:
         return mapping
 
     with tsv_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        for raw_line in f:
+            line = raw_line.strip()
             if not line:
                 continue
             parts = line.split("\t")
@@ -403,28 +410,35 @@ def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
     """
     preserved_path = config.const_dir.joinpath(BP_BS_PRESERVED_REL_PATH)
     if not preserved_path.exists():
-        raise FileNotFoundError(
-            f"preserved file not found: {preserved_path}"
-        )
+        raise FileNotFoundError(f"preserved file not found: {preserved_path}")
 
-    log_info(f"processing preserved file: {preserved_path}",
-             file=str(preserved_path))
+    log_info(f"processing preserved file: {preserved_path}", file=str(preserved_path))
 
     with preserved_path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        for raw_line in f:
+            line = raw_line.strip()
             if not line:
                 continue
             parts = line.split("\t")
             if len(parts) >= 2:
                 bs, bp = parts[0], parts[1]
                 if not is_valid_accession(bs, "biosample"):
-                    log_debug(f"skipping invalid biosample: {bs}", accession=bs, file=str(preserved_path),
-                              debug_category=DebugCategory.INVALID_ACCESSION_ID, source="preserved")
+                    log_debug(
+                        f"skipping invalid biosample: {bs}",
+                        accession=bs,
+                        file=str(preserved_path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="preserved",
+                    )
                     continue
                 if not is_valid_accession(bp, "bioproject"):
-                    log_debug(f"skipping invalid bioproject: {bp}", accession=bp, file=str(preserved_path),
-                              debug_category=DebugCategory.INVALID_ACCESSION_ID, source="preserved")
+                    log_debug(
+                        f"skipping invalid bioproject: {bp}",
+                        accession=bp,
+                        file=str(preserved_path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="preserved",
+                    )
                     continue
                 bs_to_bp.add((bs, bp))
 

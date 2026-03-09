@@ -236,21 +236,21 @@ class TestDistributionPBT:
 
     @given(accession=_accession_st)
     @settings(max_examples=50)
-    def test_bp_distribution_always_has_two_items(self, accession) -> None:
+    def test_bp_distribution_always_has_two_items(self, accession: str) -> None:
         dists = make_bp_distribution(accession)
 
         assert len(dists) == 2
 
     @given(accession=_accession_st)
     @settings(max_examples=50)
-    def test_bs_distribution_always_has_two_items(self, accession) -> None:
+    def test_bs_distribution_always_has_two_items(self, accession: str) -> None:
         dists = make_bs_distribution(accession)
 
         assert len(dists) == 2
 
     @given(accession=_accession_st)
     @settings(max_examples=50)
-    def test_ncbi_sra_distribution_always_has_two_items(self, accession) -> None:
+    def test_ncbi_sra_distribution_always_has_two_items(self, accession: str) -> None:
         dists = make_sra_distribution(
             "sra-run",
             accession,
@@ -263,7 +263,7 @@ class TestDistributionPBT:
 
     @given(accession=_accession_st)
     @settings(max_examples=50)
-    def test_dra_sra_distribution_has_at_least_three_items(self, accession) -> None:
+    def test_dra_sra_distribution_has_at_least_three_items(self, accession: str) -> None:
         dists = make_sra_distribution(
             "sra-run",
             accession,
@@ -276,7 +276,7 @@ class TestDistributionPBT:
 
     @given(accession=_accession_st)
     @settings(max_examples=50)
-    def test_all_urls_are_https(self, accession) -> None:
+    def test_all_urls_are_https(self, accession: str) -> None:
         dists = make_bp_distribution(accession)
 
         for dist in dists:
@@ -288,7 +288,7 @@ class TestDistributionPBT:
         submission=st.from_regex(r"DRA[0-9]{6}", fullmatch=True),
     )
     @settings(max_examples=50)
-    def test_dra_run_with_all_files_has_five_items(self, accession, experiment, submission) -> None:
+    def test_dra_run_with_all_files_has_five_items(self, accession: str, experiment: str, submission: str) -> None:
         dists = make_sra_distribution(
             "sra-run",
             accession,

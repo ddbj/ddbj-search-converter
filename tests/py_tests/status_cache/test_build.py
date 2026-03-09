@@ -1,6 +1,7 @@
 """Tests for ddbj_search_converter.status_cache.build module."""
 
 import datetime
+from pathlib import Path
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.status_cache.build import (
@@ -18,9 +19,7 @@ class TestParseLivelistFile:
     def test_parse_livelist_file(self, tmp_path):
         tsv_file = tmp_path.joinpath("test.txt")
         tsv_file.write_text(
-            "Accession\tUpdated\tStatus\n"
-            "PRJDB1\t2020-03-30\tpublic\n"
-            "PRJDB2\t2021-01-15\tpublic\n",
+            "Accession\tUpdated\tStatus\nPRJDB1\t2020-03-30\tpublic\nPRJDB2\t2021-01-15\tpublic\n",
             encoding="utf-8",
         )
 
@@ -30,8 +29,7 @@ class TestParseLivelistFile:
     def test_parse_livelist_file_header_skip(self, tmp_path):
         tsv_file = tmp_path.joinpath("test.txt")
         tsv_file.write_text(
-            "Accession\tUpdated\tStatus\n"
-            "PRJDB1\t2020-03-30\tpublic\n",
+            "Accession\tUpdated\tStatus\nPRJDB1\t2020-03-30\tpublic\n",
             encoding="utf-8",
         )
 
@@ -42,10 +40,7 @@ class TestParseLivelistFile:
     def test_parse_livelist_file_empty_lines_skipped(self, tmp_path):
         tsv_file = tmp_path.joinpath("test.txt")
         tsv_file.write_text(
-            "Accession\tUpdated\tStatus\n"
-            "PRJDB1\t2020-03-30\tpublic\n"
-            "\n"
-            "PRJDB2\t2021-01-15\tpublic\n",
+            "Accession\tUpdated\tStatus\nPRJDB1\t2020-03-30\tpublic\n\nPRJDB2\t2021-01-15\tpublic\n",
             encoding="utf-8",
         )
 
@@ -53,7 +48,7 @@ class TestParseLivelistFile:
         assert len(result) == 2
 
 
-def _create_livelist_files(base_path, kind, date_str):
+def _create_livelist_files(base_path: Path, kind: str, date_str: str) -> None:
     """Helper to create all 3 livelist files for a given date."""
     for status in ("public", "suppressed", "withdrawn"):
         file_path = base_path.joinpath(f"{date_str}.{kind}.ddbj.{status}.txt")

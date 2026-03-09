@@ -1,12 +1,12 @@
 """Tests for ddbj_search_converter.dblink.bioproject module."""
+
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.bioproject import (
-    normalize_hum_id, process_bioproject_xml_file)
+from ddbj_search_converter.dblink.bioproject import normalize_hum_id, process_bioproject_xml_file
 from ddbj_search_converter.logging.logger import _ctx, init_logger
 
 

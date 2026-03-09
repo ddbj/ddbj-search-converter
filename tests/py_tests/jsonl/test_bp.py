@@ -1,7 +1,10 @@
 """Tests for ddbj_search_converter.jsonl.bp module."""
 
+from __future__ import annotations
+
 from typing import Any
 
+from ddbj_search_converter.config import Config
 from ddbj_search_converter.jsonl.bp import (
     normalize_properties,
     parse_accessibility,
@@ -16,6 +19,7 @@ from ddbj_search_converter.jsonl.bp import (
     parse_status,
     parse_title,
 )
+from ddbj_search_converter.schema import BioProject
 
 
 def _make_project(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -212,6 +216,17 @@ class TestParsePublication:
         assert pubs[0].url is not None
         assert "doi.org" in pubs[0].url
 
+    def test_publication_edoi(self) -> None:
+        """DbType が eDOI の場合、doi.org の URL を生成する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "10.1271/bbb.60419",
+            "DbType": "eDOI",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].url == "https://doi.org/10.1271/bbb.60419"
+
     def test_publication_numeric_dbtype(self) -> None:
         """DbType が数字の場合、ePubmed として扱う。"""
         project = _make_project()
@@ -369,7 +384,7 @@ class TestNormalizeProperties:
         normalize_properties(project)
 
 
-def _make_bp_instance(identifier: str):
+def _make_bp_instance(identifier: str) -> BioProject:
     from ddbj_search_converter.schema import BioProject
 
     return BioProject(
@@ -389,6 +404,8 @@ def _make_bp_instance(identifier: str):
         grant=[],
         externalLink=[],
         dbXrefs=[],
+        parentBioProjects=[],
+        childBioProjects=[],
         sameAs=[],
         status="live",
         accessibility="public-access",
@@ -396,6 +413,158 @@ def _make_bp_instance(identifier: str):
         dateModified=None,
         datePublished=None,
     )
+
+
+class TestEnrichUmbrellaRelations:
+    """Tests for enrich_umbrella_relations function."""
+
+    def _setup_umbrella_db(self, config: Config, relations: list[tuple[str, str]]) -> None:
+        from ddbj_search_converter.dblink.db import (
+            finalize_umbrella_db,
+            init_umbrella_db,
+            save_umbrella_relations,
+        )
+        from ddbj_search_converter.logging.logger import run_logger
+
+        with run_logger(config=config):
+            init_umbrella_db(config)
+            save_umbrella_relations(config, set(relations))
+            finalize_umbrella_db(config)
+
+    def test_parent_child_xrefs_set(self, test_config: Config) -> None:
+        """parent/child の Xref が parentBioProjects/childBioProjects に設定される。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        self._setup_umbrella_db(test_config, [("PRJDB999", "PRJDB100")])
+
+        docs = {
+            "PRJDB999": _make_bp_instance("PRJDB999"),
+            "PRJDB100": _make_bp_instance("PRJDB100"),
+        }
+        enrich_umbrella_relations(test_config, docs)
+
+        # PRJDB999 は parent → childBioProjects に PRJDB100
+        assert len(docs["PRJDB999"].childBioProjects) == 1
+        assert docs["PRJDB999"].childBioProjects[0].identifier == "PRJDB100"
+        assert docs["PRJDB999"].parentBioProjects == []
+
+        # PRJDB100 は child → parentBioProjects に PRJDB999
+        assert len(docs["PRJDB100"].parentBioProjects) == 1
+        assert docs["PRJDB100"].parentBioProjects[0].identifier == "PRJDB999"
+        assert docs["PRJDB100"].childBioProjects == []
+
+    def test_dbxrefs_include_umbrella_relations(self, test_config: Config) -> None:
+        """parent/child の Xref が dbXrefs にも追加される。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        self._setup_umbrella_db(test_config, [("PRJDB999", "PRJDB100")])
+
+        docs = {
+            "PRJDB999": _make_bp_instance("PRJDB999"),
+            "PRJDB100": _make_bp_instance("PRJDB100"),
+        }
+        enrich_umbrella_relations(test_config, docs)
+
+        # PRJDB999 の dbXrefs に child PRJDB100 が含まれる
+        db_xref_ids = [x.identifier for x in docs["PRJDB999"].dbXrefs]
+        assert "PRJDB100" in db_xref_ids
+
+        # PRJDB100 の dbXrefs に parent PRJDB999 が含まれる
+        db_xref_ids = [x.identifier for x in docs["PRJDB100"].dbXrefs]
+        assert "PRJDB999" in db_xref_ids
+
+    def test_dbxrefs_sorted_by_identifier(self, test_config: Config) -> None:
+        """dbXrefs が identifier 順にソートされる。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        self._setup_umbrella_db(
+            test_config,
+            [
+                ("PRJDB999", "PRJDB100"),
+                ("PRJDB999", "PRJDB200"),
+                ("PRJDB999", "PRJDB050"),
+            ],
+        )
+
+        docs = {"PRJDB999": _make_bp_instance("PRJDB999")}
+        enrich_umbrella_relations(test_config, docs)
+
+        ids = [x.identifier for x in docs["PRJDB999"].dbXrefs]
+        assert ids == sorted(ids)
+
+    def test_no_umbrella_db_leaves_empty(self, test_config: Config) -> None:
+        """Umbrella DB がない場合、parent/child は空のまま。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        docs = {"PRJDB100": _make_bp_instance("PRJDB100")}
+        enrich_umbrella_relations(test_config, docs)
+
+        assert docs["PRJDB100"].parentBioProjects == []
+        assert docs["PRJDB100"].childBioProjects == []
+        assert docs["PRJDB100"].dbXrefs == []
+
+    def test_multiple_parents(self, test_config: Config) -> None:
+        """DAG: 1 つの child が複数の parent を持つ場合。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        self._setup_umbrella_db(
+            test_config,
+            [
+                ("PRJDB800", "PRJDB100"),
+                ("PRJDB900", "PRJDB100"),
+            ],
+        )
+
+        docs = {"PRJDB100": _make_bp_instance("PRJDB100")}
+        enrich_umbrella_relations(test_config, docs)
+
+        parent_ids = sorted([x.identifier for x in docs["PRJDB100"].parentBioProjects])
+        assert parent_ids == ["PRJDB800", "PRJDB900"]
+
+    def test_intermediate_node(self, test_config: Config) -> None:
+        """DAG: 中間ノード (parent かつ child) で両方のフィールドが設定される。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        self._setup_umbrella_db(
+            test_config,
+            [
+                ("PRJDB900", "PRJDB500"),
+                ("PRJDB500", "PRJDB100"),
+            ],
+        )
+
+        docs = {"PRJDB500": _make_bp_instance("PRJDB500")}
+        enrich_umbrella_relations(test_config, docs)
+
+        assert len(docs["PRJDB500"].parentBioProjects) == 1
+        assert docs["PRJDB500"].parentBioProjects[0].identifier == "PRJDB900"
+        assert len(docs["PRJDB500"].childBioProjects) == 1
+        assert docs["PRJDB500"].childBioProjects[0].identifier == "PRJDB100"
+
+    def test_xref_type_is_bioproject(self, test_config: Config) -> None:
+        """parent/child の Xref の type が全て "bioproject" であること。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        self._setup_umbrella_db(test_config, [("PRJDB999", "PRJDB100")])
+
+        docs = {
+            "PRJDB999": _make_bp_instance("PRJDB999"),
+            "PRJDB100": _make_bp_instance("PRJDB100"),
+        }
+        enrich_umbrella_relations(test_config, docs)
+
+        for xref in docs["PRJDB999"].childBioProjects:
+            assert xref.type_ == "bioproject"
+        for xref in docs["PRJDB100"].parentBioProjects:
+            assert xref.type_ == "bioproject"
+
+    def test_empty_docs(self, test_config: Config) -> None:
+        """空の docs でクラッシュしない。"""
+        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
+
+        docs: dict[str, Any] = {}
+        enrich_umbrella_relations(test_config, docs)
+        assert docs == {}
 
 
 class TestFetchStatuses:

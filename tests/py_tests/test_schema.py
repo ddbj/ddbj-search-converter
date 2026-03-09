@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from ddbj_search_converter.schema import JGA, Distribution, Organism, Xref
+from ddbj_search_converter.schema import JGA, BioProject, Distribution, Organism, Xref
 
 
 class TestEncodingFormat:
@@ -19,7 +19,7 @@ class TestEncodingFormat:
     def test_invalid_value_rejected(self) -> None:
         """無効な値を拒否する。"""
         with pytest.raises(ValidationError):
-            Distribution(type="DataDownload", encodingFormat="INVALID", contentUrl="https://example.com")
+            Distribution(type="DataDownload", encodingFormat="INVALID", contentUrl="https://example.com")  # type: ignore[arg-type]
 
 
 class TestDistribution:
@@ -94,6 +94,56 @@ class TestXref:
         json_dict = xref.model_dump(by_alias=True)
         assert "type" in json_dict
         assert "type_" not in json_dict
+
+
+class TestBioProject:
+    """Tests for BioProject model."""
+
+    def test_parent_child_fields(self) -> None:
+        """parentBioProjects / childBioProjects フィールドが正しく設定される。"""
+        parent_xref = Xref(identifier="PRJDB999", type="bioproject", url="https://example.com")
+        child_xref = Xref(identifier="PRJDB100", type="bioproject", url="https://example.com")
+
+        bp = BioProject(
+            identifier="PRJDB500",
+            properties={},
+            distribution=[],
+            isPartOf="BioProject",
+            type="bioproject",
+            objectType="UmbrellaBioProject",
+            name=None,
+            url="https://example.com",
+            organism=None,
+            title=None,
+            description=None,
+            organization=[],
+            publication=[],
+            grant=[],
+            externalLink=[],
+            dbXrefs=[],
+            parentBioProjects=[parent_xref],
+            childBioProjects=[child_xref],
+            sameAs=[],
+            status="live",
+            accessibility="public-access",
+            dateCreated=None,
+            dateModified=None,
+            datePublished=None,
+        )
+
+        assert len(bp.parentBioProjects) == 1
+        assert bp.parentBioProjects[0].identifier == "PRJDB999"
+        assert len(bp.childBioProjects) == 1
+        assert bp.childBioProjects[0].identifier == "PRJDB100"
+
+
+class TestXrefTypeValidation:
+    """Tests for XrefType validation."""
+
+    def test_umbrella_bioproject_is_invalid(self) -> None:
+        """umbrella-bioproject は無効な XrefType として拒否される。"""
+        with pytest.raises(ValidationError):
+            Xref(identifier="PRJDB1", type="umbrella-bioproject", url="https://example.com")  # type: ignore[arg-type]
 
 
 class TestJGA:

@@ -1,12 +1,12 @@
 """Tests for ddbj_search_converter.dblink.metabobank module (pure logic only)."""
+
 from pathlib import Path
 
 import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
-from ddbj_search_converter.dblink.metabobank import (iterate_metabobank_dirs,
-                                                     load_preserve_file)
+from ddbj_search_converter.dblink.metabobank import iterate_metabobank_dirs, load_preserve_file
 from ddbj_search_converter.logging.logger import run_logger
 
 
@@ -141,9 +141,8 @@ class TestLoadPreserveFile:
 
     def test_raises_when_files_missing(self, config: Config) -> None:
         """ファイルが存在しない場合は FileNotFoundError を発生する。"""
-        with run_logger(config=config):
-            with pytest.raises(FileNotFoundError):
-                load_preserve_file(config)
+        with run_logger(config=config), pytest.raises(FileNotFoundError):
+            load_preserve_file(config)
 
     def test_handles_empty_lines(self, config: Config) -> None:
         """空行をスキップする。"""

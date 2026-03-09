@@ -1,6 +1,6 @@
 """Tests for ddbj_search_converter.dblink.db module."""
+
 from pathlib import Path
-from typing import Generator, List
 
 import duckdb
 import pytest
@@ -8,22 +8,25 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.db import (AccessionType, IdPairs, Relation,
-                                             create_relation_indexes,
-                                             deduplicate_relations,
-                                             export_relations,
-                                             finalize_relation_db,
-                                             get_related_entities,
-                                             get_related_entities_bulk,
-                                             get_tmp_dir,
-                                             get_umbrella_bioproject_ids,
-                                             init_dblink_db,
-                                             load_relations_from_tsv,
-                                             load_to_db, normalize_edge,
-                                             write_relations_to_tsv)
-from ddbj_search_converter.logging.logger import _ctx, init_logger
-
-from ..strategies import ALL_ACCESSION_TYPES, st_accession_type
+from ddbj_search_converter.dblink.db import (
+    AccessionType,
+    Relation,
+    deduplicate_relations,
+    export_relations,
+    finalize_relation_db,
+    finalize_umbrella_db,
+    get_related_entities,
+    get_related_entities_bulk,
+    get_umbrella_parent_child_maps,
+    init_dblink_db,
+    init_umbrella_db,
+    load_relations_from_tsv,
+    normalize_edge,
+    save_umbrella_relations,
+    write_relations_to_tsv,
+)
+from ddbj_search_converter.logging.logger import run_logger
+from tests.py_tests.strategies import st_accession_type
 
 
 class TestNormalizeEdge:
@@ -45,20 +48,27 @@ class TestNormalizeEdge:
         result = normalize_edge("bioproject", "PRJDB1", "bioproject", "PRJDB1")
         assert result == ("bioproject", "PRJDB1", "bioproject", "PRJDB1")
 
-    @pytest.mark.parametrize("a_type,a_id,b_type,b_id,expected", [
-        ("gea", "E-GEAD-1", "bioproject", "PRJDB1",
-         ("bioproject", "PRJDB1", "gea", "E-GEAD-1")),
-        ("jga-study", "JGAS1", "bioproject", "PRJDB1",
-         ("bioproject", "PRJDB1", "jga-study", "JGAS1")),
-        ("umbrella-bioproject", "PRJDB1", "bioproject", "PRJDB2",
-         ("bioproject", "PRJDB2", "umbrella-bioproject", "PRJDB1")),
-        ("taxonomy", "9606", "biosample", "SAMD1",
-         ("biosample", "SAMD1", "taxonomy", "9606")),
-        ("insdc-assembly", "GCA_001", "bioproject", "PRJDB1",
-         ("bioproject", "PRJDB1", "insdc-assembly", "GCA_001")),
-    ])
+    @pytest.mark.parametrize(
+        ("a_type", "a_id", "b_type", "b_id", "expected"),
+        [
+            ("gea", "E-GEAD-1", "bioproject", "PRJDB1", ("bioproject", "PRJDB1", "gea", "E-GEAD-1")),
+            ("jga-study", "JGAS1", "bioproject", "PRJDB1", ("bioproject", "PRJDB1", "jga-study", "JGAS1")),
+            ("taxonomy", "9606", "biosample", "SAMD1", ("biosample", "SAMD1", "taxonomy", "9606")),
+            (
+                "insdc-assembly",
+                "GCA_001",
+                "bioproject",
+                "PRJDB1",
+                ("bioproject", "PRJDB1", "insdc-assembly", "GCA_001"),
+            ),
+        ],
+    )
     def test_various_accession_types(
-        self, a_type: AccessionType, a_id: str, b_type: AccessionType, b_id: str,
+        self,
+        a_type: AccessionType,
+        a_id: str,
+        b_type: AccessionType,
+        b_id: str,
         expected: Relation,
     ) -> None:
         result = normalize_edge(a_type, a_id, b_type, b_id)
@@ -69,8 +79,10 @@ class TestNormalizeEdgePBT:
     """Property-based tests for normalize_edge."""
 
     @given(
-        a_type=st_accession_type(), a_id=st.text(min_size=1, max_size=20),
-        b_type=st_accession_type(), b_id=st.text(min_size=1, max_size=20),
+        a_type=st_accession_type(),
+        a_id=st.text(min_size=1, max_size=20),
+        b_type=st_accession_type(),
+        b_id=st.text(min_size=1, max_size=20),
     )
     def test_commutativity(self, a_type: str, a_id: str, b_type: str, b_id: str) -> None:
         """normalize_edge(a,b) == normalize_edge(b,a): 可換性。"""
@@ -79,8 +91,10 @@ class TestNormalizeEdgePBT:
         assert result1 == result2
 
     @given(
-        a_type=st_accession_type(), a_id=st.text(min_size=1, max_size=20),
-        b_type=st_accession_type(), b_id=st.text(min_size=1, max_size=20),
+        a_type=st_accession_type(),
+        a_id=st.text(min_size=1, max_size=20),
+        b_type=st_accession_type(),
+        b_id=st.text(min_size=1, max_size=20),
     )
     def test_idempotency(self, a_type: str, a_id: str, b_type: str, b_id: str) -> None:
         """normalize_edge は冪等。"""
@@ -89,8 +103,10 @@ class TestNormalizeEdgePBT:
         assert result1 == result2
 
     @given(
-        a_type=st_accession_type(), a_id=st.text(min_size=1, max_size=20),
-        b_type=st_accession_type(), b_id=st.text(min_size=1, max_size=20),
+        a_type=st_accession_type(),
+        a_id=st.text(min_size=1, max_size=20),
+        b_type=st_accession_type(),
+        b_id=st.text(min_size=1, max_size=20),
     )
     def test_result_is_sorted(self, a_type: str, a_id: str, b_type: str, b_id: str) -> None:
         """結果のペアは辞書順でソートされている。"""
@@ -143,7 +159,7 @@ class TestWriteRelationsToTsv:
 
     def test_writes_and_normalizes(self, tmp_path: Path) -> None:
         output_path = tmp_path / "relations.tsv"
-        relations: List[Relation] = [
+        relations: list[Relation] = [
             ("biosample", "SAMD1", "bioproject", "PRJDB1"),
         ]
         write_relations_to_tsv(output_path, relations)
@@ -152,8 +168,8 @@ class TestWriteRelationsToTsv:
 
     def test_append_mode(self, tmp_path: Path) -> None:
         output_path = tmp_path / "relations.tsv"
-        r1: List[Relation] = [("bioproject", "PRJDB1", "biosample", "SAMD1")]
-        r2: List[Relation] = [("bioproject", "PRJDB2", "biosample", "SAMD2")]
+        r1: list[Relation] = [("bioproject", "PRJDB1", "biosample", "SAMD1")]
+        r2: list[Relation] = [("bioproject", "PRJDB2", "biosample", "SAMD2")]
         write_relations_to_tsv(output_path, r1, append=False)
         write_relations_to_tsv(output_path, r2, append=True)
         lines = output_path.read_text(encoding="utf-8").strip().split("\n")
@@ -166,7 +182,10 @@ class TestLoadRelationsFromTsv:
     def test_loads_tsv_to_db(self, test_config: Config, tmp_path: Path) -> None:
         init_dblink_db(test_config)
         tsv_path = tmp_path / "relations.tsv"
-        tsv_path.write_text("bioproject\tPRJDB1\tbiosample\tSAMD1\nbioproject\tPRJDB2\tbiosample\tSAMD2\n", encoding="utf-8")
+        tsv_path.write_text(
+            "bioproject\tPRJDB1\tbiosample\tSAMD1\nbioproject\tPRJDB2\tbiosample\tSAMD2\n",
+            encoding="utf-8",
+        )
         load_relations_from_tsv(test_config, tsv_path)
 
         db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
@@ -261,7 +280,9 @@ class TestGetRelatedEntitiesBulk:
         finalize_relation_db(test_config)
 
         results = get_related_entities_bulk(
-            test_config, entity_type="bioproject", accessions=["PRJDB1", "PRJDB2"],
+            test_config,
+            entity_type="bioproject",
+            accessions=["PRJDB1", "PRJDB2"],
         )
         assert "PRJDB1" in results
         assert len(results["PRJDB1"]) == 1
@@ -272,7 +293,9 @@ class TestGetRelatedEntitiesBulk:
         init_dblink_db(test_config)
         finalize_relation_db(test_config)
         results = get_related_entities_bulk(
-            test_config, entity_type="bioproject", accessions=[],
+            test_config,
+            entity_type="bioproject",
+            accessions=[],
         )
         assert results == {}
 
@@ -302,67 +325,69 @@ class TestExportRelations:
         assert output_path.read_text(encoding="utf-8") == ""
 
 
-class TestGetUmbrellaBioprojectIds:
-    """Tests for get_umbrella_bioproject_ids function."""
+class TestUmbrellaDb:
+    """Tests for umbrella DB operations."""
 
-    def test_returns_umbrella_ids_from_dst(self, test_config: Config) -> None:
-        """dst_type が umbrella-bioproject の場合に dst_accession を返す。"""
-        init_dblink_db(test_config)
-        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
-        with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB100', 'umbrella-bioproject', 'PRJDB999')"
-            )
-        finalize_relation_db(test_config)
+    def test_init_and_finalize(self, test_config: Config) -> None:
+        """init → finalize で DB ファイルが作成される。"""
+        init_umbrella_db(test_config)
+        tmp_path = test_config.const_dir / "dblink" / "umbrella.tmp.duckdb"
+        assert tmp_path.exists()
 
-        result = get_umbrella_bioproject_ids(test_config)
-        assert result == {"PRJDB999"}
+        finalize_umbrella_db(test_config)
+        assert not tmp_path.exists()
+        final_path = test_config.const_dir / "dblink" / "umbrella.duckdb"
+        assert final_path.exists()
 
-    def test_returns_umbrella_ids_from_src(self, test_config: Config) -> None:
-        """src_type が umbrella-bioproject の場合に src_accession を返す。"""
-        init_dblink_db(test_config)
-        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
-        with duckdb.connect(str(tmp_db_path)) as conn:
-            # normalize_edge で src/dst 反転する場合をシミュレート
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('umbrella-bioproject', 'PRJDB888', 'umbrella-bioproject', 'PRJDB999')"
-            )
-        finalize_relation_db(test_config)
+    def test_save_and_get_parent_child_maps(self, test_config: Config) -> None:
+        """save → finalize → get で親子マップを取得できる。"""
+        with run_logger(config=test_config):
+            init_umbrella_db(test_config)
+            save_umbrella_relations(test_config, {("PRJDB999", "PRJDB100"), ("PRJDB999", "PRJDB200")})
+            finalize_umbrella_db(test_config)
 
-        result = get_umbrella_bioproject_ids(test_config)
-        assert "PRJDB888" in result
-        assert "PRJDB999" in result
+        parent_map, child_map = get_umbrella_parent_child_maps(test_config, ["PRJDB100", "PRJDB200", "PRJDB999"])
 
-    def test_returns_empty_set_when_no_umbrella(self, test_config: Config) -> None:
-        """umbrella-bioproject 関連がない場合は空セットを返す。"""
-        init_dblink_db(test_config)
-        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
-        with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB1', 'biosample', 'SAMD1')"
-            )
-        finalize_relation_db(test_config)
+        # PRJDB100 の親は PRJDB999
+        assert "PRJDB100" in parent_map
+        assert parent_map["PRJDB100"] == ["PRJDB999"]
+        # PRJDB999 の子は PRJDB100 と PRJDB200
+        assert "PRJDB999" in child_map
+        assert sorted(child_map["PRJDB999"]) == ["PRJDB100", "PRJDB200"]
 
-        result = get_umbrella_bioproject_ids(test_config)
-        assert result == set()
+    def test_dag_multiple_parents(self, test_config: Config) -> None:
+        """1 つの child が複数の parent を持つ DAG 構造。"""
+        with run_logger(config=test_config):
+            init_umbrella_db(test_config)
+            save_umbrella_relations(test_config, {("PRJDB001", "PRJDB100"), ("PRJDB002", "PRJDB100")})
+            finalize_umbrella_db(test_config)
 
-    def test_deduplicates_ids(self, test_config: Config) -> None:
-        """同じ umbrella ID が複数行に出現しても重複なしで返す。"""
-        init_dblink_db(test_config)
-        tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
-        with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB100', 'umbrella-bioproject', 'PRJDB999')"
-            )
-            conn.execute(
-                "INSERT INTO relation VALUES "
-                "('bioproject', 'PRJDB200', 'umbrella-bioproject', 'PRJDB999')"
-            )
-        finalize_relation_db(test_config)
+        parent_map, _ = get_umbrella_parent_child_maps(test_config, ["PRJDB100"])
+        assert "PRJDB100" in parent_map
+        assert sorted(parent_map["PRJDB100"]) == ["PRJDB001", "PRJDB002"]
 
-        result = get_umbrella_bioproject_ids(test_config)
-        assert result == {"PRJDB999"}
+    def test_empty_accessions(self, test_config: Config) -> None:
+        """空の accessions で空 dict を返す。"""
+        init_umbrella_db(test_config)
+        finalize_umbrella_db(test_config)
+
+        parent_map, child_map = get_umbrella_parent_child_maps(test_config, [])
+        assert parent_map == {}
+        assert child_map == {}
+
+    def test_no_db_file(self, test_config: Config) -> None:
+        """DB ファイルが存在しない場合は空 dict を返す。"""
+        parent_map, child_map = get_umbrella_parent_child_maps(test_config, ["PRJDB100"])
+        assert parent_map == {}
+        assert child_map == {}
+
+    def test_deduplication(self, test_config: Config) -> None:
+        """重複する関連が finalize 時に重複排除される。"""
+        with run_logger(config=test_config):
+            init_umbrella_db(test_config)
+            save_umbrella_relations(test_config, {("PRJDB999", "PRJDB100")})
+            save_umbrella_relations(test_config, {("PRJDB999", "PRJDB100")})
+            finalize_umbrella_db(test_config)
+
+        _, child_map = get_umbrella_parent_child_maps(test_config, ["PRJDB999"])
+        assert child_map["PRJDB999"] == ["PRJDB100"]

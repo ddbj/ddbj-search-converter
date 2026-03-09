@@ -1,6 +1,7 @@
 """Tests for ddbj_search_converter.status_cache.db module."""
 
 import string
+from pathlib import Path
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -18,7 +19,7 @@ from ddbj_search_converter.status_cache.db import (
 )
 
 
-def _make_config(tmp_path):
+def _make_config(tmp_path: Path) -> Config:
     return Config(result_dir=tmp_path)
 
 

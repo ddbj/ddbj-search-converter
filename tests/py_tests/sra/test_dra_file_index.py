@@ -16,7 +16,11 @@ from ddbj_search_converter.sra.dra_file_index import (
 )
 
 
-def _create_test_db(db_path, fastq_rows=None, sra_rows=None):
+def _create_test_db(
+    db_path: Path,
+    fastq_rows: list[tuple[str, str]] | None = None,
+    sra_rows: list[str] | None = None,
+) -> None:
     """テスト用の DRA ファイルインデックス DB を作成するヘルパー。"""
     with duckdb.connect(str(db_path)) as conn:
         conn.execute("CREATE TABLE dra_fastq_dir (submission TEXT NOT NULL, experiment TEXT NOT NULL)")
@@ -33,19 +37,19 @@ def _create_test_db(db_path, fastq_rows=None, sra_rows=None):
 class TestDbPathAndExists:
     """DB パスと存在確認のテスト。"""
 
-    def test_get_dra_file_index_db_path(self, tmp_path) -> None:
+    def test_get_dra_file_index_db_path(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         path = get_dra_file_index_db_path(config)
 
         assert path.parent == tmp_path.joinpath("sra_tar")
         assert path.name == "dra_file_index.duckdb"
 
-    def test_dra_file_index_exists_false_when_no_db(self, tmp_path) -> None:
+    def test_dra_file_index_exists_false_when_no_db(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
 
         assert dra_file_index_exists(config) is False
 
-    def test_dra_file_index_exists_true_when_db_present(self, tmp_path) -> None:
+    def test_dra_file_index_exists_true_when_db_present(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -57,7 +61,7 @@ class TestDbPathAndExists:
 class TestTableSchema:
     """テーブル作成とスキーマ検証のテスト。"""
 
-    def test_tables_exist(self, tmp_path) -> None:
+    def test_tables_exist(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -70,7 +74,7 @@ class TestTableSchema:
         assert "dra_fastq_dir" in table_names
         assert "dra_sra_file" in table_names
 
-    def test_fastq_dir_columns(self, tmp_path) -> None:
+    def test_fastq_dir_columns(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -83,7 +87,7 @@ class TestTableSchema:
         assert "submission" in col_names
         assert "experiment" in col_names
 
-    def test_sra_file_columns(self, tmp_path) -> None:
+    def test_sra_file_columns(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -99,7 +103,7 @@ class TestTableSchema:
 class TestQueryFastqDirsBulk:
     """query_fastq_dirs_bulk のテスト。"""
 
-    def test_normal_query(self, tmp_path) -> None:
+    def test_normal_query(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -119,7 +123,7 @@ class TestQueryFastqDirsBulk:
             "DRA000002": {"DRX000003"},
         }
 
-    def test_empty_input(self, tmp_path) -> None:
+    def test_empty_input(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -129,7 +133,7 @@ class TestQueryFastqDirsBulk:
 
         assert result == {}
 
-    def test_no_matching_submissions(self, tmp_path) -> None:
+    def test_no_matching_submissions(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -142,7 +146,7 @@ class TestQueryFastqDirsBulk:
 
         assert result == {}
 
-    def test_graceful_degradation_no_db(self, tmp_path) -> None:
+    def test_graceful_degradation_no_db(self, tmp_path: Path) -> None:
         """DB が存在しない場合、空の dict を返す。"""
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
 
@@ -154,7 +158,7 @@ class TestQueryFastqDirsBulk:
 class TestQuerySraFilesBulk:
     """query_sra_files_bulk のテスト。"""
 
-    def test_normal_query(self, tmp_path) -> None:
+    def test_normal_query(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -164,7 +168,7 @@ class TestQuerySraFilesBulk:
 
         assert result == {"DRR000001", "DRR000003"}
 
-    def test_empty_input(self, tmp_path) -> None:
+    def test_empty_input(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -174,7 +178,7 @@ class TestQuerySraFilesBulk:
 
         assert result == set()
 
-    def test_no_matching_runs(self, tmp_path) -> None:
+    def test_no_matching_runs(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
         db_path = get_dra_file_index_db_path(config)
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -184,7 +188,7 @@ class TestQuerySraFilesBulk:
 
         assert result == set()
 
-    def test_graceful_degradation_no_db(self, tmp_path) -> None:
+    def test_graceful_degradation_no_db(self, tmp_path: Path) -> None:
         """DB が存在しない場合、空の set を返す。"""
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
 
@@ -207,7 +211,7 @@ class TestDraFileIndexPBT:
         experiments=st.lists(_drx_exp_st, min_size=1, max_size=3, unique=True),
     )
     @settings(max_examples=30)
-    def test_fastq_roundtrip(self, submissions, experiments) -> None:
+    def test_fastq_roundtrip(self, submissions: list[str], experiments: list[str]) -> None:
         """挿入した (submission, experiment) ペアがクエリで取得できる。"""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
@@ -226,7 +230,7 @@ class TestDraFileIndexPBT:
 
     @given(runs=st.lists(_drr_run_st, min_size=1, max_size=10, unique=True))
     @settings(max_examples=30)
-    def test_sra_roundtrip(self, runs) -> None:
+    def test_sra_roundtrip(self, runs: list[str]) -> None:
         """挿入した run がクエリで取得できる。"""
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)
