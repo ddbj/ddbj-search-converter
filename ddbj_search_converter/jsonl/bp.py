@@ -185,10 +185,17 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
             id_ = item.get("id")
             dbtype = item.get("DbType")
             publication_url = None
-            if dbtype in ("DOI", "eDOI"):
+            if dbtype == "eDOI":
                 publication_url = f"https://doi.org/{id_}"
             elif dbtype == "ePubmed":
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+            elif dbtype == "ePMC":
+                if id_ is not None and id_.startswith("PMC"):
+                    publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{id_}/"
+                elif id_ is not None and id_.isdigit():
+                    publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{id_}/"
+                elif id_ is not None and id_.startswith("10."):
+                    publication_url = f"https://doi.org/{id_}"
             elif dbtype is not None and dbtype.isdigit():
                 dbtype = "ePubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"

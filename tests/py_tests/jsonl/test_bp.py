@@ -205,17 +205,6 @@ class TestParsePublication:
         assert pubs[0].url is not None
         assert "pubmed" in pubs[0].url
 
-    def test_publication_doi(self) -> None:
-        project = _make_project()
-        project["Project"]["ProjectDescr"]["Publication"] = {
-            "id": "10.1234/test",
-            "DbType": "DOI",
-        }
-        pubs = parse_publication(project)
-        assert len(pubs) == 1
-        assert pubs[0].url is not None
-        assert "doi.org" in pubs[0].url
-
     def test_publication_edoi(self) -> None:
         """DbType が eDOI の場合、doi.org の URL を生成する。"""
         project = _make_project()
@@ -226,6 +215,50 @@ class TestParsePublication:
         pubs = parse_publication(project)
         assert len(pubs) == 1
         assert pubs[0].url == "https://doi.org/10.1271/bbb.60419"
+
+    def test_publication_epmc_with_prefix(self) -> None:
+        """DbType が ePMC で PMC プレフィックス付き ID の場合。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "PMC3564981",
+            "DbType": "ePMC",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].url == "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3564981/"
+
+    def test_publication_epmc_numeric(self) -> None:
+        """DbType が ePMC で数字のみの ID の場合、PMC プレフィックスを付与する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "3594186",
+            "DbType": "ePMC",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].url == "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3594186/"
+
+    def test_publication_epmc_doi_format(self) -> None:
+        """DbType が ePMC だが ID が DOI 形式の場合、DOI としてリンクする。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "10.1007/s10531-014-0684-8",
+            "DbType": "ePMC",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].url == "https://doi.org/10.1007/s10531-014-0684-8"
+
+    def test_publication_not_available(self) -> None:
+        """DbType が eNotAvailable の場合、url は None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "unpublished",
+            "DbType": "eNotAvailable",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].url is None
 
     def test_publication_numeric_dbtype(self) -> None:
         """DbType が数字の場合、ePubmed として扱う。"""
