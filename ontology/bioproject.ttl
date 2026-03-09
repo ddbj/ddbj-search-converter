@@ -76,3 +76,13 @@ bioproject:externalLink
     a owl:ObjectProperty ;
     rdfs:label "externalLink" ;
     rdfs:comment "External link associated with the BioProject" .
+
+bioproject:parentBioProjects
+    a owl:ObjectProperty ;
+    rdfs:label "parentBioProjects" ;
+    rdfs:comment "Parent (umbrella) BioProject references" .
+
+bioproject:childBioProjects
+    a owl:ObjectProperty ;
+    rdfs:label "childBioProjects" ;
+    rdfs:comment "Child BioProject references under this umbrella project" .
