@@ -14,6 +14,18 @@ from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
 from elasticsearch import helpers
 
 
+def _sanitize_error_info(info: Any) -> dict[str, Any]:
+    """Convert bulk error info to a JSON-serializable dict.
+
+    ``helpers.parallel_bulk`` with ``raise_on_exception=False`` may yield
+    ``ApiError`` objects instead of plain dicts on transport-level failures.
+    Convert them so that downstream Pydantic serialization does not fail.
+    """
+    if isinstance(info, dict):
+        return info
+    return {"error_type": type(info).__name__, "error_message": str(info)}
+
+
 class BulkInsertResult(BaseModel):
     """Result of a bulk insert operation."""
 
@@ -107,7 +119,7 @@ def bulk_insert_jsonl(
                 else:
                     error_count += 1
                     if len(errors) < max_errors:
-                        errors.append(info)
+                        errors.append(_sanitize_error_info(info))
             total_docs = success_count + error_count
 
     finally:
