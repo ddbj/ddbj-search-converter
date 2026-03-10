@@ -8,9 +8,81 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from ddbj_search_converter.es.bulk_insert import (
+    BulkInsertResult,
+    _sanitize_error_info,
     bulk_insert_jsonl,
     generate_bulk_actions,
 )
+
+
+class TestSanitizeErrorInfo:
+    """_sanitize_error_info must produce JSON-serializable dicts
+    that survive BulkInsertResult.model_dump_json()."""
+
+    def _assert_pydantic_serializable(self, errors: list[dict]) -> None:  # type: ignore[type-arg]
+        """Build a BulkInsertResult and verify model_dump_json succeeds."""
+        result = BulkInsertResult(
+            index="test",
+            total_docs=1,
+            success_count=0,
+            error_count=1,
+            errors=errors,
+        )
+        # This is the exact call that was failing in production
+        result.model_dump_json()
+
+    def test_plain_dict_passes_through(self) -> None:
+        info = {"index": {"_id": "ID1", "error": "mapping error"}}
+        sanitized = _sanitize_error_info(info)
+        assert sanitized == info
+        self._assert_pydantic_serializable([sanitized])
+
+    def test_exception_object_at_top_level(self) -> None:
+        exc = RuntimeError("connection reset")
+        sanitized = _sanitize_error_info(exc)
+        assert sanitized["error_type"] == "RuntimeError"
+        assert "connection reset" in sanitized["error_message"]
+        self._assert_pydantic_serializable([sanitized])
+
+    def test_dict_with_nested_exception_value(self) -> None:
+        """The actual failure case: dict values contain ApiError objects."""
+        exc = ValueError("simulated ApiError")
+        info = {"index": {"_id": "ID1", "status": 400, "error": exc}}
+        sanitized = _sanitize_error_info(info)
+        assert isinstance(sanitized["index"]["error"], str)
+        self._assert_pydantic_serializable([sanitized])
+
+    def test_dict_with_deeply_nested_exception(self) -> None:
+        exc = TypeError("deep error")
+        info = {"a": {"b": {"c": [exc, "ok"]}}}
+        sanitized = _sanitize_error_info(info)
+        self._assert_pydantic_serializable([sanitized])
+
+    def test_dict_with_list_containing_exception(self) -> None:
+        exc = OSError("disk full")
+        info = {"errors": [exc, {"nested": exc}]}
+        sanitized = _sanitize_error_info(info)
+        self._assert_pydantic_serializable([sanitized])
+
+    def test_dict_with_mixed_serializable_values(self) -> None:
+        info = {"str": "ok", "int": 42, "float": 3.14, "bool": True, "none": None}
+        sanitized = _sanitize_error_info(info)
+        assert sanitized == info
+        self._assert_pydantic_serializable([sanitized])
+
+    def test_elasticsearch_api_error_like_object(self) -> None:
+        """Simulate elasticsearch.ApiError behavior."""
+
+        class FakeApiError(Exception):
+            def __init__(self) -> None:
+                super().__init__("ApiError(400, 'mapper_parsing_exception')")
+                self.status_code = 400
+                self.body = {"error": {"type": "mapper_parsing_exception"}}
+
+        info = {"index": {"_id": "PRJDB99999", "error": FakeApiError()}}
+        sanitized = _sanitize_error_info(info)
+        self._assert_pydantic_serializable([sanitized])
+        assert isinstance(sanitized["index"]["error"], str)
 
 
 class TestGenerateBulkActions:

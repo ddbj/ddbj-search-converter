@@ -14,15 +14,27 @@ from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
 from elasticsearch import helpers
 
 
+def _sanitize_value(value: Any) -> Any:
+    """Recursively convert non-serializable values to strings."""
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, dict):
+        return {k: _sanitize_value(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_sanitize_value(item) for item in value]
+    return str(value)
+
+
 def _sanitize_error_info(info: Any) -> dict[str, Any]:
     """Convert bulk error info to a JSON-serializable dict.
 
     ``helpers.parallel_bulk`` with ``raise_on_exception=False`` may yield
     ``ApiError`` objects instead of plain dicts on transport-level failures.
-    Convert them so that downstream Pydantic serialization does not fail.
+    The dict values may also contain nested non-serializable objects.
+    Recursively convert everything to JSON-safe types.
     """
     if isinstance(info, dict):
-        return info
+        return {k: _sanitize_value(v) for k, v in info.items()}
     return {"error_type": type(info).__name__, "error_message": str(info)}
 
 
