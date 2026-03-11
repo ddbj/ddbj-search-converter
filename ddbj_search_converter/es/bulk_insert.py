@@ -1,16 +1,19 @@
 """Elasticsearch bulk insert operations."""
 
 import json
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from elastic_transport import ConnectionTimeout
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, refresh_index, set_refresh_interval
 from ddbj_search_converter.es.index import IndexName
 from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+from ddbj_search_converter.logging.logger import log_warn
 from elasticsearch import helpers
 
 
@@ -102,8 +105,18 @@ def bulk_insert_jsonl(
     """
     es_client = get_es_client(config)
 
-    if not check_index_exists(es_client, index):
-        raise Exception(f"Index '{index}' does not exist.")
+    # ES が過負荷の場合に備えてリトライする
+    for attempt in range(3):
+        try:
+            if not check_index_exists(es_client, index):
+                raise Exception(f"Index '{index}' does not exist.")
+            break
+        except ConnectionTimeout:
+            if attempt == 2:
+                raise
+            wait = 30 * (attempt + 1)
+            log_warn(f"ES connection timed out, retrying in {wait}s (attempt {attempt + 1}/3)")
+            time.sleep(wait)
 
     total_docs = 0
     success_count = 0

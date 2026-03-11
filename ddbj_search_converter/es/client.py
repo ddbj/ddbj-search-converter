@@ -9,7 +9,7 @@ _clients: dict[str, Elasticsearch] = {}
 def get_es_client(config: Config) -> Elasticsearch:
     """Return a cached Elasticsearch client for the given config."""
     if config.es_url not in _clients:
-        _clients[config.es_url] = Elasticsearch(config.es_url)
+        _clients[config.es_url] = Elasticsearch(config.es_url, request_timeout=120)
     return _clients[config.es_url]
 
 
