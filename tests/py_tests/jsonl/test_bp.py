@@ -486,8 +486,8 @@ class TestEnrichUmbrellaRelations:
         assert docs["PRJDB100"].parentBioProjects[0].identifier == "PRJDB999"
         assert docs["PRJDB100"].childBioProjects == []
 
-    def test_dbxrefs_include_umbrella_relations(self, test_config: Config) -> None:
-        """parent/child の Xref が dbXrefs にも追加される。"""
+    def test_dbxrefs_not_modified_by_umbrella_relations(self, test_config: Config) -> None:
+        """enrich_umbrella_relations は dbXrefs を変更しない。"""
         from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
 
         self._setup_umbrella_db(test_config, [("PRJDB999", "PRJDB100")])
@@ -498,32 +498,13 @@ class TestEnrichUmbrellaRelations:
         }
         enrich_umbrella_relations(test_config, docs)
 
-        # PRJDB999 の dbXrefs に child PRJDB100 が含まれる
-        db_xref_ids = [x.identifier for x in docs["PRJDB999"].dbXrefs]
-        assert "PRJDB100" in db_xref_ids
+        # dbXrefs は空のまま
+        assert docs["PRJDB999"].dbXrefs == []
+        assert docs["PRJDB100"].dbXrefs == []
 
-        # PRJDB100 の dbXrefs に parent PRJDB999 が含まれる
-        db_xref_ids = [x.identifier for x in docs["PRJDB100"].dbXrefs]
-        assert "PRJDB999" in db_xref_ids
-
-    def test_dbxrefs_sorted_by_identifier(self, test_config: Config) -> None:
-        """dbXrefs が identifier 順にソートされる。"""
-        from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
-
-        self._setup_umbrella_db(
-            test_config,
-            [
-                ("PRJDB999", "PRJDB100"),
-                ("PRJDB999", "PRJDB200"),
-                ("PRJDB999", "PRJDB050"),
-            ],
-        )
-
-        docs = {"PRJDB999": _make_bp_instance("PRJDB999")}
-        enrich_umbrella_relations(test_config, docs)
-
-        ids = [x.identifier for x in docs["PRJDB999"].dbXrefs]
-        assert ids == sorted(ids)
+        # parentBioProjects / childBioProjects は設定される
+        assert len(docs["PRJDB999"].childBioProjects) == 1
+        assert len(docs["PRJDB100"].parentBioProjects) == 1
 
     def test_no_umbrella_db_leaves_empty(self, test_config: Config) -> None:
         """Umbrella DB がない場合、parent/child は空のまま。"""

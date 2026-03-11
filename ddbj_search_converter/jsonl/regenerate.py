@@ -104,6 +104,7 @@ def regenerate_bp_jsonl(
     tmp_xml_dir: Path,
     output_dir: Path,
     target_accessions: set[str],
+    include_dbxrefs: bool = False,
 ) -> None:
     """指定された accession の BioProject JSONL を再生成する。"""
     if not tmp_xml_dir.exists():
@@ -145,10 +146,11 @@ def regenerate_bp_jsonl(
         return
 
     # dbXrefs
-    dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
-    for accession, xrefs in dbxref_map.items():
-        if accession in docs:
-            docs[accession].dbXrefs = xrefs
+    if include_dbxrefs:
+        dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
+        for accession, xrefs in dbxref_map.items():
+            if accession in docs:
+                docs[accession].dbXrefs = xrefs
 
     # parent/child BioProject 関連を取得
     from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
@@ -184,6 +186,7 @@ def regenerate_bs_jsonl(
     tmp_xml_dir: Path,
     output_dir: Path,
     target_accessions: set[str],
+    include_dbxrefs: bool = False,
 ) -> None:
     """指定された accession の BioSample JSONL を再生成する。"""
     if not tmp_xml_dir.exists():
@@ -224,10 +227,11 @@ def regenerate_bs_jsonl(
         return
 
     # dbXrefs
-    dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
-    for accession, xrefs in dbxref_map.items():
-        if accession in docs:
-            docs[accession].dbXrefs = xrefs
+    if include_dbxrefs:
+        dbxref_map = get_dbxref_map(config, "biosample", list(docs.keys()))
+        for accession, xrefs in dbxref_map.items():
+            if accession in docs:
+                docs[accession].dbXrefs = xrefs
 
     # 日付取得
     ddbj_docs = {acc: doc for acc, doc in docs.items() if acc.startswith("SAMD")}
@@ -269,6 +273,7 @@ def regenerate_sra_jsonl(
     config: Config,
     output_dir: Path,
     target_accessions: set[str],
+    include_dbxrefs: bool = False,
 ) -> None:
     """指定された accession の SRA JSONL を再生成する。"""
     blacklist = load_sra_blacklist(config)
@@ -399,22 +404,23 @@ def regenerate_sra_jsonl(
         tar_reader.close()
 
     # dbXrefs を更新
-    xref_type_map: dict[SraXmlType, XrefType] = {
-        "submission": "sra-submission",
-        "study": "sra-study",
-        "experiment": "sra-experiment",
-        "run": "sra-run",
-        "sample": "sra-sample",
-        "analysis": "sra-analysis",
-    }
-    for xml_type in XML_TYPES:
-        entity_type = xref_type_map[xml_type]
-        accessions = [e.identifier for e in all_entries[xml_type]]
-        if accessions:
-            dbxref_map = get_dbxref_map(config, entity_type, accessions)
-            for entry in all_entries[xml_type]:
-                if entry.identifier in dbxref_map:
-                    entry.dbXrefs = dbxref_map[entry.identifier]
+    if include_dbxrefs:
+        xref_type_map: dict[SraXmlType, XrefType] = {
+            "submission": "sra-submission",
+            "study": "sra-study",
+            "experiment": "sra-experiment",
+            "run": "sra-run",
+            "sample": "sra-sample",
+            "analysis": "sra-analysis",
+        }
+        for xml_type in XML_TYPES:
+            entity_type = xref_type_map[xml_type]
+            accessions = [e.identifier for e in all_entries[xml_type]]
+            if accessions:
+                dbxref_map = get_dbxref_map(config, entity_type, accessions)
+                for entry in all_entries[xml_type]:
+                    if entry.identifier in dbxref_map:
+                        entry.dbXrefs = dbxref_map[entry.identifier]
 
     # JSONL を出力 (空の場合はファイル作成しない)
     for xml_type in XML_TYPES:
@@ -446,6 +452,7 @@ def regenerate_jga_jsonl(
     output_dir: Path,
     jga_base_path: Path,
     target_accessions: set[str],
+    include_dbxrefs: bool = False,
 ) -> None:
     """指定された accession の JGA JSONL を再生成する。"""
     jga_blacklist = load_jga_blacklist(config)
@@ -500,11 +507,12 @@ def regenerate_jga_jsonl(
             continue
 
         # dbXrefs
-        accession_list = list(jga_instances.keys())
-        dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accession_list)
-        for accession, xrefs in dbxref_map.items():
-            if accession in jga_instances:
-                jga_instances[accession].dbXrefs = xrefs
+        if include_dbxrefs:
+            accession_list = list(jga_instances.keys())
+            dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accession_list)
+            for accession, xrefs in dbxref_map.items():
+                if accession in jga_instances:
+                    jga_instances[accession].dbXrefs = xrefs
 
         # 日付
         try:
@@ -552,6 +560,11 @@ def parse_args(args: list[str]) -> argparse.Namespace:
         default=None,
         help="Output directory. Default: {result_dir}/regenerate/{date}/",
     )
+    parser.add_argument(
+        "--include-dbxrefs",
+        help="Include dbXrefs in JSONL output.",
+        action="store_true",
+    )
 
     parsed = parser.parse_args(args)
 
@@ -568,6 +581,7 @@ def main() -> None:
     config = get_config()
 
     data_type: str = parsed.type
+    include_dbxrefs: bool = parsed.include_dbxrefs
 
     # accession を収集
     accessions: set[str] = set()
@@ -586,6 +600,7 @@ def main() -> None:
             return
 
         log_info(f"target accessions ({len(accessions)}): {sorted(accessions)}")
+        log_info(f"include dbxrefs: {include_dbxrefs}")
 
         # 出力ディレクトリ
         if parsed.output_dir:
@@ -598,18 +613,18 @@ def main() -> None:
         if data_type == "bioproject":
             bp_base_dir = config.result_dir / BP_BASE_DIR_NAME
             tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / TODAY_STR
-            regenerate_bp_jsonl(config, tmp_xml_dir, output_dir, accessions)
+            regenerate_bp_jsonl(config, tmp_xml_dir, output_dir, accessions, include_dbxrefs)
 
         elif data_type == "biosample":
             bs_base_dir = config.result_dir / BS_BASE_DIR_NAME
             tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / TODAY_STR
-            regenerate_bs_jsonl(config, tmp_xml_dir, output_dir, accessions)
+            regenerate_bs_jsonl(config, tmp_xml_dir, output_dir, accessions, include_dbxrefs)
 
         elif data_type == "sra":
-            regenerate_sra_jsonl(config, output_dir, accessions)
+            regenerate_sra_jsonl(config, output_dir, accessions, include_dbxrefs)
 
         elif data_type == "jga":
-            regenerate_jga_jsonl(config, output_dir, JGA_BASE_PATH, accessions)
+            regenerate_jga_jsonl(config, output_dir, JGA_BASE_PATH, accessions, include_dbxrefs)
 
         log_info("regenerate_jsonl completed")
 

@@ -544,6 +544,7 @@ def _process_batch_worker(
     blacklist: set[str],
     output_dir: Path,
     is_dra: bool,
+    include_dbxrefs: bool = False,
 ) -> dict[str, int]:
     """
     1 batch を処理して JSONL を出力するワーカー関数。
@@ -558,6 +559,7 @@ def _process_batch_worker(
         blacklist: blacklist
         output_dir: 出力ディレクトリ
         is_dra: DRA かどうか
+        include_dbxrefs: True の場合は dbXrefs を含める
 
     Returns:
         {xml_type: count}
@@ -619,13 +621,14 @@ def _process_batch_worker(
                     seen_ids[xml_type].add(entry.identifier)
 
     # Step 4: dbXrefs 取得（バッチ全体で一括取得）
-    for xml_type in XML_TYPES:
-        accessions = [e.identifier for e in batch_entries[xml_type]]
-        if accessions:
-            dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions)
-            for entry in batch_entries[xml_type]:
-                if entry.identifier in dbxref_map:
-                    entry.dbXrefs = dbxref_map[entry.identifier]
+    if include_dbxrefs:
+        for xml_type in XML_TYPES:
+            accessions = [e.identifier for e in batch_entries[xml_type]]
+            if accessions:
+                dbxref_map = get_dbxref_map(config, XREF_TYPE_MAP[xml_type], accessions)
+                for entry in batch_entries[xml_type]:
+                    if entry.identifier in dbxref_map:
+                        entry.dbXrefs = dbxref_map[entry.identifier]
 
     # Step 5: JSONL 出力（XML type ごとに分割ファイル）
     for xml_type in XML_TYPES:
@@ -648,6 +651,7 @@ def process_source(
     full: bool,
     since: str | None,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
+    include_dbxrefs: bool = False,
 ) -> dict[str, int]:
     """
     DRA または NCBI SRA を処理する。
@@ -664,6 +668,7 @@ def process_source(
         full: 全件処理するかどうか
         since: 差分更新の基準日時
         parallel_num: Worker プロセス数
+        include_dbxrefs: True の場合は dbXrefs を含める
 
     Returns:
         {xml_type: count}
@@ -746,6 +751,7 @@ def process_source(
                     blacklist,
                     output_dir,
                     is_dra,
+                    include_dbxrefs,
                 )
                 pending.add(future)
                 log_info(f"submitted batch {batch_num}/{total_batches}")
@@ -786,6 +792,7 @@ def generate_sra_jsonl(
     output_dir: Path,
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     full: bool = False,
+    include_dbxrefs: bool = False,
 ) -> None:
     """
     SRA JSONL ファイルを生成する。
@@ -799,6 +806,7 @@ def generate_sra_jsonl(
         output_dir: 出力ディレクトリ ({result_dir}/sra/jsonl/{date}/)
         parallel_num: Worker プロセス数
         full: True の場合は全件処理、False の場合は差分更新
+        include_dbxrefs: True の場合は dbXrefs を含める
     """
     # blacklist を読み込む
     blacklist = load_sra_blacklist(config)
@@ -820,12 +828,12 @@ def generate_sra_jsonl(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # DRA を処理
-    dra_counts = process_source(config, "dra", output_dir, blacklist, full, since, parallel_num)
+    dra_counts = process_source(config, "dra", output_dir, blacklist, full, since, parallel_num, include_dbxrefs)
     total_dra = sum(dra_counts.values())
     log_info(f"dra total: {total_dra} entries")
 
     # NCBI SRA を処理
-    sra_counts = process_source(config, "sra", output_dir, blacklist, full, since, parallel_num)
+    sra_counts = process_source(config, "sra", output_dir, blacklist, full, since, parallel_num, include_dbxrefs)
     total_sra = sum(sra_counts.values())
     log_info(f"ncbi sra total: {total_sra} entries")
 
@@ -842,7 +850,7 @@ def generate_sra_jsonl(
 # === CLI ===
 
 
-def parse_args(args: list[str]) -> tuple[Config, Path, int, bool]:
+def parse_args(args: list[str]) -> tuple[Config, Path, int, bool, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(description="Generate SRA JSONL files from tar archives.")
     parser.add_argument(
@@ -856,6 +864,11 @@ def parse_args(args: list[str]) -> tuple[Config, Path, int, bool]:
         help="Process all entries instead of incremental update.",
         action="store_true",
     )
+    parser.add_argument(
+        "--include-dbxrefs",
+        help="Include dbXrefs in JSONL output.",
+        action="store_true",
+    )
 
     parsed = parser.parse_args(args)
 
@@ -864,20 +877,21 @@ def parse_args(args: list[str]) -> tuple[Config, Path, int, bool]:
     sra_base_dir = config.result_dir / SRA_BASE_DIR_NAME
     output_dir = sra_base_dir / JSONL_DIR_NAME / TODAY_STR
 
-    return config, output_dir, parsed.parallel_num, parsed.full
+    return config, output_dir, parsed.parallel_num, parsed.full, parsed.include_dbxrefs
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, output_dir, parallel_num, full = parse_args(sys.argv[1:])
+    config, output_dir, parallel_num, full, include_dbxrefs = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_sra_jsonl", config=config):
         log_debug(f"config: {config.model_dump_json(indent=2)}")
         log_debug(f"output directory: {output_dir}")
         log_debug(f"consumer processes: {parallel_num}")
         log_debug(f"full update: {full}")
+        log_debug(f"include dbxrefs: {include_dbxrefs}")
 
-        generate_sra_jsonl(config, output_dir, parallel_num, full)
+        generate_sra_jsonl(config, output_dir, parallel_num, full, include_dbxrefs)
 
 
 if __name__ == "__main__":

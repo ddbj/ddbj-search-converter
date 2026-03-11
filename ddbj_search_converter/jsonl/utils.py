@@ -105,10 +105,9 @@ def write_jsonl(output_path: Path, docs: list[Any]) -> None:
 
 
 def enrich_umbrella_relations(config: Config, docs: dict[str, Any]) -> None:
-    """BioProject の docs に parent/child 関連と dbXrefs を設定する。
+    """BioProject の docs に parent/child 関連を設定する。
 
     Umbrella DB から親子関連を取得し、各 doc の parentBioProjects / childBioProjects を設定する。
-    同時に dbXrefs にも追加し、identifier 順にソートする。
     """
     if not docs:
         return
@@ -120,14 +119,10 @@ def enrich_umbrella_relations(config: Config, docs: dict[str, Any]) -> None:
         if acc in docs:
             parent_xrefs = [to_xref(pid, type_hint="bioproject") for pid in parent_accs]
             docs[acc].parentBioProjects = sorted(parent_xrefs, key=lambda x: x.identifier)
-            docs[acc].dbXrefs.extend(parent_xrefs)
     for acc, child_accs in child_map.items():
         if acc in docs:
             child_xrefs = [to_xref(cid, type_hint="bioproject") for cid in child_accs]
             docs[acc].childBioProjects = sorted(child_xrefs, key=lambda x: x.identifier)
-            docs[acc].dbXrefs.extend(child_xrefs)
-    for doc in docs.values():
-        doc.dbXrefs.sort(key=lambda x: x.identifier)
 
 
 def get_dbxref_map(

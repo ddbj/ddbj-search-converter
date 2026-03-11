@@ -179,6 +179,7 @@ def generate_jga_jsonl(
     output_dir: Path,
     jga_base_path: Path,
     jga_blacklist: set[str],
+    include_dbxrefs: bool = False,
 ) -> None:
     """単一の JGA タイプの JSONL ファイルを生成する。"""
     xml_path = jga_base_path.joinpath(f"{index_name}.xml")
@@ -220,9 +221,10 @@ def generate_jga_jsonl(
     accessions = list(jga_instances.keys())
 
     # dbXrefs を取得して更新
-    dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
-    for accession, xrefs in dbxref_map.items():
-        jga_instances[accession].dbXrefs = xrefs
+    if include_dbxrefs:
+        dbxref_map = get_dbxref_map(config, INDEX_TO_ACCESSION_TYPE[index_name], accessions)
+        for accession, xrefs in dbxref_map.items():
+            jga_instances[accession].dbXrefs = xrefs
 
     # 日付を取得して更新
     date_map = load_date_map(jga_base_path, index_name)
@@ -239,26 +241,32 @@ def generate_jga_jsonl(
     log_info(f"wrote {len(jga_instances)} entries to jsonl file: {output_path}")
 
 
-def parse_args(args: list[str]) -> tuple[Config, Path]:
+def parse_args(args: list[str]) -> tuple[Config, Path, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(description="Generate JGA JSONL files from JGA XML files.")
+    parser.add_argument(
+        "--include-dbxrefs",
+        help="Include dbXrefs in JSONL output.",
+        action="store_true",
+    )
 
-    parser.parse_args(args)
+    parsed = parser.parse_args(args)
 
     config = get_config()
     output_dir = config.result_dir / JGA_BASE_DIR_NAME / JSONL_DIR_NAME / TODAY_STR
 
-    return config, output_dir
+    return config, output_dir, parsed.include_dbxrefs
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, output_dir = parse_args(sys.argv[1:])
+    config, output_dir, include_dbxrefs = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_jga_jsonl", config=config):
         log_debug(f"config: {config.model_dump_json(indent=2)}")
         log_debug(f"output directory: {output_dir}")
         log_debug(f"jga base path: {JGA_BASE_PATH}")
+        log_debug(f"include dbxrefs: {include_dbxrefs}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
@@ -266,7 +274,7 @@ def main() -> None:
         jga_blacklist = load_jga_blacklist(config)
 
         for index_name in INDEX_NAMES:
-            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist)
+            generate_jga_jsonl(config, index_name, output_dir, JGA_BASE_PATH, jga_blacklist, include_dbxrefs)
 
 
 if __name__ == "__main__":

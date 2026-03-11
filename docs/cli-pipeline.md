@@ -394,11 +394,11 @@ es_bulk_insert --index jga-study \
 |---------|----------|------|
 | `build_bp_bs_date_cache` | - | BP/BS 日付情報を PostgreSQL から DuckDB キャッシュに構築 |
 | `build_bp_bs_status_cache` | - | BP/BS ステータス情報を Livelist ファイルから DuckDB キャッシュに構築 |
-| `generate_bp_jsonl` | `--full`, `--parallel-num`, `--resume` | BioProject JSONL 生成 |
-| `generate_bs_jsonl` | `--full`, `--parallel-num`, `--resume` | BioSample JSONL 生成 |
-| `generate_sra_jsonl` | `--full`, `--parallel-num` | SRA JSONL 生成 |
-| `generate_jga_jsonl` | - | JGA JSONL 生成（常に全件処理、blacklist 適用） |
-| `regenerate_jsonl` | `--type`, `--accessions`, `--accession-file`, `--output-dir` | 特定 accession の JSONL 再生成 |
+| `generate_bp_jsonl` | `--full`, `--parallel-num`, `--resume`, `--include-dbxrefs` | BioProject JSONL 生成 |
+| `generate_bs_jsonl` | `--full`, `--parallel-num`, `--resume`, `--include-dbxrefs` | BioSample JSONL 生成 |
+| `generate_sra_jsonl` | `--full`, `--parallel-num`, `--include-dbxrefs` | SRA JSONL 生成 |
+| `generate_jga_jsonl` | `--include-dbxrefs` | JGA JSONL 生成（常に全件処理、blacklist 適用） |
+| `regenerate_jsonl` | `--type`, `--accessions`, `--accession-file`, `--output-dir`, `--include-dbxrefs` | 特定 accession の JSONL 再生成 |
 
 ### Elasticsearch 操作
 

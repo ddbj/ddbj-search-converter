@@ -584,6 +584,7 @@ def _process_xml_file_worker(
     bp_blacklist: set[str],
     target_accessions: set[str] | None = None,
     since: str | None = None,
+    include_dbxrefs: bool = False,
 ) -> int:
     """
     XML ファイルを処理して JSONL を出力するワーカー関数。
@@ -596,6 +597,7 @@ def _process_xml_file_worker(
         bp_blacklist: 除外する accession の集合
         target_accessions: 処理対象の accession の集合 (DDBJ 差分更新用)。None の場合は全件処理。
         since: 差分更新の基準日時 (NCBI 用)。None の場合は全件処理。
+        include_dbxrefs: True の場合は dbXrefs を含める
     """
     log_info(f"processing {xml_path.name} -> {output_path.name}")
 
@@ -628,10 +630,11 @@ def _process_xml_file_worker(
         log_info(f"filtered {filtered_count} entries (not in target_accessions)")
 
     # dbXrefs を一括取得
-    dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
-    for accession, xrefs in dbxref_map.items():
-        if accession in docs:
-            docs[accession].dbXrefs = xrefs
+    if include_dbxrefs:
+        dbxref_map = get_dbxref_map(config, "bioproject", list(docs.keys()))
+        for accession, xrefs in dbxref_map.items():
+            if accession in docs:
+                docs[accession].dbXrefs = xrefs
 
     # parent/child BioProject 関連を取得
     from ddbj_search_converter.jsonl.utils import enrich_umbrella_relations
@@ -669,11 +672,14 @@ def process_xml_file(
     bp_blacklist: set[str] | None = None,
     target_accessions: set[str] | None = None,
     since: str | None = None,
+    include_dbxrefs: bool = False,
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bp_blacklist is None:
         bp_blacklist, _ = load_blacklist(config)
-    return _process_xml_file_worker(config, xml_path, output_path, is_ddbj, bp_blacklist, target_accessions, since)
+    return _process_xml_file_worker(
+        config, xml_path, output_path, is_ddbj, bp_blacklist, target_accessions, since, include_dbxrefs
+    )
 
 
 def generate_bp_jsonl(
@@ -683,6 +689,7 @@ def generate_bp_jsonl(
     parallel_num: int = DEFAULT_PARALLEL_NUM,
     full: bool = False,
     resume: bool = False,
+    include_dbxrefs: bool = False,
 ) -> None:
     """
     BioProject JSONL ファイルを生成する。
@@ -696,6 +703,7 @@ def generate_bp_jsonl(
         parallel_num: 並列ワーカー数
         full: True の場合は全件処理、False の場合は差分更新
         resume: True の場合は既存の JSONL ファイルをスキップ
+        include_dbxrefs: True の場合は dbXrefs を含める
     """
     if not tmp_xml_dir.exists():
         raise FileNotFoundError(f"tmp_xml directory not found: {tmp_xml_dir}")
@@ -767,6 +775,7 @@ def generate_bp_jsonl(
                 bp_blacklist,
                 target_accessions,
                 since_param,
+                include_dbxrefs,
             ): (xml_path, is_ddbj)
             for xml_path, output_path, is_ddbj, target_accessions, since_param in tasks
         }
@@ -788,7 +797,7 @@ def generate_bp_jsonl(
 # === CLI ===
 
 
-def parse_args(args: list[str]) -> tuple[Config, Path, Path, int, bool, bool]:
+def parse_args(args: list[str]) -> tuple[Config, Path, Path, int, bool, bool, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(description="Generate BioProject JSONL files from split XML files.")
     parser.add_argument(
@@ -807,6 +816,11 @@ def parse_args(args: list[str]) -> tuple[Config, Path, Path, int, bool, bool]:
         help="Skip existing JSONL files and resume from where it left off.",
         action="store_true",
     )
+    parser.add_argument(
+        "--include-dbxrefs",
+        help="Include dbXrefs in JSONL output.",
+        action="store_true",
+    )
 
     parsed = parser.parse_args(args)
 
@@ -816,12 +830,12 @@ def parse_args(args: list[str]) -> tuple[Config, Path, Path, int, bool, bool]:
     tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / TODAY_STR
     output_dir = bp_base_dir / JSONL_DIR_NAME / TODAY_STR
 
-    return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full, parsed.resume
+    return config, tmp_xml_dir, output_dir, parsed.parallel_num, parsed.full, parsed.resume, parsed.include_dbxrefs
 
 
 def main() -> None:
     """CLI エントリポイント。"""
-    config, tmp_xml_dir, output_dir, parallel_num, full, resume = parse_args(sys.argv[1:])
+    config, tmp_xml_dir, output_dir, parallel_num, full, resume, include_dbxrefs = parse_args(sys.argv[1:])
 
     with run_logger(run_name="generate_bp_jsonl", config=config):
         log_debug(f"config: {config.model_dump_json(indent=2)}")
@@ -830,11 +844,12 @@ def main() -> None:
         log_debug(f"parallel workers: {parallel_num}")
         log_debug(f"full update: {full}")
         log_debug(f"resume: {resume}")
+        log_debug(f"include dbxrefs: {include_dbxrefs}")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
 
-        generate_bp_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full, resume)
+        generate_bp_jsonl(config, tmp_xml_dir, output_dir, parallel_num, full, resume, include_dbxrefs)
 
 
 if __name__ == "__main__":
