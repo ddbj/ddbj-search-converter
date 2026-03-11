@@ -33,6 +33,8 @@ dump_dblink_files CLI コマンドで出力する。
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
 
+import time
+
 import httpx
 
 from ddbj_search_converter.config import ASSEMBLY_SUMMARY_URL, BP_ID_TO_ACCESSION_FILE_NAME, TRAD_BASE_PATH, get_config
@@ -40,7 +42,7 @@ from ddbj_search_converter.dblink.bp_bs import IdMapping, load_id_mapping_tsv
 from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import filter_by_blacklist, filter_pairs_by_blacklist, load_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
+from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 
 TRAD_FILES = [
@@ -95,6 +97,26 @@ def process_assembly_summary_file(
         ("bs", "bp", bs_to_bp),
     ]
 
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            _stream_assembly_summary(relations, key_to_type)
+            break
+        except (httpx.ConnectError, httpx.TimeoutException):
+            if attempt == max_retries - 1:
+                raise
+            # ストリーミング途中で失敗した場合、部分データをクリアして再試行
+            for _, _, target_set in relations:
+                target_set.clear()
+            wait = 30 * (attempt + 1)
+            log_warn(f"NCBI FTP connection failed, retrying in {wait}s (attempt {attempt + 1}/{max_retries})")
+            time.sleep(wait)
+
+
+def _stream_assembly_summary(
+    relations: list[tuple[str, str, IdPairs]],
+    key_to_type: dict[str, AccessionType],
+) -> None:
     with (
         httpx.Client(follow_redirects=True, timeout=60.0) as client,
         client.stream("GET", ASSEMBLY_SUMMARY_URL) as response,
