@@ -1,5 +1,6 @@
 """Tests for ddbj_search_converter.dblink.db module."""
 
+import tempfile
 from pathlib import Path
 
 import duckdb
@@ -210,6 +211,52 @@ class TestDeduplicateRelations:
             count = conn.execute("SELECT COUNT(*) FROM relation").fetchone()
             assert count is not None
             assert count[0] == 2
+
+    def test_result_is_sorted(self, test_config: Config) -> None:
+        init_dblink_db(test_config)
+        db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(db_path)) as conn:
+            # 逆順で挿入して、dedup 後にソートされることを確認
+            conn.execute("INSERT INTO relation VALUES ('sra-run', 'DRR999', 'biosample', 'SAMD1')")
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB2', 'biosample', 'SAMD2')")
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB1', 'biosample', 'SAMD1')")
+            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB1', 'biosample', 'SAMD2')")
+        deduplicate_relations(test_config)
+
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute("SELECT * FROM relation").fetchall()
+        assert rows == [
+            ("bioproject", "PRJDB1", "biosample", "SAMD1"),
+            ("bioproject", "PRJDB1", "biosample", "SAMD2"),
+            ("bioproject", "PRJDB2", "biosample", "SAMD2"),
+            ("sra-run", "DRR999", "biosample", "SAMD1"),
+        ]
+
+    @given(
+        rows=st.lists(
+            st.tuples(
+                st_accession_type(),
+                st.text(min_size=1, max_size=10, alphabet=st.characters(categories=("L", "N"))),
+                st_accession_type(),
+                st.text(min_size=1, max_size=10, alphabet=st.characters(categories=("L", "N"))),
+            ),
+            min_size=1,
+            max_size=30,
+        ),
+    )
+    def test_result_is_always_sorted(self, rows: list[tuple[str, str, str, str]]) -> None:
+        """PBT: dedup 後のテーブルは常に 4 カラムの辞書順でソートされている。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            config = Config(result_dir=Path(tmp), const_dir=Path(tmp) / "const")
+            init_dblink_db(config)
+            db_path = config.const_dir / "dblink" / "dblink.tmp.duckdb"
+            with duckdb.connect(str(db_path)) as conn:
+                conn.executemany("INSERT INTO relation VALUES (?, ?, ?, ?)", rows)
+            deduplicate_relations(config)
+
+            with duckdb.connect(str(db_path)) as conn:
+                result = conn.execute("SELECT * FROM relation").fetchall()
+            assert result == sorted(set(rows))
 
 
 class TestFinalizeRelationDb:

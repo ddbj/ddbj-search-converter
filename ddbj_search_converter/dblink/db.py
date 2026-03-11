@@ -178,6 +178,7 @@ def deduplicate_relations(config: Config) -> None:
             SELECT DISTINCT
                 src_type, src_accession, dst_type, dst_accession
             FROM relation
+            ORDER BY src_type, src_accession, dst_type, dst_accession
         """)
         conn.execute("DROP TABLE relation")
         conn.execute("ALTER TABLE relation_dedup RENAME TO relation")
