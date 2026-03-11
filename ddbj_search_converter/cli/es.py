@@ -197,8 +197,7 @@ def main_bulk_insert() -> None:
             )
 
             if result.errors:
-                log_error("Some documents failed to insert", errors=result.errors[:10])
-                sys.exit(1)
+                log_warn("Some documents failed to insert", errors=result.errors[:10])
 
         except Exception as e:
             log_error("failed to bulk insert", error=e)
