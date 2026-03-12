@@ -13,6 +13,7 @@ from ddbj_search_converter.jsonl.jga import (
     extract_title,
     format_date,
     jga_entry_to_jga_instance,
+    parse_same_as,
 )
 
 
@@ -231,3 +232,92 @@ class TestJgaEntryToJgaInstance:
         jga = jga_entry_to_jga_instance(entry, "jga-policy")
         assert jga.type_ == "jga-policy"
         assert jga.title == "Policy"
+
+    def test_same_as_populated_from_identifiers(self) -> None:
+        """SECONDARY_ID が sameAs に反映される。"""
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAS000999"},
+        }
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        assert len(jga.sameAs) == 1
+        assert jga.sameAs[0].identifier == "JGAS000999"
+        assert jga.sameAs[0].type_ == "jga-study"
+
+    def test_same_as_empty_for_policy(self) -> None:
+        """jga-policy は IDENTIFIERS がないため sameAs 空。"""
+        entry: dict[str, Any] = {"accession": "JGAP000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-policy")
+        assert jga.sameAs == []
+
+
+class TestParseSameAs:
+    """Tests for parse_same_as function."""
+
+    def test_study_with_secondary_id(self) -> None:
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAS000999"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert len(result) == 1
+        assert result[0].identifier == "JGAS000999"
+        assert result[0].type_ == "jga-study"
+        assert "jga-study/JGAS000999" in result[0].url
+
+    def test_dataset_with_secondary_id(self) -> None:
+        entry = {
+            "accession": "JGAD000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAD000999"},
+        }
+        result = parse_same_as(entry, "jga-dataset", "JGAD000001")
+        assert len(result) == 1
+        assert result[0].type_ == "jga-dataset"
+
+    def test_dac_with_secondary_id(self) -> None:
+        entry = {
+            "accession": "JGAC000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAC000999"},
+        }
+        result = parse_same_as(entry, "jga-dac", "JGAC000001")
+        assert len(result) == 1
+        assert result[0].type_ == "jga-dac"
+
+    def test_no_identifiers(self) -> None:
+        entry: dict[str, Any] = {"accession": "JGAP000001"}
+        result = parse_same_as(entry, "jga-policy", "JGAP000001")
+        assert result == []
+
+    def test_identifiers_without_secondary_id(self) -> None:
+        entry: dict[str, Any] = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"PRIMARY_ID": "JGAS000001"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert result == []
+
+    def test_secondary_id_equals_accession(self) -> None:
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAS000001"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert result == []
+
+    def test_multiple_secondary_ids(self) -> None:
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": ["JGAS000998", "JGAS000999"]},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert len(result) == 2
+        assert result[0].identifier == "JGAS000998"
+        assert result[1].identifier == "JGAS000999"
+
+    def test_empty_secondary_id(self) -> None:
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": ""},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert result == []

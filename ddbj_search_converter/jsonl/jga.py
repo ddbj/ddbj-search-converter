@@ -21,8 +21,8 @@ from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
-from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, run_logger
-from ddbj_search_converter.schema import JGA, Organism
+from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
+from ddbj_search_converter.schema import JGA, Organism, Xref
 from ddbj_search_converter.xml_utils import parse_xml
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -148,6 +148,32 @@ def _get_name_from_alias(accession: str, alias: str | None) -> str | None:
     return alias
 
 
+def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str = "") -> list[Xref]:
+    """JGA エントリから sameAs (SECONDARY_ID) を抽出する。"""
+    xrefs: list[Xref] = []
+    try:
+        identifiers = entry.get("IDENTIFIERS")
+        if identifiers is None:
+            return []
+        secondary_id = identifiers.get("SECONDARY_ID")
+        if secondary_id is None:
+            return []
+        sid_list = secondary_id if isinstance(secondary_id, list) else [secondary_id]
+        for sid in sid_list:
+            if not sid or sid == accession:
+                continue
+            xrefs.append(
+                Xref(
+                    identifier=sid,
+                    type=index_name,
+                    url=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{sid}",
+                )
+            )
+    except Exception as e:
+        log_warn(f"failed to parse same_as: {e}", accession=accession)
+    return xrefs
+
+
 def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> JGA:
     """JGA XML エントリを JGA インスタンスに変換する。"""
     accession: str = entry["accession"]
@@ -164,7 +190,7 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
         title=extract_title(entry, index_name),
         description=extract_description(entry, index_name),
         dbXrefs=[],  # 後で更新
-        sameAs=[],
+        sameAs=parse_same_as(entry, index_name, accession),
         status="live",
         accessibility="controlled-access",
         dateCreated=None,  # 後で更新

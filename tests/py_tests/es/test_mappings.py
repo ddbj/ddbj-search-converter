@@ -38,12 +38,20 @@ class TestCommonMapping:
             assert field in mapping, f"Missing field: {field}"
 
     def test_dbxref_is_disabled(self) -> None:
-        """dbXrefs/sameAs should be disabled objects (not searchable)."""
+        """dbXrefs should be disabled object (not searchable)."""
         mapping = get_common_mapping()
         assert mapping["dbXrefs"]["type"] == "object"
         assert mapping["dbXrefs"]["enabled"] is False
-        assert mapping["sameAs"]["type"] == "object"
-        assert mapping["sameAs"]["enabled"] is False
+
+    def test_same_as_is_nested(self) -> None:
+        """sameAs should be nested with identifier/type/url properties."""
+        mapping = get_common_mapping()
+        assert mapping["sameAs"]["type"] == "nested"
+        props = mapping["sameAs"]["properties"]
+        assert props["identifier"]["type"] == "keyword"
+        assert props["type"]["type"] == "keyword"
+        assert props["url"]["type"] == "keyword"
+        assert props["url"]["index"] is False
 
     def test_properties_is_disabled(self) -> None:
         """properties field should be disabled (not searchable)."""
