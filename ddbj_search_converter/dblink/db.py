@@ -10,7 +10,7 @@ relation テーブルには (src_type, src_accession, dst_type, dst_accession) �
     - 最終 DB: {const_dir}/dblink/dblink.duckdb
 """
 
-import shutil
+import os
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Literal
@@ -99,10 +99,7 @@ def finalize_relation_db(config: Config) -> None:
     tmp_path = _tmp_db_path(config)
     final_path = _final_db_path(config)
 
-    if final_path.exists():
-        final_path.unlink()
-
-    shutil.move(str(tmp_path), str(final_path))
+    os.replace(tmp_path, final_path)
 
 
 # === Write operations ===
@@ -212,7 +209,7 @@ def get_related_entities(
 ) -> Iterator[tuple[str, str]]:
     """無向グラフなので src/dst 両方向を検索。"""
     db_path = _final_db_path(config)
-    with duckdb.connect(str(db_path)) as conn:
+    with duckdb.connect(str(db_path), read_only=True) as conn:
         rows = conn.execute(
             """
             SELECT
@@ -303,7 +300,7 @@ def export_relations(
     type_a: AccessionType,
     type_b: AccessionType,
 ) -> None:
-    with duckdb.connect(str(_final_db_path(config))) as conn:
+    with duckdb.connect(str(_final_db_path(config)), read_only=True) as conn:
         rows = conn.execute(
             """
             SELECT
@@ -386,9 +383,7 @@ def finalize_umbrella_db(config: Config) -> None:
         """)
 
     final_path = _umbrella_final_db_path(config)
-    if final_path.exists():
-        final_path.unlink()
-    shutil.move(str(tmp_path), str(final_path))
+    os.replace(tmp_path, final_path)
 
 
 def save_umbrella_relations(config: Config, relations: IdPairs) -> None:
