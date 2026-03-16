@@ -10,7 +10,6 @@ relation テーブルには (src_type, src_accession, dst_type, dst_accession) �
     - 最終 DB: {const_dir}/dblink/dblink.duckdb
 """
 
-import os
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Literal
@@ -99,7 +98,7 @@ def finalize_relation_db(config: Config) -> None:
     tmp_path = _tmp_db_path(config)
     final_path = _final_db_path(config)
 
-    os.replace(tmp_path, final_path)
+    tmp_path.replace(final_path)
 
 
 # === Write operations ===
@@ -383,7 +382,7 @@ def finalize_umbrella_db(config: Config) -> None:
         """)
 
     final_path = _umbrella_final_db_path(config)
-    os.replace(tmp_path, final_path)
+    tmp_path.replace(final_path)
 
 
 def save_umbrella_relations(config: Config, relations: IdPairs) -> None:
