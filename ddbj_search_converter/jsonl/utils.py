@@ -21,7 +21,7 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "jga-dataset": f"{SEARCH_BASE_URL}/search/entry/jga-dataset/{{id}}",
     "jga-dac": f"{SEARCH_BASE_URL}/search/entry/jga-dac/{{id}}",
     "jga-policy": f"{SEARCH_BASE_URL}/search/entry/jga-policy/{{id}}",
-    "gea": f"{SEARCH_BASE_URL}/public/ddbj_database/gea/experiment/{{prefix}}/{{id}}/",
+    "gea": "https://ddbj.nig.ac.jp/public/ddbj_database/gea/experiment/{prefix}/{id}/",
     "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
     "insdc": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
