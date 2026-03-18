@@ -23,7 +23,7 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "jga-policy": f"{SEARCH_BASE_URL}/search/entry/jga-policy/{{id}}",
     "gea": "https://ddbj.nig.ac.jp/public/ddbj_database/gea/experiment/{prefix}/{id}/",
     "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
-    "insdc": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
+    "insdc": "https://getentry.ddbj.nig.ac.jp/getentry?database=ddbj&accession_number={id}",
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
     "insdc-master": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
     "metabobank": "https://mb2.ddbj.nig.ac.jp/study/{id}.html",
