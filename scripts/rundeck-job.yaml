@@ -1,0 +1,62 @@
+- defaultTab: nodes
+  description: |-
+    - DDBJ-Search の日次差分更新ジョブ（2603 版）
+    - run_pipeline.sh で全パイプライン（DBLink 構築 → JSONL 生成 → ES 投入）を実行
+  executionEnabled: true
+  id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  loglevel: INFO
+  name: Update DDBJ-Search 2603
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: a011
+  nodesSelectedByDefault: true
+  plugins:
+    ExecutionLifecycle: {}
+  schedule:
+    month: '*'
+    time:
+      hour: '06'
+      minute: '00'
+      seconds: '0'
+    weekday:
+      day: '*'
+    year: '*'
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - autoSecureInput: 'false'
+      description: Down and Up container (for JGA mount refresh)
+      passSecureInput: 'false'
+      script: |-
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
+        cd $PROJECT_DIR
+
+        podman-compose -f compose.yml down
+        podman-compose -f compose.yml up -d
+
+        sleep 60
+    - autoSecureInput: 'false'
+      description: Run pipeline (incremental)
+      passSecureInput: 'false'
+      script: |-
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
+        cd $PROJECT_DIR
+
+        podman-compose -f compose.yml exec -T app bash /app/scripts/run_pipeline.sh --parallel 16
+    - autoSecureInput: 'false'
+      description: Cleanup old results
+      passSecureInput: 'false'
+      script: |-
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
+        cd $PROJECT_DIR
+
+        podman-compose -f compose.yml exec -T app cleanup_old_results --keep 3
+    keepgoing: false
+    strategy: node-first
+  uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
