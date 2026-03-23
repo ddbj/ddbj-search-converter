@@ -13,6 +13,7 @@ from ddbj_search_converter.config import (
     BP_BASE_DIR_NAME,
     BS_BASE_DIR_NAME,
     JGA_BASE_PATH,
+    REGENERATE_DIR_NAME,
     TMP_XML_DIR_NAME,
     TODAY_STR,
     Config,
@@ -532,8 +533,6 @@ def regenerate_jga_jsonl(
 
 # === CLI ===
 
-REGENERATE_DIR_NAME = "regenerate"
-
 
 def parse_args(args: list[str]) -> argparse.Namespace:
     """コマンドライン引数をパースする。"""
@@ -606,18 +605,18 @@ def main() -> None:
         if parsed.output_dir:
             output_dir = Path(parsed.output_dir)
         else:
-            output_dir = config.result_dir / REGENERATE_DIR_NAME / TODAY_STR
+            output_dir = config.result_dir.joinpath(REGENERATE_DIR_NAME, TODAY_STR)
         output_dir.mkdir(parents=True, exist_ok=True)
         log_info(f"output directory: {output_dir}")
 
         if data_type == "bioproject":
-            bp_base_dir = config.result_dir / BP_BASE_DIR_NAME
-            tmp_xml_dir = bp_base_dir / TMP_XML_DIR_NAME / TODAY_STR
+            bp_base_dir = config.result_dir.joinpath(BP_BASE_DIR_NAME)
+            tmp_xml_dir = bp_base_dir.joinpath(TMP_XML_DIR_NAME, TODAY_STR)
             regenerate_bp_jsonl(config, tmp_xml_dir, output_dir, accessions, include_dbxrefs)
 
         elif data_type == "biosample":
-            bs_base_dir = config.result_dir / BS_BASE_DIR_NAME
-            tmp_xml_dir = bs_base_dir / TMP_XML_DIR_NAME / TODAY_STR
+            bs_base_dir = config.result_dir.joinpath(BS_BASE_DIR_NAME)
+            tmp_xml_dir = bs_base_dir.joinpath(TMP_XML_DIR_NAME, TODAY_STR)
             regenerate_bs_jsonl(config, tmp_xml_dir, output_dir, accessions, include_dbxrefs)
 
         elif data_type == "sra":

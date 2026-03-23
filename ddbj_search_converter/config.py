@@ -26,6 +26,9 @@ JGA_BASE_DIR_NAME = "jga"
 TMP_XML_DIR_NAME = "tmp_xml"
 JSONL_DIR_NAME = "jsonl"
 LOG_DIR_NAME = "logs"
+REGENERATE_DIR_NAME = "regenerate"
+DBLINK_DIR_NAME = "dblink"
+DBLINK_TMP_DIR_NAME = "tmp"
 
 
 # === Base paths (container mount points) ===

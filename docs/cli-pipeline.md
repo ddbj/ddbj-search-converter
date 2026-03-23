@@ -419,3 +419,23 @@ es_bulk_insert --index jga-study \
 | `show_log_summary` | `--date`, `--raw` | run_name ごとのサマリー |
 | `show_log` | `--date`, `--run-name`, `--level`, `--latest` | ログ詳細表示 |
 | `show_dblink_counts` | - | DBLink relation 件数を JSON 出力 |
+
+### メンテナンス
+
+| コマンド | オプション | 説明 |
+|---------|----------|------|
+| `cleanup_old_results` | `--keep N`, `--dry-run` | 古い日付ディレクトリの削除（デフォルト: 最新 3 件を保持） |
+
+対象ディレクトリ（各親ディレクトリごとに独立して最新 N 件を保持）:
+
+| 親ディレクトリ | 用途 |
+|---------------|------|
+| `{result_dir}/logs/{YYYYMMDD}/` | ログファイル |
+| `{result_dir}/bioproject/tmp_xml/{YYYYMMDD}/` | BioProject 分割 XML |
+| `{result_dir}/biosample/tmp_xml/{YYYYMMDD}/` | BioSample 分割 XML |
+| `{result_dir}/bioproject/jsonl/{YYYYMMDD}/` | BioProject JSONL |
+| `{result_dir}/biosample/jsonl/{YYYYMMDD}/` | BioSample JSONL |
+| `{result_dir}/sra/jsonl/{YYYYMMDD}/` | SRA JSONL |
+| `{result_dir}/jga/jsonl/{YYYYMMDD}/` | JGA JSONL |
+| `{result_dir}/regenerate/{YYYYMMDD}/` | 再生成 JSONL |
+| `{result_dir}/dblink/tmp/{YYYYMMDD}/` | DBLink 一時ファイル |
