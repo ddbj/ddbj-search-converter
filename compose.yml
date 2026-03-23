@@ -4,9 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ddbj-search-converter-${DDBJ_SEARCH_ENV}
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     volumes:
       - .:/app:rw
       - app-venv:/app/.venv

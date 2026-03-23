@@ -31,14 +31,15 @@
   sequence:
     commands:
     - autoSecureInput: 'false'
-      description: Down and Up container (for JGA mount refresh)
+      description: Recreate app container (for JGA mount refresh)
       passSecureInput: 'false'
       script: |-
         PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
         cd $PROJECT_DIR
 
-        podman-compose -f compose.yml down
-        podman-compose -f compose.yml up -d
+        podman-compose -f compose.yml stop app
+        podman rm ddbj-search-converter-production
+        podman-compose -f compose.yml up -d app
 
         sleep 60
     - autoSecureInput: 'false'
