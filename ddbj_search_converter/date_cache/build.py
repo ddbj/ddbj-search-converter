@@ -52,6 +52,10 @@ def _fetch_all_bp_dates(
         user=user,
         password=password,
         dbname=BP_POSTGRES_DB_NAME,
+        keepalives=1,
+        keepalives_idle=60,
+        keepalives_interval=10,
+        keepalives_count=5,
     )
     try:
         with conn.cursor(name="bp_date_cursor") as cur:
@@ -79,6 +83,10 @@ def _fetch_all_bs_dates(
         user=user,
         password=password,
         dbname=BS_POSTGRES_DB_NAME,
+        keepalives=1,
+        keepalives_idle=60,
+        keepalives_interval=10,
+        keepalives_count=5,
     )
     try:
         with conn.cursor(name="bs_date_cursor") as cur:
@@ -101,12 +109,14 @@ def build_date_cache(config: Config) -> None:
     init_date_cache_db(config)
 
     log_info("fetching all bp dates from postgresql")
-    bp_rows = _fetch_all_bp_dates(config.xsm_postgres_url)
+    bp_rows = list(_fetch_all_bp_dates(config.xsm_postgres_url))
+    log_info(f"fetched {len(bp_rows)} bp dates from postgresql")
     bp_count = insert_bp_dates(config, bp_rows)
     log_info(f"inserted {bp_count} bp_date rows")
 
     log_info("fetching all bs dates from postgresql")
-    bs_rows = _fetch_all_bs_dates(config.xsm_postgres_url)
+    bs_rows = list(_fetch_all_bs_dates(config.xsm_postgres_url))
+    log_info(f"fetched {len(bs_rows)} bs dates from postgresql")
     bs_count = insert_bs_dates(config, bs_rows)
     log_info(f"inserted {bs_count} bs_date rows")
 
