@@ -17,7 +17,7 @@ import sys
 from collections.abc import Callable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
 from ddbj_search_converter.config import (
     JSONL_DIR_NAME,
@@ -105,25 +105,27 @@ def _normalize_status(status: str | None) -> Status:
     status を INSDC 標準に正規化する。
 
     入力値 -> 出力値:
-    - live -> live
-    - unpublished -> unpublished
+    - live -> public (ENA/NCBI 互換)
+    - unpublished -> private
     - suppressed -> suppressed
     - withdrawn -> withdrawn
-    - public -> live (DRA 互換)
-    - replaced -> withdrawn (旧値互換)
-    - killed -> withdrawn (旧値互換)
-    - NULL/その他 -> live (デフォルト)
+    - public -> public (DRA 互換)
+    - replaced -> suppressed (データは統合先に存在)
+    - killed -> withdrawn (恒久的削除)
+    - NULL/その他 -> public (デフォルト)
     """
     if status is None:
-        return "live"
+        return "public"
     status_lower = status.lower()
-    if status_lower in ("live", "unpublished", "suppressed", "withdrawn"):
-        return cast("Status", status_lower)
-    if status_lower == "public":
-        return "live"
-    if status_lower in ("replaced", "killed"):
+    if status_lower in ("live", "public"):
+        return "public"
+    if status_lower == "unpublished":
+        return "private"
+    if status_lower in ("suppressed", "replaced"):
+        return "suppressed"
+    if status_lower in ("withdrawn", "killed"):
         return "withdrawn"
-    return "live"
+    return "public"
 
 
 def _normalize_accessibility(accessibility: str | None) -> Accessibility:
@@ -452,7 +454,7 @@ def process_submission_xml(
             acc = entry.get("accession")
             if not acc or acc in blacklist:
                 continue
-            info = accession_info.get(acc, ("live", "public", None, None, None, ""))
+            info = accession_info.get(acc, ("public", "public", None, None, None, ""))
             status = _normalize_status(info[0])
             accessibility = _normalize_accessibility(info[1])
 

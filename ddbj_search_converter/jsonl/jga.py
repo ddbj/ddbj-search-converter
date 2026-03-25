@@ -191,7 +191,7 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
         description=extract_description(entry, index_name),
         dbXrefs=[],  # 後で更新
         sameAs=parse_same_as(entry, index_name, accession),
-        status="live",
+        status="public",
         accessibility="controlled-access",
         dateCreated=None,  # 後で更新
         dateModified=None,  # 後で更新

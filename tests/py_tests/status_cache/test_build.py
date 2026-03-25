@@ -23,8 +23,8 @@ class TestParseLivelistFile:
             encoding="utf-8",
         )
 
-        result = list(_parse_livelist_file(tsv_file, "live"))
-        assert result == [("PRJDB1", "live"), ("PRJDB2", "live")]
+        result = list(_parse_livelist_file(tsv_file, "public"))
+        assert result == [("PRJDB1", "public"), ("PRJDB2", "public")]
 
     def test_parse_livelist_file_header_skip(self, tmp_path):
         tsv_file = tmp_path.joinpath("test.txt")
@@ -44,7 +44,7 @@ class TestParseLivelistFile:
             encoding="utf-8",
         )
 
-        result = list(_parse_livelist_file(tsv_file, "live"))
+        result = list(_parse_livelist_file(tsv_file, "public"))
         assert len(result) == 2
 
 
@@ -134,8 +134,8 @@ class TestBuildStatusCacheIntegration:
         # Verify BP statuses
         bp_result = fetch_bp_statuses_from_cache(config, ["PRJDB1", "PRJDB2", "PRJDB3", "PRJDB4"])
         assert bp_result == {
-            "PRJDB1": "live",
-            "PRJDB2": "live",
+            "PRJDB1": "public",
+            "PRJDB2": "public",
             "PRJDB3": "suppressed",
             "PRJDB4": "withdrawn",
         }
@@ -143,6 +143,6 @@ class TestBuildStatusCacheIntegration:
         # Verify BS statuses
         bs_result = fetch_bs_statuses_from_cache(config, ["SAMD00000001", "SAMD00000002"])
         assert bs_result == {
-            "SAMD00000001": "live",
+            "SAMD00000001": "public",
             "SAMD00000002": "suppressed",
         }

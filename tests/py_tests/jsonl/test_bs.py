@@ -325,9 +325,9 @@ class TestParseSameAs:
 class TestParseStatus:
     """Tests for parse_status function."""
 
-    def test_live_status(self) -> None:
+    def test_public_status(self) -> None:
         sample = _make_sample()
-        assert parse_status(sample) == "live"
+        assert parse_status(sample) == "public"
 
     def test_suppressed_status(self) -> None:
         sample = _make_sample()
@@ -336,7 +336,7 @@ class TestParseStatus:
 
     def test_no_status(self) -> None:
         sample = _make_sample()
-        assert parse_status(sample) == "live"
+        assert parse_status(sample) == "public"
 
 
 class TestParseAccessibility:
@@ -396,7 +396,7 @@ def _make_bs_instance(identifier: str) -> BioSample:
         package=None,
         dbXrefs=[],
         sameAs=[],
-        status="live",
+        status="public",
         accessibility="public-access",
         dateCreated=None,
         dateModified=None,
@@ -436,4 +436,4 @@ class TestFetchStatuses:
         docs = {"SAMD00000001": _make_bs_instance("SAMD00000001")}
         _fetch_statuses(config, docs)
 
-        assert docs["SAMD00000001"].status == "live"
+        assert docs["SAMD00000001"].status == "public"

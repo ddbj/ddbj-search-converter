@@ -18,7 +18,7 @@ from ddbj_search_converter.status_cache.db import (
 )
 
 FILE_STATUS_MAP: dict[str, str] = {
-    "public": "live",
+    "public": "public",
     "suppressed": "suppressed",
     "withdrawn": "withdrawn",
 }

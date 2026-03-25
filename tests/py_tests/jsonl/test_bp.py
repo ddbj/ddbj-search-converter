@@ -350,10 +350,10 @@ class TestParseSameAs:
 class TestParseStatus:
     """Tests for parse_status function."""
 
-    def test_always_returns_live(self) -> None:
+    def test_always_returns_public(self) -> None:
         project = _make_project()
-        assert parse_status(project, is_ddbj=True) == "live"
-        assert parse_status(project, is_ddbj=False) == "live"
+        assert parse_status(project, is_ddbj=True) == "public"
+        assert parse_status(project, is_ddbj=False) == "public"
 
 
 class TestParseAccessibility:
@@ -440,7 +440,7 @@ def _make_bp_instance(identifier: str) -> BioProject:
         parentBioProjects=[],
         childBioProjects=[],
         sameAs=[],
-        status="live",
+        status="public",
         accessibility="public-access",
         dateCreated=None,
         dateModified=None,
@@ -617,4 +617,4 @@ class TestFetchStatuses:
         docs = {"PRJDB1": _make_bp_instance("PRJDB1")}
         _fetch_statuses(config, docs)
 
-        assert docs["PRJDB1"].status == "live"
+        assert docs["PRJDB1"].status == "public"

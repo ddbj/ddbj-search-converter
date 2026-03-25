@@ -47,7 +47,7 @@ class TestInsertAndFetchBpStatuses:
         init_status_cache_db(config)
 
         rows = [
-            ("PRJDB1", "live"),
+            ("PRJDB1", "public"),
             ("PRJDB2", "suppressed"),
             ("PRJDB3", "withdrawn"),
         ]
@@ -57,7 +57,7 @@ class TestInsertAndFetchBpStatuses:
         finalize_status_cache_db(config)
 
         result = fetch_bp_statuses_from_cache(config, ["PRJDB1", "PRJDB2", "PRJDB3"])
-        assert result == {"PRJDB1": "live", "PRJDB2": "suppressed", "PRJDB3": "withdrawn"}
+        assert result == {"PRJDB1": "public", "PRJDB2": "suppressed", "PRJDB3": "withdrawn"}
 
 
 class TestInsertAndFetchBsStatuses:
@@ -66,7 +66,7 @@ class TestInsertAndFetchBsStatuses:
         init_status_cache_db(config)
 
         rows = [
-            ("SAMD00000001", "live"),
+            ("SAMD00000001", "public"),
             ("SAMD00000002", "suppressed"),
         ]
         count = insert_bs_statuses(config, rows)
@@ -75,7 +75,7 @@ class TestInsertAndFetchBsStatuses:
         finalize_status_cache_db(config)
 
         result = fetch_bs_statuses_from_cache(config, ["SAMD00000001", "SAMD00000002"])
-        assert result == {"SAMD00000001": "live", "SAMD00000002": "suppressed"}
+        assert result == {"SAMD00000001": "public", "SAMD00000002": "suppressed"}
 
 
 class TestFetchEmptyAccessions:
@@ -118,7 +118,7 @@ class TestChunkBoundary:
         config = _make_config(tmp_path)
         init_status_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "live") for i in range(CHUNK_SIZE - 1)]
+        rows = [(f"PRJDB{i}", "public") for i in range(CHUNK_SIZE - 1)]
         count = insert_bp_statuses(config, rows)
         assert count == CHUNK_SIZE - 1
 
@@ -132,7 +132,7 @@ class TestChunkBoundary:
         config = _make_config(tmp_path)
         init_status_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "live") for i in range(CHUNK_SIZE)]
+        rows = [(f"PRJDB{i}", "public") for i in range(CHUNK_SIZE)]
         count = insert_bp_statuses(config, rows)
         assert count == CHUNK_SIZE
 
@@ -146,7 +146,7 @@ class TestChunkBoundary:
         config = _make_config(tmp_path)
         init_status_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "live") for i in range(CHUNK_SIZE + 1)]
+        rows = [(f"PRJDB{i}", "public") for i in range(CHUNK_SIZE + 1)]
         count = insert_bp_statuses(config, rows)
         assert count == CHUNK_SIZE + 1
 
@@ -162,7 +162,7 @@ accession_strategy = st.text(
     min_size=1,
     max_size=20,
 )
-status_strategy = st.sampled_from(["live", "suppressed", "withdrawn"])
+status_strategy = st.sampled_from(["public", "private", "suppressed", "withdrawn"])
 
 
 class TestPbtRoundTrip:

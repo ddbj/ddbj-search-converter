@@ -333,10 +333,10 @@ def parse_status(
     """
     BioProject の status を返す。
 
-    BioProject XML には本来の status 情報 (live/suppressed 等) がないため、
-    常に "live" を返す。
+    BioProject XML には本来の status 情報 (public/suppressed 等) がないため、
+    常に "public" を返す。
     """
-    return "live"
+    return "public"
 
 
 def parse_accessibility(project: dict[str, Any], is_ddbj: bool) -> Accessibility:

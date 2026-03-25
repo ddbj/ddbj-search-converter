@@ -37,19 +37,19 @@ class TestNormalizeStatus:
     @pytest.mark.parametrize(
         ("input_val", "expected"),
         [
-            (None, "live"),
-            ("live", "live"),
-            ("Live", "live"),
-            ("unpublished", "unpublished"),
+            (None, "public"),
+            ("live", "public"),
+            ("Live", "public"),
+            ("unpublished", "private"),
             ("suppressed", "suppressed"),
             ("withdrawn", "withdrawn"),
-            ("public", "live"),
-            ("replaced", "withdrawn"),
+            ("public", "public"),
+            ("replaced", "suppressed"),
             ("killed", "withdrawn"),
-            ("LIVE", "live"),
-            ("PUBLIC", "live"),
-            ("unknown_status", "live"),
-            ("", "live"),
+            ("LIVE", "public"),
+            ("PUBLIC", "public"),
+            ("unknown_status", "public"),
+            ("", "public"),
         ],
     )
     def test_normalize_status(self, input_val: str | None, expected: str) -> None:
@@ -155,7 +155,7 @@ class TestEdgeCases:
 
     def test_status_case_insensitive(self) -> None:
         """大文字小文字を問わない。"""
-        assert _normalize_status("LIVE") == "live"
+        assert _normalize_status("LIVE") == "public"
         assert _normalize_status("Suppressed") == "suppressed"
         assert _normalize_status("WITHDRAWN") == "withdrawn"
 
@@ -257,7 +257,7 @@ def _make_sra_entry(identifier: str, sra_type: SraXmlType = "study") -> SRA:
     return create_sra_entry(
         sra_type=sra_type,
         parsed=parsed,
-        status="live",
+        status="public",
         accessibility="public-access",
         date_created=None,
         date_modified=None,

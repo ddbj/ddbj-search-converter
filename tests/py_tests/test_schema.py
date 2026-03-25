@@ -124,7 +124,7 @@ class TestBioProject:
             parentBioProjects=[parent_xref],
             childBioProjects=[child_xref],
             sameAs=[],
-            status="live",
+            status="public",
             accessibility="public-access",
             dateCreated=None,
             dateModified=None,
@@ -170,7 +170,7 @@ class TestJGA:
             description="Test Description",
             dbXrefs=[],
             sameAs=[],
-            status="live",
+            status="public",
             accessibility="controlled-access",
             dateCreated="2024-01-01T00:00:00Z",
             dateModified="2024-01-02T00:00:00Z",
@@ -179,7 +179,7 @@ class TestJGA:
 
         assert jga.identifier == "JGAS000001"
         assert jga.type_ == "jga-study"
-        assert jga.status == "live"
+        assert jga.status == "public"
         assert jga.accessibility == "controlled-access"
 
     def test_jga_json_output(self) -> None:
@@ -197,7 +197,7 @@ class TestJGA:
             description=None,
             dbXrefs=[],
             sameAs=[],
-            status="live",
+            status="public",
             accessibility="controlled-access",
             dateCreated=None,
             dateModified=None,

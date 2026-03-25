@@ -5,7 +5,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 # Status (INSDC 標準)
-Status = Literal["live", "unpublished", "suppressed", "withdrawn"]
+Status = Literal["public", "private", "suppressed", "withdrawn"]
 
 # Accessibility
 Accessibility = Literal["public-access", "controlled-access"]
@@ -201,7 +201,7 @@ class JGA(BaseModel):
     description: str | None
     dbXrefs: list[Xref]
     sameAs: list[Xref]
-    status: Literal["live"]
+    status: Literal["public"]
     accessibility: Literal["controlled-access"]
     dateCreated: str | None
     dateModified: str | None

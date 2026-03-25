@@ -238,18 +238,18 @@ def parse_status(sample: dict[str, Any], accession: str = "") -> Status:
     BioSample から status を抽出する。
 
     NCBI: Status/@status (live, suppressed など)
-    DDBJ: Status 要素なし → "live" とみなす
+    DDBJ: Status 要素なし → "public" とみなす
     """
     try:
         status_obj = sample.get("Status")
         if status_obj is not None and isinstance(status_obj, dict):
-            status: str = status_obj.get("status", "live")
+            status: str = status_obj.get("status", "public")
             if status == "suppressed":
                 return "suppressed"
-            return "live"
+            return "public"
     except Exception as e:
         log_warn(f"failed to parse status: {e}", accession=accession)
-    return "live"
+    return "public"
 
 
 def parse_accessibility(sample: dict[str, Any], accession: str = "") -> Accessibility:
