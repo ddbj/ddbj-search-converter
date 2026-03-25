@@ -9,6 +9,7 @@ import pytest
 
 from ddbj_search_converter.es.bulk_insert import (
     BulkInsertResult,
+    _extract_prefix,
     _sanitize_error_info,
     bulk_insert_jsonl,
     generate_bulk_actions,
@@ -151,6 +152,106 @@ class TestGenerateBulkActions:
         for i, action in enumerate(actions):
             assert action["_id"] == f"ID{i}"
             assert action["_source"]["index"] == i
+
+    def test_same_as_alias_documents(self, tmp_path: Path) -> None:
+        """sameAs with matching type and prefix yields alias documents."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAS000561",
+            "type": "jga-study",
+            "sameAs": [{"identifier": "JGAS000556", "type": "jga-study", "url": "..."}],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
+
+        assert len(actions) == 2
+        assert actions[0]["_id"] == "JGAS000561"
+        assert actions[1]["_id"] == "JGAS000556"
+        assert actions[1]["_source"]["identifier"] == "JGAS000561"
+
+    def test_same_as_different_type_ignored(self, tmp_path: Path) -> None:
+        """sameAs with different type should not yield alias documents."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "PRJDB1234",
+            "type": "bioproject",
+            "sameAs": [{"identifier": "GSE12345", "type": "geo", "url": "..."}],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "bioproject"))
+
+        assert len(actions) == 1
+        assert actions[0]["_id"] == "PRJDB1234"
+
+    def test_same_as_different_prefix_ignored(self, tmp_path: Path) -> None:
+        """sameAs with different prefix (e.g. AGDD vs JGAD) should not yield alias."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAD000452",
+            "type": "jga-dataset",
+            "sameAs": [{"identifier": "AGDD_000001", "type": "jga-dataset", "url": "..."}],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-dataset"))
+
+        assert len(actions) == 1
+        assert actions[0]["_id"] == "JGAD000452"
+
+    def test_same_as_skip_self_reference(self, tmp_path: Path) -> None:
+        """sameAs with same identifier as primary should be skipped."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAS000001",
+            "type": "jga-study",
+            "sameAs": [{"identifier": "JGAS000001", "type": "jga-study", "url": "..."}],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
+
+        assert len(actions) == 1
+
+    def test_same_as_multiple(self, tmp_path: Path) -> None:
+        """Multiple sameAs entries yield multiple alias documents."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAS000001",
+            "type": "jga-study",
+            "sameAs": [
+                {"identifier": "JGAS000998", "type": "jga-study", "url": "..."},
+                {"identifier": "JGAS000999", "type": "jga-study", "url": "..."},
+            ],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
+
+        assert len(actions) == 3
+        assert actions[0]["_id"] == "JGAS000001"
+        assert actions[1]["_id"] == "JGAS000998"
+        assert actions[2]["_id"] == "JGAS000999"
+        for action in actions:
+            assert action["_source"]["identifier"] == "JGAS000001"
+
+
+class TestExtractPrefix:
+    def test_jga_prefix(self) -> None:
+        assert _extract_prefix("JGAS000001") == "JGAS"
+
+    def test_agdd_prefix(self) -> None:
+        assert _extract_prefix("AGDD_000001") == "AGDD"
+
+    def test_prjdb_prefix(self) -> None:
+        assert _extract_prefix("PRJDB1234") == "PRJDB"
+
+    def test_empty_string(self) -> None:
+        assert _extract_prefix("") == ""
+
+    def test_numeric_only(self) -> None:
+        assert _extract_prefix("12345") == ""
 
 
 def _make_jsonl_file(tmp_path: Path, docs: list[dict]) -> Path:  # type: ignore[type-arg]

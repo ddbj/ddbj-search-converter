@@ -395,6 +395,8 @@ BioProject エントリーは umbrella 階層構造に対応しており、`pare
 | `jga-dac.jsonl` | `jga-dac` |
 | `jga-policy.jsonl` | `jga-policy` |
 
+JGA エントリーが `sameAs`（SECONDARY_ID）を持つ場合、ES bulk insert 時に Secondary ID を `_id` とするエイリアスドキュメントを同一インデックスに追加投入する。エイリアスドキュメントの `_source` は Primary ドキュメントと同一（`identifier` は Primary ID のまま）。これにより Secondary ID でも API からエントリーを取得できる。ただしプレフィックス（英字部分）が Primary ID と異なる Secondary ID（例: `AGDD_000001`）は除外する。
+
 ### Distribution
 
 各エントリーの `distribution` フィールドに格納するダウンロードリンク（Schema.org `DataDownload`）。

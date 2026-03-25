@@ -1,6 +1,7 @@
 """Elasticsearch bulk insert operations."""
 
 import json
+import re
 import time
 from collections.abc import Iterator
 from pathlib import Path
@@ -51,11 +52,27 @@ class BulkInsertResult(BaseModel):
     errors: list[dict[str, Any]]
 
 
+def _extract_prefix(identifier: str) -> str:
+    """Extract alphabetic prefix from an identifier.
+
+    >>> _extract_prefix("JGAS000001")
+    'JGAS'
+    >>> _extract_prefix("AGDD_000001")
+    'AGDD'
+    """
+    m = re.match(r"^[A-Za-z]+", identifier)
+    return m.group(0) if m else ""
+
+
 def generate_bulk_actions(
     jsonl_file: Path,
     index: str,
 ) -> Iterator[dict[str, Any]]:
     """Generate bulk actions from a JSONL file.
+
+    For documents with ``sameAs`` entries whose type matches the target index
+    and whose identifier prefix matches the primary identifier, additional
+    alias documents are yielded so that Secondary IDs are also retrievable.
 
     Args:
         jsonl_file: Path to the JSONL file
@@ -79,6 +96,21 @@ def generate_bulk_actions(
                 "_id": identifier,
                 "_source": doc,
             }
+            primary_prefix = _extract_prefix(identifier)
+            for same_as in doc.get("sameAs", []):
+                same_as_id = same_as.get("identifier")
+                if (
+                    same_as_id
+                    and same_as_id != identifier
+                    and same_as.get("type") == index
+                    and _extract_prefix(same_as_id) == primary_prefix
+                ):
+                    yield {
+                        "_op_type": "index",
+                        "_index": index,
+                        "_id": same_as_id,
+                        "_source": doc,
+                    }
 
 
 def bulk_insert_jsonl(
