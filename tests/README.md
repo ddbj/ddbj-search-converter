@@ -31,9 +31,11 @@ uv run pytest --cov-report=term-missing
 uv run pytest --hypothesis-show-statistics
 
 # リント
-uv run pylint ./ddbj_search_converter
+uv run ruff check ./ddbj_search_converter
 uv run mypy ./ddbj_search_converter
-uv run isort ./ddbj_search_converter
+
+# フォーマットチェック
+uv run ruff format --check ./ddbj_search_converter
 ```
 
 ## ディレクトリ構成
@@ -74,13 +76,13 @@ tests/
 ./scripts/fetch_test_fixtures.sh
 
 # 2. dev 環境起動
-docker compose -f compose.dev.yml up -d
+docker compose up -d --build
 
 # 3. CLI コマンド実行テスト
-docker compose -f compose.dev.yml exec app check_external_resources
+docker compose exec app check_external_resources
 
 # 4. 終了
-docker compose -f compose.dev.yml down
+docker compose down
 ```
 
 ## Fixture データ
