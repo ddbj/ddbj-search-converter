@@ -21,7 +21,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bs_distribution
-from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import ensure_list_children, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
@@ -330,7 +330,7 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
 
     return BioSample(
         identifier=accession,
-        properties={"BioSample": sample},
+        properties={"BioSample": ensure_list_children(sample)},
         distribution=make_bs_distribution(accession),
         isPartOf="BioSample",
         type="biosample",

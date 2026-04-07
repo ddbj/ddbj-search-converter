@@ -7,7 +7,7 @@ from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import finalize_relation_db, init_dblink_db
-from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, get_dbxref_map, to_xref
+from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, ensure_list_children, get_dbxref_map, to_xref
 from ddbj_search_converter.schema import XrefType
 
 
@@ -120,6 +120,111 @@ class TestEdgeCases:
         xref = to_xref("E-GEAD-0")
         assert xref.type_ == "gea"
         assert "E-GEAD-000" in xref.url
+
+
+class TestEnsureListChildren:
+    """Tests for ensure_list_children function."""
+
+    def test_single_dict_wrapped_in_list(self) -> None:
+        result = ensure_list_children({"Child": {"key": "val"}})
+        assert result == {"Child": [{"key": "val"}]}
+
+    def test_multiple_children_stay_as_list(self) -> None:
+        result = ensure_list_children({"Child": [{"a": "1"}, {"a": "2"}]})
+        assert result == {"Child": [{"a": "1"}, {"a": "2"}]}
+
+    def test_scalar_values_unchanged(self) -> None:
+        result = ensure_list_children({"attr": "value", "id": "123", "count": 42})
+        assert result == {"attr": "value", "id": "123", "count": 42}
+
+    def test_none_value_unchanged(self) -> None:
+        result = ensure_list_children({"Empty": None})
+        assert result == {"Empty": None}
+
+    def test_nested_recursion(self) -> None:
+        result = ensure_list_children({
+            "Parent": {
+                "Child": {
+                    "GrandChild": {"leaf": "val"}
+                }
+            }
+        })
+        assert result == {
+            "Parent": [{
+                "Child": [{
+                    "GrandChild": [{"leaf": "val"}]
+                }]
+            }]
+        }
+
+    def test_does_not_mutate_input(self) -> None:
+        original = {"Child": {"key": "val"}}
+        inner = original["Child"]
+        ensure_list_children(original)
+        assert original == {"Child": {"key": "val"}}
+        assert original["Child"] is inner
+
+    def test_mixed_types_in_list(self) -> None:
+        result = ensure_list_children({"Items": [{"id": "1"}, "text", None]})
+        assert result == {"Items": [{"id": "1"}, "text", None]}
+
+    def test_empty_dict(self) -> None:
+        result = ensure_list_children({})
+        assert result == {}
+
+    def test_content_key_stays_scalar(self) -> None:
+        """XML 属性付きテキスト要素は content がスカラーのまま。"""
+        result = ensure_list_children({"Name": {"abbr": "DDBJ", "content": "DNA Data Bank"}})
+        assert result == {"Name": [{"abbr": "DDBJ", "content": "DNA Data Bank"}]}
+
+    def test_dict_in_list_is_recursed(self) -> None:
+        result = ensure_list_children({
+            "Publications": [
+                {"Title": {"content": "Paper 1"}},
+                {"Title": {"content": "Paper 2"}},
+            ]
+        })
+        assert result == {
+            "Publications": [
+                {"Title": [{"content": "Paper 1"}]},
+                {"Title": [{"content": "Paper 2"}]},
+            ]
+        }
+
+    def test_realistic_bioproject(self) -> None:
+        """BioProject 風の構造で全体テスト。"""
+        props = {
+            "ProjectDescr": {
+                "Title": "Example Project",
+                "Description": "A description",
+                "Publication": {"id": "12345", "DbType": "ePubmed"},
+                "Grant": [
+                    {"Agency": {"abbr": "JST", "content": "JST"}, "GrantId": "001"},
+                    {"Agency": {"abbr": "AMED", "content": "AMED"}, "GrantId": "002"},
+                ],
+            },
+            "ProjectID": {
+                "ArchiveID": {"accession": "PRJDB1", "archive": "DDBJ"},
+            },
+        }
+        result = ensure_list_children(props)
+
+        # ProjectDescr は [dict] にラップ
+        assert isinstance(result["ProjectDescr"], list)
+        assert len(result["ProjectDescr"]) == 1
+        descr = result["ProjectDescr"][0]
+
+        # スカラーはそのまま
+        assert descr["Title"] == "Example Project"
+
+        # Publication (単一 dict) は [dict] にラップ
+        assert isinstance(descr["Publication"], list)
+        assert descr["Publication"][0]["id"] == "12345"
+
+        # Grant (既に list) はそのまま list、中の dict は再帰処理
+        assert isinstance(descr["Grant"], list)
+        assert len(descr["Grant"]) == 2
+        assert isinstance(descr["Grant"][0]["Agency"], list)
 
 
 class TestGetDbxrefMap:

@@ -20,7 +20,7 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
-from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import ensure_list_children, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.schema import JGA, Organism, Xref
 from ddbj_search_converter.xml_utils import parse_xml
@@ -180,7 +180,7 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
 
     return JGA(
         identifier=accession,
-        properties=entry,
+        properties=ensure_list_children(entry),
         distribution=make_jga_distribution(index_name, accession),
         isPartOf="jga",
         type=index_name,

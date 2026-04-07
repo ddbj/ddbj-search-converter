@@ -95,6 +95,43 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     return Xref(identifier=id_, type="taxonomy", url=URL_TEMPLATE["taxonomy"].format(id=id_))
 
 
+def ensure_list_children(d: dict[str, Any]) -> dict[str, Any]:
+    """properties 内の dict 値を [dict] にラップして新しい dict を返す。
+
+    元の dict は変更しない。スタックベースのイテレーションで処理する。
+    """
+
+    def _process_value(value: Any, stack: list[tuple[dict[str, Any], dict[str, Any]]]) -> Any:
+        if isinstance(value, dict):
+            new_dict: dict[str, Any] = {}
+            stack.append((new_dict, value))
+            return [new_dict]
+        if isinstance(value, list):
+            new_list: list[Any] = []
+            for item in value:
+                if isinstance(item, dict):
+                    new_item: dict[str, Any] = {}
+                    stack.append((new_item, item))
+                    new_list.append(new_item)
+                else:
+                    new_list.append(item)
+            return new_list
+        return value
+
+    root: dict[str, Any] = {}
+    stack: list[tuple[dict[str, Any], dict[str, Any]]] = []
+
+    for key, value in d.items():
+        root[key] = _process_value(value, stack)
+
+    while stack:
+        dest, src = stack.pop()
+        for key, value in src.items():
+            dest[key] = _process_value(value, stack)
+
+    return root
+
+
 def write_jsonl(output_path: Path, docs: list[Any]) -> None:
     """Pydantic モデルインスタンスのリストを JSONL ファイルに書き込む。"""
     output_path.parent.mkdir(parents=True, exist_ok=True)

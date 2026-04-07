@@ -1,5 +1,6 @@
 """Tests for ddbj_search_converter.cli.cleanup_old_results module."""
 
+import os
 import stat
 from datetime import date, datetime
 from pathlib import Path
@@ -233,6 +234,7 @@ class TestCleanup:
         for d in dates:
             assert jsonl_dir.joinpath(d).exists()
 
+    @pytest.mark.skipif(os.getuid() == 0, reason="root ignores filesystem permissions")
     def test_cleanup_reports_failed_deletions(self, tmp_path: Path) -> None:
         """削除権限がない場合、failed に追加される。"""
         jsonl_dir = tmp_path.joinpath("bioproject", "jsonl")
