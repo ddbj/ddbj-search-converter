@@ -8,9 +8,12 @@ from unittest.mock import MagicMock, patch
 import duckdb
 import pytest
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import (
+    INSDC_BP_PRESERVED_REL_PATH,
+    INSDC_BS_PRESERVED_REL_PATH,
+    Config,
+)
 from ddbj_search_converter.dblink.db import init_dblink_db, normalize_edge
-from ddbj_search_converter.config import INSDC_BP_PRESERVED_REL_PATH, INSDC_BS_PRESERVED_REL_PATH
 from ddbj_search_converter.dblink.insdc import (
     INSDC_TO_BP_QUERY,
     INSDC_TO_BS_QUERY,
