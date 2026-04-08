@@ -11,7 +11,7 @@
 #   --from-step STEP    Start from specified step (use --list-steps to see available steps)
 #   --list-steps        Show available steps and exit
 #   --dry-run           Show what would be done without executing
-#   --parallel N        Max parallel jobs for JSONL generation (default: 4)
+#   --parallel N        Max parallel jobs for JSONL generation (default: 16)
 #   --clean-es          Delete all ES indexes before bulk insert (idempotent)
 #
 # Environment variables (optional):
@@ -107,7 +107,7 @@ declare -A STEP_PHASE=(
 TARGET_DATE=""
 FULL_MODE=false
 DRY_RUN=false
-MAX_PARALLEL=4
+MAX_PARALLEL=16
 FROM_STEP=""
 FROM_STEP_ORDER=0
 CLEAN_ES=false
