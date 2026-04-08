@@ -72,6 +72,8 @@ SRA_BLACKLIST_REL_PATH = "sra/blacklist.txt"
 JGA_BLACKLIST_REL_PATH = "jga/blacklist.txt"
 MTB_BP_PRESERVED_REL_PATH = "metabobank/mtb_id_bioproject_preserve.tsv"
 MTB_BS_PRESERVED_REL_PATH = "metabobank/mtb_id_biosample_preserve.tsv"
+INSDC_BP_PRESERVED_REL_PATH = "dblink/insdc_bp_preserved.tsv"
+INSDC_BS_PRESERVED_REL_PATH = "dblink/insdc_bs_preserved.tsv"
 
 # Accessions base paths
 SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions")

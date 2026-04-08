@@ -1,8 +1,11 @@
 """
-INSDC 配列 accession と BioProject/BioSample の関連を TRAD PostgreSQL から抽出し、
+INSDC 配列 accession と BioProject/BioSample の関連を抽出し、
 DBLink データベースに挿入する。
 
 入力:
+- Preserved TSV ({const_dir}/dblink/)
+    - insdc_bp_preserved.tsv: 手動キュレーションされた INSDC-BioProject 関連
+    - insdc_bs_preserved.tsv: 手動キュレーションされた INSDC-BioSample 関連
 - TRAD PostgreSQL (g-actual:54308, e-actual:54309, w-actual:54310)
     - accession テーブルと project テーブルを JOIN
     - project_id が PRJ% で始まる行 → insdc-bioproject 関連
@@ -14,15 +17,24 @@ DBLink データベースに挿入する。
 
 import psycopg2
 
-from ddbj_search_converter.config import Config, get_config
+from ddbj_search_converter.config import (
+    INSDC_BP_PRESERVED_REL_PATH,
+    INSDC_BS_PRESERVED_REL_PATH,
+    Config,
+    get_config,
+)
 from ddbj_search_converter.dblink.db import (
     AccessionType,
+    IdPairs,
     get_tmp_dir,
     load_relations_from_tsv,
+    load_to_db,
     normalize_edge,
 )
-from ddbj_search_converter.dblink.utils import load_blacklist
-from ddbj_search_converter.logging.logger import log_info, log_warn, run_logger
+from ddbj_search_converter.dblink.utils import filter_pairs_by_blacklist, load_blacklist
+from ddbj_search_converter.id_patterns import is_valid_accession
+from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
+from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.postgres.utils import parse_postgres_url
 
 TRAD_DBS = [
@@ -93,13 +105,76 @@ def _write_insdc_relations(
         log_info(f"loaded {count} insdc-{dst_type} from {dbname}")
 
 
+def _load_insdc_preserved_file(
+    config: Config,
+    preserved_rel_path: str,
+    dst_type: AccessionType,
+) -> IdPairs:
+    """Preserved TSV から INSDC -> BioProject/BioSample 関連を読み込む。
+
+    TSV format: insdc_accession\ttarget_accession (ヘッダなし)
+    ターゲット側 (bioproject/biosample) のみバリデーション。
+    INSDC 側は id_patterns.py にパターンがないためスキップ。
+
+    Raises:
+        FileNotFoundError: ファイルが存在しない場合。
+    """
+    preserved_path = config.const_dir.joinpath(preserved_rel_path)
+    if not preserved_path.exists():
+        raise FileNotFoundError(f"preserved file not found: {preserved_path}")
+
+    pairs: IdPairs = set()
+    log_info(f"processing preserved file: {preserved_path}", file=str(preserved_path))
+
+    with preserved_path.open("r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                insdc_acc, target_acc = parts[0], parts[1]
+                if not is_valid_accession(target_acc, dst_type):
+                    log_debug(
+                        f"skipping invalid {dst_type}: {target_acc}",
+                        accession=target_acc,
+                        file=str(preserved_path),
+                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                        source="insdc-preserved",
+                    )
+                    continue
+                pairs.add((insdc_acc, target_acc))
+
+    log_info(
+        f"loaded {len(pairs)} insdc-{dst_type} from preserved file",
+        file=str(preserved_path),
+    )
+
+    return pairs
+
+
 def main() -> None:
     config = get_config()
     with run_logger(config=config):
         bp_blacklist, bs_blacklist = load_blacklist(config)
 
+        # 1. Preserved file から関連を読み込み (trad_postgres_url に依存しない)
+        insdc_to_bp = _load_insdc_preserved_file(config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+        insdc_to_bs = _load_insdc_preserved_file(config, INSDC_BS_PRESERVED_REL_PATH, "biosample")
+
+        # 2. Blacklist 適用
+        insdc_to_bp = filter_pairs_by_blacklist(insdc_to_bp, bp_blacklist, "right")
+        insdc_to_bs = filter_pairs_by_blacklist(insdc_to_bs, bs_blacklist, "right")
+
+        # 3. DB にロード
+        if insdc_to_bp:
+            load_to_db(config, insdc_to_bp, "insdc", "bioproject")
+        if insdc_to_bs:
+            load_to_db(config, insdc_to_bs, "insdc", "biosample")
+
+        # 4. TRAD PostgreSQL から関連を抽出 (URL が設定されている場合のみ)
         if not config.trad_postgres_url:
-            log_warn("trad_postgres_url is not set, skipping insdc relations")
+            log_warn("trad_postgres_url is not set, skipping insdc TRAD relations")
             return
 
         _write_insdc_relations(config, "bioproject", INSDC_TO_BP_QUERY, bp_blacklist)

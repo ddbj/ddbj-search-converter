@@ -10,10 +10,12 @@ import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import init_dblink_db, normalize_edge
+from ddbj_search_converter.config import INSDC_BP_PRESERVED_REL_PATH, INSDC_BS_PRESERVED_REL_PATH
 from ddbj_search_converter.dblink.insdc import (
     INSDC_TO_BP_QUERY,
     INSDC_TO_BS_QUERY,
     TRAD_DBS,
+    _load_insdc_preserved_file,
     _write_insdc_relations,
     main,
 )
@@ -173,6 +175,60 @@ class TestWriteInsdcRelations:
         assert cols == ["bioproject", "PRJDB12345", "insdc", "AB000001"]
 
 
+class TestLoadInsdcPreservedFile:
+    """_load_insdc_preserved_file のテスト。"""
+
+    def test_loads_bioproject_preserved_file(self, insdc_config: Config) -> None:
+        """BioProject preserved file を読み込む。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text("AB000001\tPRJDB12345\nCP035466\tPRJNA999999\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert pairs == {("AB000001", "PRJDB12345"), ("CP035466", "PRJNA999999")}
+
+    def test_loads_biosample_preserved_file(self, insdc_config: Config) -> None:
+        """BioSample preserved file を読み込む。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bs_preserved.tsv")
+        preserved_path.write_text("AB000001\tSAMD00000001\nCP035466\tSAMN12345678\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BS_PRESERVED_REL_PATH, "biosample")
+
+        assert pairs == {("AB000001", "SAMD00000001"), ("CP035466", "SAMN12345678")}
+
+    def test_raises_when_file_missing(self, insdc_config: Config) -> None:
+        """ファイルが存在しない場合は FileNotFoundError。"""
+        with pytest.raises(FileNotFoundError):
+            _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+    def test_skips_invalid_target_accession(self, insdc_config: Config) -> None:
+        """無効なターゲット accession をスキップする。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text("AB000001\tPRJDB12345\nCP035466\tINVALID_ID\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert pairs == {("AB000001", "PRJDB12345")}
+
+    def test_skips_empty_lines(self, insdc_config: Config) -> None:
+        """空行をスキップする。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text("AB000001\tPRJDB12345\n\nCP035466\tPRJNA999999\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert len(pairs) == 2
+
+    def test_does_not_validate_insdc_accession(self, insdc_config: Config) -> None:
+        """INSDC 側の accession はバリデーションしない。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text("WEIRD_ACC_123\tPRJDB12345\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert pairs == {("WEIRD_ACC_123", "PRJDB12345")}
+
+
 class TestNormalizeEdgeInsdc:
     """normalize_edge で insdc タイプの正規化テスト。"""
 
@@ -188,7 +244,8 @@ class TestNormalizeEdgeInsdc:
 class TestMain:
     """main() のテスト。"""
 
-    def test_skips_when_trad_postgres_url_is_empty(self, tmp_path: Path) -> None:
+    def test_skips_trad_when_postgres_url_is_empty(self, tmp_path: Path) -> None:
+        """trad_postgres_url が空の場合、TRAD 処理はスキップするが preserved は処理する。"""
         config = Config(
             result_dir=tmp_path,
             const_dir=tmp_path.joinpath("const"),
@@ -200,10 +257,15 @@ class TestMain:
         with (
             patch("ddbj_search_converter.dblink.insdc.get_config", return_value=config),
             patch("ddbj_search_converter.dblink.insdc._write_insdc_relations") as mock_write,
+            patch(
+                "ddbj_search_converter.dblink.insdc._load_insdc_preserved_file",
+                return_value=set(),
+            ) as mock_preserved,
         ):
             main()
 
         mock_write.assert_not_called()
+        assert mock_preserved.call_count == 2
 
     def test_calls_write_for_both_types(self, insdc_config: Config) -> None:
         init_dblink_db(insdc_config)
@@ -211,6 +273,10 @@ class TestMain:
         with (
             patch("ddbj_search_converter.dblink.insdc.get_config", return_value=insdc_config),
             patch("ddbj_search_converter.dblink.insdc._write_insdc_relations") as mock_write,
+            patch(
+                "ddbj_search_converter.dblink.insdc._load_insdc_preserved_file",
+                return_value=set(),
+            ),
         ):
             main()
 
