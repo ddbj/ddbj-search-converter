@@ -26,11 +26,11 @@ DDBJ Search Converter のデータフローと構造。
 |   create_dblink_assembly_and_master  -- fetch assembly_summary, ORGANISM    |
 |   create_dblink_gea_relations        -- parse IDF/SDRF                      |
 |   create_dblink_metabobank_relations -- parse IDF/SDRF, preserved.tsv       |
-|   create_dblink_jga_relations        -- parse XML/CSV                       |
+|   create_dblink_jga_relations        -- parse XML/CSV, hum-id TSV           |
 |   create_dblink_sra_internal         -- SRA internal + BP/BS <-> SRA        |
 |   create_dblink_insdc_relations     -- preserved.tsv, TRAD PostgreSQL       |
 |   finalize_dblink_db -----> {const}/dblink/dblink.duckdb, umbrella.duckdb   |
-|   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (17 files)          |
+|   dump_dblink_files --------------> {DBLINK_PATH}/*.tsv (18 files)          |
 +-----------------------------------------------------------------------------+
                                       |
                                       v
@@ -335,7 +335,7 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `geo` | GSE12345 |
 | `taxonomy` | 9606 |
 
-## DBLink TSV 出力（17 種類）
+## DBLink TSV 出力（18 種類）
 
 `{DBLINK_PATH}/` 以下に出力される。relation を表す 2 カラムの TSV。
 
@@ -354,6 +354,7 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `mtb2bp/mtb_id_bioproject.tsv` | metabobank - bioproject |
 | `mtb2bs/mtb_id_biosample.tsv` | metabobank - biosample |
 | `jga_study-humID/jga_study2humID.tsv` | jga-study - hum-id |
+| `jga_dataset-humID/jga_dataset2humID.tsv` | jga-dataset - hum-id |
 | `jga_study-pubmed_id/jga_study2pubmed_id.tsv` | jga-study - pubmed-id |
 | `jga_study-jga_dataset/jga_study2jga_dataset.tsv` | jga-study - jga-dataset |
 | `insdc-bioproject/insdc2bioproject.tsv` | insdc - bioproject |

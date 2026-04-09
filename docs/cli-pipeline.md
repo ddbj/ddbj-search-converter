@@ -382,7 +382,7 @@ es_bulk_insert --index jga-study \
 | `create_dblink_assembly_and_master_relations` | - | Assembly/INSDC Master 関連を抽出 |
 | `create_dblink_gea_relations` | - | GEA 関連を抽出 |
 | `create_dblink_metabobank_relations` | - | MetaboBank 関連を抽出 |
-| `create_dblink_jga_relations` | - | JGA 関連を抽出 |
+| `create_dblink_jga_relations` | - | JGA 関連を抽出（hum-id は TSV から読み込み） |
 | `create_dblink_sra_internal_relations` | - | SRA 内部関連 + BioProject/BioSample ↔ SRA 関連を抽出 |
 | `create_dblink_insdc_relations` | - | TRAD PostgreSQL から INSDC 配列 accession 関連を抽出 |
 | `finalize_dblink_db` | - | DBLink DB と Umbrella DB を確定 |

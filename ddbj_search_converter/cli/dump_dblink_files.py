@@ -28,6 +28,8 @@ Outputs:
     - Mapping: MetaboBank ID -> BioSample ID
 - /lustre9/open/shared_data/dblink/jga_study-humID/jga_study2humID.tsv
     - Mapping: JGA Study ID -> NBDC hum ID
+- /lustre9/open/shared_data/dblink/jga_dataset-humID/jga_dataset2humID.tsv
+    - Mapping: JGA Dataset ID -> NBDC hum ID
 - /lustre9/open/shared_data/dblink/jga_study-pubmed_id/jga_study2pubmed_id.tsv
     - Mapping: JGA Study ID -> PubMed ID
 - /lustre9/open/shared_data/dblink/jga_study-jga_dataset/jga_study2jga_dataset.tsv
@@ -57,6 +59,7 @@ EXPORT_RELATIONS: list[tuple[AccessionType, AccessionType, str]] = [
     ("metabobank", "bioproject", "mtb2bp/mtb_id_bioproject.tsv"),
     ("metabobank", "biosample", "mtb2bs/mtb_id_biosample.tsv"),
     ("jga-study", "hum-id", "jga_study-humID/jga_study2humID.tsv"),
+    ("jga-dataset", "hum-id", "jga_dataset-humID/jga_dataset2humID.tsv"),
     ("jga-study", "pubmed-id", "jga_study-pubmed_id/jga_study2pubmed_id.tsv"),
     ("jga-study", "jga-dataset", "jga_study-jga_dataset/jga_study2jga_dataset.tsv"),
     ("insdc", "bioproject", "insdc-bioproject/insdc2bioproject.tsv"),

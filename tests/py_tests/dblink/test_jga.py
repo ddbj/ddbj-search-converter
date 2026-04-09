@@ -1,16 +1,23 @@
 """Tests for ddbj_search_converter.dblink.jga module."""
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 
+from ddbj_search_converter.config import (
+    JGA_DATASET_HUM_ID_REL_PATH,
+    JGA_STUDY_HUM_ID_REL_PATH,
+    Config,
+)
 from ddbj_search_converter.dblink.jga import (
-    extract_hum_id,
+    _load_jga_hum_id_file,
     extract_pubmed_ids,
     join_relations,
     read_relation_csv,
     reverse_relation,
 )
+from ddbj_search_converter.logging.logger import _ctx, init_logger
 
 
 class TestReadRelationCsv:
@@ -111,54 +118,86 @@ class TestReverseRelation:
         assert result == set()
 
 
-class TestExtractHumId:
-    """Tests for extract_hum_id function."""
+@pytest.fixture
+def jga_config(tmp_path: Path) -> Config:
+    config = Config(
+        result_dir=tmp_path,
+        const_dir=tmp_path.joinpath("const"),
+    )
+    config.const_dir.joinpath("dblink").mkdir(parents=True, exist_ok=True)
 
-    def test_extracts_hum_id(self) -> None:
-        """NBDC Number を抽出する。"""
-        study_entry = {
-            "accession": "JGAS000001",
-            "STUDY_ATTRIBUTES": {
-                "STUDY_ATTRIBUTE": [
-                    {"TAG": "NBDC Number", "VALUE": "hum0004"},
-                    {"TAG": "Other", "VALUE": "value"},
-                ]
-            },
-        }
+    return config
 
-        result = extract_hum_id(study_entry)
 
-        assert result == "hum0004"
+@pytest.fixture
+def _setup_logger(jga_config: Config) -> Iterator[None]:
+    init_logger(run_name="test_jga", config=jga_config)
+    yield
+    _ctx.set(None)
 
-    def test_single_attribute(self) -> None:
-        """単一の STUDY_ATTRIBUTE の場合 (dict)。"""
-        study_entry = {
-            "accession": "JGAS000001",
-            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "NBDC Number", "VALUE": "hum0005"}},
-        }
 
-        result = extract_hum_id(study_entry)
+@pytest.mark.usefixtures("_setup_logger")
+class TestLoadJgaHumIdFile:
+    """Tests for _load_jga_hum_id_file function."""
 
-        assert result == "hum0005"
+    def test_loads_study_hum_id(self, jga_config: Config) -> None:
+        """jga-study -> hum-id を読み込む。"""
+        tsv_path = jga_config.const_dir.joinpath(JGA_STUDY_HUM_ID_REL_PATH)
+        tsv_path.write_text("JGAS000001\thum0004\nJGAS000002\thum0001\n")
 
-    def test_no_nbdc_number(self) -> None:
-        """NBDC Number がない場合は None。"""
-        study_entry = {
-            "accession": "JGAS000001",
-            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": [{"TAG": "Other", "VALUE": "value"}]},
-        }
+        result = _load_jga_hum_id_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
 
-        result = extract_hum_id(study_entry)
+        assert result == {("JGAS000001", "hum0004"), ("JGAS000002", "hum0001")}
 
-        assert result is None
+    def test_loads_dataset_hum_id(self, jga_config: Config) -> None:
+        """jga-dataset -> hum-id を読み込む。"""
+        tsv_path = jga_config.const_dir.joinpath(JGA_DATASET_HUM_ID_REL_PATH)
+        tsv_path.write_text("JGAD000001\thum0004\nJGAD000002\thum0001\n")
 
-    def test_no_study_attributes(self) -> None:
-        """STUDY_ATTRIBUTES がない場合は None。"""
-        study_entry = {"accession": "JGAS000001"}
+        result = _load_jga_hum_id_file(jga_config, JGA_DATASET_HUM_ID_REL_PATH, "jga-dataset")
 
-        result = extract_hum_id(study_entry)
+        assert result == {("JGAD000001", "hum0004"), ("JGAD000002", "hum0001")}
 
-        assert result is None
+    def test_skips_empty_lines(self, jga_config: Config) -> None:
+        """空行をスキップする。"""
+        tsv_path = jga_config.const_dir.joinpath(JGA_STUDY_HUM_ID_REL_PATH)
+        tsv_path.write_text("JGAS000001\thum0004\n\nJGAS000002\thum0001\n")
+
+        result = _load_jga_hum_id_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
+
+        assert len(result) == 2
+
+    def test_skips_malformed_lines(self, jga_config: Config) -> None:
+        """カラム不足の行をスキップする。"""
+        tsv_path = jga_config.const_dir.joinpath(JGA_STUDY_HUM_ID_REL_PATH)
+        tsv_path.write_text("JGAS000001\thum0004\nBADLINE\nJGAS000002\thum0001\n")
+
+        result = _load_jga_hum_id_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
+
+        assert result == {("JGAS000001", "hum0004"), ("JGAS000002", "hum0001")}
+
+    def test_skips_invalid_src_accession(self, jga_config: Config) -> None:
+        """無効な src accession をスキップする。"""
+        tsv_path = jga_config.const_dir.joinpath(JGA_STUDY_HUM_ID_REL_PATH)
+        tsv_path.write_text("JGAS000001\thum0004\nINVALID\thum0001\n")
+
+        result = _load_jga_hum_id_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
+
+        assert result == {("JGAS000001", "hum0004")}
+
+    def test_skips_invalid_hum_id(self, jga_config: Config) -> None:
+        """無効な hum-id をスキップする。"""
+        tsv_path = jga_config.const_dir.joinpath(JGA_STUDY_HUM_ID_REL_PATH)
+        tsv_path.write_text("JGAS000001\thum0004\nJGAS000002\tINVALID_HUM\n")
+
+        result = _load_jga_hum_id_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
+
+        assert result == {("JGAS000001", "hum0004")}
+
+    def test_raises_when_file_missing(self, jga_config: Config) -> None:
+        """ファイルが存在しない場合は FileNotFoundError。"""
+        with pytest.raises(FileNotFoundError):
+            _load_jga_hum_id_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
 
 
 class TestExtractPubmedIds:

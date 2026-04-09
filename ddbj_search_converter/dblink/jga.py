@@ -1,15 +1,17 @@
 """
-JGA (Japanese Genotype-phenotype Archive) の XML/CSV から関連を抽出し、DBLink DB に挿入する。
+JGA (Japanese Genotype-phenotype Archive) の XML/CSV/TSV から関連を抽出し、DBLink DB に挿入する。
 
 入力:
+- {const_dir}/dblink/jga_study_hum_id.tsv  -> jga-study - hum-id
+- {const_dir}/dblink/jga_dataset_hum_id.tsv -> jga-dataset - hum-id
 - JGA_BASE_PATH/jga-study.xml
-    - STUDY_ATTRIBUTES/STUDY_ATTRIBUTE: TAG=NBDC Number -> hum-id
     - PUBLICATIONS/PUBLICATION: id 属性 -> pubmed-id
 - JGA_BASE_PATH/*-relation.csv
     - JGA 内部関連 (dataset/study/policy/dac) を構築
 
 出力:
 - jga-study -> hum-id
+- jga-dataset -> hum-id
 - jga-study -> pubmed-id
 - jga-study <-> jga-dataset
 - jga-study <-> jga-dac
@@ -31,13 +33,16 @@ from ddbj_search_converter.config import (
     JGA_DATA_EXPERIMENT_CSV,
     JGA_DATASET_ANALYSIS_CSV,
     JGA_DATASET_DATA_CSV,
+    JGA_DATASET_HUM_ID_REL_PATH,
     JGA_DATASET_POLICY_CSV,
     JGA_EXPERIMENT_STUDY_CSV,
     JGA_POLICY_DAC_CSV,
+    JGA_STUDY_HUM_ID_REL_PATH,
     JGA_STUDY_XML,
+    Config,
     get_config,
 )
-from ddbj_search_converter.dblink.db import IdPairs, load_to_db
+from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import filter_sra_pairs_by_blacklist, load_jga_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
@@ -205,20 +210,66 @@ def load_jga_study_xml() -> list[dict[str, Any]]:
     return studies
 
 
-def extract_hum_id(study_entry: dict[str, Any]) -> str | None:
-    """STUDY_ATTRIBUTES から NBDC Number (hum-id) を抽出する。"""
-    attrs = (study_entry.get("STUDY_ATTRIBUTES") or {}).get("STUDY_ATTRIBUTE", [])
+def _load_jga_hum_id_file(
+    config: Config,
+    rel_path: str,
+    src_type: AccessionType,
+) -> IdPairs:
+    """hum-id TSV から JGA accession -> hum-id 関連を読み込む。
 
-    # Ensure it's a list (single attribute case)
-    if isinstance(attrs, dict):
-        attrs = [attrs]
+    TSV format: jga_accession\thum_id (ヘッダなし)
 
-    for attr in attrs:
-        if attr.get("TAG") == "NBDC Number":
-            value = attr.get("VALUE")
-            return str(value) if value is not None else None
+    Raises:
+        FileNotFoundError: ファイルが存在しない場合。
+    """
+    path = config.const_dir.joinpath(rel_path)
+    if not path.exists():
+        raise FileNotFoundError(f"hum-id file not found: {path}")
 
-    return None
+    pairs: IdPairs = set()
+    log_info(f"processing hum-id file: {path}", file=str(path))
+
+    with path.open("r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) < 2:
+                log_debug(
+                    f"skipping malformed line: {line}",
+                    file=str(path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="jga-hum-id",
+                )
+                continue
+            src_acc, hum_id = parts[0], parts[1]
+            if not is_valid_accession(src_acc, src_type):
+                log_debug(
+                    f"skipping invalid {src_type}: {src_acc}",
+                    accession=src_acc,
+                    file=str(path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="jga-hum-id",
+                )
+                continue
+            if not is_valid_accession(hum_id, "hum-id"):
+                log_debug(
+                    f"skipping invalid hum-id: {hum_id}",
+                    accession=hum_id,
+                    file=str(path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="jga-hum-id",
+                )
+                continue
+            pairs.add((src_acc, hum_id))
+
+    log_info(
+        f"loaded {len(pairs)} {src_type} -> hum-id from hum-id file",
+        file=str(path),
+    )
+
+    return pairs
 
 
 def extract_pubmed_ids(study_entry: dict[str, Any]) -> set[str]:
@@ -239,14 +290,8 @@ def extract_pubmed_ids(study_entry: dict[str, Any]) -> set[str]:
     return pubmed_ids
 
 
-def process_jga_study_xml() -> tuple[IdPairs, IdPairs]:
-    """
-    jga-study.xml を処理して hum-id と pubmed-id の関連を返す。
-
-    Returns:
-        (study_to_hum_id, study_to_pubmed_id)
-    """
-    study_to_hum_id: IdPairs = set()
+def extract_jga_study_pubmed_ids() -> IdPairs:
+    """jga-study.xml を処理して pubmed-id の関連を返す。"""
     study_to_pubmed_id: IdPairs = set()
 
     xml_file = str(JGA_STUDY_XML)
@@ -266,21 +311,6 @@ def process_jga_study_xml() -> tuple[IdPairs, IdPairs]:
             )
             continue
 
-        # Extract hum-id
-        hum_id = extract_hum_id(study)
-        if hum_id:
-            if is_valid_accession(hum_id, "hum-id"):
-                study_to_hum_id.add((accession, hum_id))
-            else:
-                log_debug(
-                    f"skipping invalid hum-id: {hum_id}",
-                    accession=hum_id,
-                    file=xml_file,
-                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                    source="jga",
-                )
-
-        # Extract pubmed-ids
         pubmed_ids = extract_pubmed_ids(study)
         for pub_id in pubmed_ids:
             if is_valid_accession(pub_id, "pubmed-id"):
@@ -294,7 +324,7 @@ def process_jga_study_xml() -> tuple[IdPairs, IdPairs]:
                     source="jga",
                 )
 
-    return study_to_hum_id, study_to_pubmed_id
+    return study_to_pubmed_id
 
 
 # === Main ===
@@ -306,13 +336,17 @@ def main() -> None:
         # Blacklist を読み込む
         jga_blacklist = load_jga_blacklist(config)
 
-        # Extract from XML
-        study_to_hum_id, study_to_pubmed_id = process_jga_study_xml()
-        log_info(f"extracted {len(study_to_hum_id)} JGA study -> hum-id relations")
+        # Load hum-id from TSV
+        study_to_hum_id = _load_jga_hum_id_file(config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
+        dataset_to_hum_id = _load_jga_hum_id_file(config, JGA_DATASET_HUM_ID_REL_PATH, "jga-dataset")
+
+        # Extract pubmed-id from XML
+        study_to_pubmed_id = extract_jga_study_pubmed_ids()
         log_info(f"extracted {len(study_to_pubmed_id)} JGA study -> pubmed-id relations")
 
         # Blacklist でフィルタ
         study_to_hum_id = filter_sra_pairs_by_blacklist(study_to_hum_id, jga_blacklist)
+        dataset_to_hum_id = filter_sra_pairs_by_blacklist(dataset_to_hum_id, jga_blacklist)
         study_to_pubmed_id = filter_sra_pairs_by_blacklist(study_to_pubmed_id, jga_blacklist)
 
         # Build JGA internal relations from CSV
@@ -324,10 +358,13 @@ def main() -> None:
         for name in internal_relations:
             internal_relations[name] = filter_sra_pairs_by_blacklist(internal_relations[name], jga_blacklist)
 
-        # Load to DB: XML-based relations
+        # Load to DB: hum-id (from TSV)
         if study_to_hum_id:
             load_to_db(config, study_to_hum_id, "jga-study", "hum-id")
+        if dataset_to_hum_id:
+            load_to_db(config, dataset_to_hum_id, "jga-dataset", "hum-id")
 
+        # Load to DB: pubmed-id (from XML)
         if study_to_pubmed_id:
             load_to_db(config, study_to_pubmed_id, "jga-study", "pubmed-id")
 

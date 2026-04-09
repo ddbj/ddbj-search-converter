@@ -74,6 +74,8 @@ MTB_BP_PRESERVED_REL_PATH = "metabobank/mtb_id_bioproject_preserve.tsv"
 MTB_BS_PRESERVED_REL_PATH = "metabobank/mtb_id_biosample_preserve.tsv"
 INSDC_BP_PRESERVED_REL_PATH = "dblink/insdc_bp_preserved.tsv"
 INSDC_BS_PRESERVED_REL_PATH = "dblink/insdc_bs_preserved.tsv"
+JGA_STUDY_HUM_ID_REL_PATH = "dblink/jga_study_hum_id.tsv"
+JGA_DATASET_HUM_ID_REL_PATH = "dblink/jga_dataset_hum_id.tsv"
 
 # Accessions base paths
 SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions")
