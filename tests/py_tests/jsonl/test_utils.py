@@ -142,20 +142,8 @@ class TestEnsureListChildren:
         assert result == {"Empty": None}
 
     def test_nested_recursion(self) -> None:
-        result = ensure_list_children({
-            "Parent": {
-                "Child": {
-                    "GrandChild": {"leaf": "val"}
-                }
-            }
-        })
-        assert result == {
-            "Parent": [{
-                "Child": [{
-                    "GrandChild": [{"leaf": "val"}]
-                }]
-            }]
-        }
+        result = ensure_list_children({"Parent": {"Child": {"GrandChild": {"leaf": "val"}}}})
+        assert result == {"Parent": [{"Child": [{"GrandChild": [{"leaf": "val"}]}]}]}
 
     def test_does_not_mutate_input(self) -> None:
         original = {"Child": {"key": "val"}}
@@ -178,12 +166,14 @@ class TestEnsureListChildren:
         assert result == {"Name": [{"abbr": "DDBJ", "content": "DNA Data Bank"}]}
 
     def test_dict_in_list_is_recursed(self) -> None:
-        result = ensure_list_children({
-            "Publications": [
-                {"Title": {"content": "Paper 1"}},
-                {"Title": {"content": "Paper 2"}},
-            ]
-        })
+        result = ensure_list_children(
+            {
+                "Publications": [
+                    {"Title": {"content": "Paper 1"}},
+                    {"Title": {"content": "Paper 2"}},
+                ]
+            }
+        )
         assert result == {
             "Publications": [
                 {"Title": [{"content": "Paper 1"}]},

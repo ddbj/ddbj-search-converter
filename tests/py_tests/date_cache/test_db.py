@@ -37,9 +37,7 @@ class TestInitCreatesTable:
         assert db_path.exists()
 
         with duckdb.connect(str(db_path)) as conn:
-            tables = conn.execute(
-                "SELECT table_name FROM information_schema.tables"
-            ).fetchall()
+            tables = conn.execute("SELECT table_name FROM information_schema.tables").fetchall()
             table_names = {row[0] for row in tables}
 
         assert "bp_date" in table_names
