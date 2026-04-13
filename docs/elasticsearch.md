@@ -361,3 +361,122 @@ es_health_check -v
 - **path.repo の一致**: compose.yml と `repo register` で指定するパスは一致させる
 - **復元前の確認**: 既存インデックスがある場合、`--force` なしでは確認プロンプトが出る
 - **クラスタ状態**: red 状態では作成・復元が不完全になる可能性がある
+
+## Blue-Green Alias Swap（ゼロダウンタイム更新）
+
+Full 更新時にインデックスを削除→再作成→データ投入すると、投入完了までダウンタイムが発生する。Blue-Green Alias Swap パターンでは、新インデックスへのデータ投入完了後に alias をアトミックに切り替えることで、ゼロダウンタイムを実現する。
+
+### 概念
+
+```plain
+実インデックス名: {name}-{YYYYMMDD}
+  例: bioproject-20260413
+
+インデックス alias: {name}
+  例: bioproject → bioproject-20260413
+
+グループ alias: sra, jga, entries (従来通り)
+  例: entries → bioproject-20260413, biosample-20260413, ...
+```
+
+API 側は alias 経由でアクセスするため、変更不要。
+
+### Alias 構成（Blue-Green 適用後）
+
+| Alias | 対象 Index |
+|-------|-----------|
+| `bioproject` | `bioproject-{YYYYMMDD}` |
+| `biosample` | `biosample-{YYYYMMDD}` |
+| `sra-submission` | `sra-submission-{YYYYMMDD}` |
+| `sra-study` | `sra-study-{YYYYMMDD}` |
+| `sra-experiment` | `sra-experiment-{YYYYMMDD}` |
+| `sra-run` | `sra-run-{YYYYMMDD}` |
+| `sra-sample` | `sra-sample-{YYYYMMDD}` |
+| `sra-analysis` | `sra-analysis-{YYYYMMDD}` |
+| `jga-study` | `jga-study-{YYYYMMDD}` |
+| `jga-dataset` | `jga-dataset-{YYYYMMDD}` |
+| `jga-dac` | `jga-dac-{YYYYMMDD}` |
+| `jga-policy` | `jga-policy-{YYYYMMDD}` |
+| `sra` | 上記 SRA 6 インデックス |
+| `jga` | 上記 JGA 4 インデックス |
+| `entries` | 上記 12 インデックス全て |
+
+### Full 更新フロー
+
+```bash
+# 1. 日付サフィックス付きインデックスを作成（alias は付けない）
+es_create_index --index all --date-suffix 20260413
+
+# 2. 新インデックスにデータ投入（旧インデックスが検索に使われ続ける）
+es_bulk_insert --index bioproject --target-index bioproject-20260413 --dir ${bp_dir}
+es_bulk_insert --index biosample --target-index biosample-20260413 --dir ${bs_dir}
+# ... (12 インデックス分)
+
+# 3. 新インデックスから blacklist を削除
+es_delete_blacklist --target-suffix 20260413 --force
+
+# 4. alias をアトミックに切り替え（ダウンタイム 0）
+#    旧サフィックスが stdout に出力される
+OLD_SUFFIX=$(es_swap_aliases --date-suffix 20260413 --force)
+
+# 5. 旧インデックスを削除（ディスク解放）
+es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force
+```
+
+### 差分更新フロー（変更なし）
+
+差分更新は alias 経由で既存インデックスに upsert する。ES が alias を透過的に解決するため、Blue-Green 導入前と全く同じ操作で動作する。
+
+```bash
+# 従来通り
+es_bulk_insert --index bioproject --dir ${bp_dir}
+```
+
+### Blue-Green コマンド
+
+| コマンド | 説明 |
+|---------|------|
+| `es_create_index --index all --date-suffix YYYYMMDD` | 日付サフィックス付きインデックスを作成（alias なし） |
+| `es_bulk_insert --index NAME --target-index NAME-YYYYMMDD` | 指定した物理インデックスにデータ投入 |
+| `es_delete_blacklist --target-suffix YYYYMMDD --force` | 指定サフィックスのインデックスから blacklist 削除 |
+| `es_swap_aliases --date-suffix YYYYMMDD [--force] [--dry-run]` | 全 alias をアトミックに切り替え |
+| `es_delete_old_indexes --date-suffix YYYYMMDD [--force]` | 指定サフィックスの物理インデックスを削除 |
+| `es_migrate_to_blue_green --date-suffix YYYYMMDD [--force]` | 初回マイグレーション（固定名 → Blue-Green） |
+
+### 初回マイグレーション
+
+既存の固定名インデックスを Blue-Green 構成に移行する 1 回限りの操作。
+
+```bash
+es_migrate_to_blue_green --date-suffix $(date +%Y%m%d) --force
+```
+
+内部処理:
+
+1. 新インデックス `{name}-{date_suffix}` を作成
+2. `_reindex` API で固定名インデックスからデータをコピー
+3. 固定名インデックスを削除（**数秒のダウンタイム**）
+4. `_aliases` API で全 alias を一括作成
+
+初回マイグレーション時のみ Step 3-4 間に数秒のダウンタイムが発生する。以降の Full 更新はゼロダウンタイム。
+
+### ロールバック
+
+**旧インデックスが未削除の場合:**
+
+```bash
+es_swap_aliases --date-suffix OLD_SUFFIX --force
+es_delete_old_indexes --date-suffix NEW_SUFFIX --force
+```
+
+**旧インデックスが削除済みの場合:**
+
+```bash
+es_snapshot restore --repo backup --snapshot SNAPSHOT_NAME --force
+# alias を再設定
+```
+
+### 注意事項
+
+- **ディスク使用量**: Full 更新中、新旧インデックスが同時に存在するため一時的にディスク使用量が 2 倍になる。事前に `es_health_check -v` でディスク残量を確認すること
+- **一括実行**: `run_pipeline.sh --blue-green` で Full 更新フローを一括実行できる（`--clean-es` と排他）

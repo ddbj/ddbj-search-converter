@@ -236,6 +236,40 @@ class TestGenerateBulkActions:
         for action in actions:
             assert action["_source"]["identifier"] == "JGAS000001"
 
+    def test_logical_index_for_blue_green(self, tmp_path: Path) -> None:
+        """With a physical index name, sameAs matching should use logical_index."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAS000561",
+            "type": "jga-study",
+            "sameAs": [{"identifier": "JGAS000556", "type": "jga-study", "url": "..."}],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        # Without logical_index, physical name won't match sameAs type
+        actions_no_match = list(generate_bulk_actions(jsonl_file, "jga-study-20260413"))
+        assert len(actions_no_match) == 1
+
+        # With logical_index, sameAs type matching works
+        actions_match = list(generate_bulk_actions(jsonl_file, "jga-study-20260413", logical_index="jga-study"))
+        assert len(actions_match) == 2
+        assert actions_match[0]["_index"] == "jga-study-20260413"
+        assert actions_match[1]["_index"] == "jga-study-20260413"
+        assert actions_match[1]["_id"] == "JGAS000556"
+
+    def test_logical_index_none_uses_index(self, tmp_path: Path) -> None:
+        """When logical_index is None, sameAs matching uses index (backward compat)."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAS000561",
+            "type": "jga-study",
+            "sameAs": [{"identifier": "JGAS000556", "type": "jga-study", "url": "..."}],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study", logical_index=None))
+        assert len(actions) == 2
+
 
 class TestExtractPrefix:
     def test_jga_prefix(self) -> None:

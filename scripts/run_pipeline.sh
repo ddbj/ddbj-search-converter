@@ -48,6 +48,11 @@ STEP_NAMES=(
     "es_create"
     "es_bulk"
     "es_delete_blacklist"
+    "es_create_bg"
+    "es_bulk_bg"
+    "es_blacklist_bg"
+    "es_swap"
+    "es_cleanup_old"
 )
 
 declare -A STEP_ORDER
@@ -77,6 +82,11 @@ declare -A STEP_DESC=(
     ["es_create"]="Create Elasticsearch indexes"
     ["es_bulk"]="Bulk insert to Elasticsearch"
     ["es_delete_blacklist"]="Delete blacklisted documents from Elasticsearch"
+    ["es_create_bg"]="Create dated Elasticsearch indexes (Blue-Green)"
+    ["es_bulk_bg"]="Bulk insert to dated indexes (Blue-Green)"
+    ["es_blacklist_bg"]="Delete blacklisted docs from dated indexes (Blue-Green)"
+    ["es_swap"]="Atomically swap aliases to new indexes (Blue-Green)"
+    ["es_cleanup_old"]="Delete old dated indexes (Blue-Green)"
 )
 
 declare -A STEP_PHASE=(
@@ -101,6 +111,11 @@ declare -A STEP_PHASE=(
     ["es_create"]="PHASE 3: Elasticsearch"
     ["es_bulk"]="PHASE 3: Elasticsearch"
     ["es_delete_blacklist"]="PHASE 3: Elasticsearch"
+    ["es_create_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
+    ["es_bulk_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
+    ["es_blacklist_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
+    ["es_swap"]="PHASE 3: Elasticsearch (Blue-Green)"
+    ["es_cleanup_old"]="PHASE 3: Elasticsearch (Blue-Green)"
 )
 
 # Default values
@@ -111,6 +126,7 @@ MAX_PARALLEL=16
 FROM_STEP=""
 FROM_STEP_ORDER=0
 CLEAN_ES=false
+BLUE_GREEN=false
 
 # Show available steps
 show_steps() {
@@ -155,6 +171,10 @@ while [[ $# -gt 0 ]]; do
             CLEAN_ES=true
             shift
             ;;
+        --blue-green)
+            BLUE_GREEN=true
+            shift
+            ;;
         --parallel)
             MAX_PARALLEL="$2"
             shift 2
@@ -177,6 +197,12 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Validate --clean-es and --blue-green are mutually exclusive
+if [[ "$CLEAN_ES" == true && "$BLUE_GREEN" == true ]]; then
+    echo "Error: --clean-es and --blue-green are mutually exclusive"
+    exit 1
+fi
 
 # Validate --from-step
 if [[ -n "$FROM_STEP" ]]; then
@@ -535,6 +561,14 @@ phase2_jsonl() {
 # PHASE 3: Elasticsearch Operations
 # ============================================================
 phase3_elasticsearch() {
+    if [[ "$BLUE_GREEN" == true ]]; then
+        phase3_blue_green
+    else
+        phase3_legacy
+    fi
+}
+
+phase3_legacy() {
     log_section "PHASE 3: Elasticsearch Operations"
 
     # Step: es_create
@@ -584,6 +618,70 @@ phase3_elasticsearch() {
     else
         log_info "Step 3-3: Deleting blacklisted documents..."
         run_cmd "es_delete_blacklist --force"
+    fi
+}
+
+phase3_blue_green() {
+    log_section "PHASE 3: Elasticsearch Operations (Blue-Green)"
+
+    local bp_dir="${RESULT_DIR}/bioproject/jsonl/${DATE_STR}"
+    local bs_dir="${RESULT_DIR}/biosample/jsonl/${DATE_STR}"
+    local sra_dir="${RESULT_DIR}/sra/jsonl/${DATE_STR}"
+    local jga_dir="${RESULT_DIR}/jga/jsonl/${DATE_STR}"
+
+    # Step: es_create_bg
+    if should_skip_step "es_create_bg"; then
+        log_info "[SKIP] es_create_bg (--from-step)"
+    else
+        log_info "Step 3-0: Creating dated ES indexes (${DATE_STR})..."
+        run_cmd "es_create_index --index all --date-suffix ${DATE_STR}"
+    fi
+
+    # Step: es_bulk_bg
+    if should_skip_step "es_bulk_bg"; then
+        log_info "[SKIP] es_bulk_bg (--from-step)"
+    else
+        log_info "Step 3-1: Bulk inserting into dated indexes..."
+        run_cmd "es_bulk_insert --index bioproject --target-index bioproject-${DATE_STR} --dir ${bp_dir}"
+        run_cmd "es_bulk_insert --index biosample --target-index biosample-${DATE_STR} --dir ${bs_dir}"
+        run_cmd "es_bulk_insert --index sra-submission --target-index sra-submission-${DATE_STR} --dir ${sra_dir} --pattern '*_submission_*.jsonl'"
+        run_cmd "es_bulk_insert --index sra-study --target-index sra-study-${DATE_STR} --dir ${sra_dir} --pattern '*_study_*.jsonl'"
+        run_cmd "es_bulk_insert --index sra-experiment --target-index sra-experiment-${DATE_STR} --dir ${sra_dir} --pattern '*_experiment_*.jsonl'"
+        run_cmd "es_bulk_insert --index sra-run --target-index sra-run-${DATE_STR} --dir ${sra_dir} --pattern '*_run_*.jsonl'"
+        run_cmd "es_bulk_insert --index sra-sample --target-index sra-sample-${DATE_STR} --dir ${sra_dir} --pattern '*_sample_*.jsonl'"
+        run_cmd "es_bulk_insert --index sra-analysis --target-index sra-analysis-${DATE_STR} --dir ${sra_dir} --pattern '*_analysis_*.jsonl'"
+        run_cmd "es_bulk_insert --index jga-study --target-index jga-study-${DATE_STR} --dir ${jga_dir} --pattern 'jga-study.jsonl'"
+        run_cmd "es_bulk_insert --index jga-dataset --target-index jga-dataset-${DATE_STR} --dir ${jga_dir} --pattern 'jga-dataset.jsonl'"
+        run_cmd "es_bulk_insert --index jga-dac --target-index jga-dac-${DATE_STR} --dir ${jga_dir} --pattern 'jga-dac.jsonl'"
+        run_cmd "es_bulk_insert --index jga-policy --target-index jga-policy-${DATE_STR} --dir ${jga_dir} --pattern 'jga-policy.jsonl'"
+    fi
+
+    # Step: es_blacklist_bg
+    if should_skip_step "es_blacklist_bg"; then
+        log_info "[SKIP] es_blacklist_bg (--from-step)"
+    else
+        log_info "Step 3-2: Deleting blacklisted docs from dated indexes..."
+        run_cmd "es_delete_blacklist --target-suffix ${DATE_STR} --force"
+    fi
+
+    # Step: es_swap
+    if should_skip_step "es_swap"; then
+        log_info "[SKIP] es_swap (--from-step)"
+    else
+        log_info "Step 3-3: Swapping aliases to dated indexes..."
+        OLD_SUFFIX=$(es_swap_aliases --date-suffix "${DATE_STR}" --force 2>/dev/null) || true
+    fi
+
+    # Step: es_cleanup_old
+    if should_skip_step "es_cleanup_old"; then
+        log_info "[SKIP] es_cleanup_old (--from-step)"
+    else
+        if [[ -n "${OLD_SUFFIX:-}" ]]; then
+            log_info "Step 3-4: Deleting old indexes (*-${OLD_SUFFIX})..."
+            run_cmd "es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force"
+        else
+            log_info "Step 3-4: No old indexes to clean up"
+        fi
     fi
 }
 

@@ -45,3 +45,15 @@ def refresh_index(
         timeout: Timeout in seconds for the refresh operation (default: 600s = 10 minutes)
     """
     es_client.options(request_timeout=timeout).indices.refresh(index=index)
+
+
+def resolve_alias_to_indexes(es_client: Elasticsearch, alias_name: str) -> list[str]:
+    """Return the physical index names backing a given alias.
+
+    Returns an empty list if the alias does not exist.
+    """
+    try:
+        response = es_client.indices.get_alias(name=alias_name)
+        return list(response.body.keys())
+    except Exception:
+        return []

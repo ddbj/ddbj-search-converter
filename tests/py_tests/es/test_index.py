@@ -1,6 +1,12 @@
 """Tests for ES index operations."""
 
-from ddbj_search_converter.es.index import ALIASES, ALL_INDEXES, get_indexes_for_group, get_mapping_for_index
+from ddbj_search_converter.es.index import (
+    ALIASES,
+    ALL_INDEXES,
+    get_indexes_for_group,
+    get_mapping_for_index,
+    make_physical_index_name,
+)
 
 
 class TestAllIndexes:
@@ -124,3 +130,21 @@ class TestAliases:
 
     def test_entries_alias_contains_all_indexes(self) -> None:
         assert ALIASES["entries"] == list(ALL_INDEXES)
+
+
+class TestMakePhysicalIndexName:
+    def test_bioproject(self) -> None:
+        assert make_physical_index_name("bioproject", "20260413") == "bioproject-20260413"
+
+    def test_sra_run(self) -> None:
+        assert make_physical_index_name("sra-run", "20260413") == "sra-run-20260413"
+
+    def test_jga_study(self) -> None:
+        assert make_physical_index_name("jga-study", "20260101") == "jga-study-20260101"
+
+    def test_all_indexes_produce_valid_names(self) -> None:
+        for idx in ALL_INDEXES:
+            name = make_physical_index_name(idx, "20260413")
+            assert name == f"{idx}-20260413"
+            assert name.startswith(idx)
+            assert name.endswith("-20260413")

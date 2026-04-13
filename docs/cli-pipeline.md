@@ -166,6 +166,9 @@ generate_jga_jsonl
 # ES インデックスをクリーンアップしてから投入（冪等性あり）
 ./scripts/run_pipeline.sh --clean-es
 
+# Blue-Green でゼロダウンタイム更新（--clean-es と排他）
+./scripts/run_pipeline.sh --full --blue-green
+
 # 途中のステップから再開
 ./scripts/run_pipeline.sh --from-step jsonl_sra
 
@@ -186,7 +189,8 @@ generate_jga_jsonl
 | `--list-steps` | 利用可能なステップ一覧を表示して終了 |
 | `--dry-run` | 実行内容を表示のみ（実際には実行しない） |
 | `--parallel N` | JSONL 生成の最大並列数（デフォルト: 4） |
-| `--clean-es` | ES bulk insert 前に全インデックスを削除（冪等性あり） |
+| `--clean-es` | ES bulk insert 前に全インデックスを削除（冪等性あり）。`--blue-green` と排他 |
+| `--blue-green` | Blue-Green Alias Swap でゼロダウンタイム更新。`--clean-es` と排他 |
 
 ### ステップ一覧
 
@@ -219,6 +223,13 @@ generate_jga_jsonl
   es_create            Create Elasticsearch indexes
   es_bulk              Bulk insert to Elasticsearch
   es_delete_blacklist  Delete blacklisted documents from Elasticsearch
+
+=== PHASE 3: Elasticsearch (--blue-green) ===
+  es_create_bg         Create dated Elasticsearch indexes (no alias)
+  es_bulk_bg           Bulk insert to dated indexes
+  es_blacklist_bg      Delete blacklisted docs from dated indexes
+  es_swap              Atomically swap aliases to new indexes
+  es_cleanup_old       Delete old dated indexes
 ```
 
 ### 実行フロー
@@ -250,7 +261,7 @@ PHASE 2: JSONL Generation
 └── [逐次] generate_jga_jsonl
 # --parallel-num は各コマンド内部の並列度 (デフォルト: 4)
 
-PHASE 3: Elasticsearch
+PHASE 3: Elasticsearch (--clean-es / デフォルト)
 [--clean-es 指定時] es_delete_index --index all --skip-missing --force
     ↓
 es_create_index --index all --skip-existing
@@ -258,6 +269,17 @@ es_create_index --index all --skip-existing
 [順次] es_bulk_insert (12 インデックス)
     ↓
 es_delete_blacklist --force
+
+PHASE 3: Elasticsearch (--blue-green)
+es_create_index --index all --date-suffix ${DATE_STR}
+    ↓
+[順次] es_bulk_insert --target-index {name}-${DATE_STR} (12 インデックス)
+    ↓
+es_delete_blacklist --target-suffix ${DATE_STR} --force
+    ↓
+es_swap_aliases --date-suffix ${DATE_STR} --force
+    ↓
+es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force
 ```
 
 ### 環境変数
@@ -404,10 +426,13 @@ es_bulk_insert --index jga-study \
 
 | コマンド | オプション | 説明 |
 |---------|----------|------|
-| `es_create_index` | `--index`, `--skip-existing` | Elasticsearch インデックス作成 |
+| `es_create_index` | `--index`, `--skip-existing`, `--date-suffix` | Elasticsearch インデックス作成 |
 | `es_delete_index` | `--index`, `--force`, `--skip-missing` | Elasticsearch インデックス削除 |
-| `es_bulk_insert` | `--index`, `--dir`, `--file`, `--pattern`, `--batch-size` | JSONL を Elasticsearch に一括挿入 |
-| `es_delete_blacklist` | `--index`, `--force`, `--dry-run`, `--batch-size` | blacklist に含まれるドキュメントを ES から削除 |
+| `es_bulk_insert` | `--index`, `--dir`, `--file`, `--pattern`, `--batch-size`, `--target-index` | JSONL を Elasticsearch に一括挿入 |
+| `es_delete_blacklist` | `--index`, `--force`, `--dry-run`, `--batch-size`, `--target-suffix` | blacklist に含まれるドキュメントを ES から削除 |
+| `es_swap_aliases` | `--date-suffix`, `--force`, `--dry-run` | 全 alias をアトミックに切り替え（Blue-Green） |
+| `es_delete_old_indexes` | `--date-suffix`, `--force` | 指定サフィックスの物理インデックスを削除 |
+| `es_migrate_to_blue_green` | `--date-suffix`, `--force` | 初回マイグレーション（固定名 → Blue-Green） |
 | `es_list_indexes` | - | 登録済みインデックス一覧 |
 | `es_health_check` | `-v` | クラスタヘルス確認 |
 | `es_snapshot` | サブコマンド形式 | スナップショット管理 |

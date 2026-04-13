@@ -18,7 +18,18 @@ from ddbj_search_converter.config import Config, get_config
 from ddbj_search_converter.dblink.utils import load_blacklist, load_jga_blacklist, load_sra_blacklist
 from ddbj_search_converter.es.bulk_delete import bulk_delete_by_ids
 from ddbj_search_converter.es.bulk_insert import bulk_insert_from_dir, bulk_insert_jsonl
-from ddbj_search_converter.es.index import create_index, delete_index, get_indexes_for_group, list_indexes
+from ddbj_search_converter.es.index import (
+    ALL_INDEXES,
+    create_index,
+    create_index_with_suffix,
+    delete_index,
+    delete_physical_indexes,
+    get_indexes_for_group,
+    list_indexes,
+    make_physical_index_name,
+    migrate_to_blue_green,
+    swap_aliases,
+)
 from ddbj_search_converter.es.monitoring import (
     check_health,
     format_bytes,
@@ -32,7 +43,7 @@ from ddbj_search_converter.logging.logger import log_debug, log_error, log_info,
 # === Create Index ===
 
 
-def parse_create_index_args(args: list[str]) -> tuple[Config, str, bool]:
+def parse_create_index_args(args: list[str]) -> tuple[Config, str, bool, str | None]:
     parser = argparse.ArgumentParser(description="Create Elasticsearch indexes.")
     parser.add_argument(
         "--index",
@@ -44,21 +55,28 @@ def parse_create_index_args(args: list[str]) -> tuple[Config, str, bool]:
         action="store_true",
         help="Skip indexes that already exist instead of raising an error",
     )
+    parser.add_argument(
+        "--date-suffix",
+        help="Create dated physical indexes (e.g. bioproject-20260413) without aliases (Blue-Green)",
+    )
 
     parsed = parser.parse_args(args)
     config = get_config()
 
-    return config, parsed.index, parsed.skip_existing
+    return config, parsed.index, parsed.skip_existing, parsed.date_suffix
 
 
 def main_create_index() -> None:
-    config, index, skip_existing = parse_create_index_args(sys.argv[1:])
+    config, index, skip_existing, date_suffix = parse_create_index_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info("creating elasticsearch indexes", index=index)
+        log_info("creating elasticsearch indexes", index=index, date_suffix=date_suffix)
 
         try:
-            created = create_index(config, index, skip_existing=skip_existing)  # type: ignore[arg-type]
+            if date_suffix:
+                created = create_index_with_suffix(config, index, date_suffix, skip_existing=skip_existing)  # type: ignore[arg-type]
+            else:
+                created = create_index(config, index, skip_existing=skip_existing)  # type: ignore[arg-type]
             if created:
                 log_info("created indexes", indexes=created)
             else:
@@ -124,7 +142,7 @@ def main_delete_index() -> None:
 # === Bulk Insert ===
 
 
-def parse_bulk_insert_args(args: list[str]) -> tuple[Config, str, Path, list[Path], str, int]:
+def parse_bulk_insert_args(args: list[str]) -> tuple[Config, str, Path, list[Path], str, int, str | None]:
     parser = argparse.ArgumentParser(description="Bulk insert JSONL files into Elasticsearch.")
     parser.add_argument(
         "--index",
@@ -152,6 +170,11 @@ def parse_bulk_insert_args(args: list[str]) -> tuple[Config, str, Path, list[Pat
         default=5000,
         help="Number of documents per bulk request (default: 5000)",
     )
+    parser.add_argument(
+        "--target-index",
+        help="Physical index name to write to (Blue-Green). "
+        "When specified, --index is used only for sameAs type matching.",
+    )
 
     parsed = parser.parse_args(args)
     config = get_config()
@@ -162,14 +185,14 @@ def parse_bulk_insert_args(args: list[str]) -> tuple[Config, str, Path, list[Pat
     jsonl_dir = Path(parsed.dir) if parsed.dir else Path()
     jsonl_files = [Path(f) for f in (parsed.files or [])]
 
-    return config, parsed.index, jsonl_dir, jsonl_files, parsed.pattern, parsed.batch_size
+    return config, parsed.index, jsonl_dir, jsonl_files, parsed.pattern, parsed.batch_size, parsed.target_index
 
 
 def main_bulk_insert() -> None:
-    config, index, jsonl_dir, jsonl_files, pattern, batch_size = parse_bulk_insert_args(sys.argv[1:])
+    config, index, jsonl_dir, jsonl_files, pattern, batch_size, target_index = parse_bulk_insert_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info("bulk inserting into elasticsearch", index=index, pattern=pattern)
+        log_info("bulk inserting into elasticsearch", index=index, target_index=target_index, pattern=pattern)
 
         try:
             if jsonl_files:
@@ -178,6 +201,7 @@ def main_bulk_insert() -> None:
                     jsonl_files=jsonl_files,
                     index=index,  # type: ignore[arg-type]
                     batch_size=batch_size,
+                    target_index=target_index,
                 )
             else:
                 result = bulk_insert_from_dir(
@@ -186,6 +210,7 @@ def main_bulk_insert() -> None:
                     index=index,  # type: ignore[arg-type]
                     pattern=pattern,
                     batch_size=batch_size,
+                    target_index=target_index,
                 )
 
             log_info(
@@ -225,16 +250,17 @@ def main_list_indexes() -> None:
             indexes = list_indexes(config)
 
             print("\nDDBJ Search Elasticsearch Indexes:")
-            print("-" * 50)
-            print(f"{'Index':<20} {'Exists':<10} {'Doc Count':<15}")
-            print("-" * 50)
+            print("-" * 70)
+            print(f"{'Index':<20} {'Exists':<10} {'Doc Count':<15} {'Physical Index'}")
+            print("-" * 70)
 
             for idx_info in indexes:
                 exists_str = "Yes" if idx_info["exists"] else "No"
                 doc_count = idx_info["doc_count"] if idx_info["exists"] else "-"
-                print(f"{idx_info['index']:<20} {exists_str:<10} {doc_count:<15}")
+                physical = ", ".join(idx_info.get("physical_indexes", [])) or "-"
+                print(f"{idx_info['index']:<20} {exists_str:<10} {doc_count:<15} {physical}")
 
-            print("-" * 50)
+            print("-" * 70)
 
         except Exception as e:
             log_error("failed to list indexes", error=e)
@@ -375,7 +401,7 @@ def classify_blacklist_by_index(
     return result
 
 
-def parse_delete_blacklist_args(args: list[str]) -> tuple[Config, str, bool, bool, int]:
+def parse_delete_blacklist_args(args: list[str]) -> tuple[Config, str, bool, bool, int, str | None]:
     """Delete blacklist コマンドの引数をパースする。"""
     parser = argparse.ArgumentParser(description="Delete blacklisted documents from Elasticsearch indexes.")
     parser.add_argument(
@@ -399,14 +425,19 @@ def parse_delete_blacklist_args(args: list[str]) -> tuple[Config, str, bool, boo
         default=1000,
         help="Batch size for bulk delete (default: 1000)",
     )
+    parser.add_argument(
+        "--target-suffix",
+        help="Delete from dated physical indexes (Blue-Green). "
+        "E.g. --target-suffix 20260413 targets bioproject-20260413 etc.",
+    )
     parsed = parser.parse_args(args)
     config = get_config()
-    return config, parsed.index, parsed.force, parsed.dry_run, parsed.batch_size
+    return config, parsed.index, parsed.force, parsed.dry_run, parsed.batch_size, parsed.target_suffix
 
 
 def main_delete_blacklist() -> None:
     """Blacklist に含まれるドキュメントを ES から削除する。"""
-    config, index_group, force, dry_run, batch_size = parse_delete_blacklist_args(sys.argv[1:])
+    config, index_group, force, dry_run, batch_size, target_suffix = parse_delete_blacklist_args(sys.argv[1:])
 
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
@@ -443,7 +474,8 @@ def main_delete_blacklist() -> None:
             blacklist = index_blacklist_map.get(idx, set())
             if blacklist:
                 total_to_delete += len(blacklist)
-                log_info(f"index={idx}: {len(blacklist)} blacklisted accessions")
+                display_idx = make_physical_index_name(idx, target_suffix) if target_suffix else idx
+                log_info(f"index={display_idx}: {len(blacklist)} blacklisted accessions")
 
         if total_to_delete == 0:
             log_info("No blacklisted accessions to delete")
@@ -469,9 +501,10 @@ def main_delete_blacklist() -> None:
             if not blacklist:
                 continue
 
-            result = bulk_delete_by_ids(config, idx, blacklist, batch_size)
+            actual_index = make_physical_index_name(idx, target_suffix) if target_suffix else idx
+            result = bulk_delete_by_ids(config, actual_index, blacklist, batch_size)
             log_info(
-                f"deleted from {idx}",
+                f"deleted from {actual_index}",
                 success=result.success_count,
                 not_found=result.not_found_count,
                 errors=result.error_count,
@@ -493,4 +526,172 @@ def main_delete_blacklist() -> None:
         )
 
         if total_errors > 0:
+            sys.exit(1)
+
+
+# === Swap Aliases (Blue-Green) ===
+
+
+def parse_swap_aliases_args(args: list[str]) -> tuple[Config, str, bool, bool]:
+    parser = argparse.ArgumentParser(description="Atomically swap all aliases to new dated indexes (Blue-Green).")
+    parser.add_argument(
+        "--date-suffix",
+        required=True,
+        help="Date suffix of the new indexes (YYYYMMDD)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Swap without confirmation",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be swapped without actually swapping",
+    )
+    parsed = parser.parse_args(args)
+    config = get_config()
+    return config, parsed.date_suffix, parsed.force, parsed.dry_run
+
+
+def main_swap_aliases() -> None:
+    config, date_suffix, force, dry_run = parse_swap_aliases_args(sys.argv[1:])
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
+        log_info("swapping aliases", date_suffix=date_suffix)
+
+        try:
+            # Show plan
+            new_names = [make_physical_index_name(idx, date_suffix) for idx in ALL_INDEXES]
+            log_info("new indexes", indexes=new_names)
+
+            if dry_run:
+                log_info("[DRY-RUN] Would swap aliases to the above indexes")
+                return
+
+            if not force:
+                confirm = input(f"Swap all aliases to *-{date_suffix} indexes? [y/N]: ")
+                if confirm.lower() != "y":
+                    log_info("operation cancelled")
+                    return
+
+            old_indexes = swap_aliases(config, date_suffix)
+
+            if old_indexes:
+                # Extract unique old suffix from old index names
+                old_suffixes: set[str] = set()
+                for old_name in old_indexes.values():
+                    # bioproject-20260412 -> 20260412
+                    parts = old_name.rsplit("-", 1)
+                    if len(parts) == 2 and parts[1].isdigit():
+                        old_suffixes.add(parts[1])
+                    else:
+                        # SRA indexes like sra-run-20260412 -> need to match more carefully
+                        for idx_name in ALL_INDEXES:
+                            prefix = f"{idx_name}-"
+                            if old_name.startswith(prefix):
+                                old_suffixes.add(old_name[len(prefix) :])
+                                break
+
+                log_info("swapped aliases", old_indexes=old_indexes)
+                # Print old suffix to stdout for pipeline script to capture
+                for suffix in sorted(old_suffixes):
+                    print(suffix)
+            else:
+                log_info("aliases created (no old indexes to remove)")
+
+        except Exception as e:
+            log_error("failed to swap aliases", error=e)
+            sys.exit(1)
+
+
+# === Delete Old Indexes (Blue-Green) ===
+
+
+def parse_delete_old_indexes_args(args: list[str]) -> tuple[Config, str, bool]:
+    parser = argparse.ArgumentParser(description="Delete old dated physical indexes (Blue-Green cleanup).")
+    parser.add_argument(
+        "--date-suffix",
+        required=True,
+        help="Date suffix of the indexes to delete (YYYYMMDD)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Delete without confirmation",
+    )
+    parsed = parser.parse_args(args)
+    config = get_config()
+    return config, parsed.date_suffix, parsed.force
+
+
+def main_delete_old_indexes() -> None:
+    config, date_suffix, force = parse_delete_old_indexes_args(sys.argv[1:])
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
+
+        index_names = [make_physical_index_name(idx, date_suffix) for idx in ALL_INDEXES]
+        log_info("indexes to delete", indexes=index_names)
+
+        if not force:
+            confirm = input(f"Delete {len(index_names)} old indexes (*-{date_suffix})? [y/N]: ")
+            if confirm.lower() != "y":
+                log_info("operation cancelled")
+                return
+
+        try:
+            deleted = delete_physical_indexes(config, index_names)
+            if deleted:
+                log_info("deleted old indexes", indexes=deleted)
+            else:
+                log_info("No old indexes found to delete")
+        except Exception as e:
+            log_error("failed to delete old indexes", error=e)
+            sys.exit(1)
+
+
+# === Migrate to Blue-Green ===
+
+
+def parse_migrate_args(args: list[str]) -> tuple[Config, str, bool]:
+    parser = argparse.ArgumentParser(
+        description="One-time migration from fixed-name indexes to Blue-Green. "
+        "Reindexes data, deletes old indexes, and creates aliases.",
+    )
+    parser.add_argument(
+        "--date-suffix",
+        required=True,
+        help="Date suffix for the new indexes (YYYYMMDD)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Migrate without confirmation",
+    )
+    parsed = parser.parse_args(args)
+    config = get_config()
+    return config, parsed.date_suffix, parsed.force
+
+
+def main_migrate_to_blue_green() -> None:
+    config, date_suffix, force = parse_migrate_args(sys.argv[1:])
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
+        log_info("migrating to blue-green", date_suffix=date_suffix)
+
+        new_names = [make_physical_index_name(idx, date_suffix) for idx in ALL_INDEXES]
+        log_info("will create", indexes=new_names)
+        log_warn("This will cause a few seconds of downtime during the switchover.")
+
+        if not force:
+            confirm = input("Proceed with Blue-Green migration? [y/N]: ")
+            if confirm.lower() != "y":
+                log_info("operation cancelled")
+                return
+
+        try:
+            migrate_to_blue_green(config, date_suffix)
+            log_info("migration completed successfully")
+        except Exception as e:
+            log_error("migration failed", error=e)
             sys.exit(1)
