@@ -12,6 +12,7 @@ LABEL org.opencontainers.image.title="ddbj-search-converter" \
     org.opencontainers.image.licenses="Apache-2.0"
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/inutano/insdc-rdf:0.3.0 /usr/local/bin/insdc-rdf /usr/local/bin/insdc-rdf
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
