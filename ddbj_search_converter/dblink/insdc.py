@@ -15,6 +15,9 @@ DBLink データベースに挿入する。
 - dblink.tmp.duckdb (relation テーブル) に挿入
 """
 
+import time
+from pathlib import Path
+
 import psycopg2
 
 from ddbj_search_converter.config import (
@@ -43,6 +46,8 @@ TRAD_DBS = [
     ("w-actual", 54310),
 ]
 CURSOR_ITERSIZE = 50_000
+MAX_RETRIES = 3
+RETRY_WAIT_SECONDS = 30
 
 INSDC_TO_BP_QUERY = """
     SELECT translate(acc.accession, ' ', ''), project.project_id
@@ -63,6 +68,47 @@ INSDC_TO_BS_QUERY = """
 """
 
 
+def _fetch_from_db(
+    host: str,
+    port: int,
+    user: str,
+    password: str,
+    dbname: str,
+    dst_type: AccessionType,
+    query: str,
+    blacklist: set[str],
+    tsv_path: Path,
+) -> int:
+    """Fetch INSDC relations from a single TRAD PostgreSQL database."""
+    conn = psycopg2.connect(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        dbname=dbname,
+        keepalives=1,
+        keepalives_idle=30,
+        keepalives_interval=10,
+        keepalives_count=5,
+    )
+    try:
+        count = 0
+        with conn.cursor(name=f"insdc_{dbname}") as cur:
+            cur.itersize = CURSOR_ITERSIZE
+            cur.execute(query)
+
+            with tsv_path.open("w", encoding="utf-8") as f:
+                for accession, target_id in cur:
+                    if target_id in blacklist:
+                        continue
+                    normalized = normalize_edge("insdc", accession, dst_type, target_id)
+                    f.write("\t".join(normalized) + "\n")
+                    count += 1
+    finally:
+        conn.close()
+    return count
+
+
 def _write_insdc_relations(
     config: Config,
     dst_type: AccessionType,
@@ -73,32 +119,18 @@ def _write_insdc_relations(
     tmp_dir = get_tmp_dir(config)
 
     for dbname, port in TRAD_DBS:
-        log_info(f"connecting to {dbname}:{port} for insdc-{dst_type}")
+        tsv_path = tmp_dir.joinpath(f"insdc_to_{dst_type}_{dbname}.tsv")
 
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname=dbname,
-        )
-        try:
-            tsv_path = tmp_dir.joinpath(f"insdc_to_{dst_type}_{dbname}.tsv")
-            count = 0
-
-            with conn.cursor(name=f"insdc_{dbname}") as cur:
-                cur.itersize = CURSOR_ITERSIZE
-                cur.execute(query)
-
-                with tsv_path.open("w", encoding="utf-8") as f:
-                    for accession, target_id in cur:
-                        if target_id in blacklist:
-                            continue
-                        normalized = normalize_edge("insdc", accession, dst_type, target_id)
-                        f.write("\t".join(normalized) + "\n")
-                        count += 1
-        finally:
-            conn.close()
+        for attempt in range(1, MAX_RETRIES + 1):
+            log_info(f"connecting to {dbname}:{port} for insdc-{dst_type} (attempt {attempt}/{MAX_RETRIES})")
+            try:
+                count = _fetch_from_db(host, port, user, password, dbname, dst_type, query, blacklist, tsv_path)
+                break
+            except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+                if attempt == MAX_RETRIES:
+                    raise
+                log_warn(f"{dbname}:{port} failed: {e}, retrying in {RETRY_WAIT_SECONDS}s")
+                time.sleep(RETRY_WAIT_SECONDS)
 
         if count > 0:
             load_relations_from_tsv(config, tsv_path)
