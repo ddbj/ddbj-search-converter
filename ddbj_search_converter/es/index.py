@@ -350,10 +350,14 @@ def migrate_to_blue_green(
 ) -> None:
     """One-time migration from fixed-name indexes to Blue-Green.
 
-    1. Create new dated indexes
-    2. Reindex data from fixed-name indexes
-    3. Delete fixed-name indexes (brief downtime)
-    4. Create aliases pointing to new indexes
+    Uses the ``_clone`` API (hard-link based, near-instant even for
+    billion-doc indexes) instead of ``_reindex``.
+
+    1. Set source indexes to read-only (required for clone)
+    2. Clone each fixed-name index to a dated name
+    3. Remove read-only block from cloned indexes
+    4. Delete fixed-name indexes (brief downtime)
+    5. Create aliases pointing to new indexes
 
     Args:
         config: Configuration object
@@ -361,26 +365,40 @@ def migrate_to_blue_green(
     """
     es_client = get_es_client(config)
 
-    # Step 1-2: Create new dated indexes and reindex data
+    # Validate
     for idx in ALL_INDEXES:
         physical_name = make_physical_index_name(idx, date_suffix)
         if check_index_exists(es_client, physical_name):
             raise Exception(f"Index '{physical_name}' already exists.")
-
         if not check_index_exists(es_client, idx):
             raise Exception(f"Source index '{idx}' does not exist.")
 
-        mapping = get_mapping_for_index(idx)
-        es_client.indices.create(index=physical_name, body=mapping)
+    # Step 1-2: Set read-only and clone
+    for idx in ALL_INDEXES:
+        physical_name = make_physical_index_name(idx, date_suffix)
 
-        es_client.options(request_timeout=3600).reindex(
-            body={
-                "source": {"index": idx},
-                "dest": {"index": physical_name},
-            },
+        # Set source to read-only (required by clone API)
+        es_client.indices.put_settings(
+            index=idx,
+            body={"index.blocks.write": True},
         )
 
-    # Step 3: Delete fixed-name indexes
+        # Clone (hard-link based, near-instant)
+        es_client.options(request_timeout=600).indices.clone(
+            index=idx,
+            target=physical_name,
+        )
+
+    # Step 3: Remove write block from cloned indexes
+    for idx in ALL_INDEXES:
+        physical_name = make_physical_index_name(idx, date_suffix)
+        es_client.indices.put_settings(
+            index=physical_name,
+            body={"index.blocks.write": False},
+        )
+
+    # Step 4: Delete fixed-name indexes
+    # (also removes the read-only block set in step 1)
     for idx in ALL_INDEXES:
         for alias_name, alias_indexes in ALIASES.items():
             if idx in alias_indexes:
@@ -388,7 +406,7 @@ def migrate_to_blue_green(
                     es_client.indices.delete_alias(index=idx, name=alias_name)
         es_client.indices.delete(index=idx)
 
-    # Step 4: Create all aliases pointing to new indexes
+    # Step 5: Create all aliases pointing to new indexes
     actions: list[dict[str, Any]] = []
     for idx in ALL_INDEXES:
         physical_name = make_physical_index_name(idx, date_suffix)
