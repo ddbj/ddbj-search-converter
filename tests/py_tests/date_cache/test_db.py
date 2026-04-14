@@ -219,13 +219,6 @@ accession_strategy = st.text(
     min_size=1,
     max_size=20,
 )
-date_strategy = st.one_of(
-    st.none(),
-    st.datetimes(
-        min_value=st.datetimes.min_value if hasattr(st.datetimes, "min_value") else None,
-    ).map(lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%SZ")),
-)
-# Simpler date strategy for reliability
 _date_strategy = st.one_of(
     st.none(),
     st.from_regex(r"20[0-9]{2}-[01][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]Z", fullmatch=True),
