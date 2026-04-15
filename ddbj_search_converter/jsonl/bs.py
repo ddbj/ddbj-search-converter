@@ -21,7 +21,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bs_distribution
-from ddbj_search_converter.jsonl.utils import ensure_list_children, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
@@ -38,6 +38,8 @@ from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
+
+BS_ATTRIBUTE_PATHS: list[list[str]] = [["Attributes", "Attribute"]]
 
 
 # === Parse functions ===
@@ -325,12 +327,13 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
     accession = parse_accession(sample, is_ddbj)
 
     normalize_properties(sample)
+    ensure_attribute_list(sample, BS_ATTRIBUTE_PATHS)
 
     model = parse_model(sample, accession)
 
     return BioSample(
         identifier=accession,
-        properties={"BioSample": ensure_list_children(sample)},
+        properties={"BioSample": sample},
         distribution=make_bs_distribution(accession),
         isPartOf="BioSample",
         type="biosample",

@@ -404,17 +404,54 @@ JGA エントリーが `sameAs`（SECONDARY_ID）を持つ場合、ES bulk inser
 
 ### properties フィールド
 
-各エントリーの `properties` フィールドには、元の XML を dict に変換した構造がそのまま格納される。
-子要素は常に配列として格納される（要素が 1 つの場合でも `[dict]`）。
-スカラー値（テキスト、XML 属性値、None）は配列にしない。
+各エントリーの `properties` フィールドには、元の XML を dict に変換した構造がそのまま格納される。基本は xmltodict の標準挙動（単一子要素は dict、複数子要素は list、テキストノード・XML の attribute 値・None はスカラー）。
+
+**例外（Attribute 要素の正規化）**: XML 要素名に `Attribute`（例: `Attribute`, `STUDY_ATTRIBUTE`）を含むフィールドは、要素が 1 件でも必ず配列として格納する。これは、同一フィールドが 1 件のときに dict、複数件のときに list となる不整合を避けるための正規化。XML の属性（attribute）値とは別の概念なので注意。
+
+対象 index とパス:
+
+| Index | 配列化されるパス |
+|---|---|
+| `biosample` | `properties.BioSample.Attributes.Attribute` |
+| `sra-study` | `properties.STUDY_SET.STUDY.STUDY_ATTRIBUTES.STUDY_ATTRIBUTE` |
+| `sra-experiment` | `properties.EXPERIMENT_SET.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE` |
+| `sra-run` | `properties.RUN_SET.RUN.RUN_ATTRIBUTES.RUN_ATTRIBUTE` |
+| `sra-sample` | `properties.SAMPLE_SET.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE` |
+| `sra-analysis` | `properties.ANALYSIS_SET.ANALYSIS.ANALYSIS_ATTRIBUTES.ANALYSIS_ATTRIBUTE` |
+| `jga-study` | `properties.STUDY_ATTRIBUTES.STUDY_ATTRIBUTE` |
+
+`bioproject` / `sra-submission` / `jga-dataset` / `jga-dac` / `jga-policy` は対象外（XML に Attribute 要素なし）。
+
+例 1: JGA Study で `STUDY_ATTRIBUTE` が 1 件のみでも配列で格納される。
 
 ```json
 {
-  "Project": {
-    "ProjectDescr": [{
-      "Title": "Example",
-      "Publication": [{"id": "12345", "DbType": "ePubmed"}]
-    }]
+  "properties": {
+    "DESCRIPTOR": {
+      "STUDY_TITLE": "Example study"
+    },
+    "STUDY_ATTRIBUTES": {
+      "STUDY_ATTRIBUTE": [
+        {"TAG": "NBDC Number", "VALUE": "hum0018"}
+      ]
+    }
+  }
+}
+```
+
+例 2: BioSample で `Attribute` が 1 件のみでも配列で格納される。親の `Attributes` は dict のまま。
+
+```json
+{
+  "properties": {
+    "BioSample": {
+      "Description": {"Title": "Example sample"},
+      "Attributes": {
+        "Attribute": [
+          {"attribute_name": "host", "content": "Homo sapiens"}
+        ]
+      }
+    }
   }
 }
 ```

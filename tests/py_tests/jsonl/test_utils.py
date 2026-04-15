@@ -1,5 +1,8 @@
 """Tests for ddbj_search_converter.jsonl.utils module."""
 
+import copy
+from typing import Any
+
 import duckdb
 import pytest
 from hypothesis import given
@@ -7,7 +10,7 @@ from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import finalize_relation_db, init_dblink_db
-from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, ensure_list_children, get_dbxref_map, to_xref
+from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, ensure_attribute_list, get_dbxref_map, to_xref
 from ddbj_search_converter.schema import XrefType
 
 
@@ -122,99 +125,181 @@ class TestEdgeCases:
         assert "E-GEAD-000" in xref.url
 
 
-class TestEnsureListChildren:
-    """Tests for ensure_list_children function."""
+class TestEnsureAttributeList:
+    """Tests for ensure_attribute_list function."""
 
     def test_single_dict_wrapped_in_list(self) -> None:
-        result = ensure_list_children({"Child": {"key": "val"}})
-        assert result == {"Child": [{"key": "val"}]}
+        props = {"Attributes": {"Attribute": {"attribute_name": "geo", "content": "Japan"}}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Attributes": {"Attribute": [{"attribute_name": "geo", "content": "Japan"}]}}
 
-    def test_multiple_children_stay_as_list(self) -> None:
-        result = ensure_list_children({"Child": [{"a": "1"}, {"a": "2"}]})
-        assert result == {"Child": [{"a": "1"}, {"a": "2"}]}
+    def test_already_list_unchanged(self) -> None:
+        props = {"Attributes": {"Attribute": [{"attribute_name": "a"}, {"attribute_name": "b"}]}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Attributes": {"Attribute": [{"attribute_name": "a"}, {"attribute_name": "b"}]}}
 
-    def test_scalar_values_unchanged(self) -> None:
-        result = ensure_list_children({"attr": "value", "id": "123", "count": 42})
-        assert result == {"attr": "value", "id": "123", "count": 42}
+    def test_none_leaf_unchanged(self) -> None:
+        props: dict[str, Any] = {"Attributes": {"Attribute": None}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Attributes": {"Attribute": None}}
 
-    def test_none_value_unchanged(self) -> None:
-        result = ensure_list_children({"Empty": None})
-        assert result == {"Empty": None}
+    def test_missing_intermediate_key_no_op(self) -> None:
+        props = {"Other": {"key": "val"}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Other": {"key": "val"}}
 
-    def test_nested_recursion(self) -> None:
-        result = ensure_list_children({"Parent": {"Child": {"GrandChild": {"leaf": "val"}}}})
-        assert result == {"Parent": [{"Child": [{"GrandChild": [{"leaf": "val"}]}]}]}
+    def test_missing_leaf_key_no_op(self) -> None:
+        props: dict[str, Any] = {"Attributes": {}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Attributes": {}}
 
-    def test_does_not_mutate_input(self) -> None:
-        original = {"Child": {"key": "val"}}
-        inner = original["Child"]
-        ensure_list_children(original)
-        assert original == {"Child": {"key": "val"}}
-        assert original["Child"] is inner
+    def test_empty_attribute_paths_no_op(self) -> None:
+        props = {"Attributes": {"Attribute": {"k": "v"}}}
+        ensure_attribute_list(props, [])
+        assert props == {"Attributes": {"Attribute": {"k": "v"}}}
 
-    def test_mixed_types_in_list(self) -> None:
-        result = ensure_list_children({"Items": [{"id": "1"}, "text", None]})
-        assert result == {"Items": [{"id": "1"}, "text", None]}
+    def test_empty_path_in_paths_list_is_skipped(self) -> None:
+        """attribute_paths に空 path が混ざっていても skip され、他の path は正常処理。"""
+        props = {"Attributes": {"Attribute": {"k": "v"}}}
+        ensure_attribute_list(props, [[], ["Attributes", "Attribute"]])
+        assert props == {"Attributes": {"Attribute": [{"k": "v"}]}}
 
-    def test_empty_dict(self) -> None:
-        result = ensure_list_children({})
-        assert result == {}
+    def test_empty_properties(self) -> None:
+        props: dict[str, Any] = {}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {}
 
-    def test_content_key_stays_scalar(self) -> None:
-        """XML 属性付きテキスト要素は content がスカラーのまま。"""
-        result = ensure_list_children({"Name": {"abbr": "DDBJ", "content": "DNA Data Bank"}})
-        assert result == {"Name": [{"abbr": "DDBJ", "content": "DNA Data Bank"}]}
-
-    def test_dict_in_list_is_recursed(self) -> None:
-        result = ensure_list_children(
-            {
-                "Publications": [
-                    {"Title": {"content": "Paper 1"}},
-                    {"Title": {"content": "Paper 2"}},
+    def test_intermediate_list_recurses(self) -> None:
+        """途中経路に list がある場合、全要素に対して再帰処理する。"""
+        props = {
+            "STUDY_SET": {
+                "STUDY": [
+                    {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "a"}}},
+                    {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": [{"TAG": "b"}, {"TAG": "c"}]}},
                 ]
             }
-        )
-        assert result == {
-            "Publications": [
-                {"Title": [{"content": "Paper 1"}]},
-                {"Title": [{"content": "Paper 2"}]},
-            ]
         }
+        path = ["STUDY_SET", "STUDY", "STUDY_ATTRIBUTES", "STUDY_ATTRIBUTE"]
+        ensure_attribute_list(props, [path])
+        assert props["STUDY_SET"]["STUDY"][0]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"] == [{"TAG": "a"}]
+        assert props["STUDY_SET"]["STUDY"][1]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"] == [{"TAG": "b"}, {"TAG": "c"}]
 
-    def test_realistic_bioproject(self) -> None:
-        """BioProject 風の構造で全体テスト。"""
+    def test_multiple_paths(self) -> None:
         props = {
-            "ProjectDescr": {
-                "Title": "Example Project",
-                "Description": "A description",
-                "Publication": {"id": "12345", "DbType": "ePubmed"},
-                "Grant": [
-                    {"Agency": {"abbr": "JST", "content": "JST"}, "GrantId": "001"},
-                    {"Agency": {"abbr": "AMED", "content": "AMED"}, "GrantId": "002"},
-                ],
-            },
-            "ProjectID": {
-                "ArchiveID": {"accession": "PRJDB1", "archive": "DDBJ"},
-            },
+            "Attributes": {"Attribute": {"a": 1}},
+            "Foo": {"FooAttribute": {"b": 2}},
         }
-        result = ensure_list_children(props)
+        ensure_attribute_list(
+            props,
+            [["Attributes", "Attribute"], ["Foo", "FooAttribute"]],
+        )
+        assert props == {
+            "Attributes": {"Attribute": [{"a": 1}]},
+            "Foo": {"FooAttribute": [{"b": 2}]},
+        }
 
-        # ProjectDescr は [dict] にラップ
-        assert isinstance(result["ProjectDescr"], list)
-        assert len(result["ProjectDescr"]) == 1
-        descr = result["ProjectDescr"][0]
+    def test_intermediate_scalar_no_op(self) -> None:
+        """中間経路がスカラーならスキップ（例外にしない）。"""
+        props: dict[str, Any] = {"Attributes": "unexpected_scalar"}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Attributes": "unexpected_scalar"}
 
-        # スカラーはそのまま
-        assert descr["Title"] == "Example Project"
+    def test_scalar_leaf_unchanged(self) -> None:
+        """末端がスカラーならラップしない。"""
+        props: dict[str, Any] = {"Attributes": {"Attribute": "just_text"}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props == {"Attributes": {"Attribute": "just_text"}}
 
-        # Publication (単一 dict) は [dict] にラップ
-        assert isinstance(descr["Publication"], list)
-        assert descr["Publication"][0]["id"] == "12345"
+    def test_mutates_in_place(self) -> None:
+        """入力 dict は破壊的に変更される。"""
+        props = {"Attributes": {"Attribute": {"k": "v"}}}
+        original_id = id(props)
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert id(props) == original_id
+        assert props["Attributes"]["Attribute"] == [{"k": "v"}]
 
-        # Grant (既に list) はそのまま list、中の dict は再帰処理
-        assert isinstance(descr["Grant"], list)
-        assert len(descr["Grant"]) == 2
-        assert isinstance(descr["Grant"][0]["Agency"], list)
+    def test_other_fields_preserved(self) -> None:
+        """指定パス以外のフィールドは値・構造ともに不変。"""
+        props = {
+            "Attributes": {"Attribute": {"a": 1}},
+            "Description": {"Title": "preserved"},
+            "Ids": {"Id": "preserved"},
+        }
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props["Description"] == {"Title": "preserved"}
+        assert props["Ids"] == {"Id": "preserved"}
+
+    def test_biosample_realistic(self) -> None:
+        """BioSample 風の構造で動作確認。"""
+        props = {
+            "Ids": {"Id": [{"content": "SAMD1", "db": "BioSample"}]},
+            "Attributes": {"Attribute": {"attribute_name": "host", "content": "Homo sapiens"}},
+            "Description": {"Title": "Sample title"},
+        }
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props["Attributes"]["Attribute"] == [{"attribute_name": "host", "content": "Homo sapiens"}]
+        assert props["Ids"]["Id"] == [{"content": "SAMD1", "db": "BioSample"}]
+        assert props["Description"] == {"Title": "Sample title"}
+
+
+class TestEnsureAttributeListPBT:
+    """Property-based tests for ensure_attribute_list."""
+
+    @given(
+        leaf=st.one_of(
+            st.none(),
+            st.text(max_size=20),
+            st.integers(),
+            st.dictionaries(st.text(min_size=1, max_size=10), st.integers(), max_size=3),
+            st.lists(
+                st.dictionaries(st.text(min_size=1, max_size=10), st.integers(), max_size=3),
+                max_size=3,
+            ),
+        )
+    )
+    def test_idempotent(self, leaf: Any) -> None:
+        """2 回適用しても 1 回目と同じ結果（冪等性）。"""
+        props_once = {"Attributes": {"Attribute": copy.deepcopy(leaf)}}
+        props_twice = {"Attributes": {"Attribute": copy.deepcopy(leaf)}}
+        ensure_attribute_list(props_once, [["Attributes", "Attribute"]])
+        ensure_attribute_list(props_twice, [["Attributes", "Attribute"]])
+        ensure_attribute_list(props_twice, [["Attributes", "Attribute"]])
+        assert props_once == props_twice
+
+    @given(
+        other_key=st.text(min_size=1, max_size=10).filter(lambda x: x != "Attributes"),
+        other_value=st.one_of(
+            st.none(),
+            st.text(max_size=20),
+            st.integers(),
+            st.dictionaries(st.text(min_size=1, max_size=10), st.text(max_size=10), max_size=3),
+        ),
+    )
+    def test_other_fields_preserved(self, other_key: str, other_value: Any) -> None:
+        """指定パス以外のフィールドは値・構造ともに不変。"""
+        expected_other = copy.deepcopy(other_value)
+        props: dict[str, Any] = {
+            "Attributes": {"Attribute": {"a": "1"}},
+            other_key: other_value,
+        }
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert props[other_key] == expected_other
+
+    @given(
+        leaf=st.one_of(
+            st.dictionaries(st.text(min_size=1, max_size=10), st.integers(), max_size=3),
+            st.lists(
+                st.dictionaries(st.text(min_size=1, max_size=10), st.integers(), max_size=3),
+                min_size=0,
+                max_size=3,
+            ),
+        )
+    )
+    def test_dict_or_list_leaf_always_becomes_list(self, leaf: Any) -> None:
+        """対象パス末端が dict または list なら適用後は必ず list。"""
+        props = {"Attributes": {"Attribute": copy.deepcopy(leaf)}}
+        ensure_attribute_list(props, [["Attributes", "Attribute"]])
+        assert isinstance(props["Attributes"]["Attribute"], list)
 
 
 class TestGetDbxrefMap:

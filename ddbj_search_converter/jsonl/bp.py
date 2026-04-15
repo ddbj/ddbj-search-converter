@@ -21,7 +21,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bp_distribution
-from ddbj_search_converter.jsonl.utils import ensure_list_children, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
@@ -499,9 +499,10 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
     # properties 内の値を正規化
     normalize_properties(project)
 
+    # BioProject XML には Attribute 相当要素がないため ensure_attribute_list は不要
     return BioProject(
         identifier=accession,
-        properties={"Project": ensure_list_children(project)},
+        properties={"Project": project},
         distribution=make_bp_distribution(accession),
         isPartOf="BioProject",
         type="bioproject",

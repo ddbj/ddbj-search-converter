@@ -95,41 +95,44 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     return Xref(identifier=id_, type="taxonomy", url=URL_TEMPLATE["taxonomy"].format(id=id_))
 
 
-def ensure_list_children(d: dict[str, Any]) -> dict[str, Any]:
-    """properties 内の dict 値を [dict] にラップして新しい dict を返す。
+def ensure_attribute_list(
+    properties: dict[str, Any],
+    attribute_paths: list[list[str]],
+) -> None:
+    """指定パス末端の dict を [dict] にラップする（in-place）。
 
-    元の dict は変更しない。スタックベースのイテレーションで処理する。
+    XML → JSON 変換では、Attribute 要素が 1 件のとき dict、複数件のとき list となる。
+    この関数は、対象 index ごとに明示指定したパス末端を常に list に揃えることで、
+    ダウンストリーム側でのハンドリングを一貫させる。
+    途中経路が list の場合は各要素に対して再帰的にパスを辿る。
     """
+    for path in attribute_paths:
+        if not path:
+            continue
+        _apply_attribute_list(properties, path)
 
-    def _process_value(value: Any, stack: list[tuple[dict[str, Any], dict[str, Any]]]) -> Any:
-        if isinstance(value, dict):
-            new_dict: dict[str, Any] = {}
-            stack.append((new_dict, value))
-            return [new_dict]
-        if isinstance(value, list):
-            new_list: list[Any] = []
-            for item in value:
-                if isinstance(item, dict):
-                    new_item: dict[str, Any] = {}
-                    stack.append((new_item, item))
-                    new_list.append(new_item)
-                else:
-                    new_list.append(item)
-            return new_list
-        return value
 
-    root: dict[str, Any] = {}
-    stack: list[tuple[dict[str, Any], dict[str, Any]]] = []
+def _apply_attribute_list(node: Any, path: list[str]) -> None:
+    """path をたどって末端を探し、dict なら [dict] にラップする再帰ヘルパ。
 
-    for key, value in d.items():
-        root[key] = _process_value(value, stack)
-
-    while stack:
-        dest, src = stack.pop()
-        for key, value in src.items():
-            dest[key] = _process_value(value, stack)
-
-    return root
+    - node が list の場合は全要素に同じ path で再帰（途中経路 list 対応）
+    - node が dict でも list でもなければ no-op
+    - path の残りが 1 つ（head のみ）なら末端。値が dict のときだけラップ
+    - それ以外は head を辿って次のノードで再帰
+    """
+    if isinstance(node, list):
+        for item in node:
+            _apply_attribute_list(item, path)
+        return
+    if not isinstance(node, dict):
+        return
+    head, *rest = path
+    if rest:
+        _apply_attribute_list(node.get(head), rest)
+        return
+    value = node.get(head)
+    if isinstance(value, dict):
+        node[head] = [value]
 
 
 def write_jsonl(output_path: Path, docs: list[Any]) -> None:

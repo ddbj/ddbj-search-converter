@@ -31,7 +31,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.distribution import make_sra_distribution
-from ddbj_search_converter.jsonl.utils import ensure_list_children, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import SRA, Accessibility, Organism, Status, XrefType
@@ -69,6 +69,14 @@ XREF_TYPE_MAP: dict[SraXmlType, XrefType] = {
     "run": "sra-run",
     "sample": "sra-sample",
     "analysis": "sra-analysis",
+}
+
+SRA_ATTRIBUTE_PATHS: dict[SraXmlType, list[list[str]]] = {
+    "study": [["STUDY_SET", "STUDY", "STUDY_ATTRIBUTES", "STUDY_ATTRIBUTE"]],
+    "experiment": [["EXPERIMENT_SET", "EXPERIMENT", "EXPERIMENT_ATTRIBUTES", "EXPERIMENT_ATTRIBUTE"]],
+    "run": [["RUN_SET", "RUN", "RUN_ATTRIBUTES", "RUN_ATTRIBUTE"]],
+    "sample": [["SAMPLE_SET", "SAMPLE", "SAMPLE_ATTRIBUTES", "SAMPLE_ATTRIBUTE"]],
+    "analysis": [["ANALYSIS_SET", "ANALYSIS", "ANALYSIS_ATTRIBUTES", "ANALYSIS_ATTRIBUTE"]],
 }
 
 
@@ -376,9 +384,12 @@ def create_sra_entry(
         sra_file_runs=sra_file_runs,
     )
 
+    props = parsed["properties"]
+    ensure_attribute_list(props, SRA_ATTRIBUTE_PATHS.get(sra_type, []))
+
     return SRA(
         identifier=identifier,
-        properties=ensure_list_children(parsed["properties"]),
+        properties=props,
         distribution=distribution,
         isPartOf="sra",
         type=entry_type,

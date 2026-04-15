@@ -18,6 +18,7 @@ from ddbj_search_converter.jsonl.bp import (
     parse_same_as,
     parse_status,
     parse_title,
+    xml_entry_to_bp_instance,
 )
 from ddbj_search_converter.schema import BioProject
 
@@ -618,3 +619,47 @@ class TestFetchStatuses:
         _fetch_statuses(config, docs)
 
         assert docs["PRJDB1"].status == "public"
+
+
+class TestXmlEntryToBpInstanceProperties:
+    """xml_entry_to_bp_instance 実行後の properties 構造の回帰テスト。
+
+    BioProject は Attribute 相当フィールドを持たないため、
+    properties 内の各要素が配列化されないことを検証する。
+    """
+
+    def test_project_descr_stays_dict(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Title"] = "My Project"
+        bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
+        descr = bp.properties["Project"]["Project"]["ProjectDescr"]
+        assert isinstance(descr, dict)
+        assert descr["Title"] == "My Project"
+
+    def test_publication_single_stays_dict(self) -> None:
+        """Publication が 1 件の場合 dict のまま（配列化されない）。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {"id": "12345", "DbType": "ePubmed"}
+        bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
+        pub = bp.properties["Project"]["Project"]["ProjectDescr"]["Publication"]
+        assert isinstance(pub, dict)
+        assert pub["id"] == "12345"
+
+    def test_publication_list_stays_list(self) -> None:
+        """Publication が 2 件以上の場合 list のまま。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = [
+            {"id": "1", "DbType": "ePubmed"},
+            {"id": "2", "DbType": "ePubmed"},
+        ]
+        bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
+        pub = bp.properties["Project"]["Project"]["ProjectDescr"]["Publication"]
+        assert isinstance(pub, list)
+        assert len(pub) == 2
+
+    def test_archive_id_stays_dict(self) -> None:
+        project = _make_project()
+        bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
+        archive_id = bp.properties["Project"]["Project"]["ProjectID"]["ArchiveID"]
+        assert isinstance(archive_id, dict)
+        assert archive_id["accession"] == "PRJDB1"

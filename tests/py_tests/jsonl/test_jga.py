@@ -321,3 +321,67 @@ class TestParseSameAs:
         }
         result = parse_same_as(entry, "jga-study", "JGAS000001")
         assert result == []
+
+
+class TestJgaEntryToJgaInstanceProperties:
+    """jga_entry_to_jga_instance 実行後の properties 内 Attribute 正規化。"""
+
+    def test_jga_study_single_attribute_becomes_list(self) -> None:
+        entry: dict[str, Any] = {
+            "accession": "JGAS000009",
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "NBDC Number", "VALUE": "hum0018"}},
+        }
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        attrs = jga.properties["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"]
+        assert isinstance(attrs, list)
+        assert attrs == [{"TAG": "NBDC Number", "VALUE": "hum0018"}]
+
+    def test_jga_study_multiple_attributes_stay_list(self) -> None:
+        entry: dict[str, Any] = {
+            "accession": "JGAS000001",
+            "STUDY_ATTRIBUTES": {
+                "STUDY_ATTRIBUTE": [
+                    {"TAG": "a", "VALUE": "1"},
+                    {"TAG": "b", "VALUE": "2"},
+                ]
+            },
+        }
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        attrs = jga.properties["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"]
+        assert len(attrs) == 2
+
+    def test_jga_study_no_attribute_stays_absent(self) -> None:
+        entry: dict[str, Any] = {"accession": "JGAS000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        assert "STUDY_ATTRIBUTES" not in jga.properties
+
+    def test_jga_dataset_no_op(self) -> None:
+        entry: dict[str, Any] = {
+            "accession": "JGAD000001",
+            "TITLE": "Dataset",
+            "DESCRIPTION": "Desc",
+        }
+        jga = jga_entry_to_jga_instance(entry, "jga-dataset")
+        assert jga.properties["TITLE"] == "Dataset"
+        assert jga.properties["DESCRIPTION"] == "Desc"
+
+    def test_jga_dac_no_op(self) -> None:
+        entry: dict[str, Any] = {"accession": "JGAC000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-dac")
+        assert jga.properties["accession"] == "JGAC000001"
+
+    def test_jga_policy_no_op(self) -> None:
+        entry: dict[str, Any] = {"accession": "JGAP000001", "TITLE": "Policy"}
+        jga = jga_entry_to_jga_instance(entry, "jga-policy")
+        assert jga.properties["TITLE"] == "Policy"
+
+    def test_jga_study_other_fields_preserved(self) -> None:
+        """DESCRIPTOR 等 Attribute 以外のフィールドは不変。"""
+        entry: dict[str, Any] = {
+            "accession": "JGAS000001",
+            "DESCRIPTOR": {"STUDY_TITLE": "My Study", "STUDY_ABSTRACT": "Abstract"},
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "k", "VALUE": "v"}},
+        }
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        assert isinstance(jga.properties["DESCRIPTOR"], dict)
+        assert jga.properties["DESCRIPTOR"]["STUDY_TITLE"] == "My Study"

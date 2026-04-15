@@ -20,7 +20,7 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
-from ddbj_search_converter.jsonl.utils import ensure_list_children, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.schema import JGA, Organism, Xref
 from ddbj_search_converter.xml_utils import parse_xml
@@ -41,6 +41,10 @@ INDEX_TO_ACCESSION_TYPE: dict[IndexName, AccessionType] = {
     "jga-dataset": "jga-dataset",
     "jga-dac": "jga-dac",
     "jga-policy": "jga-policy",
+}
+
+JGA_ATTRIBUTE_PATHS: dict[IndexName, list[list[str]]] = {
+    "jga-study": [["STUDY_ATTRIBUTES", "STUDY_ATTRIBUTE"]],
 }
 
 
@@ -177,10 +181,11 @@ def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str =
 def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> JGA:
     """JGA XML エントリを JGA インスタンスに変換する。"""
     accession: str = entry["accession"]
+    ensure_attribute_list(entry, JGA_ATTRIBUTE_PATHS.get(index_name, []))
 
     return JGA(
         identifier=accession,
-        properties=ensure_list_children(entry),
+        properties=entry,
         distribution=make_jga_distribution(index_name, accession),
         isPartOf="jga",
         type=index_name,

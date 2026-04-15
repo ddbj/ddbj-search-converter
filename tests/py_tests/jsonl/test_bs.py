@@ -19,6 +19,7 @@ from ddbj_search_converter.jsonl.bs import (
     parse_same_as,
     parse_status,
     parse_title,
+    xml_entry_to_bs_instance,
 )
 from ddbj_search_converter.schema import BioSample
 
@@ -437,3 +438,46 @@ class TestFetchStatuses:
         _fetch_statuses(config, docs)
 
         assert docs["SAMD00000001"].status == "public"
+
+
+class TestXmlEntryToBsInstanceProperties:
+    """xml_entry_to_bs_instance 実行後の properties 内 Attribute 正規化。"""
+
+    def test_single_attribute_becomes_list(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"]["Attribute"] = {"attribute_name": "host", "content": "Homo sapiens"}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        attrs = bs.properties["BioSample"]["Attributes"]["Attribute"]
+        assert isinstance(attrs, list)
+        assert attrs == [{"attribute_name": "host", "content": "Homo sapiens"}]
+
+    def test_multiple_attributes_stay_list(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"]["Attribute"] = [
+            {"attribute_name": "a", "content": "1"},
+            {"attribute_name": "b", "content": "2"},
+        ]
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        attrs = bs.properties["BioSample"]["Attributes"]["Attribute"]
+        assert len(attrs) == 2
+
+    def test_no_attribute_stays_no_op(self) -> None:
+        sample = _make_sample()
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        assert bs.properties["BioSample"]["Attributes"] == {}
+
+    def test_description_stays_dict(self) -> None:
+        """Description は Attribute 相当ではないので配列化されない（回帰テスト）。"""
+        sample = _make_sample()
+        sample["Description"]["Title"] = "A title"
+        sample["Attributes"]["Attribute"] = {"attribute_name": "x", "content": "y"}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        assert isinstance(bs.properties["BioSample"]["Description"], dict)
+        assert bs.properties["BioSample"]["Description"]["Title"] == "A title"
+
+    def test_ids_stays_dict(self) -> None:
+        """Ids も配列化されない（回帰テスト）。"""
+        sample = _make_sample()
+        sample["Attributes"]["Attribute"] = {"attribute_name": "x", "content": "y"}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        assert isinstance(bs.properties["BioSample"]["Ids"], dict)

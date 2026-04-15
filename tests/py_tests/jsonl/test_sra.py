@@ -368,3 +368,99 @@ class TestBatchDedup:
                 seen_ids.add(entry.identifier)
 
         assert len(batch_entries) == 3
+
+
+class TestCreateSraEntryProperties:
+    """create_sra_entry 実行後の properties 内 Attribute 正規化を検証する。"""
+
+    def _call(self, sra_type: SraXmlType, properties: dict[str, Any]) -> SRA:
+        parsed: dict[str, Any] = {
+            "accession": "ACC000001",
+            "properties": properties,
+            "alias": None,
+            "title": None,
+            "description": None,
+        }
+        return create_sra_entry(
+            sra_type=sra_type,
+            parsed=parsed,
+            status="public",
+            accessibility="public-access",
+            date_created=None,
+            date_modified=None,
+            date_published=None,
+        )
+
+    def test_study_single_attribute_becomes_list(self) -> None:
+        props = {"STUDY_SET": {"STUDY": {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "k", "VALUE": "v"}}}}}
+        sra = self._call("study", props)
+        attrs = sra.properties["STUDY_SET"]["STUDY"]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"]
+        assert isinstance(attrs, list)
+        assert attrs == [{"TAG": "k", "VALUE": "v"}]
+
+    def test_study_multiple_attributes_stay_list(self) -> None:
+        props = {"STUDY_SET": {"STUDY": {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": [{"TAG": "a"}, {"TAG": "b"}]}}}}
+        sra = self._call("study", props)
+        attrs = sra.properties["STUDY_SET"]["STUDY"]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"]
+        assert len(attrs) == 2
+
+    def test_experiment_attribute_becomes_list(self) -> None:
+        props = {"EXPERIMENT_SET": {"EXPERIMENT": {"EXPERIMENT_ATTRIBUTES": {"EXPERIMENT_ATTRIBUTE": {"TAG": "k"}}}}}
+        sra = self._call("experiment", props)
+        attrs = sra.properties["EXPERIMENT_SET"]["EXPERIMENT"]["EXPERIMENT_ATTRIBUTES"]["EXPERIMENT_ATTRIBUTE"]
+        assert isinstance(attrs, list)
+
+    def test_run_attribute_becomes_list(self) -> None:
+        props = {"RUN_SET": {"RUN": {"RUN_ATTRIBUTES": {"RUN_ATTRIBUTE": {"TAG": "k"}}}}}
+        sra = self._call("run", props)
+        attrs = sra.properties["RUN_SET"]["RUN"]["RUN_ATTRIBUTES"]["RUN_ATTRIBUTE"]
+        assert isinstance(attrs, list)
+
+    def test_sample_attribute_becomes_list(self) -> None:
+        props = {"SAMPLE_SET": {"SAMPLE": {"SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": {"TAG": "k"}}}}}
+        sra = self._call("sample", props)
+        attrs = sra.properties["SAMPLE_SET"]["SAMPLE"]["SAMPLE_ATTRIBUTES"]["SAMPLE_ATTRIBUTE"]
+        assert isinstance(attrs, list)
+
+    def test_analysis_attribute_becomes_list(self) -> None:
+        props = {"ANALYSIS_SET": {"ANALYSIS": {"ANALYSIS_ATTRIBUTES": {"ANALYSIS_ATTRIBUTE": {"TAG": "k"}}}}}
+        sra = self._call("analysis", props)
+        attrs = sra.properties["ANALYSIS_SET"]["ANALYSIS"]["ANALYSIS_ATTRIBUTES"]["ANALYSIS_ATTRIBUTE"]
+        assert isinstance(attrs, list)
+
+    def test_submission_no_op(self) -> None:
+        """sra-submission は対象外。properties の構造が保持される。"""
+        props = {"SUBMISSION": {"TITLE": "Test"}}
+        sra = self._call("submission", props)
+        assert isinstance(sra.properties["SUBMISSION"], dict)
+        assert sra.properties["SUBMISSION"]["TITLE"] == "Test"
+
+    def test_multiple_studies_each_normalized(self) -> None:
+        """STUDY が list（複数 entry）の場合、各要素で正規化される。"""
+        props = {
+            "STUDY_SET": {
+                "STUDY": [
+                    {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "a"}}},
+                    {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": [{"TAG": "b"}, {"TAG": "c"}]}},
+                ]
+            }
+        }
+        sra = self._call("study", props)
+        studies = sra.properties["STUDY_SET"]["STUDY"]
+        assert studies[0]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"] == [{"TAG": "a"}]
+        assert len(studies[1]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"]) == 2
+
+    def test_other_fields_not_wrapped(self) -> None:
+        """DESCRIPTOR 等は配列化されない（回帰テスト）。"""
+        props = {
+            "STUDY_SET": {
+                "STUDY": {
+                    "DESCRIPTOR": {"STUDY_TITLE": "Title"},
+                    "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "k"}},
+                }
+            }
+        }
+        sra = self._call("study", props)
+        study = sra.properties["STUDY_SET"]["STUDY"]
+        assert isinstance(study["DESCRIPTOR"], dict)
+        assert study["DESCRIPTOR"]["STUDY_TITLE"] == "Title"
