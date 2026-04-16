@@ -116,7 +116,7 @@ class Extra(BaseModel):
     relation_type: str | None = Field(
         default=None,
         description="Type of relation being processed",
-        examples=["umbrella", "hum_id", "geo"],
+        examples=["umbrella", "humandbs", "geo"],
     )
     count: int | None = Field(
         default=None,

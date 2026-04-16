@@ -23,8 +23,8 @@ ID_PATTERN_MAP: dict[AccessionType, Pattern[str]] = {
     "insdc-assembly": re.compile(r"^GCA_[0-9]{9}(\.[0-9]+)?\Z"),
     "insdc-master": re.compile(r"^([A-Z]0{5}|[A-Z]{2}0{6}|[A-Z]{4,6}0{8,10}|[A-J][A-Z]{2}0{5})\Z"),
     "metabobank": re.compile(r"^MTBKS\d+\Z"),
-    "hum-id": re.compile(r"^hum\d+\Z"),
-    "pubmed-id": re.compile(r"^\d+\Z"),  # pubmed-id は数字のみ (to_xref では最後にフォールバック)
+    "humandbs": re.compile(r"^hum\d+\Z"),
+    "pubmed": re.compile(r"^\d+\Z"),  # pubmed は数字のみ (to_xref では最後にフォールバック)
     "taxonomy": re.compile(r"^\d+\Z"),
 }
 

@@ -75,12 +75,12 @@ XrefType = Literal[
     "jga-policy",
     "gea",
     "geo",
-    "hum-id",
+    "humandbs",
     "insdc",
     "insdc-assembly",
     "insdc-master",
     "metabobank",
-    "pubmed-id",
+    "pubmed",
     "taxonomy",
 ]
 

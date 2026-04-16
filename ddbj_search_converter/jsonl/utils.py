@@ -27,8 +27,8 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
     "insdc-master": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
     "metabobank": "https://mb2.ddbj.nig.ac.jp/study/{id}.html",
-    "hum-id": "https://humandbs.dbcls.jp/{id}",
-    "pubmed-id": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
+    "humandbs": "https://humandbs.dbcls.jp/{id}",
+    "pubmed": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
     "taxonomy": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={id}",
 }
 
@@ -56,7 +56,7 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
             url = url_template.format(id=id_)
         return Xref(identifier=id_, type=type_hint, url=url)
 
-    # pubmed-id と taxonomy は数字のみなので最後にチェックする
+    # pubmed と taxonomy は数字のみなので最後にチェックする
     # insdc は ID_PATTERN_MAP にパターンがないため含めない（type_hint 経由でのみ使用）
     priority_types: list[XrefType] = [
         "biosample",
@@ -76,7 +76,7 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
         "insdc-assembly",
         "insdc-master",
         "metabobank",
-        "hum-id",
+        "humandbs",
     ]
 
     for db_type in priority_types:

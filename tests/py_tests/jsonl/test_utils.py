@@ -39,7 +39,7 @@ class TestToXref:
             ("SRR123456", "sra-run"),
             ("GCA_000001405.15", "insdc-assembly"),
             ("MTBKS123", "metabobank"),
-            ("hum0001", "hum-id"),
+            ("hum0001", "humandbs"),
         ],
     )
     def test_auto_detection(self, acc: str, expected_type: str) -> None:
@@ -60,8 +60,8 @@ class TestToXref:
         assert "E-GEAD-1000" in xref_1000.url
 
     def test_type_hint_overrides_detection(self) -> None:
-        xref = to_xref("12345678", type_hint="pubmed-id")
-        assert xref.type_ == "pubmed-id"
+        xref = to_xref("12345678", type_hint="pubmed")
+        assert xref.type_ == "pubmed"
         assert "pubmed.ncbi.nlm.nih.gov" in xref.url
 
     def test_unknown_id_falls_back_to_taxonomy(self) -> None:
@@ -113,10 +113,10 @@ class TestEdgeCases:
         xref = to_xref("")
         assert xref.type_ == "taxonomy"
 
-    def test_pubmed_id_vs_taxonomy_ambiguity(self) -> None:
+    def test_pubmed_vs_taxonomy_ambiguity(self) -> None:
         """数字のみの ID はパターンマッチで taxonomy にフォールバック。"""
         xref = to_xref("12345")
-        # pubmed-id and taxonomy share the same pattern, but neither is in priority_types
+        # pubmed and taxonomy share the same pattern, but neither is in priority_types
         assert xref.type_ == "taxonomy"
 
     def test_gea_id_zero(self) -> None:

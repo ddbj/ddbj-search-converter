@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.bioproject import normalize_hum_id, process_bioproject_xml_file
+from ddbj_search_converter.dblink.bioproject import normalize_humandbs, process_bioproject_xml_file
 from ddbj_search_converter.logging.logger import _ctx, init_logger
 
 
@@ -20,31 +20,31 @@ def _init_logger(tmp_path: Path) -> Generator[None, None, None]:
     _ctx.set(None)
 
 
-class TestNormalizeHumId:
-    """Tests for normalize_hum_id function."""
+class TestNormalizeHumandbs:
+    """Tests for normalize_humandbs function."""
 
-    def test_simple_hum_id(self) -> None:
-        """バージョンなしの hum-id はそのまま返す。"""
-        assert normalize_hum_id("hum0001") == "hum0001"
-        assert normalize_hum_id("hum0257") == "hum0257"
-        assert normalize_hum_id("hum9999") == "hum9999"
+    def test_simple_humandbs(self) -> None:
+        """バージョンなしの humandbs はそのまま返す。"""
+        assert normalize_humandbs("hum0001") == "hum0001"
+        assert normalize_humandbs("hum0257") == "hum0257"
+        assert normalize_humandbs("hum9999") == "hum9999"
 
-    def test_hum_id_with_version(self) -> None:
-        """バージョン付きの hum-id はバージョンを除去する。"""
-        assert normalize_hum_id("hum0001.v2") == "hum0001"
-        assert normalize_hum_id("hum0257.v1") == "hum0257"
-        assert normalize_hum_id("hum0123.v10") == "hum0123"
+    def test_humandbs_with_version(self) -> None:
+        """バージョン付きの humandbs はバージョンを除去する。"""
+        assert normalize_humandbs("hum0001.v2") == "hum0001"
+        assert normalize_humandbs("hum0257.v1") == "hum0257"
+        assert normalize_humandbs("hum0123.v10") == "hum0123"
 
-    def test_hum_id_with_other_suffix(self) -> None:
+    def test_humandbs_with_other_suffix(self) -> None:
         """その他のサフィックスも除去する。"""
-        assert normalize_hum_id("hum0001.abc") == "hum0001"
+        assert normalize_humandbs("hum0001.abc") == "hum0001"
 
 
 class TestProcessBioprojectXmlFile:
     """Tests for process_bioproject_xml_file function."""
 
-    def test_extracts_hum_id_from_local_id(self, tmp_path: Path) -> None:
-        """LocalID から hum-id を抽出する。"""
+    def test_extracts_humandbs_from_local_id(self, tmp_path: Path) -> None:
+        """LocalID から humandbs を抽出する。"""
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <PackageSet>
     <Package>
@@ -65,8 +65,8 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 1
-        assert ("PRJDB11024", "hum0257") in result.hum_id
+        assert len(result.humandbs) == 1
+        assert ("PRJDB11024", "hum0257") in result.humandbs
         assert len(result.umbrella) == 0
         assert len(result.skipped_accessions) == 0
 
@@ -100,10 +100,10 @@ class TestProcessBioprojectXmlFile:
 
         assert len(result.umbrella) == 1
         assert ("PRJDB00001", "PRJDB99999") in result.umbrella
-        assert len(result.hum_id) == 0
+        assert len(result.humandbs) == 0
 
     def test_extracts_both_relations(self, tmp_path: Path) -> None:
-        """1回のパースで umbrella と hum-id の両方を抽出する。"""
+        """1回のパースで umbrella と humandbs の両方を抽出する。"""
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <PackageSet>
     <Package>
@@ -133,8 +133,8 @@ class TestProcessBioprojectXmlFile:
 
         assert len(result.umbrella) == 1
         assert ("PRJDB00001", "PRJDB99999") in result.umbrella
-        assert len(result.hum_id) == 1
-        assert ("PRJDB00001", "hum0001") in result.hum_id
+        assert len(result.humandbs) == 1
+        assert ("PRJDB00001", "hum0001") in result.humandbs
 
     def test_ignores_top_single(self, tmp_path: Path) -> None:
         """TopSingle リンクは無視する。"""
@@ -166,8 +166,8 @@ class TestProcessBioprojectXmlFile:
 
         assert len(result.umbrella) == 0
 
-    def test_normalizes_hum_id_with_version(self, tmp_path: Path) -> None:
-        """バージョン付き hum-id を正規化する。"""
+    def test_normalizes_humandbs_with_version(self, tmp_path: Path) -> None:
+        """バージョン付き humandbs を正規化する。"""
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <PackageSet>
     <Package>
@@ -187,8 +187,8 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 1
-        assert ("PRJDB99999", "hum0001") in result.hum_id
+        assert len(result.humandbs) == 1
+        assert ("PRJDB99999", "hum0001") in result.humandbs
 
     def test_processes_multiple_packages(self, tmp_path: Path) -> None:
         """複数の Package を処理する。"""
@@ -221,9 +221,9 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 2
-        assert ("PRJDB00001", "hum0001") in result.hum_id
-        assert ("PRJDB00002", "hum0002") in result.hum_id
+        assert len(result.humandbs) == 2
+        assert ("PRJDB00001", "hum0001") in result.humandbs
+        assert ("PRJDB00002", "hum0002") in result.humandbs
 
     def test_skips_invalid_accession(self, tmp_path: Path) -> None:
         """PRJ で始まらない accession はスキップする。"""
@@ -246,7 +246,7 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 0
+        assert len(result.humandbs) == 0
         assert "INVALID123" in result.skipped_accessions
 
     def test_case_insensitive_hum_prefix(self, tmp_path: Path) -> None:
@@ -270,11 +270,11 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 1
-        assert ("PRJDB33333", "hum0001") in result.hum_id
+        assert len(result.humandbs) == 1
+        assert ("PRJDB33333", "hum0001") in result.humandbs
 
-    def test_rejects_invalid_hum_id_format(self, tmp_path: Path) -> None:
-        """hum で始まるが hum-id パターンに合致しない値はスキップする。"""
+    def test_rejects_invalid_humandbs_format(self, tmp_path: Path) -> None:
+        """hum で始まるが humandbs パターンに合致しない値はスキップする。"""
         xml_content = """<?xml version="1.0" encoding="UTF-8"?>
 <PackageSet>
     <Package>
@@ -314,7 +314,7 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 0
+        assert len(result.humandbs) == 0
 
     def test_empty_package_set(self, tmp_path: Path) -> None:
         """空の PackageSet を処理する。"""
@@ -327,6 +327,6 @@ class TestProcessBioprojectXmlFile:
 
         result = process_bioproject_xml_file(xml_path)
 
-        assert len(result.hum_id) == 0
+        assert len(result.humandbs) == 0
         assert len(result.umbrella) == 0
         assert len(result.skipped_accessions) == 0

@@ -22,11 +22,11 @@ DDBJ Search Converter のデータフローと構造。
 |                                                                             |
 |   init_dblink_db                                                            |
 |   create_dblink_bp_bs_relations      -- parse XML, preserved.tsv            |
-|   create_dblink_bp_relations         -- umbrella (-> umbrella.duckdb), hum-id|
+|   create_dblink_bp_relations         -- umbrella (-> umbrella.duckdb), humandbs|
 |   create_dblink_assembly_and_master  -- fetch assembly_summary, ORGANISM    |
 |   create_dblink_gea_relations        -- parse IDF/SDRF                      |
 |   create_dblink_metabobank_relations -- parse IDF/SDRF, preserved.tsv       |
-|   create_dblink_jga_relations        -- parse XML/CSV, hum-id TSV           |
+|   create_dblink_jga_relations        -- parse XML/CSV, humandbs TSV         |
 |   create_dblink_sra_internal         -- SRA internal + BP/BS <-> SRA        |
 |   create_dblink_insdc_relations     -- preserved.tsv, TRAD PostgreSQL       |
 |   finalize_dblink_db -----> {const}/dblink/dblink.duckdb, umbrella.duckdb   |
@@ -330,8 +330,8 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `insdc` | AB000001, CP035466 |
 | `insdc-assembly` | GCA_000000001.1 |
 | `insdc-master` | ABCD00000000 |
-| `hum-id` | hum0001 |
-| `pubmed-id` | 12345678 |
+| `humandbs` | hum0001 |
+| `pubmed` | 12345678 |
 | `geo` | GSE12345 |
 | `taxonomy` | 9606 |
 
@@ -348,14 +348,14 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `insdc_master-biosample/insdc_master2biosample.tsv` | insdc-master - biosample |
 | `biosample-bioproject/biosample2bioproject.tsv` | biosample - bioproject |
 | `bioproject-biosample/bioproject2biosample.tsv` | bioproject - biosample |
-| `bioproject-humID/bioproject2humID.tsv` | bioproject - hum-id |
+| `bioproject-humID/bioproject2humID.tsv` | bioproject - humandbs |
 | `gea-bioproject/gea2bioproject.tsv` | gea - bioproject |
 | `gea-biosample/gea2biosample.tsv` | gea - biosample |
 | `mtb2bp/mtb_id_bioproject.tsv` | metabobank - bioproject |
 | `mtb2bs/mtb_id_biosample.tsv` | metabobank - biosample |
-| `jga_study-humID/jga_study2humID.tsv` | jga-study - hum-id |
-| `jga_dataset-humID/jga_dataset2humID.tsv` | jga-dataset - hum-id |
-| `jga_study-pubmed_id/jga_study2pubmed_id.tsv` | jga-study - pubmed-id |
+| `jga_study-humID/jga_study2humID.tsv` | jga-study - humandbs |
+| `jga_dataset-humID/jga_dataset2humID.tsv` | jga-dataset - humandbs |
+| `jga_study-pubmed_id/jga_study2pubmed_id.tsv` | jga-study - pubmed |
 | `jga_study-jga_dataset/jga_study2jga_dataset.tsv` | jga-study - jga-dataset |
 | `insdc-bioproject/insdc2bioproject.tsv` | insdc - bioproject |
 | `insdc-biosample/insdc2biosample.tsv` | insdc - biosample |

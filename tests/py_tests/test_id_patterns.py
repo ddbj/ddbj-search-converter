@@ -184,25 +184,25 @@ class TestIsValidAccession:
     def test_metabobank_invalid(self, acc: str) -> None:
         assert is_valid_accession(acc, "metabobank") is False
 
-    # --- hum-id ---
+    # --- humandbs ---
 
     @pytest.mark.parametrize("acc", ["hum0001", "hum123456"])
-    def test_hum_id_valid(self, acc: str) -> None:
-        assert is_valid_accession(acc, "hum-id") is True
+    def test_humandbs_valid(self, acc: str) -> None:
+        assert is_valid_accession(acc, "humandbs") is True
 
     @pytest.mark.parametrize("acc", ["HUM0001", "hum", "humABC"])
-    def test_hum_id_invalid(self, acc: str) -> None:
-        assert is_valid_accession(acc, "hum-id") is False
+    def test_humandbs_invalid(self, acc: str) -> None:
+        assert is_valid_accession(acc, "humandbs") is False
 
-    # --- pubmed-id / taxonomy ---
+    # --- pubmed / taxonomy ---
 
     @pytest.mark.parametrize("acc", ["12345678", "1"])
-    def test_pubmed_id_valid(self, acc: str) -> None:
-        assert is_valid_accession(acc, "pubmed-id") is True
+    def test_pubmed_valid(self, acc: str) -> None:
+        assert is_valid_accession(acc, "pubmed") is True
 
     @pytest.mark.parametrize("acc", ["abc", "12345abc"])
-    def test_pubmed_id_invalid(self, acc: str) -> None:
-        assert is_valid_accession(acc, "pubmed-id") is False
+    def test_pubmed_invalid(self, acc: str) -> None:
+        assert is_valid_accession(acc, "pubmed") is False
 
     @pytest.mark.parametrize("acc", ["9606", "1"])
     def test_taxonomy_valid(self, acc: str) -> None:
@@ -250,9 +250,9 @@ class TestPBT:
 
     @given(acc_type=st.sampled_from(PATTERN_TYPES))
     def test_empty_string_is_invalid(self, acc_type: str) -> None:
-        """空文字列は（pubmed-id/taxonomy を除き）常に invalid。"""
+        """空文字列は（pubmed/taxonomy を除き）常に invalid。"""
         result = is_valid_accession("", acc_type)  # type: ignore[arg-type]
-        if acc_type in ("pubmed-id", "taxonomy"):
+        if acc_type in ("pubmed", "taxonomy"):
             # "^\d+$" requires at least one digit
             assert result is False
         else:
@@ -283,8 +283,8 @@ class TestBug12TrailingNewline:
         "insdc-assembly": "GCA_000001405",
         "insdc-master": "AB000000",
         "metabobank": "MTBKS123",
-        "hum-id": "hum0001",
-        "pubmed-id": "12345",
+        "humandbs": "hum0001",
+        "pubmed": "12345",
         "taxonomy": "9606",
     }
 
@@ -321,10 +321,10 @@ class TestEdgeCases:
 
     @pytest.mark.parametrize("acc_type", PATTERN_TYPES)
     def test_very_long_string(self, acc_type: str) -> None:
-        """超長文字列は invalid (pubmed-id/taxonomy 以外)。"""
+        """超長文字列は invalid (pubmed/taxonomy 以外)。"""
         long_str = "A" * 10000
         result = is_valid_accession(long_str, acc_type)  # type: ignore[arg-type]
-        if acc_type in ("pubmed-id", "taxonomy"):
+        if acc_type in ("pubmed", "taxonomy"):
             assert result is False  # only digits match
         else:
             assert result is False
