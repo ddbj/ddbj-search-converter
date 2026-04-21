@@ -1,11 +1,10 @@
 """GEA / MetaboBank が共有する IDF (Investigation Description Format) parse 共通 utility。
 
 MAGE-TAB IDF は tab 区切りのテキストで、1 列目が tag、2 列目以降が values。
-Phase A §3.5.3 / §3.6.3 で確定した方針に従い、以下の utility を提供する:
 
 - `parse_idf`: IDF を tag -> values dict に展開
-- `parse_submitter_affiliations`: Person Affiliation から共通型 Organization list を構築 (案 α)
-- `parse_pubmed_doi_publications`: PubMed ID / Publication DOI から共通型 Publication list を構築 (案 a)
+- `parse_submitter_affiliations`: Person Affiliation から共通型 Organization list を構築
+- `parse_pubmed_doi_publications`: PubMed ID / Publication DOI から共通型 Publication list を構築
 """
 
 from pathlib import Path
@@ -40,11 +39,10 @@ def parse_idf(path: Path) -> dict[str, list[str]]:
 
 
 def parse_submitter_affiliations(idf: dict[str, list[str]]) -> list[Organization]:
-    """IDF の Person Affiliation から Organization list を構築する (案 α)。
+    """IDF の Person Affiliation から Organization list を構築する。
 
-    Phase A §4.6.1 / Q20 で GEA 688/688、MetaboBank 110/110 件の Person Roles が
-    全件 "submitter" 単一値であることを確認済のため、role は "submitter" を固定する。
-    空値は skip し、unique 化する。
+    GEA / MetaboBank IDF の Person Roles は全件 "submitter" 単一値のため、role は
+    "submitter" を固定する。空値は skip し、unique 化する。
     """
     affiliations = idf.get("Person Affiliation", [])
     seen: set[str] = set()
@@ -59,10 +57,9 @@ def parse_submitter_affiliations(idf: dict[str, list[str]]) -> list[Organization
 
 
 def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication]:
-    """IDF の PubMed ID と Publication DOI から Publication list を構築する (案 a)。
+    """IDF の PubMed ID と Publication DOI から Publication list を構築する。
 
-    Phase A §3.5.3 / §3.6.3 の方針により、PubMed ID と Publication DOI は
-    同一 index で対応させず、**別 entry として list に詰める**。
+    PubMed ID と Publication DOI は同一 index で対応させず、別 entry として list に詰める。
     """
     publications: list[Publication] = []
     for pmid in idf.get("PubMed ID", []):

@@ -79,7 +79,6 @@ class TestGetMappingForIndex:
     def test_biosample_mapping(self) -> None:
         mapping = get_mapping_for_index("biosample")
         props = mapping["mappings"]["properties"]
-        # Phase A §3.1 で attributes は廃止、model/package/organization に置き換え
         assert "attributes" not in props
         assert "model" in props
         assert "package" in props

@@ -130,7 +130,7 @@ class TestParseSubmitterAffiliations:
         assert parse_submitter_affiliations({"Person Affiliation": []}) == []
 
     def test_all_empty_affiliations_returns_empty(self) -> None:
-        """Phase A §4.6.1 で観測された 'submitter role は付くが Affiliation 空' のケース。"""
+        """'submitter role は付くが Affiliation 空' のケース。"""
         idf = {"Person Affiliation": ["", "", ""]}
         assert parse_submitter_affiliations(idf) == []
 

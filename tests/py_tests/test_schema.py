@@ -221,8 +221,6 @@ class TestJGA:
 
 
 class TestOrganization:
-    """Tests for Organization common type (Phase A §2.1)."""
-
     def test_all_defaults_are_none(self) -> None:
         org = Organization()
         assert org.name is None
@@ -254,8 +252,6 @@ class TestOrganization:
 
 
 class TestPublication:
-    """Tests for Publication common type (Phase A §2.3)."""
-
     def test_all_defaults_are_none(self) -> None:
         pub = Publication()
         assert pub.id_ is None
@@ -307,8 +303,6 @@ class TestPublication:
 
 
 class TestBioSamplePackage:
-    """Tests for BioSamplePackage (Phase A §3.1)."""
-
     def test_name_is_required(self) -> None:
         with pytest.raises(ValidationError):
             BioSamplePackage()  # type: ignore[call-arg]
@@ -349,8 +343,6 @@ def _make_minimal_bs_kwargs() -> dict:
 
 
 class TestBioSample:
-    """Tests for BioSample model (Phase A §3.1 確定形)."""
-
     def test_minimal_instance(self) -> None:
         bs = BioSample(**_make_minimal_bs_kwargs())
         assert bs.identifier == "SAMD00000001"
@@ -425,8 +417,6 @@ def _make_minimal_sra_kwargs() -> dict:
 
 
 class TestLibrarySourceLiteral:
-    """Tests for LibrarySource Literal (Phase A §3.3, §4.9.2)."""
-
     @pytest.mark.parametrize(
         "value",
         [
@@ -456,8 +446,6 @@ class TestLibrarySourceLiteral:
 
 
 class TestLibraryLayoutLiteral:
-    """Tests for LibraryLayout Literal (Phase A §3.3, §4.9.1)."""
-
     @pytest.mark.parametrize("value", ["PAIRED", "SINGLE"])
     def test_valid_values(self, value: str) -> None:
         kwargs = _make_minimal_sra_kwargs()
@@ -474,8 +462,6 @@ class TestLibraryLayoutLiteral:
 
 
 class TestPlatformLiteral:
-    """Tests for Platform Literal (Phase A §3.3, §4.9.3 の 20 値全量)."""
-
     @pytest.mark.parametrize(
         "value",
         [
@@ -516,8 +502,6 @@ class TestPlatformLiteral:
 
 
 class TestAnalysisTypeLiteral:
-    """Tests for AnalysisType Literal (Phase A §3.3, §4.9.3)."""
-
     @pytest.mark.parametrize(
         "value",
         [
@@ -542,8 +526,6 @@ class TestAnalysisTypeLiteral:
 
 
 class TestSra:
-    """Tests for SRA model (Phase A §3.3 確定形)."""
-
     def test_minimal_instance(self) -> None:
         sra = SRA(**_make_minimal_sra_kwargs())
         assert sra.identifier == "DRX000001"

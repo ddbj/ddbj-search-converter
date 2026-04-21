@@ -474,8 +474,6 @@ class TestCreateSraEntryProperties:
 
 
 class TestParseOrganizationFromCenterName:
-    """_parse_organization_from_center_name (§3.3 SRA organization from @center_name)."""
-
     def test_center_name_present(self) -> None:
         entry = {"accession": "DRA000072", "center_name": "NIID"}
         orgs = _parse_organization_from_center_name(entry)
@@ -501,8 +499,8 @@ class TestParseOrganizationFromCenterName:
         assert _parse_organization_from_center_name("NIID") == []
 
 
-class TestL8XrefLinkDbNormalization:
-    """§4.11 L8: XREF_LINK.DB の lower() 正規化 + pubmed のみ Publication 化。"""
+class TestXrefLinkDbNormalization:
+    """XREF_LINK.DB を lower() 正規化し pubmed のみ Publication 化する。"""
 
     @pytest.mark.parametrize("db_value", ["pubmed", "PUBMED", "PubMed", "Pubmed", "  PubMed  "])
     def test_all_case_variants_normalized_to_pubmed(self, db_value: str) -> None:
@@ -514,7 +512,7 @@ class TestL8XrefLinkDbNormalization:
         assert pubs[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
 
     def test_bioproject_db_not_included(self) -> None:
-        """§4.9.4: bioproject は publication に詰めない (dbXrefs 系扱い)。"""
+        """bioproject は publication に詰めない (dbXrefs 系扱い)。"""
         entry = {"SAMPLE_LINKS": {"SAMPLE_LINK": {"XREF_LINK": {"DB": "bioproject", "ID": "PRJNA12345"}}}}
         assert _parse_publications(entry, "SAMPLE_LINKS", "SAMPLE_LINK") == []
 
@@ -555,8 +553,6 @@ class TestL8XrefLinkDbNormalization:
 
 
 class TestParseLibrary:
-    """_parse_library (§3.3 experiment 専用)."""
-
     def test_typical_illumina_paired(self) -> None:
         exp = {
             "DESIGN": {
@@ -582,12 +578,12 @@ class TestParseLibrary:
         assert _parse_library(exp)["libraryLayout"] == "SINGLE"
 
     def test_library_source_invalid_value_falls_back_to_empty_list(self) -> None:
-        """Literal safeguard: 想定外値は空 list fallback (§4.9.2 9 値 controlled)。"""
+        """想定外値は空 list fallback。"""
         exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_SOURCE": "NOVEL_SOURCE_NOT_IN_LITERAL"}}}
         assert _parse_library(exp)["librarySource"] == []
 
     def test_library_layout_multi_fallbacks_to_none(self) -> None:
-        """複数キー (PAIRED + SINGLE 同居) は None fallback (§4.9.1 実データ 0 件だが防御)。"""
+        """複数キー (PAIRED + SINGLE 同居) は None fallback。"""
         exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"PAIRED": {}, "SINGLE": {}}}}}
         assert _parse_library(exp)["libraryLayout"] is None
 
@@ -611,13 +607,8 @@ class TestParseLibrary:
         assert result["platform"] is None
 
 
-class TestL9LxmlCommentInExperiment:
-    """§4.11 L9: lxml Comment quirk の regression。
-
-    xml_utils._element_to_dict は既に cyfunction を skip する fix 済だが、
-    _parse_library の valid_keys フィルタで想定外キーが残ったケースでも
-    安全側に None fallback するかの二重防御を固定する。
-    """
+class TestLxmlCommentInExperiment:
+    """lxml Comment quirk で cyfunction キーが残ったケースでも安全側に None fallback する。"""
 
     def test_platform_with_comment_quirk_selects_valid_key(self) -> None:
         """PLATFORM dict に cyfunction 想定外キーが混ざっても、valid_platforms==1 なら採用。"""
@@ -637,9 +628,7 @@ class TestL9LxmlCommentInExperiment:
         assert _parse_library(exp)["libraryLayout"] is None
 
     def test_end_to_end_parse_experiment_with_comment_xml(self) -> None:
-        """xml_utils._element_to_dict の Comment skip fix の end-to-end regression。
-        XML に <!-- comment --> を入れても PAIRED / ILLUMINA / INSTRUMENT_MODEL が正しく取れる。
-        """
+        """XML に <!-- comment --> を含んでも PAIRED / ILLUMINA / INSTRUMENT_MODEL が正しく取れる。"""
         xml_bytes = b"""<?xml version="1.0"?>
 <EXPERIMENT_SET>
   <EXPERIMENT accession="DRX000001" center_name="NIID">
@@ -669,8 +658,6 @@ class TestL9LxmlCommentInExperiment:
 
 
 class TestParseAnalysisType:
-    """_parse_analysis_type (§3.3 analysis 専用)."""
-
     @pytest.mark.parametrize(
         "value",
         ["DE_NOVO_ASSEMBLY", "REFERENCE_ALIGNMENT", "ABUNDANCE_MEASUREMENT", "SEQUENCE_ANNOTATION"],
@@ -697,8 +684,6 @@ class TestParseAnalysisType:
 
 
 class TestParseSubmissionDescription:
-    """_parse_submission_description (§4.9.5 submission_comment → description)."""
-
     def test_typical_non_empty_comment(self) -> None:
         submission = {"submission_comment": "GenomeTrakr pathogen sampling project"}
         assert _parse_submission_description(submission) == "GenomeTrakr pathogen sampling project"
@@ -731,9 +716,8 @@ class TestParseSubmissionDescription:
         assert result["description"] == "Real comment"
 
 
-class TestL1SubmissionPropertiesShape:
-    """§4.11 L1 regression: submission JSONL の properties は SUBMISSION 直下
-    (他 type は {TYPE}_SET.{TYPE} の 2 階層)。仕様据え置きを固定。"""
+class TestSubmissionPropertiesShape:
+    """submission JSONL の properties は SUBMISSION 直下 (他 type は {TYPE}_SET.{TYPE} の 2 階層)。"""
 
     def test_submission_properties_unwraps_to_submission_top_level(self) -> None:
         xml = b"""<?xml version="1.0"?>

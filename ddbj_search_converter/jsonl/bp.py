@@ -129,7 +129,7 @@ def parse_name(project: dict[str, Any], accession: str = "") -> str | None:
     """BioProject から name を抽出する。
 
     取得元: Project.ProjectDescr.Name (学名/株名、例 "Borreliella burgdorferi B31")。
-    Title と意味論的に別物 (§4.11 L3)。
+    Title と意味論的に別物。
     """
     try:
         name = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Name")
@@ -230,7 +230,7 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
                 elif id_ is not None and id_.startswith("10."):
                     publication_url = f"https://doi.org/{id_}"
             elif dbtype == "eNotAvailable":
-                # §4.8.2: 論文 ID 取得不可を明示するケース。url は None のまま。
+                # 論文 ID 取得不可を明示するケース。url は None のまま。
                 publication_url = None
             elif dbtype is not None and dbtype.isdigit():
                 dbtype = "ePubmed"

@@ -147,7 +147,6 @@ class TestBioSampleMapping:
         assert "package" in props
 
     def test_attributes_mapping_removed(self) -> None:
-        """Phase A §3.1 で attributes フィールドは廃止済。"""
         mapping = get_biosample_mapping()
         props = mapping["mappings"]["properties"]
         assert "attributes" not in props
@@ -217,12 +216,7 @@ class TestSraMapping:
             assert "downloadUrl" not in props
 
     def test_sra_no_old_specific_fields(self) -> None:
-        """Removed fields should not be present in any SRA mapping.
-
-        Phase A §3.3 で experiment/analysis specific として
-        instrumentModel / libraryStrategy / librarySource / librarySelection /
-        libraryLayout / analysisType は復活するため、このリストからは除外する。
-        """
+        """Removed fields should not be present in any SRA mapping."""
         removed_fields = [
             "centerName",
             "labName",
@@ -237,7 +231,7 @@ class TestSraMapping:
                 assert field not in props, f"{field} should not be in {sra_type}"
 
     def test_all_sra_types_have_organization_and_publication(self) -> None:
-        """Phase A §3.3.2: organization / publication は共通 helper 経由で全 type に入る。"""
+        """organization / publication は共通 helper 経由で全 type に入る。"""
         for sra_type in SRA_INDEXES:
             mapping = get_sra_mapping(sra_type)
             props = mapping["mappings"]["properties"]
@@ -254,7 +248,7 @@ class TestSraMapping:
             assert props[field] == {"type": "keyword"}, f"{field} should be keyword"
 
     def test_sra_experiment_instrument_model_has_text_keyword_subfield(self) -> None:
-        """§3.3.2: instrumentModel は自然言語なので text + keyword subfield。"""
+        """instrumentModel は自然言語なので text + keyword subfield。"""
         mapping = get_sra_mapping("sra-experiment")
         props = mapping["mappings"]["properties"]
         assert props["instrumentModel"]["type"] == "text"

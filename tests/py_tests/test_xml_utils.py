@@ -396,7 +396,7 @@ class TestIntegration:
 
 
 class TestLxmlCommentQuirk:
-    """§4.11 L9 regression: lxml の <!-- comment --> は cyfunction タグを返すため skip する。"""
+    """lxml の <!-- comment --> は cyfunction タグを返すため skip する。"""
 
     def test_comment_at_root_level_skipped(self) -> None:
         xml_bytes = b"<Root><!-- this is a comment --><Child>val</Child></Root>"

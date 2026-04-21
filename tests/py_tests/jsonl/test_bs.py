@@ -238,12 +238,8 @@ class TestBug14DescriptionFalsyParagraph:
         assert result == "Para 1 Para 2"
 
 
-class TestL5DdbjPackageNone:
-    """§4.11 L5 regression: DDBJ BS の package は常に None。
-
-    旧実装は Models[0] を name/display_name に合成していた (嘘情報) が、
-    .claude/docs/es-field-design.md §4.10.4 で削除決定。
-    """
+class TestDdbjPackageNone:
+    """DDBJ BS の package は常に None (旧実装の Models[0] 合成 fallback は誤情報のため削除済)。"""
 
     def test_ddbj_with_models_still_returns_none(self) -> None:
         sample = _make_sample()
@@ -536,7 +532,7 @@ class TestXmlEntryToBsInstanceProperties:
         assert isinstance(bs.properties["BioSample"]["Ids"], dict)
 
     def test_ddbj_package_is_none_even_with_models(self) -> None:
-        """§4.11 L5 regression: DDBJ BS では Models があっても package=None。"""
+        """DDBJ BS では Models があっても package=None。"""
         sample = _make_sample()
         sample["Models"] = {"Model": "MIGS.ba"}
         bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=True)

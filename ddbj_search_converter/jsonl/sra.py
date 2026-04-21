@@ -180,8 +180,8 @@ def parse_submission(
 ) -> dict[str, Any] | None:
     """submission XML をパースする。
 
-    §4.11 L1: DRA / NCBI SRA の submission は properties に `SUBMISSION` 直下を持つ
-    (他 type は `{TYPE}_SET.{TYPE}` の 2 階層)。本 parse 関数はその仕様を踏襲する。
+    submission の properties は `SUBMISSION` 直下を持つ
+    (他 type は `{TYPE}_SET.{TYPE}` の 2 階層)。
     """
     try:
         parsed = parse_xml(xml_bytes)
@@ -359,11 +359,7 @@ def _parse_organization_from_center_name(entry: Any) -> list[Organization]:
     """SRA entry の `@center_name` 属性から Organization を抽出する。
 
     xmltodict 正規化後は prefix 無しの dict key "center_name" に展開される。
-    role / organizationType / abbreviation / department / url は XML から取れないため常に None。
     空文字 / 非 str / 非 dict 入力は空 list を返す。
-
-    §4.11 L7 (CP2 持ち越し): submission の lab_name / broker_name の
-    Organization(role="broker") merge は本実装のスコープ外。
     """
     if not isinstance(entry, dict):
         return []
@@ -383,14 +379,8 @@ def _parse_publications(
 ) -> list[Publication]:
     """`*_LINKS/*_LINK/XREF_LINK` から Publication のリストを抽出する。
 
-    §4.11 L8: XREF_LINK.DB の大小文字揺れ (`pubmed` / `PUBMED` / `PubMed` / `Pubmed`) を
-    `lower().strip()` で正規化し、`pubmed` のみを Publication(dbType="ePubmed") として詰める。
-    `bioproject` / `gds` / `geo` / `biosample` / `omim` / `nuccore` / `ENA-*` 等は dbXrefs 系任せ。
-
-    Args:
-        entry: SRA entry dict (SUBMISSION / STUDY / EXPERIMENT / RUN / SAMPLE / ANALYSIS)
-        links_key: e.g. "STUDY_LINKS"
-        link_key: e.g. "STUDY_LINK"
+    XREF_LINK.DB の大小文字揺れ (pubmed / PUBMED / PubMed / Pubmed) を lower() で
+    正規化し、pubmed のみ Publication に詰める。他 DB は dbXrefs 系任せ。
     """
     publications: list[Publication] = []
     if not isinstance(entry, dict):
@@ -431,11 +421,8 @@ def _parse_publications(
 def _parse_library(experiment: Any) -> dict[str, Any]:
     """EXPERIMENT から library / platform 系を抽出する (experiment 専用)。
 
-    §4.9.1: LIBRARY_LAYOUT は {"PAIRED": {...}} or {"SINGLE": {...}} の親キー取得で単値化。
-    §4.9.2: LIBRARY_SOURCE は 9 値完全 controlled (Literal safeguard、想定外値は除外)。
-    §4.9.3: PLATFORM は {"ILLUMINA": {...}} 等 20 値完全 controlled の親キー取得。
-    §4.11 L9: lxml Comment quirk は xml_utils._element_to_dict で skip 済だが、
-              valid_keys フィルタで想定外キー残留を安全側に None fallback する二重防御。
+    LIBRARY_LAYOUT / PLATFORM は {親キー: {...}} 形式で値が親キー名になるため
+    親キー取得で単値化する。想定外キーや複数キーは None fallback。
     """
     result: dict[str, Any] = {
         "libraryStrategy": [],
@@ -480,11 +467,9 @@ def _parse_library(experiment: Any) -> dict[str, Any]:
 
 
 def _parse_analysis_type(analysis: Any) -> AnalysisType | None:
-    """ANALYSIS_TYPE 親キーを AnalysisType Literal に正規化する (analysis 専用)。
+    """ANALYSIS_TYPE の親キーを AnalysisType Literal として返す (analysis 専用)。
 
-    §4.9.3: 4 値完全 controlled
-    (DE_NOVO_ASSEMBLY / REFERENCE_ALIGNMENT / ABUNDANCE_MEASUREMENT / SEQUENCE_ANNOTATION)。
-    想定外値 / 複数キー / §4.11 L9 の cyfunction 残留は None fallback。
+    想定外値 / 複数キーは None fallback。
     """
     if not isinstance(analysis, dict):
         return None
@@ -500,8 +485,6 @@ def _parse_analysis_type(analysis: Any) -> AnalysisType | None:
 def _parse_submission_description(submission: Any) -> str | None:
     """SUBMISSION.@submission_comment を description 用に正規化する (submission 専用)。
 
-    §4.9.5: 非空率 0.42% (DRA) / 3.4% (NCBI)、99% が 100 文字未満の短文。
-    独立フィールド化はせず description に統合する (§3.3 spec)。
     strip() して空 / 空白のみは None に落とす。
     """
     if not isinstance(submission, dict):

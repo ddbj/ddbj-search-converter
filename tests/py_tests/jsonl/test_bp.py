@@ -133,8 +133,6 @@ class TestBug9TitleDict:
 
 
 class TestParseName:
-    """Tests for parse_name function (§4.11 L3)."""
-
     def test_name_str(self) -> None:
         """ProjectDescr.Name が文字列の場合、そのまま返す。"""
         project = _make_project()
@@ -699,7 +697,7 @@ class TestXmlEntryToBpInstanceProperties:
         assert archive_id["accession"] == "PRJDB1"
 
     def test_name_is_set_from_project_descr_name(self) -> None:
-        """§4.11 L3: xml_entry_to_bp_instance が ProjectDescr.Name を bp.name に詰める。"""
+        """xml_entry_to_bp_instance が ProjectDescr.Name を bp.name に詰める。"""
         project = _make_project()
         project["Project"]["ProjectDescr"]["Name"] = "Test Organism"
         bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)

@@ -35,7 +35,7 @@ sra:organization
 sra:publication
     a owl:ObjectProperty ;
     rdfs:label "publication" ;
-    rdfs:comment "Publication derived from *_LINKS/XREF_LINK where DB is pubmed (case-insensitive, see §4.11 L8)" .
+    rdfs:comment "Publication derived from *_LINKS/XREF_LINK where DB is pubmed (case-insensitive)" .
 
 sra:reference
     a owl:DatatypeProperty ;

@@ -109,10 +109,7 @@ def get_publication_mapping() -> dict[str, Any]:
 
 
 def get_grant_mapping() -> dict[str, Any]:
-    """Return the shared Grant nested mapping.
-
-    Grant.title は Phase A §2.4 方針で text + keyword subfield にする。
-    """
+    """Return the shared Grant nested mapping."""
     return {
         "grant": {
             "type": "nested",

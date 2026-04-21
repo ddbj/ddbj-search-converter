@@ -149,9 +149,8 @@ def parse_model(sample: dict[str, Any], accession: str = "") -> list[str]:
 def parse_bs_package(sample: dict[str, Any], is_ddbj: bool, accession: str = "") -> BioSamplePackage | None:
     """BioSample から Package を抽出する。
 
-    §4.11 L5: DDBJ BS は XML 上に ``<Package>`` 要素が存在しないため常に None。
-    旧実装の ``Models[0]`` 合成 fallback は削除済。NCBI のみ
-    ``<Package display_name="...">content</Package>`` から抽出する。
+    DDBJ BS は XML 上に ``<Package>`` 要素が存在しないため常に None を返す。
+    NCBI のみ ``<Package display_name="...">content</Package>`` から抽出する。
     """
     if is_ddbj:
         return None
