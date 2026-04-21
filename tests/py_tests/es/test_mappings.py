@@ -118,6 +118,21 @@ class TestBioProjectMapping:
         assert title["type"] == "text"
         assert title["fields"]["keyword"]["type"] == "keyword"
 
+    def test_grant_title_has_keyword_subfield(self) -> None:
+        """Grant.title は共通 helper 昇格により text + keyword subfield に upgrade される。"""
+        mapping = get_bioproject_mapping()
+        props = mapping["mappings"]["properties"]
+        title = props["grant"]["properties"]["title"]
+        assert title["type"] == "text"
+        assert title["fields"]["keyword"]["type"] == "keyword"
+
+    def test_organization_has_department(self) -> None:
+        """共通 helper 経由で organization.department フィールドが mapping に含まれる。"""
+        mapping = get_bioproject_mapping()
+        props = mapping["mappings"]["properties"]
+        assert "department" in props["organization"]["properties"]
+        assert props["organization"]["properties"]["department"]["type"] == "keyword"
+
 
 class TestBioSampleMapping:
     def test_has_settings_and_mappings(self) -> None:

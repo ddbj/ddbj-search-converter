@@ -2,62 +2,24 @@
 
 from typing import Any
 
-from ddbj_search_converter.es.mappings.common import INDEX_SETTINGS, get_common_mapping, merge_mappings
+from ddbj_search_converter.es.mappings.common import (
+    INDEX_SETTINGS,
+    get_common_mapping,
+    get_external_link_mapping,
+    get_grant_mapping,
+    get_organization_mapping,
+    get_publication_mapping,
+    merge_mappings,
+)
 
 
 def get_bioproject_specific_mapping() -> dict[str, Any]:
-    """Return BioProject-specific mapping properties."""
+    """Return BioProject-specific mapping properties.
+
+    organization / publication / grant / externalLink は共通 helper に昇格済のためここには含めない。
+    """
     return {
         "objectType": {"type": "keyword"},
-        "organization": {
-            "type": "nested",
-            "properties": {
-                "name": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
-                },
-                "organizationType": {"type": "keyword"},
-                "role": {"type": "keyword"},
-                "url": {"type": "keyword", "index": False},
-                "abbreviation": {"type": "keyword"},
-            },
-        },
-        "publication": {
-            "type": "nested",
-            "properties": {
-                "id": {"type": "keyword"},
-                "title": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
-                },
-                "date": {"type": "keyword"},
-                "reference": {"type": "keyword"},
-                "url": {"type": "keyword", "index": False},
-                "dbType": {"type": "keyword"},
-                "status": {"type": "keyword"},
-            },
-        },
-        "grant": {
-            "type": "nested",
-            "properties": {
-                "id": {"type": "keyword"},
-                "title": {"type": "keyword"},
-                "agency": {
-                    "type": "nested",
-                    "properties": {
-                        "abbreviation": {"type": "keyword"},
-                        "name": {"type": "keyword"},
-                    },
-                },
-            },
-        },
-        "externalLink": {
-            "type": "nested",
-            "properties": {
-                "url": {"type": "keyword", "index": False},
-                "label": {"type": "keyword"},
-            },
-        },
         "parentBioProjects": {"type": "object", "enabled": False},
         "childBioProjects": {"type": "object", "enabled": False},
     }
@@ -70,6 +32,10 @@ def get_bioproject_mapping() -> dict[str, Any]:
         "mappings": {
             "properties": merge_mappings(
                 get_common_mapping(),
+                get_organization_mapping(),
+                get_publication_mapping(),
+                get_grant_mapping(),
+                get_external_link_mapping(),
                 get_bioproject_specific_mapping(),
             )
         },
