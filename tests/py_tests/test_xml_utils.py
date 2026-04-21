@@ -393,3 +393,48 @@ class TestIntegration:
             elements_in_file = list(iterate_xml_element(split_file, "BioSample"))
             total_elements += len(elements_in_file)
         assert total_elements == 5
+
+
+class TestLxmlCommentQuirk:
+    """§4.11 L9 regression: lxml の <!-- comment --> は cyfunction タグを返すため skip する。"""
+
+    def test_comment_at_root_level_skipped(self) -> None:
+        xml_bytes = b"<Root><!-- this is a comment --><Child>val</Child></Root>"
+        result = parse_xml(xml_bytes)
+        assert result == {"Root": {"Child": "val"}}
+
+    def test_comment_between_siblings_skipped(self) -> None:
+        xml_bytes = b"<Root><Item>a</Item><!-- comment --><Item>b</Item></Root>"
+        result = parse_xml(xml_bytes)
+        assert result == {"Root": {"Item": ["a", "b"]}}
+
+    def test_no_cyfunction_leaks_into_keys(self) -> None:
+        """Comment タグが cyfunction キーとして children dict に混入しないこと。"""
+        xml_bytes = b"<Root><A>x</A><!-- c1 --><B>y</B><!-- c2 --></Root>"
+        result = parse_xml(xml_bytes)
+        assert result == {"Root": {"A": "x", "B": "y"}}
+        for key in result["Root"]:
+            assert "cyfunction" not in key
+
+    def test_comment_in_deeply_nested_structure(self) -> None:
+        """SRA experiment で観測された quirk: 深いネスト内の Comment を skip。"""
+        xml_bytes = b"""<Experiment>
+            <DESIGN>
+                <LIBRARY_DESCRIPTOR>
+                    <LIBRARY_LAYOUT>
+                        <!-- note about layout -->
+                        <PAIRED/>
+                    </LIBRARY_LAYOUT>
+                    <PLATFORM>
+                        <!-- instrument comment -->
+                        <ILLUMINA>
+                            <INSTRUMENT_MODEL>Illumina NovaSeq 6000</INSTRUMENT_MODEL>
+                        </ILLUMINA>
+                    </PLATFORM>
+                </LIBRARY_DESCRIPTOR>
+            </DESIGN>
+        </Experiment>"""
+        result = parse_xml(xml_bytes)
+        descriptor = result["Experiment"]["DESIGN"]["LIBRARY_DESCRIPTOR"]
+        assert descriptor["LIBRARY_LAYOUT"] == {"PAIRED": None}
+        assert descriptor["PLATFORM"]["ILLUMINA"]["INSTRUMENT_MODEL"] == "Illumina NovaSeq 6000"

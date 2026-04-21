@@ -49,7 +49,13 @@ def _element_to_dict(
     # 子要素を処理
     children: dict[str, list[Any]] = {}
     for child in element:
-        child_tag: str = str(child.tag)
+        # lxml の Comment / ProcessingInstruction タグは cyfunction 型で返る。
+        # type stub は .tag を str と宣言しているが、実行時には cyfunction が来るため
+        # isinstance で skip する。Any 経由で取得して mypy の型推論を回避する。
+        tag_obj: Any = child.tag
+        if not isinstance(tag_obj, str):
+            continue
+        child_tag: str = tag_obj
         if "}" in child_tag:
             child_tag = child_tag.split("}")[1]
 
