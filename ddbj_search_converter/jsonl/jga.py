@@ -6,7 +6,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 from ddbj_search_converter.config import (
     JGA_BASE_DIR_NAME,
@@ -22,8 +22,27 @@ from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
 from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
-from ddbj_search_converter.schema import JGA, Organism, Xref
+from ddbj_search_converter.schema import (
+    JGA,
+    Agency,
+    ExternalLink,
+    Grant,
+    Organism,
+    Organization,
+    Publication,
+    PublicationDbType,
+    PublicationStatus,
+    Xref,
+)
 from ddbj_search_converter.xml_utils import parse_xml
+
+_VALID_PUB_DB_TYPES: frozenset[str] = frozenset(get_args(PublicationDbType))
+_VALID_PUB_STATUSES: frozenset[str] = frozenset(get_args(PublicationStatus))
+_PUB_STATUS_MAP: dict[str, PublicationStatus] = {
+    "published": "ePublished",
+    "unpublished": "eUnpublished",
+}
+_PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {"pubmed": "ePubmed"}
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 INDEX_NAMES: list[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -140,16 +159,9 @@ def extract_description(entry: dict[str, Any], index_name: IndexName) -> str | N
         description = (entry.get("DESCRIPTOR") or {}).get("STUDY_ABSTRACT")
     elif index_name == "jga-dataset":
         description = entry.get("DESCRIPTION")
+    elif index_name == "jga-policy":
+        description = entry.get("POLICY_TEXT")
     return str(description) if description is not None else None
-
-
-def _get_name_from_alias(accession: str, alias: str | None) -> str | None:
-    """alias が accession と異なる場合のみ name として返す。"""
-    if alias is None:
-        return None
-    if alias == accession:
-        return None
-    return alias
 
 
 def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str = "") -> list[Xref]:
@@ -178,10 +190,271 @@ def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str =
     return xrefs
 
 
+def parse_organization(entry: dict[str, Any], index_name: IndexName, accession: str = "") -> list[Organization]:
+    """JGA エントリから Organization を抽出する。
+
+    取得元:
+    - 全 type: `@center_name`
+    - jga-study: STUDY_ATTRIBUTES の TAG="Submitting organization" の VALUE
+    - jga-dac: CONTACTS/CONTACT の @organisation (@name / @email は load しない)
+
+    name 文字列ベースで dedupe。role / organizationType / department / url / abbreviation は None。
+    """
+    organizations: list[Organization] = []
+    seen: set[str] = set()
+
+    def _add(raw: Any) -> None:
+        if not isinstance(raw, str):
+            return
+        stripped = raw.strip()
+        if not stripped or stripped in seen:
+            return
+        seen.add(stripped)
+        organizations.append(Organization(name=stripped))
+
+    try:
+        _add(entry.get("center_name"))
+
+        if index_name == "jga-study":
+            attrs = (entry.get("STUDY_ATTRIBUTES") or {}).get("STUDY_ATTRIBUTE")
+            if isinstance(attrs, dict):
+                attrs = [attrs]
+            if isinstance(attrs, list):
+                for attr in attrs:
+                    if isinstance(attr, dict) and attr.get("TAG") == "Submitting organization":
+                        _add(attr.get("VALUE"))
+
+        elif index_name == "jga-dac":
+            contacts = (entry.get("CONTACTS") or {}).get("CONTACT")
+            if isinstance(contacts, dict):
+                contacts = [contacts]
+            if isinstance(contacts, list):
+                for contact in contacts:
+                    if isinstance(contact, dict):
+                        _add(contact.get("organisation"))
+    except Exception as e:
+        log_warn(f"failed to parse organization: {e}", accession=accession)
+
+    return organizations
+
+
+def parse_publications(entry: dict[str, Any], accession: str = "") -> list[Publication]:
+    """jga-study エントリから Publication を抽出する。
+
+    PUBLICATIONS/PUBLICATION (@id, @status, DB_TYPE) を共通型 Publication に詰める。
+    DB_TYPE は lower() 正規化後 "pubmed" → "ePubmed"。
+    @status は lower() 正規化後 "published" → "ePublished" / "unpublished" → "eUnpublished"。
+    未知値は Literal safeguard で None fallback。
+    """
+    publications: list[Publication] = []
+    try:
+        publication_obj = (entry.get("PUBLICATIONS") or {}).get("PUBLICATION")
+        if publication_obj is None:
+            return []
+        pub_list = publication_obj if isinstance(publication_obj, list) else [publication_obj]
+        for item in pub_list:
+            if not isinstance(item, dict):
+                continue
+
+            raw_id = item.get("id")
+            pub_id: str | None = None
+            if isinstance(raw_id, str) and raw_id.strip():
+                pub_id = raw_id.strip()
+
+            raw_db = item.get("DB_TYPE")
+            db_type: PublicationDbType | None = None
+            if isinstance(raw_db, str):
+                mapped_db = _PUB_DB_TYPE_MAP.get(raw_db.strip().lower())
+                if mapped_db is not None:
+                    db_type = mapped_db
+                elif raw_db in _VALID_PUB_DB_TYPES:
+                    db_type = raw_db  # type: ignore[assignment]
+
+            raw_status = item.get("status")
+            status: PublicationStatus | None = None
+            if isinstance(raw_status, str):
+                mapped_status = _PUB_STATUS_MAP.get(raw_status.strip().lower())
+                if mapped_status is not None:
+                    status = mapped_status
+                elif raw_status in _VALID_PUB_STATUSES:
+                    status = raw_status  # type: ignore[assignment]
+
+            url: str | None = None
+            if db_type == "ePubmed" and pub_id:
+                url = f"https://pubmed.ncbi.nlm.nih.gov/{pub_id}/"
+
+            publications.append(
+                Publication(
+                    id=pub_id,
+                    dbType=db_type,
+                    status=status,
+                    url=url,
+                )
+            )
+    except Exception as e:
+        log_warn(f"failed to parse publications: {e}", accession=accession)
+    return publications
+
+
+def parse_grants(entry: dict[str, Any], accession: str = "") -> list[Grant]:
+    """jga-study エントリから Grant を抽出する。
+
+    GRANTS/GRANT (@grant_id, TITLE, AGENCY[@abbr, text content]) を共通型 Grant に詰める。
+    grant_id は空文字を None に倒す。AGENCY が str の場合は name のみを詰める (abbr=None)。
+    """
+    grants: list[Grant] = []
+    try:
+        grant_obj = (entry.get("GRANTS") or {}).get("GRANT")
+        if grant_obj is None:
+            return []
+        grant_list = grant_obj if isinstance(grant_obj, list) else [grant_obj]
+        for item in grant_list:
+            if not isinstance(item, dict):
+                continue
+
+            raw_id = item.get("grant_id")
+            grant_id = raw_id if isinstance(raw_id, str) and raw_id.strip() else None
+
+            raw_title = item.get("TITLE")
+            title = raw_title if isinstance(raw_title, str) else None
+
+            agency_obj = item.get("AGENCY")
+            agencies: list[Agency] = []
+            if isinstance(agency_obj, str):
+                if agency_obj.strip():
+                    agencies.append(Agency(abbreviation=None, name=agency_obj))
+            elif isinstance(agency_obj, dict):
+                agencies.append(
+                    Agency(
+                        abbreviation=agency_obj.get("abbr"),
+                        name=agency_obj.get("content"),
+                    )
+                )
+
+            grants.append(Grant(id=grant_id, title=title, agency=agencies))
+    except Exception as e:
+        log_warn(f"failed to parse grants: {e}", accession=accession)
+    return grants
+
+
+_EXTERNAL_LINK_KEYS: dict[IndexName, tuple[str, str]] = {
+    "jga-study": ("STUDY_LINKS", "STUDY_LINK"),
+    "jga-dac": ("DAC_LINKS", "DAC_LINK"),
+    "jga-policy": ("POLICY_LINKS", "POLICY_LINK"),
+}
+
+
+def parse_external_link(entry: dict[str, Any], index_name: IndexName, accession: str = "") -> list[ExternalLink]:
+    """JGA エントリから ExternalLink を抽出する (type 別の *_LINKS/URL_LINK[LABEL, URL])。
+
+    jga-dataset は URL_LINK を持たないので常に []。
+    LABEL 欠損時は URL を label にフォールバック。
+    """
+    keys = _EXTERNAL_LINK_KEYS.get(index_name)
+    if keys is None:
+        return []
+    parent_key, child_key = keys
+    links: list[ExternalLink] = []
+    try:
+        links_obj = (entry.get(parent_key) or {}).get(child_key)
+        if links_obj is None:
+            return []
+        link_list = links_obj if isinstance(links_obj, list) else [links_obj]
+        for link in link_list:
+            if not isinstance(link, dict):
+                continue
+            url_link = link.get("URL_LINK")
+            if not isinstance(url_link, dict):
+                continue
+            url = url_link.get("URL")
+            if not isinstance(url, str) or not url.strip():
+                continue
+            raw_label = url_link.get("LABEL")
+            label = raw_label if isinstance(raw_label, str) and raw_label.strip() else url
+            links.append(ExternalLink(url=url, label=label))
+    except Exception as e:
+        log_warn(f"failed to parse external_link: {e}", accession=accession)
+    return links
+
+
+def extract_study_type(entry: dict[str, Any], accession: str = "") -> list[str]:
+    """jga-study エントリから studyType を抽出する。
+
+    STUDY_TYPES/STUDY_TYPE[@existing_study_type, @new_study_type] を list[str] に詰める。
+    `existing != "Other"` → [existing]、`existing == "Other"` → [new_study_type or "Other"]。
+    """
+    study_types: list[str] = []
+    try:
+        st_obj = ((entry.get("DESCRIPTOR") or {}).get("STUDY_TYPES") or {}).get("STUDY_TYPE")
+        if st_obj is None:
+            return []
+        st_list = st_obj if isinstance(st_obj, list) else [st_obj]
+        for item in st_list:
+            if not isinstance(item, dict):
+                continue
+            existing = item.get("existing_study_type")
+            new = item.get("new_study_type")
+            if not isinstance(existing, str) or not existing:
+                continue
+            if existing != "Other":
+                study_types.append(existing)
+            elif isinstance(new, str) and new.strip():
+                study_types.append(new)
+            else:
+                study_types.append("Other")
+    except Exception as e:
+        log_warn(f"failed to extract study_type: {e}", accession=accession)
+    return study_types
+
+
+def extract_dataset_type(entry: dict[str, Any], accession: str = "") -> list[str]:
+    """jga-dataset エントリから datasetType を抽出する (DATASET_TYPE テキスト)。"""
+    dataset_types: list[str] = []
+    try:
+        dt_obj = entry.get("DATASET_TYPE")
+        if dt_obj is None:
+            return []
+        dt_list = dt_obj if isinstance(dt_obj, list) else [dt_obj]
+        dataset_types.extend(v for v in dt_list if isinstance(v, str) and v.strip())
+    except Exception as e:
+        log_warn(f"failed to extract dataset_type: {e}", accession=accession)
+    return dataset_types
+
+
+def parse_vendor(entry: dict[str, Any], accession: str = "") -> list[str]:
+    """jga-study エントリから vendor を抽出する (STUDY_ATTRIBUTES TAG="Vendor" の VALUE)。"""
+    vendors: list[str] = []
+    try:
+        attrs = (entry.get("STUDY_ATTRIBUTES") or {}).get("STUDY_ATTRIBUTE")
+        if attrs is None:
+            return []
+        attr_list = attrs if isinstance(attrs, list) else [attrs]
+        for attr in attr_list:
+            if not isinstance(attr, dict) or attr.get("TAG") != "Vendor":
+                continue
+            value = attr.get("VALUE")
+            if isinstance(value, str) and value.strip():
+                vendors.append(value)
+    except Exception as e:
+        log_warn(f"failed to parse vendor: {e}", accession=accession)
+    return vendors
+
+
 def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> JGA:
     """JGA XML エントリを JGA インスタンスに変換する。"""
     accession: str = entry["accession"]
     ensure_attribute_list(entry, JGA_ATTRIBUTE_PATHS.get(index_name, []))
+
+    if index_name in ("jga-study", "jga-dataset"):
+        organism: Organism | None = Organism(identifier="9606", name="Homo sapiens")
+    else:
+        organism = None
+
+    publications = parse_publications(entry, accession) if index_name == "jga-study" else []
+    grants = parse_grants(entry, accession) if index_name == "jga-study" else []
+    study_types = extract_study_type(entry, accession) if index_name == "jga-study" else []
+    dataset_types = extract_dataset_type(entry, accession) if index_name == "jga-dataset" else []
+    vendors = parse_vendor(entry, accession) if index_name == "jga-study" else []
 
     return JGA(
         identifier=accession,
@@ -189,11 +462,18 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
         distribution=make_jga_distribution(index_name, accession),
         isPartOf="jga",
         type=index_name,
-        name=_get_name_from_alias(accession, entry.get("alias")),
+        name=None,
         url=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{accession}",
-        organism=Organism(identifier="9606", name="Homo sapiens"),
+        organism=organism,
         title=extract_title(entry, index_name),
         description=extract_description(entry, index_name),
+        organization=parse_organization(entry, index_name, accession),
+        publication=publications,
+        grant=grants,
+        externalLink=parse_external_link(entry, index_name, accession),
+        studyType=study_types,
+        datasetType=dataset_types,
+        vendor=vendors,
         dbXrefs=[],  # 後で更新
         sameAs=parse_same_as(entry, index_name, accession),
         status="public",

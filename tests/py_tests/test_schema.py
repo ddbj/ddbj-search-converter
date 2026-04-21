@@ -219,6 +219,66 @@ class TestJGA:
         assert '"type":"jga-study"' in json_str
         assert '"isPartOf":"jga"' in json_str
 
+    def test_new_list_fields_default_to_empty(self) -> None:
+        """organization / publication / grant / externalLink / studyType / datasetType / vendor は
+        default_factory=list で省略可能、全て空 list として生成される。"""
+        jga = JGA(
+            identifier="JGAS000001",
+            properties={},
+            distribution=[],
+            isPartOf="jga",
+            type="jga-study",
+            name=None,
+            url="https://example.com",
+            organism=None,
+            title=None,
+            description=None,
+            dbXrefs=[],
+            sameAs=[],
+            status="public",
+            accessibility="controlled-access",
+            dateCreated=None,
+            dateModified=None,
+            datePublished=None,
+        )
+        assert jga.organization == []
+        assert jga.publication == []
+        assert jga.grant == []
+        assert jga.externalLink == []
+        assert jga.studyType == []
+        assert jga.datasetType == []
+        assert jga.vendor == []
+
+    def test_with_populated_common_types(self) -> None:
+        """共通型 Organization / Publication と list[str] フィールドを渡して生成できる。"""
+        jga = JGA(
+            identifier="JGAS000001",
+            properties={},
+            distribution=[],
+            isPartOf="jga",
+            type="jga-study",
+            name=None,
+            url="https://example.com",
+            organism=None,
+            title=None,
+            description=None,
+            organization=[Organization(name="Individual")],
+            publication=[Publication(id="24336570", dbType="ePubmed", status="ePublished")],
+            studyType=["Exome Sequencing"],
+            vendor=["Illumina"],
+            dbXrefs=[],
+            sameAs=[],
+            status="public",
+            accessibility="controlled-access",
+            dateCreated=None,
+            dateModified=None,
+            datePublished=None,
+        )
+        assert jga.organization[0].name == "Individual"
+        assert jga.publication[0].id_ == "24336570"
+        assert jga.studyType == ["Exome Sequencing"]
+        assert jga.vendor == ["Illumina"]
+
 
 class TestOrganization:
     def test_all_defaults_are_none(self) -> None:

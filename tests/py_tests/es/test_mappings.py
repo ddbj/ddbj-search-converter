@@ -298,6 +298,54 @@ class TestJgaMapping:
             assert "dbXrefs" in props
             assert "status" in props
 
+    def test_all_jga_types_have_organization(self) -> None:
+        """organization は全 type 共通 (nested)。"""
+        for jga_type in JGA_INDEXES:
+            props = get_jga_mapping(jga_type)["mappings"]["properties"]
+            assert "organization" in props
+            assert props["organization"]["type"] == "nested"
+
+    def test_all_jga_types_have_external_link(self) -> None:
+        """externalLink も全 type 共通 (nested)。"""
+        for jga_type in JGA_INDEXES:
+            props = get_jga_mapping(jga_type)["mappings"]["properties"]
+            assert "externalLink" in props
+            assert props["externalLink"]["type"] == "nested"
+
+    def test_study_has_publication_and_grant(self) -> None:
+        """jga-study のみ publication / grant (nested) を持つ。"""
+        props = get_jga_mapping("jga-study")["mappings"]["properties"]
+        assert "publication" in props
+        assert props["publication"]["type"] == "nested"
+        assert "grant" in props
+        assert props["grant"]["type"] == "nested"
+
+    def test_study_has_study_type_and_vendor_as_keyword(self) -> None:
+        props = get_jga_mapping("jga-study")["mappings"]["properties"]
+        assert props["studyType"] == {"type": "keyword"}
+        assert props["vendor"] == {"type": "keyword"}
+
+    def test_dataset_has_dataset_type_as_keyword(self) -> None:
+        props = get_jga_mapping("jga-dataset")["mappings"]["properties"]
+        assert props["datasetType"] == {"type": "keyword"}
+
+    def test_non_study_types_have_no_publication_or_grant(self) -> None:
+        for jga_type in ("jga-dataset", "jga-dac", "jga-policy"):
+            props = get_jga_mapping(jga_type)["mappings"]["properties"]
+            assert "publication" not in props
+            assert "grant" not in props
+
+    def test_non_study_types_have_no_vendor_or_study_type(self) -> None:
+        for jga_type in ("jga-dataset", "jga-dac", "jga-policy"):
+            props = get_jga_mapping(jga_type)["mappings"]["properties"]
+            assert "studyType" not in props
+            assert "vendor" not in props
+
+    def test_non_dataset_types_have_no_dataset_type(self) -> None:
+        for jga_type in ("jga-study", "jga-dac", "jga-policy"):
+            props = get_jga_mapping(jga_type)["mappings"]["properties"]
+            assert "datasetType" not in props
+
 
 class TestIndexSettings:
     def test_settings_have_required_fields(self) -> None:

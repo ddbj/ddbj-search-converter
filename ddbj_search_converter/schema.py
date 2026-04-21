@@ -251,6 +251,13 @@ class JGA(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
+    organization: list[Organization] = Field(default_factory=list)
+    publication: list[Publication] = Field(default_factory=list)
+    grant: list[Grant] = Field(default_factory=list)
+    externalLink: list[ExternalLink] = Field(default_factory=list)
+    studyType: list[str] = Field(default_factory=list)
+    datasetType: list[str] = Field(default_factory=list)
+    vendor: list[str] = Field(default_factory=list)
     dbXrefs: list[Xref]
     sameAs: list[Xref]
     status: Literal["public"]

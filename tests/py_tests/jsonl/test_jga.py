@@ -9,11 +9,25 @@ from hypothesis import strategies as st
 
 from ddbj_search_converter.jsonl.jga import (
     _format_date_from_csv,
+    extract_dataset_type,
     extract_description,
+    extract_study_type,
     extract_title,
     format_date,
     jga_entry_to_jga_instance,
+    parse_external_link,
+    parse_grants,
+    parse_organization,
+    parse_publications,
     parse_same_as,
+    parse_vendor,
+)
+from ddbj_search_converter.schema import (
+    Agency,
+    ExternalLink,
+    Grant,
+    Organization,
+    Publication,
 )
 
 
@@ -167,6 +181,16 @@ class TestExtractDescription:
         entry = {"DESCRIPTION": "Dataset desc"}
         assert extract_description(entry, "jga-dataset") == "Dataset desc"
 
+    def test_jga_policy_uses_policy_text(self) -> None:
+        """jga-policy は POLICY_TEXT を description に詰める。"""
+        entry = {"POLICY_TEXT": "Policy body"}
+        assert extract_description(entry, "jga-policy") == "Policy body"
+
+    def test_jga_dac_returns_none(self) -> None:
+        """jga-dac は description 相当フィールドが無いため None。"""
+        entry = {"CONTACTS": {}}
+        assert extract_description(entry, "jga-dac") is None
+
     def test_no_description(self) -> None:
         entry: dict[str, Any] = {}
         assert extract_description(entry, "jga-study") is None
@@ -186,25 +210,34 @@ class TestJgaEntryToJgaInstance:
         assert jga.type_ == "jga-study"
         assert jga.title == "Title"
         assert jga.description == "Abstract"
-        assert jga.name == "My Study"
-
-    def test_alias_same_as_accession(self) -> None:
-        """alias が accession と同じ場合は name=None。"""
-        entry = {"accession": "JGAS000001", "alias": "JGAS000001"}
-        jga = jga_entry_to_jga_instance(entry, "jga-study")
         assert jga.name is None
 
-    def test_no_alias(self) -> None:
-        entry: dict[str, Any] = {"accession": "JGAS000001"}
-        jga = jga_entry_to_jga_instance(entry, "jga-study")
-        assert jga.name is None
-
-    def test_organism_is_human(self) -> None:
-        """JGA は常に Homo sapiens。"""
+    def test_organism_is_human_for_study(self) -> None:
+        """jga-study は常に Homo sapiens。"""
         entry = {"accession": "JGAS000001"}
         jga = jga_entry_to_jga_instance(entry, "jga-study")
-        assert jga.organism.identifier == "9606"  # type: ignore[union-attr]
-        assert jga.organism.name == "Homo sapiens"  # type: ignore[union-attr]
+        assert jga.organism is not None
+        assert jga.organism.identifier == "9606"
+        assert jga.organism.name == "Homo sapiens"
+
+    def test_organism_is_human_for_dataset(self) -> None:
+        """jga-dataset も常に Homo sapiens。"""
+        entry = {"accession": "JGAD000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-dataset")
+        assert jga.organism is not None
+        assert jga.organism.identifier == "9606"
+
+    def test_organism_is_none_for_dac(self) -> None:
+        """jga-dac は organism を持たない。"""
+        entry = {"accession": "JGAC000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-dac")
+        assert jga.organism is None
+
+    def test_organism_is_none_for_policy(self) -> None:
+        """jga-policy は organism を持たない。"""
+        entry = {"accession": "JGAP000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-policy")
+        assert jga.organism is None
 
     def test_default_accessibility(self) -> None:
         entry = {"accession": "JGAS000001"}
@@ -385,3 +418,413 @@ class TestJgaEntryToJgaInstanceProperties:
         jga = jga_entry_to_jga_instance(entry, "jga-study")
         assert isinstance(jga.properties["DESCRIPTOR"], dict)
         assert jga.properties["DESCRIPTOR"]["STUDY_TITLE"] == "My Study"
+
+
+class TestJgaNameAlwaysNone:
+    """name は常に None (alias の値によらない)。"""
+
+    def test_alias_different_from_accession(self) -> None:
+        entry = {"accession": "JGAS000001", "alias": "JSUB000002_Study_0001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        assert jga.name is None
+
+    def test_alias_same_as_accession(self) -> None:
+        entry = {"accession": "JGAS000001", "alias": "JGAS000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        assert jga.name is None
+
+    def test_no_alias(self) -> None:
+        entry: dict[str, Any] = {"accession": "JGAS000001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-study")
+        assert jga.name is None
+
+    def test_dataset_name_also_none(self) -> None:
+        entry = {"accession": "JGAD000001", "alias": "JSUB000002_Dataset_0001"}
+        jga = jga_entry_to_jga_instance(entry, "jga-dataset")
+        assert jga.name is None
+
+
+class TestExtractStudyType:
+    """Tests for extract_study_type function."""
+
+    def test_single_existing_non_other(self) -> None:
+        entry = {"DESCRIPTOR": {"STUDY_TYPES": {"STUDY_TYPE": {"existing_study_type": "Exome Sequencing"}}}}
+        assert extract_study_type(entry) == ["Exome Sequencing"]
+
+    def test_other_with_new_study_type(self) -> None:
+        entry = {
+            "DESCRIPTOR": {
+                "STUDY_TYPES": {
+                    "STUDY_TYPE": {
+                        "existing_study_type": "Other",
+                        "new_study_type": "Whole genome bisulfite sequencing",
+                    }
+                }
+            }
+        }
+        assert extract_study_type(entry) == ["Whole genome bisulfite sequencing"]
+
+    def test_other_without_new_falls_back_to_other(self) -> None:
+        """existing=Other かつ new_study_type が空/欠損の場合は Other を残す。"""
+        entry = {"DESCRIPTOR": {"STUDY_TYPES": {"STUDY_TYPE": {"existing_study_type": "Other"}}}}
+        assert extract_study_type(entry) == ["Other"]
+
+    def test_other_with_empty_new_falls_back(self) -> None:
+        entry = {
+            "DESCRIPTOR": {
+                "STUDY_TYPES": {"STUDY_TYPE": {"existing_study_type": "Other", "new_study_type": "   "}}
+            }
+        }
+        assert extract_study_type(entry) == ["Other"]
+
+    def test_multiple_list_mixes_existing_and_new(self) -> None:
+        entry = {
+            "DESCRIPTOR": {
+                "STUDY_TYPES": {
+                    "STUDY_TYPE": [
+                        {"existing_study_type": "Tumor vs. Matched-Normal"},
+                        {"existing_study_type": "Exome Sequencing"},
+                        {"existing_study_type": "Transcriptome Sequencing"},
+                        {"existing_study_type": "Other", "new_study_type": "DNA methylation array"},
+                    ]
+                }
+            }
+        }
+        assert extract_study_type(entry) == [
+            "Tumor vs. Matched-Normal",
+            "Exome Sequencing",
+            "Transcriptome Sequencing",
+            "DNA methylation array",
+        ]
+
+    def test_missing_study_types_returns_empty(self) -> None:
+        entry: dict[str, Any] = {"DESCRIPTOR": {}}
+        assert extract_study_type(entry) == []
+
+    def test_missing_descriptor_returns_empty(self) -> None:
+        entry: dict[str, Any] = {}
+        assert extract_study_type(entry) == []
+
+
+class TestExtractDatasetType:
+    """Tests for extract_dataset_type function."""
+
+    def test_single_string(self) -> None:
+        entry = {"DATASET_TYPE": "Random exome sequencing"}
+        assert extract_dataset_type(entry) == ["Random exome sequencing"]
+
+    def test_list_of_strings(self) -> None:
+        entry = {"DATASET_TYPE": ["Exome", "WGS"]}
+        assert extract_dataset_type(entry) == ["Exome", "WGS"]
+
+    def test_missing_returns_empty(self) -> None:
+        entry: dict[str, Any] = {}
+        assert extract_dataset_type(entry) == []
+
+    def test_empty_string_skipped(self) -> None:
+        entry = {"DATASET_TYPE": "   "}
+        assert extract_dataset_type(entry) == []
+
+
+class TestParseVendor:
+    """Tests for parse_vendor function."""
+
+    def test_single_vendor(self) -> None:
+        entry = {
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "Vendor", "VALUE": "Illumina"}}
+        }
+        assert parse_vendor(entry) == ["Illumina"]
+
+    def test_multiple_vendors_in_list(self) -> None:
+        entry = {
+            "STUDY_ATTRIBUTES": {
+                "STUDY_ATTRIBUTE": [
+                    {"TAG": "NBDC Number", "VALUE": "hum0001"},
+                    {"TAG": "Vendor", "VALUE": "Illumina"},
+                    {"TAG": "Vendor", "VALUE": "MGI"},
+                ]
+            }
+        }
+        assert parse_vendor(entry) == ["Illumina", "MGI"]
+
+    def test_no_vendor_tag(self) -> None:
+        entry = {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "NBDC Number", "VALUE": "hum0001"}}}
+        assert parse_vendor(entry) == []
+
+    def test_no_study_attributes(self) -> None:
+        entry: dict[str, Any] = {}
+        assert parse_vendor(entry) == []
+
+
+class TestParseOrganization:
+    """Tests for parse_organization function."""
+
+    def test_study_center_name_only(self) -> None:
+        entry = {"center_name": "Individual"}
+        orgs = parse_organization(entry, "jga-study")
+        assert [o.name for o in orgs] == ["Individual"]
+        assert all(o.role is None and o.organizationType is None for o in orgs)
+
+    def test_study_center_name_plus_submitting_org(self) -> None:
+        entry = {
+            "center_name": "Individual",
+            "STUDY_ATTRIBUTES": {
+                "STUDY_ATTRIBUTE": {
+                    "TAG": "Submitting organization",
+                    "VALUE": "Department of Neurosurgery, The University of Tokyo",
+                }
+            },
+        }
+        orgs = parse_organization(entry, "jga-study")
+        assert [o.name for o in orgs] == [
+            "Individual",
+            "Department of Neurosurgery, The University of Tokyo",
+        ]
+
+    def test_study_dedupe_on_equal_names(self) -> None:
+        entry = {
+            "center_name": "DBCLS",
+            "STUDY_ATTRIBUTES": {
+                "STUDY_ATTRIBUTE": {"TAG": "Submitting organization", "VALUE": "DBCLS"}
+            },
+        }
+        orgs = parse_organization(entry, "jga-study")
+        assert [o.name for o in orgs] == ["DBCLS"]
+
+    def test_study_multiple_submitting_org_tags_in_list(self) -> None:
+        entry = {
+            "center_name": "Individual",
+            "STUDY_ATTRIBUTES": {
+                "STUDY_ATTRIBUTE": [
+                    {"TAG": "NBDC Number", "VALUE": "hum0004"},
+                    {"TAG": "Submitting organization", "VALUE": "Lab A"},
+                    {"TAG": "Submitting organization", "VALUE": "Lab B"},
+                ]
+            },
+        }
+        orgs = parse_organization(entry, "jga-study")
+        assert [o.name for o in orgs] == ["Individual", "Lab A", "Lab B"]
+
+    def test_dac_center_name_plus_contact_organisation(self) -> None:
+        entry = {
+            "center_name": "dbcls",
+            "CONTACTS": {"CONTACT": {"name": "DBCLS", "email": "humandbs@dbcls.jp", "organisation": "DBCLS"}},
+        }
+        orgs = parse_organization(entry, "jga-dac")
+        assert [o.name for o in orgs] == ["dbcls", "DBCLS"]
+
+    def test_dac_ignores_contact_name_and_email(self) -> None:
+        """@name / @email は load しない (organisation のみ)。"""
+        entry = {
+            "center_name": "dbcls",
+            "CONTACTS": {"CONTACT": {"name": "DBCLS", "email": "humandbs@dbcls.jp"}},
+        }
+        orgs = parse_organization(entry, "jga-dac")
+        assert [o.name for o in orgs] == ["dbcls"]
+
+    def test_policy_uses_only_center_name(self) -> None:
+        """jga-policy は CONTACTS を参照しない。"""
+        entry = {
+            "center_name": "nbdc",
+            "CONTACTS": {"CONTACT": {"organisation": "should-be-ignored"}},
+        }
+        orgs = parse_organization(entry, "jga-policy")
+        assert [o.name for o in orgs] == ["nbdc"]
+
+    def test_dataset_uses_only_center_name(self) -> None:
+        entry = {
+            "center_name": "Individual",
+            "STUDY_ATTRIBUTES": {
+                "STUDY_ATTRIBUTE": {"TAG": "Submitting organization", "VALUE": "should-be-ignored"}
+            },
+        }
+        orgs = parse_organization(entry, "jga-dataset")
+        assert [o.name for o in orgs] == ["Individual"]
+
+    def test_missing_center_name_returns_empty(self) -> None:
+        assert parse_organization({}, "jga-study") == []
+
+
+class TestParsePublicationsJga:
+    """Tests for parse_publications function (JGA study-specific)."""
+
+    def test_single_pubmed_published(self) -> None:
+        entry = {
+            "PUBLICATIONS": {
+                "PUBLICATION": {"id": "24336570", "status": "published", "DB_TYPE": "PUBMED"}
+            }
+        }
+        pubs = parse_publications(entry)
+        assert len(pubs) == 1
+        assert isinstance(pubs[0], Publication)
+        assert pubs[0].id_ == "24336570"
+        assert pubs[0].dbType == "ePubmed"
+        assert pubs[0].status == "ePublished"
+        assert pubs[0].url == "https://pubmed.ncbi.nlm.nih.gov/24336570/"
+
+    def test_lowercase_pubmed_normalizes(self) -> None:
+        """大小文字揺れ (pubmed / PubMed) も ePubmed に正規化。"""
+        entry = {
+            "PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "pubmed", "status": "published"}}
+        }
+        assert parse_publications(entry)[0].dbType == "ePubmed"
+
+    def test_status_unpublished_normalizes(self) -> None:
+        entry = {
+            "PUBLICATIONS": {
+                "PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "unpublished"}
+            }
+        }
+        assert parse_publications(entry)[0].status == "eUnpublished"
+
+    def test_invalid_status_falls_back_to_none(self) -> None:
+        entry = {
+            "PUBLICATIONS": {
+                "PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "preprint"}
+            }
+        }
+        assert parse_publications(entry)[0].status is None
+
+    def test_unknown_db_type_falls_back_to_none(self) -> None:
+        entry = {
+            "PUBLICATIONS": {
+                "PUBLICATION": {"id": "1", "DB_TYPE": "UNKNOWN", "status": "published"}
+            }
+        }
+        pub = parse_publications(entry)[0]
+        assert pub.dbType is None
+        assert pub.url is None
+
+    def test_multiple_publications_list(self) -> None:
+        entry = {
+            "PUBLICATIONS": {
+                "PUBLICATION": [
+                    {"id": "1", "DB_TYPE": "PUBMED", "status": "published"},
+                    {"id": "2", "DB_TYPE": "PUBMED", "status": "published"},
+                ]
+            }
+        }
+        pubs = parse_publications(entry)
+        assert [p.id_ for p in pubs] == ["1", "2"]
+
+    def test_missing_publications_returns_empty(self) -> None:
+        assert parse_publications({}) == []
+
+
+class TestParseGrantsJga:
+    """Tests for parse_grants function (JGA study-specific)."""
+
+    def test_single_grant_with_agency_dict(self) -> None:
+        entry = {
+            "GRANTS": {
+                "GRANT": {
+                    "grant_id": "22129008",
+                    "TITLE": "Grant-in-Aid for Scientific Research on Innovative Areas",
+                    "AGENCY": {"abbr": "MEXT", "content": "Ministry of Education"},
+                }
+            }
+        }
+        grants = parse_grants(entry)
+        assert len(grants) == 1
+        grant = grants[0]
+        assert isinstance(grant, Grant)
+        assert grant.id_ == "22129008"
+        assert grant.title == "Grant-in-Aid for Scientific Research on Innovative Areas"
+        assert grant.agency == [Agency(abbreviation="MEXT", name="Ministry of Education")]
+
+    def test_grant_with_agency_string(self) -> None:
+        entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": "NIH"}}}
+        grant = parse_grants(entry)[0]
+        assert grant.agency == [Agency(abbreviation=None, name="NIH")]
+
+    def test_empty_grant_id_becomes_none(self) -> None:
+        entry = {
+            "GRANTS": {
+                "GRANT": {"grant_id": "", "TITLE": "T", "AGENCY": {"abbr": "X", "content": "Y"}}
+            }
+        }
+        assert parse_grants(entry)[0].id_ is None
+
+    def test_multiple_grants_list(self) -> None:
+        entry = {
+            "GRANTS": {
+                "GRANT": [
+                    {"grant_id": "1", "TITLE": "A", "AGENCY": "X"},
+                    {"grant_id": "2", "TITLE": "B", "AGENCY": "Y"},
+                ]
+            }
+        }
+        assert [g.id_ for g in parse_grants(entry)] == ["1", "2"]
+
+    def test_missing_grants_returns_empty(self) -> None:
+        assert parse_grants({}) == []
+
+
+class TestParseExternalLinkJga:
+    """Tests for parse_external_link function (JGA type-specific dispatch)."""
+
+    def test_study_single_link(self) -> None:
+        entry = {
+            "STUDY_LINKS": {
+                "STUDY_LINK": {
+                    "URL_LINK": {
+                        "LABEL": "http://example.com",
+                        "URL": "http://example.com",
+                    }
+                }
+            }
+        }
+        links = parse_external_link(entry, "jga-study")
+        assert links == [ExternalLink(url="http://example.com", label="http://example.com")]
+
+    def test_study_multiple_links_list(self) -> None:
+        entry = {
+            "STUDY_LINKS": {
+                "STUDY_LINK": [
+                    {"URL_LINK": {"LABEL": "L1", "URL": "http://a"}},
+                    {"URL_LINK": {"LABEL": "L2", "URL": "http://b"}},
+                ]
+            }
+        }
+        links = parse_external_link(entry, "jga-study")
+        assert [link.url for link in links] == ["http://a", "http://b"]
+
+    def test_dac_link(self) -> None:
+        entry = {
+            "DAC_LINKS": {
+                "DAC_LINK": {
+                    "URL_LINK": {
+                        "LABEL": "Change in the operation",
+                        "URL": "https://biosciencedbc.jp/en/news/20240401-03.html",
+                    }
+                }
+            }
+        }
+        links = parse_external_link(entry, "jga-dac")
+        assert len(links) == 1
+        assert links[0].label == "Change in the operation"
+        assert links[0].url == "https://biosciencedbc.jp/en/news/20240401-03.html"
+
+    def test_policy_link(self) -> None:
+        entry = {
+            "POLICY_LINKS": {
+                "POLICY_LINK": {
+                    "URL_LINK": {"LABEL": "NBDC Policy", "URL": "https://humandbs.dbcls.jp/en/nbdc-policy"}
+                }
+            }
+        }
+        links = parse_external_link(entry, "jga-policy")
+        assert [link.label for link in links] == ["NBDC Policy"]
+
+    def test_dataset_returns_empty_regardless_of_links(self) -> None:
+        """jga-dataset は URL_LINK を持たない (マッピングなし)。"""
+        entry = {"STUDY_LINKS": {"STUDY_LINK": {"URL_LINK": {"LABEL": "x", "URL": "http://x"}}}}
+        assert parse_external_link(entry, "jga-dataset") == []
+
+    def test_label_fallback_to_url(self) -> None:
+        entry = {"STUDY_LINKS": {"STUDY_LINK": {"URL_LINK": {"URL": "http://only-url.com"}}}}
+        links = parse_external_link(entry, "jga-study")
+        assert links == [ExternalLink(url="http://only-url.com", label="http://only-url.com")]
+
+    def test_missing_parent_key_returns_empty(self) -> None:
+        assert parse_external_link({}, "jga-study") == []

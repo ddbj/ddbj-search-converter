@@ -2,7 +2,15 @@
 
 from typing import Any, Literal
 
-from ddbj_search_converter.es.mappings.common import INDEX_SETTINGS, get_common_mapping
+from ddbj_search_converter.es.mappings.common import (
+    INDEX_SETTINGS,
+    get_common_mapping,
+    get_external_link_mapping,
+    get_grant_mapping,
+    get_organization_mapping,
+    get_publication_mapping,
+    merge_mappings,
+)
 
 JgaIndexType = Literal[
     "jga-study",
@@ -19,15 +27,34 @@ JGA_INDEXES: list[JgaIndexType] = [
 ]
 
 
-def get_jga_mapping(_index_type: JgaIndexType) -> dict[str, Any]:
+def get_jga_specific_mapping(index_type: JgaIndexType) -> dict[str, Any]:
+    """Return the JGA-specific mapping properties for the specified index type."""
+    if index_type == "jga-study":
+        return {
+            "studyType": {"type": "keyword"},
+            "vendor": {"type": "keyword"},
+        }
+    if index_type == "jga-dataset":
+        return {"datasetType": {"type": "keyword"}}
+    return {}
+
+
+def get_jga_mapping(index_type: JgaIndexType) -> dict[str, Any]:
     """Return the complete JGA mapping for the specified index type.
 
-    Args:
-        index_type: JGA index type (currently unused, kept for API consistency)
-
-    All JGA types use the same common mapping without additional specific fields.
+    organization / externalLink は全 type 共通、publication / grant は jga-study 限定。
+    studyType / vendor は jga-study 限定、datasetType は jga-dataset 限定。
     """
+    mappings = [
+        get_common_mapping(),
+        get_organization_mapping(),
+        get_external_link_mapping(),
+    ]
+    if index_type == "jga-study":
+        mappings.append(get_publication_mapping())
+        mappings.append(get_grant_mapping())
+    mappings.append(get_jga_specific_mapping(index_type))
     return {
         "settings": INDEX_SETTINGS,
-        "mappings": {"properties": get_common_mapping()},
+        "mappings": {"properties": merge_mappings(*mappings)},
     }
