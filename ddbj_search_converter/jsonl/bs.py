@@ -26,11 +26,10 @@ from ddbj_search_converter.logging.logger import log_debug, log_error, log_info,
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
     Accessibility,
-    Attribute,
     BioSample,
-    Model,
+    BioSamplePackage,
     Organism,
-    Package,
+    Organization,
     Status,
     Xref,
 )
@@ -127,41 +126,9 @@ def parse_description(sample: dict[str, Any], accession: str = "") -> str | None
         return None
 
 
-def parse_attributes(sample: dict[str, Any], accession: str = "") -> list[Attribute]:
-    """BioSample から Attributes を抽出する。"""
-    attributes: list[Attribute] = []
-    try:
-        attrs = (sample.get("Attributes") or {}).get("Attribute")
-        if attrs is None:
-            return []
-        attr_list = attrs if isinstance(attrs, list) else [attrs]
-        for attr in attr_list:
-            if isinstance(attr, dict):
-                attributes.append(
-                    Attribute(
-                        attribute_name=attr.get("attribute_name"),
-                        display_name=attr.get("display_name"),
-                        harmonized_name=attr.get("harmonized_name"),
-                        content=attr.get("content"),
-                    )
-                )
-            elif isinstance(attr, str):
-                attributes.append(
-                    Attribute(
-                        attribute_name=None,
-                        display_name=None,
-                        harmonized_name=None,
-                        content=attr,
-                    )
-                )
-    except Exception as e:
-        log_warn(f"failed to parse attributes: {e}", accession=accession)
-    return attributes
-
-
-def parse_model(sample: dict[str, Any], accession: str = "") -> list[Model]:
+def parse_model(sample: dict[str, Any], accession: str = "") -> list[str]:
     """BioSample から Model を抽出する。"""
-    models: list[Model] = []
+    models: list[str] = []
     try:
         model_obj = (sample.get("Models") or {}).get("Model")
         if model_obj is None:
@@ -169,36 +136,77 @@ def parse_model(sample: dict[str, Any], accession: str = "") -> list[Model]:
         model_list = model_obj if isinstance(model_obj, list) else [model_obj]
         for model in model_list:
             if isinstance(model, str):
-                models.append(Model(name=model))
+                models.append(model)
             elif isinstance(model, dict):
                 content = model.get("content")
                 if content is not None:
-                    models.append(Model(name=str(content)))
+                    models.append(str(content))
     except Exception as e:
         log_warn(f"failed to parse model: {e}", accession=accession)
     return models
 
 
-def parse_package(sample: dict[str, Any], model: list[Model], is_ddbj: bool, accession: str = "") -> Package | None:
-    """BioSample から Package を抽出する。"""
+def parse_bs_package(sample: dict[str, Any], is_ddbj: bool, accession: str = "") -> BioSamplePackage | None:
+    """BioSample から Package を抽出する。
+
+    §4.11 L5: DDBJ BS は XML 上に ``<Package>`` 要素が存在しないため常に None。
+    旧実装の ``Models[0]`` 合成 fallback は削除済。NCBI のみ
+    ``<Package display_name="...">content</Package>`` から抽出する。
+    """
+    if is_ddbj:
+        return None
     try:
-        if is_ddbj:
-            if model:
-                return Package(name=model[0].name, display_name=model[0].name)
-            return None
         package_obj = sample.get("Package")
         if package_obj is None:
             return None
         if isinstance(package_obj, str):
-            return Package(name=package_obj, display_name=package_obj)
+            return BioSamplePackage(name=package_obj)
         if isinstance(package_obj, dict):
-            name = package_obj.get("content", "")
-            display_name = package_obj.get("display_name") or name
-            return Package(name=name, display_name=display_name)
+            name = package_obj.get("content")
+            if name is None:
+                return None
+            return BioSamplePackage(
+                name=str(name),
+                displayName=package_obj.get("display_name"),
+            )
         return None
     except Exception as e:
         log_warn(f"failed to parse package: {e}", accession=accession)
         return None
+
+
+def parse_organization(sample: dict[str, Any], accession: str = "") -> list[Organization]:
+    """BioSample から Organization を抽出する。
+
+    Owner.Name 由来。BS では role / organizationType の概念が無いため常に None。
+    ``abbreviation`` は NCBI のみ XML attribute 由来で埋まる (DDBJ は常に None)。
+    """
+    organizations: list[Organization] = []
+    try:
+        owner = sample.get("Owner")
+        if owner is None:
+            return []
+        name = owner.get("Name")
+        if name is None:
+            return []
+        name_list = name if isinstance(name, list) else [name]
+        for item in name_list:
+            if isinstance(item, str):
+                if item:
+                    organizations.append(Organization(name=item))
+            elif isinstance(item, dict):
+                content = item.get("content")
+                if content is None:
+                    continue
+                organizations.append(
+                    Organization(
+                        name=str(content),
+                        abbreviation=item.get("abbreviation"),
+                    )
+                )
+    except Exception as e:
+        log_warn(f"failed to parse organization: {e}", accession=accession)
+    return organizations
 
 
 def parse_same_as(sample: dict[str, Any], accession: str = "") -> list[Xref]:
@@ -329,8 +337,6 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
     normalize_properties(sample)
     ensure_attribute_list(sample, BS_ATTRIBUTE_PATHS)
 
-    model = parse_model(sample, accession)
-
     return BioSample(
         identifier=accession,
         properties={"BioSample": sample},
@@ -342,9 +348,9 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
         organism=parse_organism(sample, is_ddbj, accession),
         title=parse_title(sample, accession),
         description=parse_description(sample, accession),
-        attributes=parse_attributes(sample, accession),
-        model=model,
-        package=parse_package(sample, model, is_ddbj, accession),
+        organization=parse_organization(sample, accession),
+        model=parse_model(sample, accession),
+        package=parse_bs_package(sample, is_ddbj, accession),
         dbXrefs=[],  # 後で更新
         sameAs=parse_same_as(sample, accession),
         status=parse_status(sample, accession),

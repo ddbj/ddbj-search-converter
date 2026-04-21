@@ -143,21 +143,51 @@ class TestBioSampleMapping:
     def test_has_biosample_specific_fields(self) -> None:
         mapping = get_biosample_mapping()
         props = mapping["mappings"]["properties"]
-        assert "attributes" in props
         assert "model" in props
         assert "package" in props
 
-    def test_attributes_is_nested(self) -> None:
+    def test_attributes_mapping_removed(self) -> None:
+        """Phase A §3.1 で attributes フィールドは廃止済。"""
         mapping = get_biosample_mapping()
         props = mapping["mappings"]["properties"]
-        assert props["attributes"]["type"] == "nested"
+        assert "attributes" not in props
 
-    def test_attributes_content_has_keyword_subfield(self) -> None:
+    def test_model_is_keyword(self) -> None:
+        """model は list[str] として格下げ、keyword 単独で index される。"""
         mapping = get_biosample_mapping()
         props = mapping["mappings"]["properties"]
-        content = props["attributes"]["properties"]["content"]
-        assert content["type"] == "text"
-        assert content["fields"]["keyword"]["type"] == "keyword"
+        assert props["model"] == {"type": "keyword"}
+
+    def test_package_has_name_and_display_name(self) -> None:
+        mapping = get_biosample_mapping()
+        props = mapping["mappings"]["properties"]
+        pkg = props["package"]
+        assert pkg["type"] == "object"
+        assert pkg["properties"]["name"] == {"type": "keyword"}
+        assert pkg["properties"]["displayName"]["type"] == "keyword"
+
+    def test_package_display_name_is_not_indexed(self) -> None:
+        """displayName は表示専用で検索対象外。"""
+        mapping = get_biosample_mapping()
+        props = mapping["mappings"]["properties"]
+        assert props["package"]["properties"]["displayName"]["index"] is False
+
+    def test_has_organization_from_common_helper(self) -> None:
+        """Owner.Name 由来の organization を共通 helper 経由で持つ。"""
+        mapping = get_biosample_mapping()
+        props = mapping["mappings"]["properties"]
+        assert "organization" in props
+        assert props["organization"]["type"] == "nested"
+        assert props["organization"]["properties"]["name"]["type"] == "text"
+        assert props["organization"]["properties"]["abbreviation"]["type"] == "keyword"
+
+    def test_does_not_include_publication_or_grant(self) -> None:
+        """BS 確定形では publication / grant / externalLink は追加しない。"""
+        mapping = get_biosample_mapping()
+        props = mapping["mappings"]["properties"]
+        assert "publication" not in props
+        assert "grant" not in props
+        assert "externalLink" not in props
 
 
 class TestSraMapping:

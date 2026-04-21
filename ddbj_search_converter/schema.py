@@ -131,20 +131,9 @@ class BioProject(BaseModel):
 # === BioSample ===
 
 
-class Attribute(BaseModel):
-    attribute_name: str | None
-    display_name: str | None
-    harmonized_name: str | None
-    content: str | None
-
-
-class Model(BaseModel):
+class BioSamplePackage(BaseModel):
     name: str
-
-
-class Package(BaseModel):
-    name: str
-    display_name: str
+    displayName: str | None = None
 
 
 class BioSample(BaseModel):
@@ -158,9 +147,9 @@ class BioSample(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
-    attributes: list[Attribute]
-    model: list[Model]
-    package: Package | None
+    organization: list[Organization]
+    model: list[str]
+    package: BioSamplePackage | None
     dbXrefs: list[Xref]
     sameAs: list[Xref]
     status: Status

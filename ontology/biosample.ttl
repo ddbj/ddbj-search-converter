@@ -10,7 +10,7 @@
 biosample:status
     a owl:DatatypeProperty ;
     rdfs:label "status" ;
-    rdfs:comment "INSDC record status: live, unpublished, suppressed, or withdrawn" .
+    rdfs:comment "INSDC record status: public, private, suppressed, or withdrawn" .
 
 biosample:properties
     a owl:ObjectProperty ;
@@ -27,37 +27,17 @@ biosample:dbXrefs
     rdfs:label "dbXrefs" ;
     rdfs:comment "Cross-references to related entries in other INSDC databases" .
 
-biosample:attributes
+biosample:organization
     a owl:ObjectProperty ;
-    rdfs:label "attributes" ;
-    rdfs:comment "Key-value metadata attributes of the BioSample" .
-
-biosample:attribute_name
-    a owl:DatatypeProperty ;
-    rdfs:label "attribute_name" ;
-    rdfs:comment "Original attribute name as submitted" .
-
-biosample:display_name
-    a owl:DatatypeProperty ;
-    rdfs:label "display_name" ;
-    rdfs:comment "Human-readable display name" .
-
-biosample:harmonized_name
-    a owl:DatatypeProperty ;
-    rdfs:label "harmonized_name" ;
-    rdfs:comment "Standardized attribute name harmonized across submissions" .
-
-biosample:content
-    a owl:DatatypeProperty ;
-    rdfs:label "content" ;
-    rdfs:comment "Attribute value content" .
+    rdfs:label "organization" ;
+    rdfs:comment "Submitting organization derived from BioSample Owner.Name; role is always null" .
 
 biosample:model
-    a owl:ObjectProperty ;
+    a owl:DatatypeProperty ;
     rdfs:label "model" ;
-    rdfs:comment "BioSample data model classification, e.g. MIGS.ba.host-associated" .
+    rdfs:comment "BioSample data model names as a list of strings (e.g. 'MIGS.ba', 'MIGS.eu')" .
 
 biosample:package
     a owl:ObjectProperty ;
     rdfs:label "package" ;
-    rdfs:comment "BioSample submission package with name and display name" .
+    rdfs:comment "BioSample submission package with name and displayName; NCBI only, DDBJ is always null" .

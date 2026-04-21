@@ -10,18 +10,18 @@ from ddbj_search_converter.jsonl.bs import (
     normalize_properties,
     parse_accessibility,
     parse_accession,
-    parse_attributes,
+    parse_bs_package,
     parse_description,
     parse_model,
     parse_name,
     parse_organism,
-    parse_package,
+    parse_organization,
     parse_same_as,
     parse_status,
     parse_title,
     xml_entry_to_bs_instance,
 )
-from ddbj_search_converter.schema import BioSample
+from ddbj_search_converter.schema import BioSample, BioSamplePackage, Organization
 
 
 def _make_sample(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -161,44 +161,6 @@ class TestParseDescription:
         assert "Para 2" in result
 
 
-class TestParseAttributes:
-    """Tests for parse_attributes function."""
-
-    def test_single_attribute(self) -> None:
-        sample = _make_sample()
-        sample["Attributes"]["Attribute"] = {
-            "attribute_name": "geo_loc_name",
-            "display_name": "Geographic Location",
-            "harmonized_name": "geo_loc_name",
-            "content": "Japan",
-        }
-        attrs = parse_attributes(sample)
-        assert len(attrs) == 1
-        assert attrs[0].attribute_name == "geo_loc_name"
-        assert attrs[0].content == "Japan"
-
-    def test_multiple_attributes(self) -> None:
-        sample = _make_sample()
-        sample["Attributes"]["Attribute"] = [
-            {"attribute_name": "attr1", "content": "val1"},
-            {"attribute_name": "attr2", "content": "val2"},
-        ]
-        attrs = parse_attributes(sample)
-        assert len(attrs) == 2
-
-    def test_string_attribute(self) -> None:
-        sample = _make_sample()
-        sample["Attributes"]["Attribute"] = "raw_value"
-        attrs = parse_attributes(sample)
-        assert len(attrs) == 1
-        assert attrs[0].content == "raw_value"
-        assert attrs[0].attribute_name is None
-
-    def test_no_attributes(self) -> None:
-        sample = _make_sample()
-        assert parse_attributes(sample) == []
-
-
 class TestParseModel:
     """Tests for parse_model function."""
 
@@ -206,15 +168,19 @@ class TestParseModel:
         sample = _make_sample()
         sample["Models"] = {"Model": "Generic"}
         models = parse_model(sample)
-        assert len(models) == 1
-        assert models[0].name == "Generic"
+        assert models == ["Generic"]
 
     def test_dict_model(self) -> None:
         sample = _make_sample()
         sample["Models"] = {"Model": {"content": "Generic"}}
         models = parse_model(sample)
-        assert len(models) == 1
-        assert models[0].name == "Generic"
+        assert models == ["Generic"]
+
+    def test_list_model(self) -> None:
+        sample = _make_sample()
+        sample["Models"] = {"Model": [{"content": "MIGS.ba"}, "Generic"]}
+        models = parse_model(sample)
+        assert models == ["MIGS.ba", "Generic"]
 
     def test_no_models(self) -> None:
         sample = _make_sample()
@@ -225,8 +191,7 @@ class TestParseModel:
         sample = _make_sample()
         sample["Models"] = {"Model": {"content": 0}}
         models = parse_model(sample)
-        assert len(models) == 1
-        assert models[0].name == "0"
+        assert models == ["0"]
 
 
 class TestBug13ModelContentFalsy:
@@ -236,21 +201,19 @@ class TestBug13ModelContentFalsy:
         sample = _make_sample()
         sample["Models"] = {"Model": {"content": 0}}
         models = parse_model(sample)
-        assert len(models) == 1
-        assert models[0].name == "0"
+        assert models == ["0"]
 
     def test_content_empty_string_should_produce_model(self) -> None:
         sample = _make_sample()
         sample["Models"] = {"Model": {"content": ""}}
         models = parse_model(sample)
-        assert len(models) == 1
-        assert models[0].name == ""
+        assert models == [""]
 
     def test_content_none_should_be_skipped(self) -> None:
         sample = _make_sample()
         sample["Models"] = {"Model": {"content": None}}
         models = parse_model(sample)
-        assert len(models) == 0
+        assert models == []
 
 
 class TestBug14DescriptionFalsyParagraph:
@@ -275,32 +238,124 @@ class TestBug14DescriptionFalsyParagraph:
         assert result == "Para 1 Para 2"
 
 
-class TestParsePackage:
-    """Tests for parse_package function."""
+class TestL5DdbjPackageNone:
+    """§4.11 L5 regression: DDBJ BS の package は常に None。
 
-    def test_ddbj_uses_model(self) -> None:
-        from ddbj_search_converter.schema import Model
+    旧実装は Models[0] を name/display_name に合成していた (嘘情報) が、
+    .claude/docs/es-field-design.md §4.10.4 で削除決定。
+    """
 
-        model = [Model(name="Generic")]
+    def test_ddbj_with_models_still_returns_none(self) -> None:
         sample = _make_sample()
-        pkg = parse_package(sample, model, is_ddbj=True)
-        assert pkg is not None
-        assert pkg.name == "Generic"
+        sample["Models"] = {"Model": "MIGS.ba"}
+        assert parse_bs_package(sample, is_ddbj=True) is None
+
+    def test_ddbj_without_models_returns_none(self) -> None:
+        sample = _make_sample()
+        assert parse_bs_package(sample, is_ddbj=True) is None
+
+    def test_ddbj_ignores_any_package_element(self) -> None:
+        """仮に DDBJ 側に Package 要素が紛れていても DDBJ 分岐では見ない。"""
+        sample = _make_sample()
+        sample["Package"] = {"content": "Generic", "display_name": "Generic"}
+        assert parse_bs_package(sample, is_ddbj=True) is None
+
+
+class TestParsePackageNcbi:
+    """NCBI BS の Package 要素抽出 (string / dict 両形)。"""
 
     def test_ncbi_string_package(self) -> None:
         sample = _make_sample()
         sample["Package"] = "Generic.1.0"
-        pkg = parse_package(sample, [], is_ddbj=False)
-        assert pkg is not None
-        assert pkg.name == "Generic.1.0"
+        pkg = parse_bs_package(sample, is_ddbj=False)
+        assert pkg == BioSamplePackage(name="Generic.1.0")
 
-    def test_ncbi_dict_package(self) -> None:
+    def test_ncbi_dict_package_with_display_name(self) -> None:
         sample = _make_sample()
-        sample["Package"] = {"content": "Generic.1.0", "display_name": "Generic"}
-        pkg = parse_package(sample, [], is_ddbj=False)
-        assert pkg is not None
-        assert pkg.name == "Generic.1.0"
-        assert pkg.display_name == "Generic"
+        sample["Package"] = {"content": "Generic", "display_name": "Generic.1.0"}
+        pkg = parse_bs_package(sample, is_ddbj=False)
+        assert pkg == BioSamplePackage(name="Generic", displayName="Generic.1.0")
+
+    def test_ncbi_dict_package_without_display_name(self) -> None:
+        sample = _make_sample()
+        sample["Package"] = {"content": "Generic"}
+        pkg = parse_bs_package(sample, is_ddbj=False)
+        assert pkg == BioSamplePackage(name="Generic", displayName=None)
+
+    def test_ncbi_no_package_returns_none(self) -> None:
+        sample = _make_sample()
+        assert parse_bs_package(sample, is_ddbj=False) is None
+
+    def test_ncbi_dict_package_without_content_returns_none(self) -> None:
+        sample = _make_sample()
+        sample["Package"] = {"display_name": "Generic.1.0"}
+        assert parse_bs_package(sample, is_ddbj=False) is None
+
+
+class TestParseOrganization:
+    """Tests for parse_organization function."""
+
+    def test_ncbi_dict_owner_name_with_abbreviation(self) -> None:
+        """NCBI: <Name abbreviation="WUGSC">...</Name>"""
+        sample = _make_sample()
+        sample["Owner"] = {
+            "Name": {
+                "content": "Washington University, Genome Sequencing Center",
+                "abbreviation": "WUGSC",
+            }
+        }
+        orgs = parse_organization(sample)
+        assert orgs == [
+            Organization(
+                name="Washington University, Genome Sequencing Center",
+                abbreviation="WUGSC",
+            )
+        ]
+
+    def test_ddbj_string_owner_name(self) -> None:
+        """DDBJ: <Name>...</Name> (string / 正規化前想定)"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": "Tokyo University of Agriculture and Technology"}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="Tokyo University of Agriculture and Technology")]
+
+    def test_ddbj_normalized_owner_name(self) -> None:
+        """_normalize_owner_name 適用後 (dict {content: ...}) でも抽出できる。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": "DDBJ"}}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="DDBJ")]
+
+    def test_no_owner_returns_empty(self) -> None:
+        sample = _make_sample()
+        assert parse_organization(sample) == []
+
+    def test_owner_without_name_returns_empty(self) -> None:
+        sample = _make_sample()
+        sample["Owner"] = {}
+        assert parse_organization(sample) == []
+
+    def test_list_owner_names(self) -> None:
+        sample = _make_sample()
+        sample["Owner"] = {
+            "Name": [
+                {"content": "Org A", "abbreviation": "A"},
+                "Org B",
+            ]
+        }
+        orgs = parse_organization(sample)
+        assert orgs == [
+            Organization(name="Org A", abbreviation="A"),
+            Organization(name="Org B"),
+        ]
+
+    def test_role_is_always_none(self) -> None:
+        """BS では role 概念が無いため常に None。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": "Org", "abbreviation": "A"}}
+        orgs = parse_organization(sample)
+        assert orgs[0].role is None
+        assert orgs[0].organizationType is None
 
 
 class TestParseSameAs:
@@ -379,8 +434,6 @@ class TestNormalizeProperties:
 
 
 def _make_bs_instance(identifier: str) -> BioSample:
-    from ddbj_search_converter.schema import BioSample
-
     return BioSample(
         identifier=identifier,
         properties={},
@@ -392,7 +445,7 @@ def _make_bs_instance(identifier: str) -> BioSample:
         organism=None,
         title=None,
         description=None,
-        attributes=[],
+        organization=[],
         model=[],
         package=None,
         dbXrefs=[],
@@ -481,3 +534,23 @@ class TestXmlEntryToBsInstanceProperties:
         sample["Attributes"]["Attribute"] = {"attribute_name": "x", "content": "y"}
         bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
         assert isinstance(bs.properties["BioSample"]["Ids"], dict)
+
+    def test_ddbj_package_is_none_even_with_models(self) -> None:
+        """§4.11 L5 regression: DDBJ BS では Models があっても package=None。"""
+        sample = _make_sample()
+        sample["Models"] = {"Model": "MIGS.ba"}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=True)
+        assert bs.package is None
+        assert bs.model == ["MIGS.ba"]
+
+    def test_ncbi_package_is_parsed_from_element(self) -> None:
+        sample = _make_sample()
+        sample["Package"] = {"content": "Generic", "display_name": "Generic.1.0"}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        assert bs.package == BioSamplePackage(name="Generic", displayName="Generic.1.0")
+
+    def test_organization_is_parsed_from_owner(self) -> None:
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": "NCBI", "abbreviation": "NCBI"}}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
+        assert bs.organization == [Organization(name="NCBI", abbreviation="NCBI")]

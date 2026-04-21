@@ -6,6 +6,8 @@ from pydantic import ValidationError
 from ddbj_search_converter.schema import (
     JGA,
     BioProject,
+    BioSample,
+    BioSamplePackage,
     Distribution,
     Organism,
     Organization,
@@ -301,3 +303,90 @@ class TestPublication:
         assert "id_" not in dumped
         assert "Reference" not in dumped
         assert "DbType" not in dumped
+
+
+class TestBioSamplePackage:
+    """Tests for BioSamplePackage (Phase A §3.1)."""
+
+    def test_name_is_required(self) -> None:
+        with pytest.raises(ValidationError):
+            BioSamplePackage()  # type: ignore[call-arg]
+
+    def test_display_name_defaults_to_none(self) -> None:
+        pkg = BioSamplePackage(name="Generic.1.0")
+        assert pkg.name == "Generic.1.0"
+        assert pkg.displayName is None
+
+    def test_display_name_set(self) -> None:
+        pkg = BioSamplePackage(name="Generic", displayName="Generic.1.0")
+        assert pkg.displayName == "Generic.1.0"
+
+
+def _make_minimal_bs_kwargs() -> dict:
+    return dict(
+        identifier="SAMD00000001",
+        properties={},
+        distribution=[],
+        isPartOf="BioSample",
+        type="biosample",
+        name=None,
+        url="https://example.com",
+        organism=None,
+        title=None,
+        description=None,
+        organization=[],
+        model=[],
+        package=None,
+        dbXrefs=[],
+        sameAs=[],
+        status="public",
+        accessibility="public-access",
+        dateCreated=None,
+        dateModified=None,
+        datePublished=None,
+    )
+
+
+class TestBioSample:
+    """Tests for BioSample model (Phase A §3.1 確定形)."""
+
+    def test_minimal_instance(self) -> None:
+        bs = BioSample(**_make_minimal_bs_kwargs())
+        assert bs.identifier == "SAMD00000001"
+        assert bs.organization == []
+        assert bs.model == []
+        assert bs.package is None
+
+    def test_model_is_list_of_str(self) -> None:
+        kwargs = _make_minimal_bs_kwargs()
+        kwargs["model"] = ["MIGS.ba", "Generic"]
+        bs = BioSample(**kwargs)
+        assert bs.model == ["MIGS.ba", "Generic"]
+
+    def test_package_is_biosamplepackage(self) -> None:
+        kwargs = _make_minimal_bs_kwargs()
+        kwargs["package"] = BioSamplePackage(name="Generic", displayName="Generic.1.0")
+        bs = BioSample(**kwargs)
+        assert bs.package is not None
+        assert bs.package.name == "Generic"
+        assert bs.package.displayName == "Generic.1.0"
+
+    def test_organization_accepts_list_of_organization(self) -> None:
+        kwargs = _make_minimal_bs_kwargs()
+        kwargs["organization"] = [Organization(name="NCBI", abbreviation="NCBI")]
+        bs = BioSample(**kwargs)
+        assert bs.organization[0].name == "NCBI"
+        assert bs.organization[0].abbreviation == "NCBI"
+        # BS では role / organizationType は常に None
+        assert bs.organization[0].role is None
+        assert bs.organization[0].organizationType is None
+
+    def test_old_attributes_field_is_rejected(self) -> None:
+        """旧 attributes フィールドは schema から削除済のため extra field として扱われる。"""
+        kwargs = _make_minimal_bs_kwargs()
+        kwargs["attributes"] = []
+        # BaseModel デフォルトは extra field を無視するので assignment はできる
+        # が model_fields に attributes が存在しないことを保証する
+        bs = BioSample(**kwargs)
+        assert "attributes" not in BioSample.model_fields
+        assert not hasattr(bs, "attributes")

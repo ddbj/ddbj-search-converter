@@ -2,35 +2,23 @@
 
 from typing import Any
 
-from ddbj_search_converter.es.mappings.common import INDEX_SETTINGS, get_common_mapping, merge_mappings
+from ddbj_search_converter.es.mappings.common import (
+    INDEX_SETTINGS,
+    get_common_mapping,
+    get_organization_mapping,
+    merge_mappings,
+)
 
 
 def get_biosample_specific_mapping() -> dict[str, Any]:
     """Return BioSample-specific mapping properties."""
     return {
-        "attributes": {
-            "type": "nested",
-            "properties": {
-                "attribute_name": {"type": "keyword"},
-                "display_name": {"type": "keyword"},
-                "harmonized_name": {"type": "keyword"},
-                "content": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
-                },
-            },
-        },
-        "model": {
-            "type": "nested",
-            "properties": {
-                "name": {"type": "keyword"},
-            },
-        },
+        "model": {"type": "keyword"},
         "package": {
             "type": "object",
             "properties": {
                 "name": {"type": "keyword"},
-                "display_name": {"type": "keyword"},
+                "displayName": {"type": "keyword", "index": False},
             },
         },
     }
@@ -43,6 +31,7 @@ def get_biosample_mapping() -> dict[str, Any]:
         "mappings": {
             "properties": merge_mappings(
                 get_common_mapping(),
+                get_organization_mapping(),
                 get_biosample_specific_mapping(),
             )
         },
