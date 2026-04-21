@@ -4,7 +4,15 @@ from typing import Any
 
 from ddbj_search_converter.es.settings import INDEX_SETTINGS
 
-__all__ = ["INDEX_SETTINGS", "get_common_mapping", "merge_mappings"]
+__all__ = [
+    "INDEX_SETTINGS",
+    "get_common_mapping",
+    "get_external_link_mapping",
+    "get_grant_mapping",
+    "get_organization_mapping",
+    "get_publication_mapping",
+    "merge_mappings",
+]
 
 
 def get_common_mapping() -> dict[str, Any]:
@@ -56,6 +64,86 @@ def get_common_mapping() -> dict[str, Any]:
         "dateCreated": {"type": "date"},
         "dateModified": {"type": "date"},
         "datePublished": {"type": "date"},
+    }
+
+
+def get_organization_mapping() -> dict[str, Any]:
+    """Return the shared Organization nested mapping."""
+    return {
+        "organization": {
+            "type": "nested",
+            "properties": {
+                "name": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+                },
+                "abbreviation": {"type": "keyword"},
+                "role": {"type": "keyword"},
+                "organizationType": {"type": "keyword"},
+                "department": {"type": "keyword"},
+                "url": {"type": "keyword", "index": False},
+            },
+        },
+    }
+
+
+def get_publication_mapping() -> dict[str, Any]:
+    """Return the shared Publication nested mapping."""
+    return {
+        "publication": {
+            "type": "nested",
+            "properties": {
+                "id": {"type": "keyword"},
+                "title": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
+                },
+                "date": {"type": "keyword"},
+                "reference": {"type": "keyword"},
+                "url": {"type": "keyword", "index": False},
+                "dbType": {"type": "keyword"},
+                "status": {"type": "keyword"},
+            },
+        },
+    }
+
+
+def get_grant_mapping() -> dict[str, Any]:
+    """Return the shared Grant nested mapping.
+
+    Grant.title は Phase A §2.4 方針で text + keyword subfield にする。
+    """
+    return {
+        "grant": {
+            "type": "nested",
+            "properties": {
+                "id": {"type": "keyword"},
+                "title": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
+                },
+                "agency": {
+                    "type": "nested",
+                    "properties": {
+                        "abbreviation": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                    },
+                },
+            },
+        },
+    }
+
+
+def get_external_link_mapping() -> dict[str, Any]:
+    """Return the shared ExternalLink nested mapping."""
+    return {
+        "externalLink": {
+            "type": "nested",
+            "properties": {
+                "url": {"type": "keyword", "index": False},
+                "label": {"type": "keyword"},
+            },
+        },
     }
 
 
