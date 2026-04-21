@@ -10,7 +10,7 @@
 bioproject:status
     a owl:DatatypeProperty ;
     rdfs:label "status" ;
-    rdfs:comment "INSDC record status: live, unpublished, suppressed, or withdrawn" .
+    rdfs:comment "INSDC record status: public, private, suppressed, or withdrawn" .
 
 bioproject:properties
     a owl:ObjectProperty ;
@@ -40,27 +40,32 @@ bioproject:organization
 bioproject:organizationType
     a owl:DatatypeProperty ;
     rdfs:label "organizationType" ;
-    rdfs:comment "Type of organization, e.g. center, institute" .
+    rdfs:comment "Type of organization: institute, center, consortium, or lab" .
 
 bioproject:role
     a owl:DatatypeProperty ;
     rdfs:label "role" ;
-    rdfs:comment "Role of the organization, e.g. owner" .
+    rdfs:comment "Role of the organization: owner, participant, submitter, or broker" .
+
+bioproject:department
+    a owl:DatatypeProperty ;
+    rdfs:label "department" ;
+    rdfs:comment "Department or sub-unit within the organization" .
 
 bioproject:publication
     a owl:ObjectProperty ;
     rdfs:label "publication" ;
     rdfs:comment "Publication associated with the BioProject" .
 
-bioproject:Reference
+bioproject:reference
     a owl:DatatypeProperty ;
-    rdfs:label "Reference" ;
+    rdfs:label "reference" ;
     rdfs:comment "Publication reference identifier (e.g. PubMed ID string)" .
 
-bioproject:DbType
+bioproject:dbType
     a owl:DatatypeProperty ;
-    rdfs:label "DbType" ;
-    rdfs:comment "Publication database type, e.g. ePubmed" .
+    rdfs:label "dbType" ;
+    rdfs:comment "Publication database type: ePubmed, eDOI, ePMC, or eNotAvailable" .
 
 bioproject:grant
     a owl:ObjectProperty ;
