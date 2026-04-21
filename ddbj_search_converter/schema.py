@@ -10,9 +10,10 @@ Status = Literal["public", "private", "suppressed", "withdrawn"]
 # Accessibility
 Accessibility = Literal["public-access", "controlled-access"]
 
-# === BioProject ===
-
 EncodingFormat = Literal["JSON", "JSON-LD", "XML", "FASTQ", "SRA"]
+
+
+# === 共通型 ===
 
 
 class Distribution(BaseModel):
@@ -26,22 +27,31 @@ class Organism(BaseModel):
     name: str | None
 
 
+OrganizationType = Literal["institute", "center", "consortium", "lab"]
+OrganizationRole = Literal["owner", "participant", "submitter", "broker"]
+
+
 class Organization(BaseModel):
-    name: str | None
-    organizationType: str | None
-    role: str | None
-    url: str | None
-    abbreviation: str | None
+    name: str | None = None
+    abbreviation: str | None = None
+    role: OrganizationRole | None = None
+    organizationType: OrganizationType | None = None
+    department: str | None = None
+    url: str | None = None
+
+
+PublicationDbType = Literal["ePubmed", "eDOI", "ePMC", "eNotAvailable"]
+PublicationStatus = Literal["ePublished", "eUnpublished"]
 
 
 class Publication(BaseModel):
     id_: str | None = Field(default=None, alias="id")
-    title: str | None
-    date: str | None
-    Reference: str | None
-    url: str | None
-    DbType: str | None
-    status: str | None
+    title: str | None = None
+    date: str | None = None
+    reference: str | None = None
+    url: str | None = None
+    dbType: PublicationDbType | None = None
+    status: PublicationStatus | None = None
 
 
 class Agency(BaseModel):

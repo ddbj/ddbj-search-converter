@@ -3,7 +3,15 @@
 import pytest
 from pydantic import ValidationError
 
-from ddbj_search_converter.schema import JGA, BioProject, Distribution, Organism, Xref
+from ddbj_search_converter.schema import (
+    JGA,
+    BioProject,
+    Distribution,
+    Organism,
+    Organization,
+    Publication,
+    Xref,
+)
 
 
 class TestEncodingFormat:
@@ -207,3 +215,89 @@ class TestJGA:
         json_str = jga.model_dump_json(by_alias=True)
         assert '"type":"jga-study"' in json_str
         assert '"isPartOf":"jga"' in json_str
+
+
+class TestOrganization:
+    """Tests for Organization common type (Phase A §2.1)."""
+
+    def test_all_defaults_are_none(self) -> None:
+        org = Organization()
+        assert org.name is None
+        assert org.abbreviation is None
+        assert org.role is None
+        assert org.organizationType is None
+        assert org.department is None
+        assert org.url is None
+
+    @pytest.mark.parametrize("role", ["owner", "participant", "submitter", "broker"])
+    def test_valid_role_values(self, role: str) -> None:
+        org = Organization(role=role)  # type: ignore[arg-type]
+        assert org.role == role
+
+    @pytest.mark.parametrize("invalid_role", ["primary investigator", "OWNER", "submitterr", ""])
+    def test_invalid_role_raises(self, invalid_role: str) -> None:
+        with pytest.raises(ValidationError):
+            Organization(role=invalid_role)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("org_type", ["institute", "center", "consortium", "lab"])
+    def test_valid_organization_type_values(self, org_type: str) -> None:
+        org = Organization(organizationType=org_type)  # type: ignore[arg-type]
+        assert org.organizationType == org_type
+
+    @pytest.mark.parametrize("invalid_type", ["university", "company", "INSTITUTE"])
+    def test_invalid_organization_type_raises(self, invalid_type: str) -> None:
+        with pytest.raises(ValidationError):
+            Organization(organizationType=invalid_type)  # type: ignore[arg-type]
+
+
+class TestPublication:
+    """Tests for Publication common type (Phase A §2.3)."""
+
+    def test_all_defaults_are_none(self) -> None:
+        pub = Publication()
+        assert pub.id_ is None
+        assert pub.title is None
+        assert pub.date is None
+        assert pub.reference is None
+        assert pub.url is None
+        assert pub.dbType is None
+        assert pub.status is None
+
+    @pytest.mark.parametrize("dbtype", ["ePubmed", "eDOI", "ePMC", "eNotAvailable"])
+    def test_valid_dbtype_values(self, dbtype: str) -> None:
+        pub = Publication(dbType=dbtype)  # type: ignore[arg-type]
+        assert pub.dbType == dbtype
+
+    @pytest.mark.parametrize("invalid_dbtype", ["PUBMED", "pubmed", "PubMed", "doi"])
+    def test_invalid_dbtype_raises(self, invalid_dbtype: str) -> None:
+        """大文字含む非正規値はすべて ValidationError (parse 側で正規化すること)."""
+        with pytest.raises(ValidationError):
+            Publication(dbType=invalid_dbtype)  # type: ignore[arg-type]
+
+    @pytest.mark.parametrize("status", ["ePublished", "eUnpublished"])
+    def test_valid_status_values(self, status: str) -> None:
+        pub = Publication(status=status)  # type: ignore[arg-type]
+        assert pub.status == status
+
+    @pytest.mark.parametrize("invalid_status", ["published", "unpublished", "preprint"])
+    def test_invalid_status_raises(self, invalid_status: str) -> None:
+        with pytest.raises(ValidationError):
+            Publication(status=invalid_status)  # type: ignore[arg-type]
+
+    def test_reference_field_name(self) -> None:
+        pub = Publication(reference="Nature 2024")
+        assert pub.reference == "Nature 2024"
+
+    def test_dbtype_field_name(self) -> None:
+        pub = Publication(dbType="ePubmed")
+        assert pub.dbType == "ePubmed"
+
+    def test_id_alias_in_input_and_output(self) -> None:
+        pub = Publication(id="12345", dbType="ePubmed")
+        assert pub.id_ == "12345"
+        dumped = pub.model_dump(by_alias=True)
+        assert dumped["id"] == "12345"
+        assert dumped["dbType"] == "ePubmed"
+        assert "id_" not in dumped
+        assert "Reference" not in dumped
+        assert "DbType" not in dumped

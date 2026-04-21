@@ -270,7 +270,7 @@ class TestParsePublication:
         }
         pubs = parse_publication(project)
         assert len(pubs) == 1
-        assert pubs[0].DbType == "ePubmed"
+        assert pubs[0].dbType == "ePubmed"
 
 
 class TestParseGrant:

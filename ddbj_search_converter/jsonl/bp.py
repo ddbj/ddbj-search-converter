@@ -4,7 +4,7 @@ import argparse
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 from ddbj_search_converter.config import (
     BP_BASE_DIR_NAME,
@@ -32,7 +32,11 @@ from ddbj_search_converter.schema import (
     Grant,
     Organism,
     Organization,
+    OrganizationRole,
+    OrganizationType,
     Publication,
+    PublicationDbType,
+    PublicationStatus,
     Status,
     Xref,
 )
@@ -40,6 +44,12 @@ from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
+
+# Literal safeguard: 想定外値は None fallback として扱う
+_VALID_ORG_TYPES: frozenset[str] = frozenset(get_args(OrganizationType))
+_VALID_ORG_ROLES: frozenset[str] = frozenset(get_args(OrganizationRole))
+_VALID_PUB_DB_TYPES: frozenset[str] = frozenset(get_args(PublicationDbType))
+_VALID_PUB_STATUSES: frozenset[str] = frozenset(get_args(PublicationStatus))
 
 EXTERNAL_LINK_MAP = {
     "GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
@@ -145,6 +155,10 @@ def parse_organization(project: dict[str, Any], accession: str = "") -> list[Org
             org_type = item.get("type")
             role = item.get("role")
             url = item.get("url")
+            if org_type is not None and org_type not in _VALID_ORG_TYPES:
+                org_type = None
+            if role is not None and role not in _VALID_ORG_ROLES:
+                role = None
             if isinstance(name, str):
                 organizations.append(
                     Organization(
@@ -199,15 +213,20 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
             elif dbtype is not None and dbtype.isdigit():
                 dbtype = "ePubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+            if dbtype is not None and dbtype not in _VALID_PUB_DB_TYPES:
+                dbtype = None
+            status = item.get("status")
+            if status is not None and status not in _VALID_PUB_STATUSES:
+                status = None
             publications.append(
                 Publication(
                     title=(item.get("StructuredCitation") or {}).get("Title"),
                     date=item.get("date"),
-                    Reference=item.get("Reference"),
+                    reference=item.get("Reference"),
                     id=id_,
                     url=publication_url,
-                    DbType=dbtype,
-                    status=item.get("status"),
+                    dbType=dbtype,
+                    status=status,
                 )
             )
     except Exception as e:
