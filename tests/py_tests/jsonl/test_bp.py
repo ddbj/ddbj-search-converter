@@ -11,6 +11,7 @@ from ddbj_search_converter.jsonl.bp import (
     parse_description,
     parse_external_link,
     parse_grant,
+    parse_name,
     parse_object_type,
     parse_organism,
     parse_organization,
@@ -129,6 +130,39 @@ class TestBug9TitleDict:
         project["Project"]["ProjectDescr"]["Title"] = {"content": "Real Title", "lang": "en"}
         result = parse_title(project)
         assert result == "Real Title"
+
+
+class TestParseName:
+    """Tests for parse_name function (§4.11 L3)."""
+
+    def test_name_str(self) -> None:
+        """ProjectDescr.Name が文字列の場合、そのまま返す。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Name"] = "Borreliella burgdorferi B31"
+        assert parse_name(project) == "Borreliella burgdorferi B31"
+
+    def test_no_name(self) -> None:
+        """ProjectDescr.Name キーが無い場合 None（DDBJ XML の通常パターン）。"""
+        project = _make_project()
+        assert parse_name(project) is None
+
+    def test_none_name(self) -> None:
+        """ProjectDescr.Name が None 明示の場合 None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Name"] = None
+        assert parse_name(project) is None
+
+    def test_dict_name(self) -> None:
+        """Name が dict ({'content': ...}) の場合、content を返す。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Name"] = {"content": "Real Name", "abbr": "RN"}
+        assert parse_name(project) == "Real Name"
+
+    def test_dict_name_empty_content(self) -> None:
+        """Name dict の content が None の場合 None を返す。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Name"] = {"content": None}
+        assert parse_name(project) is None
 
 
 class TestParseDescription:
@@ -663,3 +697,16 @@ class TestXmlEntryToBpInstanceProperties:
         archive_id = bp.properties["Project"]["Project"]["ProjectID"]["ArchiveID"]
         assert isinstance(archive_id, dict)
         assert archive_id["accession"] == "PRJDB1"
+
+    def test_name_is_set_from_project_descr_name(self) -> None:
+        """§4.11 L3: xml_entry_to_bp_instance が ProjectDescr.Name を bp.name に詰める。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Name"] = "Test Organism"
+        bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
+        assert bp.name == "Test Organism"
+
+    def test_name_is_none_when_project_descr_name_missing(self) -> None:
+        """ProjectDescr.Name が無い場合 bp.name は None。"""
+        project = _make_project()
+        bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
+        assert bp.name is None

@@ -125,6 +125,25 @@ def parse_title(project: dict[str, Any], accession: str = "") -> str | None:
         return None
 
 
+def parse_name(project: dict[str, Any], accession: str = "") -> str | None:
+    """BioProject から name を抽出する。
+
+    取得元: Project.ProjectDescr.Name (学名/株名、例 "Borreliella burgdorferi B31")。
+    Title と意味論的に別物 (§4.11 L3)。
+    """
+    try:
+        name = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Name")
+        if name is None:
+            return None
+        if isinstance(name, dict):
+            content = name.get("content")
+            return str(content) if content is not None else None
+        return str(name)
+    except Exception as e:
+        log_warn(f"failed to parse name: {e}", accession=accession)
+        return None
+
+
 def parse_description(project: dict[str, Any], accession: str = "") -> str | None:
     """BioProject から description を抽出する。"""
     try:
@@ -210,6 +229,9 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
                     publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{id_}/"
                 elif id_ is not None and id_.startswith("10."):
                     publication_url = f"https://doi.org/{id_}"
+            elif dbtype == "eNotAvailable":
+                # §4.8.2: 論文 ID 取得不可を明示するケース。url は None のまま。
+                publication_url = None
             elif dbtype is not None and dbtype.isdigit():
                 dbtype = "ePubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
@@ -526,7 +548,7 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
         isPartOf="BioProject",
         type="bioproject",
         objectType=parse_object_type(project),
-        name=None,
+        name=parse_name(project, accession),
         url=f"{SEARCH_BASE_URL}/search/entry/bioproject/{accession}",
         organism=parse_organism(project, is_ddbj, accession),
         title=parse_title(project, accession),
