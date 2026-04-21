@@ -161,6 +161,50 @@ class BioSample(BaseModel):
 
 # === SRA ===
 
+LibrarySource = Literal[
+    "GENOMIC",
+    "METAGENOMIC",
+    "TRANSCRIPTOMIC",
+    "VIRAL RNA",
+    "OTHER",
+    "METATRANSCRIPTOMIC",
+    "TRANSCRIPTOMIC SINGLE CELL",
+    "GENOMIC SINGLE CELL",
+    "SYNTHETIC",
+]
+
+LibraryLayout = Literal["PAIRED", "SINGLE"]
+
+Platform = Literal[
+    "ILLUMINA",
+    "OXFORD_NANOPORE",
+    "PACBIO_SMRT",
+    "ION_TORRENT",
+    "LS454",
+    "CAPILLARY",
+    "DNBSEQ",
+    "BGISEQ",
+    "ELEMENT",
+    "ABI_SOLID",
+    "COMPLETE_GENOMICS",
+    "HELICOS",
+    "ULTIMA",
+    "GENEMIND",
+    "VELA_DIAGNOSTICS",
+    "TAPESTRI",
+    "GENAPSYS",
+    "SINGULAR_GENOMICS",
+    "GENEUS_TECH",
+    "SALUS",
+]
+
+AnalysisType = Literal[
+    "DE_NOVO_ASSEMBLY",
+    "REFERENCE_ALIGNMENT",
+    "ABUNDANCE_MEASUREMENT",
+    "SEQUENCE_ANNOTATION",
+]
+
 
 class SRA(BaseModel):
     identifier: str
@@ -175,6 +219,15 @@ class SRA(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
+    organization: list[Organization]
+    publication: list[Publication]
+    libraryStrategy: list[str]
+    librarySource: list[LibrarySource]
+    librarySelection: list[str]
+    libraryLayout: LibraryLayout | None
+    platform: Platform | None
+    instrumentModel: list[str]
+    analysisType: AnalysisType | None
     dbXrefs: list[Xref]
     sameAs: list[Xref]
     status: Status

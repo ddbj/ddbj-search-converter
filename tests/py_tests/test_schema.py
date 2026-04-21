@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from ddbj_search_converter.schema import (
     JGA,
+    SRA,
     BioProject,
     BioSample,
     BioSamplePackage,
@@ -390,3 +391,210 @@ class TestBioSample:
         bs = BioSample(**kwargs)
         assert "attributes" not in BioSample.model_fields
         assert not hasattr(bs, "attributes")
+
+
+def _make_minimal_sra_kwargs() -> dict:
+    return dict(
+        identifier="DRX000001",
+        properties={},
+        distribution=[],
+        isPartOf="sra",
+        type="sra-experiment",
+        name=None,
+        url="https://example.com",
+        organism=None,
+        title=None,
+        description=None,
+        organization=[],
+        publication=[],
+        libraryStrategy=[],
+        librarySource=[],
+        librarySelection=[],
+        libraryLayout=None,
+        platform=None,
+        instrumentModel=[],
+        analysisType=None,
+        dbXrefs=[],
+        sameAs=[],
+        status="public",
+        accessibility="public-access",
+        dateCreated=None,
+        dateModified=None,
+        datePublished=None,
+    )
+
+
+class TestLibrarySourceLiteral:
+    """Tests for LibrarySource Literal (Phase A §3.3, §4.9.2)."""
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "GENOMIC",
+            "METAGENOMIC",
+            "TRANSCRIPTOMIC",
+            "VIRAL RNA",
+            "OTHER",
+            "METATRANSCRIPTOMIC",
+            "TRANSCRIPTOMIC SINGLE CELL",
+            "GENOMIC SINGLE CELL",
+            "SYNTHETIC",
+        ],
+    )
+    def test_all_9_values_accepted(self, value: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["librarySource"] = [value]
+        sra = SRA(**kwargs)
+        assert sra.librarySource == [value]
+
+    @pytest.mark.parametrize("invalid", ["genomic", "GENOMIC ", "OTHER_MIX", ""])
+    def test_invalid_values_rejected(self, invalid: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["librarySource"] = [invalid]
+        with pytest.raises(ValidationError):
+            SRA(**kwargs)
+
+
+class TestLibraryLayoutLiteral:
+    """Tests for LibraryLayout Literal (Phase A §3.3, §4.9.1)."""
+
+    @pytest.mark.parametrize("value", ["PAIRED", "SINGLE"])
+    def test_valid_values(self, value: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["libraryLayout"] = value
+        sra = SRA(**kwargs)
+        assert sra.libraryLayout == value
+
+    @pytest.mark.parametrize("invalid", ["paired", "single", "MULTI", ""])
+    def test_invalid_values_rejected(self, invalid: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["libraryLayout"] = invalid
+        with pytest.raises(ValidationError):
+            SRA(**kwargs)
+
+
+class TestPlatformLiteral:
+    """Tests for Platform Literal (Phase A §3.3, §4.9.3 の 20 値全量)."""
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "ILLUMINA",
+            "OXFORD_NANOPORE",
+            "PACBIO_SMRT",
+            "ION_TORRENT",
+            "LS454",
+            "CAPILLARY",
+            "DNBSEQ",
+            "BGISEQ",
+            "ELEMENT",
+            "ABI_SOLID",
+            "COMPLETE_GENOMICS",
+            "HELICOS",
+            "ULTIMA",
+            "GENEMIND",
+            "VELA_DIAGNOSTICS",
+            "TAPESTRI",
+            "GENAPSYS",
+            "SINGULAR_GENOMICS",
+            "GENEUS_TECH",
+            "SALUS",
+        ],
+    )
+    def test_all_20_values_accepted(self, value: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["platform"] = value
+        sra = SRA(**kwargs)
+        assert sra.platform == value
+
+    @pytest.mark.parametrize("invalid", ["illumina", "Illumina", "NOVEL_VENDOR", ""])
+    def test_invalid_values_rejected(self, invalid: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["platform"] = invalid
+        with pytest.raises(ValidationError):
+            SRA(**kwargs)
+
+
+class TestAnalysisTypeLiteral:
+    """Tests for AnalysisType Literal (Phase A §3.3, §4.9.3)."""
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "DE_NOVO_ASSEMBLY",
+            "REFERENCE_ALIGNMENT",
+            "ABUNDANCE_MEASUREMENT",
+            "SEQUENCE_ANNOTATION",
+        ],
+    )
+    def test_valid_values(self, value: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["analysisType"] = value
+        sra = SRA(**kwargs)
+        assert sra.analysisType == value
+
+    @pytest.mark.parametrize("invalid", ["de_novo_assembly", "VARIANT_CALLING", ""])
+    def test_invalid_values_rejected(self, invalid: str) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["analysisType"] = invalid
+        with pytest.raises(ValidationError):
+            SRA(**kwargs)
+
+
+class TestSra:
+    """Tests for SRA model (Phase A §3.3 確定形)."""
+
+    def test_minimal_instance(self) -> None:
+        sra = SRA(**_make_minimal_sra_kwargs())
+        assert sra.identifier == "DRX000001"
+        assert sra.organization == []
+        assert sra.publication == []
+        assert sra.libraryStrategy == []
+        assert sra.librarySource == []
+        assert sra.librarySelection == []
+        assert sra.libraryLayout is None
+        assert sra.platform is None
+        assert sra.instrumentModel == []
+        assert sra.analysisType is None
+
+    def test_organization_accepts_list(self) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["organization"] = [Organization(name="NIID")]
+        sra = SRA(**kwargs)
+        assert sra.organization[0].name == "NIID"
+        assert sra.organization[0].role is None
+        assert sra.organization[0].organizationType is None
+
+    def test_publication_accepts_list(self) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["publication"] = [Publication(id="12345", dbType="ePubmed")]
+        sra = SRA(**kwargs)
+        assert sra.publication[0].id_ == "12345"
+        assert sra.publication[0].dbType == "ePubmed"
+
+    def test_experiment_technical_metadata(self) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs.update(
+            {
+                "libraryStrategy": ["WGS"],
+                "librarySource": ["GENOMIC"],
+                "librarySelection": ["RANDOM"],
+                "libraryLayout": "PAIRED",
+                "platform": "ILLUMINA",
+                "instrumentModel": ["Illumina NovaSeq 6000"],
+            }
+        )
+        sra = SRA(**kwargs)
+        assert sra.libraryStrategy == ["WGS"]
+        assert sra.librarySource == ["GENOMIC"]
+        assert sra.librarySelection == ["RANDOM"]
+        assert sra.libraryLayout == "PAIRED"
+        assert sra.platform == "ILLUMINA"
+        assert sra.instrumentModel == ["Illumina NovaSeq 6000"]
+
+    def test_analysis_type_single(self) -> None:
+        kwargs = _make_minimal_sra_kwargs()
+        kwargs["type"] = "sra-analysis"
+        kwargs["analysisType"] = "DE_NOVO_ASSEMBLY"
+        sra = SRA(**kwargs)
+        assert sra.analysisType == "DE_NOVO_ASSEMBLY"

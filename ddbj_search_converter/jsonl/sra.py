@@ -17,7 +17,7 @@ import sys
 from collections.abc import Callable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast, get_args
 
 from ddbj_search_converter.config import (
     JSONL_DIR_NAME,
@@ -34,7 +34,19 @@ from ddbj_search_converter.jsonl.distribution import make_sra_distribution
 from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
-from ddbj_search_converter.schema import SRA, Accessibility, Organism, Status, XrefType
+from ddbj_search_converter.schema import (
+    SRA,
+    Accessibility,
+    AnalysisType,
+    LibraryLayout,
+    LibrarySource,
+    Organism,
+    Organization,
+    Platform,
+    Publication,
+    Status,
+    XrefType,
+)
 from ddbj_search_converter.sra.tar_reader import SraXmlType, TarXMLReader, get_dra_tar_path, get_ncbi_tar_path
 from ddbj_search_converter.sra_accessions_tab import (
     SourceKind,
@@ -46,6 +58,11 @@ from ddbj_search_converter.xml_utils import parse_xml
 
 DEFAULT_BATCH_SIZE = 5000
 DEFAULT_PARALLEL_NUM = 8
+
+_VALID_LIBRARY_SOURCES: frozenset[str] = frozenset(get_args(LibrarySource))
+_VALID_LIBRARY_LAYOUTS: frozenset[str] = frozenset(get_args(LibraryLayout))
+_VALID_PLATFORMS: frozenset[str] = frozenset(get_args(Platform))
+_VALID_ANALYSIS_TYPES: frozenset[str] = frozenset(get_args(AnalysisType))
 
 # XML types
 XML_TYPES: list[SraXmlType] = ["submission", "study", "experiment", "run", "sample", "analysis"]
@@ -161,7 +178,11 @@ def parse_submission(
     xml_bytes: bytes,
     accession: str,
 ) -> dict[str, Any] | None:
-    """submission XML をパースする。"""
+    """submission XML をパースする。
+
+    §4.11 L1: DRA / NCBI SRA の submission は properties に `SUBMISSION` 直下を持つ
+    (他 type は `{TYPE}_SET.{TYPE}` の 2 階層)。本 parse 関数はその仕様を踏襲する。
+    """
     try:
         parsed = parse_xml(xml_bytes)
         submission = parsed.get("SUBMISSION")
@@ -171,9 +192,11 @@ def parse_submission(
         return {
             "accession": submission.get("accession"),
             "title": _get_text(submission, "TITLE"),
-            "description": submission.get("submission_comment") or None,
+            "description": _parse_submission_description(submission),
             "properties": parsed,
             "submission_date": submission.get("submission_date"),
+            "organization": _parse_organization_from_center_name(submission),
+            "publication": _parse_publications(submission, "SUBMISSION_LINKS", "SUBMISSION_LINK"),
         }
     except Exception as e:
         log_warn(f"failed to parse submission xml: {e}", accession=accession)
@@ -200,6 +223,8 @@ def parse_study(
                     "description": _get_text(descriptor, "STUDY_ABSTRACT")
                     or _get_text(descriptor, "STUDY_DESCRIPTION"),
                     "properties": {"STUDY_SET": {"STUDY": study}},
+                    "organization": _parse_organization_from_center_name(study),
+                    "publication": _parse_publications(study, "STUDY_LINKS", "STUDY_LINK"),
                 }
             )
     except Exception as e:
@@ -219,6 +244,7 @@ def parse_experiment(
 
         for exp in experiments:
             design = exp.get("DESIGN") or {}
+            library_fields = _parse_library(exp)
             results.append(
                 {
                     "accession": exp.get("accession"),
@@ -226,6 +252,9 @@ def parse_experiment(
                     "title": _get_text(exp, "TITLE"),
                     "description": _get_text(design, "DESIGN_DESCRIPTION"),
                     "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
+                    "organization": _parse_organization_from_center_name(exp),
+                    "publication": _parse_publications(exp, "EXPERIMENT_LINKS", "EXPERIMENT_LINK"),
+                    **library_fields,
                 }
             )
     except Exception as e:
@@ -249,6 +278,8 @@ def parse_run(
                 "title": _get_text(run, "TITLE"),
                 "description": None,
                 "properties": {"RUN_SET": {"RUN": run}},
+                "organization": _parse_organization_from_center_name(run),
+                "publication": _parse_publications(run, "RUN_LINKS", "RUN_LINK"),
             }
             for run in runs
         ]
@@ -287,6 +318,8 @@ def parse_sample(
                     "description": _get_text(sample, "DESCRIPTION"),
                     "organism": organism,
                     "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
+                    "organization": _parse_organization_from_center_name(sample),
+                    "publication": _parse_publications(sample, "SAMPLE_LINKS", "SAMPLE_LINK"),
                 }
             )
     except Exception as e:
@@ -310,6 +343,9 @@ def parse_analysis(
                 "title": _get_text(analysis, "TITLE"),
                 "description": _get_text(analysis, "DESCRIPTION"),
                 "properties": {"ANALYSIS_SET": {"ANALYSIS": analysis}},
+                "organization": _parse_organization_from_center_name(analysis),
+                "publication": _parse_publications(analysis, "ANALYSIS_LINKS", "ANALYSIS_LINK"),
+                "analysisType": _parse_analysis_type(analysis),
             }
             for analysis in analyses
         ]
@@ -317,6 +353,163 @@ def parse_analysis(
         log_warn(f"failed to parse analysis xml: {e}", accession=accession)
 
     return []
+
+
+def _parse_organization_from_center_name(entry: Any) -> list[Organization]:
+    """SRA entry の `@center_name` 属性から Organization を抽出する。
+
+    xmltodict 正規化後は prefix 無しの dict key "center_name" に展開される。
+    role / organizationType / abbreviation / department / url は XML から取れないため常に None。
+    空文字 / 非 str / 非 dict 入力は空 list を返す。
+
+    §4.11 L7 (CP2 持ち越し): submission の lab_name / broker_name の
+    Organization(role="broker") merge は本実装のスコープ外。
+    """
+    if not isinstance(entry, dict):
+        return []
+    center_name = entry.get("center_name")
+    if not isinstance(center_name, str):
+        return []
+    stripped = center_name.strip()
+    if not stripped:
+        return []
+    return [Organization(name=stripped)]
+
+
+def _parse_publications(
+    entry: Any,
+    links_key: str,
+    link_key: str,
+) -> list[Publication]:
+    """`*_LINKS/*_LINK/XREF_LINK` から Publication のリストを抽出する。
+
+    §4.11 L8: XREF_LINK.DB の大小文字揺れ (`pubmed` / `PUBMED` / `PubMed` / `Pubmed`) を
+    `lower().strip()` で正規化し、`pubmed` のみを Publication(dbType="ePubmed") として詰める。
+    `bioproject` / `gds` / `geo` / `biosample` / `omim` / `nuccore` / `ENA-*` 等は dbXrefs 系任せ。
+
+    Args:
+        entry: SRA entry dict (SUBMISSION / STUDY / EXPERIMENT / RUN / SAMPLE / ANALYSIS)
+        links_key: e.g. "STUDY_LINKS"
+        link_key: e.g. "STUDY_LINK"
+    """
+    publications: list[Publication] = []
+    if not isinstance(entry, dict):
+        return publications
+    links_obj = entry.get(links_key)
+    if not isinstance(links_obj, dict):
+        return publications
+    link_obj = links_obj.get(link_key)
+    if link_obj is None:
+        return publications
+    link_list = link_obj if isinstance(link_obj, list) else [link_obj]
+    for link in link_list:
+        if not isinstance(link, dict):
+            continue
+        xref = link.get("XREF_LINK")
+        if not isinstance(xref, dict):
+            continue
+        db = xref.get("DB")
+        pub_id = xref.get("ID")
+        if not isinstance(db, str) or not isinstance(pub_id, str):
+            continue
+        db_norm = db.strip().lower()
+        pub_id_norm = pub_id.strip()
+        if not db_norm or not pub_id_norm:
+            continue
+        if db_norm != "pubmed":
+            continue
+        publications.append(
+            Publication(
+                id=pub_id_norm,
+                dbType="ePubmed",
+                url=f"https://pubmed.ncbi.nlm.nih.gov/{pub_id_norm}/",
+            )
+        )
+    return publications
+
+
+def _parse_library(experiment: Any) -> dict[str, Any]:
+    """EXPERIMENT から library / platform 系を抽出する (experiment 専用)。
+
+    §4.9.1: LIBRARY_LAYOUT は {"PAIRED": {...}} or {"SINGLE": {...}} の親キー取得で単値化。
+    §4.9.2: LIBRARY_SOURCE は 9 値完全 controlled (Literal safeguard、想定外値は除外)。
+    §4.9.3: PLATFORM は {"ILLUMINA": {...}} 等 20 値完全 controlled の親キー取得。
+    §4.11 L9: lxml Comment quirk は xml_utils._element_to_dict で skip 済だが、
+              valid_keys フィルタで想定外キー残留を安全側に None fallback する二重防御。
+    """
+    result: dict[str, Any] = {
+        "libraryStrategy": [],
+        "librarySource": [],
+        "librarySelection": [],
+        "libraryLayout": None,
+        "platform": None,
+        "instrumentModel": [],
+    }
+    if not isinstance(experiment, dict):
+        return result
+    design = experiment.get("DESIGN")
+    if isinstance(design, dict):
+        descriptor = design.get("LIBRARY_DESCRIPTOR")
+        if isinstance(descriptor, dict):
+            strategy = _get_text(descriptor, "LIBRARY_STRATEGY")
+            if strategy:
+                result["libraryStrategy"] = [strategy]
+            source = _get_text(descriptor, "LIBRARY_SOURCE")
+            if source is not None and source in _VALID_LIBRARY_SOURCES:
+                result["librarySource"] = [source]
+            selection = _get_text(descriptor, "LIBRARY_SELECTION")
+            if selection:
+                result["librarySelection"] = [selection]
+            layout_obj = descriptor.get("LIBRARY_LAYOUT")
+            if isinstance(layout_obj, dict):
+                valid_layouts = [k for k in layout_obj if k in _VALID_LIBRARY_LAYOUTS]
+                if len(valid_layouts) == 1:
+                    result["libraryLayout"] = valid_layouts[0]
+    platform_obj = experiment.get("PLATFORM")
+    if isinstance(platform_obj, dict):
+        valid_platforms = [k for k in platform_obj if k in _VALID_PLATFORMS]
+        if len(valid_platforms) == 1:
+            platform_key = valid_platforms[0]
+            result["platform"] = platform_key
+            inner = platform_obj.get(platform_key)
+            if isinstance(inner, dict):
+                model = _get_text(inner, "INSTRUMENT_MODEL")
+                if model:
+                    result["instrumentModel"] = [model]
+    return result
+
+
+def _parse_analysis_type(analysis: Any) -> AnalysisType | None:
+    """ANALYSIS_TYPE 親キーを AnalysisType Literal に正規化する (analysis 専用)。
+
+    §4.9.3: 4 値完全 controlled
+    (DE_NOVO_ASSEMBLY / REFERENCE_ALIGNMENT / ABUNDANCE_MEASUREMENT / SEQUENCE_ANNOTATION)。
+    想定外値 / 複数キー / §4.11 L9 の cyfunction 残留は None fallback。
+    """
+    if not isinstance(analysis, dict):
+        return None
+    at_obj = analysis.get("ANALYSIS_TYPE")
+    if not isinstance(at_obj, dict):
+        return None
+    valid_keys = [k for k in at_obj if k in _VALID_ANALYSIS_TYPES]
+    if len(valid_keys) == 1:
+        return cast(AnalysisType, valid_keys[0])
+    return None
+
+
+def _parse_submission_description(submission: Any) -> str | None:
+    """SUBMISSION.@submission_comment を description 用に正規化する (submission 専用)。
+
+    §4.9.5: 非空率 0.42% (DRA) / 3.4% (NCBI)、99% が 100 文字未満の短文。
+    独立フィールド化はせず description に統合する (§3.3 spec)。
+    strip() して空 / 空白のみは None に落とす。
+    """
+    if not isinstance(submission, dict):
+        return None
+    comment = submission.get("submission_comment")
+    if not isinstance(comment, str):
+        return None
+    return comment.strip() or None
 
 
 # === Model creation ===
@@ -398,6 +591,15 @@ def create_sra_entry(
         organism=parsed.get("organism"),
         title=parsed.get("title"),
         description=parsed.get("description"),
+        organization=parsed.get("organization") or [],
+        publication=parsed.get("publication") or [],
+        libraryStrategy=parsed.get("libraryStrategy") or [],
+        librarySource=parsed.get("librarySource") or [],
+        librarySelection=parsed.get("librarySelection") or [],
+        libraryLayout=parsed.get("libraryLayout"),
+        platform=parsed.get("platform"),
+        instrumentModel=parsed.get("instrumentModel") or [],
+        analysisType=parsed.get("analysisType"),
         dbXrefs=[],
         sameAs=[],
         status=status,

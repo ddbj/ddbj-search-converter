@@ -10,7 +10,7 @@
 sra:status
     a owl:DatatypeProperty ;
     rdfs:label "status" ;
-    rdfs:comment "INSDC record status: live, unpublished, suppressed, or withdrawn" .
+    rdfs:comment "INSDC record status: public, private, suppressed, or withdrawn" .
 
 sra:properties
     a owl:ObjectProperty ;
@@ -26,3 +26,58 @@ sra:dbXrefs
     a owl:ObjectProperty ;
     rdfs:label "dbXrefs" ;
     rdfs:comment "Cross-references to related entries in other INSDC databases" .
+
+sra:organization
+    a owl:ObjectProperty ;
+    rdfs:label "organization" ;
+    rdfs:comment "Submitting organization derived from @center_name; role and organizationType are always null" .
+
+sra:publication
+    a owl:ObjectProperty ;
+    rdfs:label "publication" ;
+    rdfs:comment "Publication derived from *_LINKS/XREF_LINK where DB is pubmed (case-insensitive, see §4.11 L8)" .
+
+sra:reference
+    a owl:DatatypeProperty ;
+    rdfs:label "reference" ;
+    rdfs:comment "Publication reference identifier within the shared Publication type" .
+
+sra:dbType
+    a owl:DatatypeProperty ;
+    rdfs:label "dbType" ;
+    rdfs:comment "Publication database type: ePubmed, eDOI, ePMC, or eNotAvailable (SRA populates ePubmed only)" .
+
+sra:libraryStrategy
+    a owl:DatatypeProperty ;
+    rdfs:label "libraryStrategy" ;
+    rdfs:comment "INSDC LIBRARY_STRATEGY (experiment only; controlled vocabulary with 43+ values such as WGS, AMPLICON, RNA-Seq)" .
+
+sra:librarySource
+    a owl:DatatypeProperty ;
+    rdfs:label "librarySource" ;
+    rdfs:comment "INSDC LIBRARY_SOURCE (experiment only; 9 controlled values: GENOMIC, METAGENOMIC, TRANSCRIPTOMIC, VIRAL RNA, OTHER, METATRANSCRIPTOMIC, TRANSCRIPTOMIC SINGLE CELL, GENOMIC SINGLE CELL, SYNTHETIC)" .
+
+sra:librarySelection
+    a owl:DatatypeProperty ;
+    rdfs:label "librarySelection" ;
+    rdfs:comment "INSDC LIBRARY_SELECTION (experiment only; controlled vocabulary with 31+ values such as PCR, RANDOM, cDNA)" .
+
+sra:libraryLayout
+    a owl:DatatypeProperty ;
+    rdfs:label "libraryLayout" ;
+    rdfs:comment "INSDC LIBRARY_LAYOUT (experiment only; 2 values: PAIRED or SINGLE)" .
+
+sra:platform
+    a owl:DatatypeProperty ;
+    rdfs:label "platform" ;
+    rdfs:comment "INSDC PLATFORM (experiment only; 20 controlled values: ILLUMINA, OXFORD_NANOPORE, PACBIO_SMRT, ION_TORRENT, LS454, CAPILLARY, DNBSEQ, BGISEQ, ELEMENT, ABI_SOLID, COMPLETE_GENOMICS, HELICOS, ULTIMA, GENEMIND, VELA_DIAGNOSTICS, TAPESTRI, GENAPSYS, SINGULAR_GENOMICS, GENEUS_TECH, SALUS)" .
+
+sra:instrumentModel
+    a owl:DatatypeProperty ;
+    rdfs:label "instrumentModel" ;
+    rdfs:comment "INSDC INSTRUMENT_MODEL (experiment only; natural-language strings such as 'Illumina NovaSeq 6000')" .
+
+sra:analysisType
+    a owl:DatatypeProperty ;
+    rdfs:label "analysisType" ;
+    rdfs:comment "INSDC ANALYSIS_TYPE parent key (analysis only; 4 controlled values: DE_NOVO_ASSEMBLY, REFERENCE_ALIGNMENT, ABUNDANCE_MEASUREMENT, SEQUENCE_ANNOTATION)" .

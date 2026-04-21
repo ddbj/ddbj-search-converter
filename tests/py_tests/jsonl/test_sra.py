@@ -15,13 +15,20 @@ from ddbj_search_converter.jsonl.sra import (
     XML_TYPES,
     _normalize_accessibility,
     _normalize_status,
+    _parse_analysis_type,
+    _parse_library,
+    _parse_organization_from_center_name,
+    _parse_publications,
+    _parse_submission_description,
     create_sra_entry,
+    parse_analysis,
+    parse_experiment,
     parse_study,
     parse_submission,
     process_submission_xml,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
-from ddbj_search_converter.schema import SRA
+from ddbj_search_converter.schema import SRA, Organization, Publication
 from ddbj_search_converter.sra.tar_reader import SraXmlType
 
 
@@ -464,3 +471,305 @@ class TestCreateSraEntryProperties:
         study = sra.properties["STUDY_SET"]["STUDY"]
         assert isinstance(study["DESCRIPTOR"], dict)
         assert study["DESCRIPTOR"]["STUDY_TITLE"] == "Title"
+
+
+class TestParseOrganizationFromCenterName:
+    """_parse_organization_from_center_name (§3.3 SRA organization from @center_name)."""
+
+    def test_center_name_present(self) -> None:
+        entry = {"accession": "DRA000072", "center_name": "NIID"}
+        orgs = _parse_organization_from_center_name(entry)
+        assert orgs == [Organization(name="NIID")]
+        assert orgs[0].role is None
+        assert orgs[0].organizationType is None
+
+    def test_center_name_trimmed(self) -> None:
+        entry = {"center_name": "  NIID  "}
+        orgs = _parse_organization_from_center_name(entry)
+        assert orgs == [Organization(name="NIID")]
+
+    def test_center_name_missing_returns_empty(self) -> None:
+        assert _parse_organization_from_center_name({"accession": "X"}) == []
+
+    def test_center_name_empty_string_returns_empty(self) -> None:
+        assert _parse_organization_from_center_name({"center_name": ""}) == []
+        assert _parse_organization_from_center_name({"center_name": "   "}) == []
+
+    def test_non_dict_input_returns_empty(self) -> None:
+        assert _parse_organization_from_center_name(None) == []
+        assert _parse_organization_from_center_name([]) == []
+        assert _parse_organization_from_center_name("NIID") == []
+
+
+class TestL8XrefLinkDbNormalization:
+    """§4.11 L8: XREF_LINK.DB の lower() 正規化 + pubmed のみ Publication 化。"""
+
+    @pytest.mark.parametrize("db_value", ["pubmed", "PUBMED", "PubMed", "Pubmed", "  PubMed  "])
+    def test_all_case_variants_normalized_to_pubmed(self, db_value: str) -> None:
+        entry = {"STUDY_LINKS": {"STUDY_LINK": {"XREF_LINK": {"DB": db_value, "ID": "12345"}}}}
+        pubs = _parse_publications(entry, "STUDY_LINKS", "STUDY_LINK")
+        assert len(pubs) == 1
+        assert pubs[0].id_ == "12345"
+        assert pubs[0].dbType == "ePubmed"
+        assert pubs[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
+
+    def test_bioproject_db_not_included(self) -> None:
+        """§4.9.4: bioproject は publication に詰めない (dbXrefs 系扱い)。"""
+        entry = {"SAMPLE_LINKS": {"SAMPLE_LINK": {"XREF_LINK": {"DB": "bioproject", "ID": "PRJNA12345"}}}}
+        assert _parse_publications(entry, "SAMPLE_LINKS", "SAMPLE_LINK") == []
+
+    @pytest.mark.parametrize("db_value", ["gds", "geo", "omim", "nuccore", "ENA-STUDY", "biosample"])
+    def test_other_dbs_not_included(self, db_value: str) -> None:
+        entry = {"EXPERIMENT_LINKS": {"EXPERIMENT_LINK": {"XREF_LINK": {"DB": db_value, "ID": "X1"}}}}
+        assert _parse_publications(entry, "EXPERIMENT_LINKS", "EXPERIMENT_LINK") == []
+
+    def test_empty_db_or_id_skipped(self) -> None:
+        """空の DB / 空の ID はすべて skip。"""
+        for xref in [
+            {"DB": "", "ID": ""},
+            {"DB": "pubmed", "ID": ""},
+            {"DB": "", "ID": "123"},
+            {"DB": "   ", "ID": "123"},
+        ]:
+            entry = {"ANALYSIS_LINKS": {"ANALYSIS_LINK": {"XREF_LINK": xref}}}
+            assert _parse_publications(entry, "ANALYSIS_LINKS", "ANALYSIS_LINK") == []
+
+    def test_multiple_links_as_list(self) -> None:
+        entry = {
+            "STUDY_LINKS": {
+                "STUDY_LINK": [
+                    {"XREF_LINK": {"DB": "pubmed", "ID": "1"}},
+                    {"XREF_LINK": {"DB": "PUBMED", "ID": "2"}},
+                    {"XREF_LINK": {"DB": "gds", "ID": "3"}},
+                ]
+            }
+        }
+        pubs = _parse_publications(entry, "STUDY_LINKS", "STUDY_LINK")
+        assert [p.id_ for p in pubs] == ["1", "2"]
+        assert all(p.dbType == "ePubmed" for p in pubs)
+
+    def test_no_links_element_returns_empty(self) -> None:
+        assert _parse_publications({"accession": "X"}, "STUDY_LINKS", "STUDY_LINK") == []
+        assert _parse_publications(None, "STUDY_LINKS", "STUDY_LINK") == []
+        assert _parse_publications({"STUDY_LINKS": None}, "STUDY_LINKS", "STUDY_LINK") == []
+
+
+class TestParseLibrary:
+    """_parse_library (§3.3 experiment 専用)."""
+
+    def test_typical_illumina_paired(self) -> None:
+        exp = {
+            "DESIGN": {
+                "LIBRARY_DESCRIPTOR": {
+                    "LIBRARY_STRATEGY": "WGS",
+                    "LIBRARY_SOURCE": "GENOMIC",
+                    "LIBRARY_SELECTION": "RANDOM",
+                    "LIBRARY_LAYOUT": {"PAIRED": {}},
+                }
+            },
+            "PLATFORM": {"ILLUMINA": {"INSTRUMENT_MODEL": "Illumina NovaSeq 6000"}},
+        }
+        result = _parse_library(exp)
+        assert result["libraryStrategy"] == ["WGS"]
+        assert result["librarySource"] == ["GENOMIC"]
+        assert result["librarySelection"] == ["RANDOM"]
+        assert result["libraryLayout"] == "PAIRED"
+        assert result["platform"] == "ILLUMINA"
+        assert result["instrumentModel"] == ["Illumina NovaSeq 6000"]
+
+    def test_single_layout(self) -> None:
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"SINGLE": None}}}}
+        assert _parse_library(exp)["libraryLayout"] == "SINGLE"
+
+    def test_library_source_invalid_value_falls_back_to_empty_list(self) -> None:
+        """Literal safeguard: 想定外値は空 list fallback (§4.9.2 9 値 controlled)。"""
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_SOURCE": "NOVEL_SOURCE_NOT_IN_LITERAL"}}}
+        assert _parse_library(exp)["librarySource"] == []
+
+    def test_library_layout_multi_fallbacks_to_none(self) -> None:
+        """複数キー (PAIRED + SINGLE 同居) は None fallback (§4.9.1 実データ 0 件だが防御)。"""
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"PAIRED": {}, "SINGLE": {}}}}}
+        assert _parse_library(exp)["libraryLayout"] is None
+
+    def test_platform_multi_fallbacks_to_none(self) -> None:
+        """複数 platform キーは None fallback。"""
+        exp = {"PLATFORM": {"ILLUMINA": {}, "OXFORD_NANOPORE": {}}}
+        assert _parse_library(exp)["platform"] is None
+
+    def test_no_library_descriptor_returns_defaults(self) -> None:
+        result = _parse_library({})
+        assert result["libraryStrategy"] == []
+        assert result["librarySource"] == []
+        assert result["librarySelection"] == []
+        assert result["libraryLayout"] is None
+        assert result["platform"] is None
+        assert result["instrumentModel"] == []
+
+    def test_non_dict_input_returns_defaults(self) -> None:
+        result = _parse_library(None)
+        assert result["libraryLayout"] is None
+        assert result["platform"] is None
+
+
+class TestL9LxmlCommentInExperiment:
+    """§4.11 L9: lxml Comment quirk の regression。
+
+    xml_utils._element_to_dict は既に cyfunction を skip する fix 済だが、
+    _parse_library の valid_keys フィルタで想定外キーが残ったケースでも
+    安全側に None fallback するかの二重防御を固定する。
+    """
+
+    def test_platform_with_comment_quirk_selects_valid_key(self) -> None:
+        """PLATFORM dict に cyfunction 想定外キーが混ざっても、valid_platforms==1 なら採用。"""
+        exp = {
+            "PLATFORM": {
+                "ILLUMINA": {"INSTRUMENT_MODEL": "Illumina"},
+                "<cyfunction Comment at 0x...>": "ignored",
+            }
+        }
+        result = _parse_library(exp)
+        assert result["platform"] == "ILLUMINA"
+        assert result["instrumentModel"] == ["Illumina"]
+
+    def test_layout_with_only_comment_quirk_returns_none(self) -> None:
+        """LIBRARY_LAYOUT に cyfunction 想定外キーのみの場合 None fallback。"""
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"<cyfunction Comment at 0x...>": "ignored"}}}}
+        assert _parse_library(exp)["libraryLayout"] is None
+
+    def test_end_to_end_parse_experiment_with_comment_xml(self) -> None:
+        """xml_utils._element_to_dict の Comment skip fix の end-to-end regression。
+        XML に <!-- comment --> を入れても PAIRED / ILLUMINA / INSTRUMENT_MODEL が正しく取れる。
+        """
+        xml_bytes = b"""<?xml version="1.0"?>
+<EXPERIMENT_SET>
+  <EXPERIMENT accession="DRX000001" center_name="NIID">
+    <TITLE>T</TITLE>
+    <DESIGN>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_LAYOUT>
+          <!-- a comment -->
+          <PAIRED/>
+        </LIBRARY_LAYOUT>
+      </LIBRARY_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <!-- another comment -->
+      <ILLUMINA>
+        <INSTRUMENT_MODEL>Illumina NovaSeq 6000</INSTRUMENT_MODEL>
+      </ILLUMINA>
+    </PLATFORM>
+  </EXPERIMENT>
+</EXPERIMENT_SET>
+"""
+        results = parse_experiment(xml_bytes, "DRA000001")
+        assert len(results) == 1
+        assert results[0]["libraryLayout"] == "PAIRED"
+        assert results[0]["platform"] == "ILLUMINA"
+        assert results[0]["instrumentModel"] == ["Illumina NovaSeq 6000"]
+
+
+class TestParseAnalysisType:
+    """_parse_analysis_type (§3.3 analysis 専用)."""
+
+    @pytest.mark.parametrize(
+        "value",
+        ["DE_NOVO_ASSEMBLY", "REFERENCE_ALIGNMENT", "ABUNDANCE_MEASUREMENT", "SEQUENCE_ANNOTATION"],
+    )
+    def test_all_4_values(self, value: str) -> None:
+        analysis = {"ANALYSIS_TYPE": {value: {}}}
+        assert _parse_analysis_type(analysis) == value
+
+    def test_unknown_key_falls_back_to_none(self) -> None:
+        analysis = {"ANALYSIS_TYPE": {"UNKNOWN_TYPE": {}}}
+        assert _parse_analysis_type(analysis) is None
+
+    def test_multiple_keys_fall_back_to_none(self) -> None:
+        analysis = {"ANALYSIS_TYPE": {"DE_NOVO_ASSEMBLY": {}, "REFERENCE_ALIGNMENT": {}}}
+        assert _parse_analysis_type(analysis) is None
+
+    def test_no_analysis_type_key(self) -> None:
+        assert _parse_analysis_type({}) is None
+        assert _parse_analysis_type({"ANALYSIS_TYPE": None}) is None
+
+    def test_non_dict_input_returns_none(self) -> None:
+        assert _parse_analysis_type(None) is None
+        assert _parse_analysis_type([]) is None
+
+
+class TestParseSubmissionDescription:
+    """_parse_submission_description (§4.9.5 submission_comment → description)."""
+
+    def test_typical_non_empty_comment(self) -> None:
+        submission = {"submission_comment": "GenomeTrakr pathogen sampling project"}
+        assert _parse_submission_description(submission) == "GenomeTrakr pathogen sampling project"
+
+    def test_comment_trimmed(self) -> None:
+        assert _parse_submission_description({"submission_comment": "   some comment   "}) == "some comment"
+
+    def test_empty_string_returns_none(self) -> None:
+        assert _parse_submission_description({"submission_comment": ""}) is None
+
+    def test_whitespace_only_returns_none(self) -> None:
+        assert _parse_submission_description({"submission_comment": "   "}) is None
+
+    def test_missing_comment_returns_none(self) -> None:
+        assert _parse_submission_description({"accession": "DRA000001"}) is None
+
+    def test_non_str_returns_none(self) -> None:
+        assert _parse_submission_description({"submission_comment": 123}) is None
+        assert _parse_submission_description(None) is None
+
+    def test_parse_submission_integration(self) -> None:
+        """parse_submission の description に submission_comment が正規化されて入る。"""
+        xml = b"""<?xml version="1.0"?>
+<SUBMISSION accession="DRA000072" center_name="NIID" submission_date="2010-01-15" submission_comment="  Real comment  ">
+  <TITLE>T</TITLE>
+</SUBMISSION>
+"""
+        result = parse_submission(xml, "DRA000072")
+        assert result is not None
+        assert result["description"] == "Real comment"
+
+
+class TestL1SubmissionPropertiesShape:
+    """§4.11 L1 regression: submission JSONL の properties は SUBMISSION 直下
+    (他 type は {TYPE}_SET.{TYPE} の 2 階層)。仕様据え置きを固定。"""
+
+    def test_submission_properties_unwraps_to_submission_top_level(self) -> None:
+        xml = b"""<?xml version="1.0"?>
+<SUBMISSION accession="DRA000072" center_name="NIID" submission_date="2010-01-15">
+  <TITLE>Test DRA Submission</TITLE>
+</SUBMISSION>
+"""
+        result = parse_submission(xml, "DRA000072")
+        assert result is not None
+        props = result["properties"]
+        assert "SUBMISSION" in props
+        assert "SUBMISSION_SET" not in props
+
+    def test_study_properties_keeps_study_set_wrapper(self) -> None:
+        xml = b"""<?xml version="1.0"?>
+<STUDY_SET>
+  <STUDY accession="DRP000072" center_name="NIID">
+    <DESCRIPTOR><STUDY_TITLE>T</STUDY_TITLE></DESCRIPTOR>
+  </STUDY>
+</STUDY_SET>
+"""
+        results = parse_study(xml, "DRA000072")
+        assert len(results) == 1
+        assert "STUDY_SET" in results[0]["properties"]
+        assert "STUDY" in results[0]["properties"]["STUDY_SET"]
+
+    def test_analysis_properties_keeps_analysis_set_wrapper(self) -> None:
+        xml = b"""<?xml version="1.0"?>
+<ANALYSIS_SET>
+  <ANALYSIS accession="DRZ000001" center_name="NIID">
+    <TITLE>T</TITLE>
+    <ANALYSIS_TYPE><DE_NOVO_ASSEMBLY/></ANALYSIS_TYPE>
+  </ANALYSIS>
+</ANALYSIS_SET>
+"""
+        results = parse_analysis(xml, "DRA000001")
+        assert len(results) == 1
+        assert "ANALYSIS_SET" in results[0]["properties"]
+        assert results[0]["analysisType"] == "DE_NOVO_ASSEMBLY"

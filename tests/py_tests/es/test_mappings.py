@@ -217,25 +217,73 @@ class TestSraMapping:
             assert "downloadUrl" not in props
 
     def test_sra_no_old_specific_fields(self) -> None:
-        """Removed fields should not be present in any SRA mapping."""
+        """Removed fields should not be present in any SRA mapping.
+
+        Phase A §3.3 で experiment/analysis specific として
+        instrumentModel / libraryStrategy / librarySource / librarySelection /
+        libraryLayout / analysisType は復活するため、このリストからは除外する。
+        """
         removed_fields = [
             "centerName",
             "labName",
             "studyType",
-            "instrumentModel",
-            "libraryStrategy",
-            "librarySource",
-            "librarySelection",
-            "libraryLayout",
             "runDate",
             "runCenter",
-            "analysisType",
         ]
         for sra_type in SRA_INDEXES:
             mapping = get_sra_mapping(sra_type)
             props = mapping["mappings"]["properties"]
             for field in removed_fields:
                 assert field not in props, f"{field} should not be in {sra_type}"
+
+    def test_all_sra_types_have_organization_and_publication(self) -> None:
+        """Phase A §3.3.2: organization / publication は共通 helper 経由で全 type に入る。"""
+        for sra_type in SRA_INDEXES:
+            mapping = get_sra_mapping(sra_type)
+            props = mapping["mappings"]["properties"]
+            assert "organization" in props
+            assert props["organization"]["type"] == "nested"
+            assert "publication" in props
+            assert props["publication"]["type"] == "nested"
+
+    def test_sra_experiment_has_library_fields(self) -> None:
+        """experiment specific: library / platform 系は keyword。"""
+        mapping = get_sra_mapping("sra-experiment")
+        props = mapping["mappings"]["properties"]
+        for field in ["libraryStrategy", "librarySource", "librarySelection", "libraryLayout", "platform"]:
+            assert props[field] == {"type": "keyword"}, f"{field} should be keyword"
+
+    def test_sra_experiment_instrument_model_has_text_keyword_subfield(self) -> None:
+        """§3.3.2: instrumentModel は自然言語なので text + keyword subfield。"""
+        mapping = get_sra_mapping("sra-experiment")
+        props = mapping["mappings"]["properties"]
+        assert props["instrumentModel"]["type"] == "text"
+        assert props["instrumentModel"]["fields"]["keyword"]["type"] == "keyword"
+        assert props["instrumentModel"]["fields"]["keyword"]["ignore_above"] == 256
+
+    def test_sra_analysis_has_analysis_type(self) -> None:
+        mapping = get_sra_mapping("sra-analysis")
+        props = mapping["mappings"]["properties"]
+        assert props["analysisType"] == {"type": "keyword"}
+
+    def test_non_experiment_types_have_no_library_fields(self) -> None:
+        """experiment 以外では library* / platform / instrumentModel 不在。"""
+        for sra_type in ["sra-submission", "sra-study", "sra-run", "sra-sample", "sra-analysis"]:
+            props = get_sra_mapping(sra_type)["mappings"]["properties"]
+            for field in [
+                "libraryStrategy",
+                "librarySource",
+                "librarySelection",
+                "libraryLayout",
+                "platform",
+                "instrumentModel",
+            ]:
+                assert field not in props, f"{field} should not be in {sra_type}"
+
+    def test_non_analysis_types_have_no_analysis_type(self) -> None:
+        for sra_type in ["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample"]:
+            props = get_sra_mapping(sra_type)["mappings"]["properties"]
+            assert "analysisType" not in props
 
 
 class TestJgaMapping:
