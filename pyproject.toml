@@ -77,7 +77,6 @@ cleanup_old_results = "ddbj_search_converter.cli.cleanup_old_results:main"
 
 
 [tool.pytest.ini_options]
-addopts = "--cov=ddbj_search_converter --cov-report=html:tests/htmlcov"
 testpaths = ["tests/py_tests"]
 
 [tool.mypy]
