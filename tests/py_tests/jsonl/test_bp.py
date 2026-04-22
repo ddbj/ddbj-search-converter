@@ -318,7 +318,6 @@ class TestParseGrant:
         grants = parse_grant(project)
         assert len(grants) == 1
         assert grants[0].id_ == "G001"
-        # CP2 会話 2: Agency が str の場合は abbreviation=None
         agency = grants[0].agency[0]
         assert agency.name == "NIH"
         assert agency.abbreviation is None
@@ -336,7 +335,7 @@ class TestParseGrant:
         assert grants[0].agency[0].abbreviation == "NIH"
 
     def test_grant_agency_roles_are_none(self) -> None:
-        """CP2 会話 2: Grant.agency では role / organizationType / department / url は常に None。"""
+        """Grant.agency では role / organizationType / department / url は常に None。"""
         project = _make_project()
         project["Project"]["ProjectDescr"]["Grant"] = {
             "GrantId": "G001",

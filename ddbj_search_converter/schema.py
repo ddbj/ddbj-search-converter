@@ -290,7 +290,6 @@ class GEA(BaseModel):
 
 # === MetaboBank ===
 
-# §4.6.4 Phase C で全 110 件 controlled vocab 確認済 (unique 値数は値列挙そのまま)
 MetabobankStudyType = Literal[
     "untargeted metabolite profiling",
     "targeted metabolite profiling",

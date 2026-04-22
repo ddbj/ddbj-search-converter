@@ -8,8 +8,7 @@ GEA と MetaboBank で使用する。
 
 ``Comment[Related study]`` の値は ``_classify_related_study()`` で分類し、
 ``JGA:JGAS*`` は ``jga-study``、``NBDC:hum*`` は ``humandbs`` として dblink 経由で dbXrefs に流す。
-``Metabolonote:SE*`` / ``RPMM:RPMM*`` / ``Metabolights:MTBLS*`` 等の他 prefix は silent skip
-(cp0-history §3-7 決定)。
+``Metabolonote:SE*`` / ``RPMM:RPMM*`` / ``Metabolights:MTBLS*`` 等の他 prefix は silent skip。
 """
 
 from dataclasses import dataclass, field

@@ -107,7 +107,7 @@ class TestBioProjectMapping:
         assert props["grant"]["properties"]["agency"]["type"] == "nested"
 
     def test_grant_agency_shares_organization_properties(self) -> None:
-        """CP2 会話 2: grant.agency は organization と同一 properties を持つ (共通 helper 経由)。"""
+        """grant.agency は organization と同一 properties を持つ (共通 helper 経由)。"""
         mapping = get_bioproject_mapping()
         props = mapping["mappings"]["properties"]
         agency_props = props["grant"]["properties"]["agency"]["properties"]

@@ -108,10 +108,8 @@ def main() -> None:
         mtb_to_bp: IdPairs = set()
         mtb_to_bs: IdPairs = set()
 
-        # IDF/SDRF ファイルから抽出 (CP2 会話 4 時点で SRA / JGA / humandbs は GEA 側のみ実装済、
-        # MetaboBank は staging 実データで SDRF SRA 列 0 件 / Related study 有意義値 4 件のため棚上げ継続。
-        # dblink/idf_sdrf.py の共通 helper は既に両 DB 共有のため、将来 MetaboBank 再開時は本関数に
-        # 数十行追加するだけで GEA と対称の構造になる (es-field-design §3.6.4 参照))
+        # IDF/SDRF ファイルから抽出。MetaboBank では bioproject / biosample のみ投入する
+        # (SRA / JGA / humandbs 列は実データに存在せず、共通 helper は GEA 側で使用)
         dir_count = 0
         for mtb_dir in iterate_metabobank_dirs(METABOBANK_BASE_PATH):
             result = process_idf_sdrf_dir(mtb_dir)

@@ -69,10 +69,7 @@ def get_common_mapping() -> dict[str, Any]:
 
 
 def get_organization_properties() -> dict[str, Any]:
-    """Return the shared Organization property definitions.
-
-    `get_organization_mapping()` と `get_grant_mapping()` の agency 部分で共用する (CP2 会話 2)。
-    """
+    """Return the shared Organization property definitions."""
     return {
         "name": {
             "type": "text",
@@ -120,9 +117,9 @@ def get_publication_mapping() -> dict[str, Any]:
 def get_grant_mapping() -> dict[str, Any]:
     """Return the shared Grant nested mapping.
 
-    agency は Organization と同一 properties を持つ (CP2 会話 2)。
-    Grant.agency では role / organizationType / department / url は常に None だが、
-    mapping 上は Organization と統一しておく。
+    agency は Organization と同一 properties を持つ。Grant.agency では
+    role / organizationType / department / url は常に None だが、mapping 上は
+    Organization と統一しておく。
     """
     return {
         "grant": {

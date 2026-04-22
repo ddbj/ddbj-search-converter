@@ -360,8 +360,8 @@ def _parse_organizations_from_entry_attrs(entry: Any) -> list[Organization]:
     """SRA entry の root attributes (`@center_name` / `@broker_name`) から Organization を抽出する。
 
     xmltodict 正規化後は prefix 無しの dict key ("center_name" / "broker_name") に展開される。
-    broker_name は role="broker" で追加。lab_name は部局名主体のため load しない
-    (Phase A §3.2.5 「Person/部局責務外」方針、§4.11 L7 参照)。
+    broker_name は role="broker" で追加。lab_name は部局名主体 (自由記述) のため load しない
+    (Organization.name に詰めると center_name と意味衝突するため)。
     name 文字列ベース (strip 後 case sensitive) で dedupe。
     空文字 / 空白のみ / 非 str / 非 dict 入力は skip。
     """

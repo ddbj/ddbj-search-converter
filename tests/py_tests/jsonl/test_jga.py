@@ -703,17 +703,15 @@ class TestParseGrantsJga:
         assert isinstance(grant, Grant)
         assert grant.id_ == "22129008"
         assert grant.title == "Grant-in-Aid for Scientific Research on Innovative Areas"
-        # CP2 会話 2: Agency は共通型 Organization として構築される。
         assert grant.agency == [Organization(name="Ministry of Education", abbreviation="MEXT")]
 
     def test_grant_with_agency_string(self) -> None:
         entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": "NIH"}}}
         grant = parse_grants(entry)[0]
-        # CP2 会話 2: AGENCY が str の場合は abbreviation=None。
         assert grant.agency == [Organization(name="NIH", abbreviation=None)]
 
     def test_grant_agency_roles_are_none(self) -> None:
-        """CP2 会話 2: Grant.agency では role / organizationType / department / url は常に None。"""
+        """Grant.agency では role / organizationType / department / url は常に None。"""
         entry = {
             "GRANTS": {
                 "GRANT": {

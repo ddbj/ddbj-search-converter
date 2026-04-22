@@ -278,11 +278,11 @@ class TestClassifyRelatedStudy:
         assert _classify_related_study("JGA: JGAS000001") == ("jga-study", "JGAS000001")
 
     def test_skips_metabolonote(self) -> None:
-        """Metabolonote:SE* は None (XrefType 追加せず、cp0-history §3-7 決定)。"""
+        """Metabolonote:SE* は None (XrefType 追加対象外)。"""
         assert _classify_related_study("Metabolonote:SE1") is None
 
     def test_skips_rpmm(self) -> None:
-        """RPMM:RPMM* は None (XrefType 追加せず、cp0-history §3-7 決定)。"""
+        """RPMM:RPMM* は None (XrefType 追加対象外)。"""
         assert _classify_related_study("RPMM:RPMM0001") is None
 
     def test_skips_metabolights(self) -> None:

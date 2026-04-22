@@ -299,8 +299,8 @@ def parse_grants(entry: dict[str, Any], accession: str = "") -> list[Grant]:
     """jga-study エントリから Grant を抽出する。
 
     GRANTS/GRANT (@grant_id, TITLE, AGENCY[@abbr, text content]) を共通型 Grant に詰める。
-    grant_id は空文字を None に倒す。AGENCY は共通型 Organization として構築する (CP2 会話 2)。
-    AGENCY が str の場合は abbreviation=None、dict の場合は `@abbr` を abbreviation に詰める。
+    grant_id は空文字を None に倒す。AGENCY は共通型 Organization として構築し、str の
+    場合は abbreviation=None、dict の場合は `@abbr` を abbreviation に詰める。
     role / organizationType / department / url は常に None (funding agency に該当する値がないため)。
     """
     grants: list[Grant] = []

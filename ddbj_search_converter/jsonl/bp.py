@@ -258,9 +258,9 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
 def parse_grant(project: dict[str, Any], accession: str = "") -> list[Grant]:
     """BioProject から Grant を抽出する。
 
-    Agency は共通型 Organization として構築する (CP2 会話 2)。
-    Agency が str の場合は abbreviation=None、dict の場合は `@abbr` を abbreviation に詰める。
-    role / organizationType / department / url は常に None (funding agency に該当する値がないため)。
+    Agency は共通型 Organization として構築する。str の場合は abbreviation=None、
+    dict の場合は `@abbr` を abbreviation に詰める。role / organizationType /
+    department / url は常に None (funding agency に該当する値がないため)。
     """
     grants: list[Grant] = []
     try:
