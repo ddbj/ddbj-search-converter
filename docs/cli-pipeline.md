@@ -51,7 +51,7 @@ finalize_dblink_db
 
 # 5. TSV 出力
 dump_dblink_files
-# 出力: {DBLINK_PATH}/*.tsv (17 files)
+# 出力: {DBLINK_PATH}/*.tsv (18 files)
 
 # === Phase 2: JSONL 生成 ===
 

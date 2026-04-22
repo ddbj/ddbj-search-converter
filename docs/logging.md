@@ -152,7 +152,6 @@ show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG | \
 | `NORMALIZE_LOCUS_TAG_PREFIX` | locus tag prefix の正規化失敗 |
 | `NORMALIZE_LOCAL_ID` | local ID の正規化失敗 |
 | `NORMALIZE_ORGANIZATION_NAME` | organization name の正規化失敗 |
-| `NORMALIZE_GRANT_AGENCY` | grant agency の正規化失敗 |
 | `NORMALIZE_OWNER_NAME` | owner name の正規化失敗 |
 | `NORMALIZE_MODEL` | model の正規化失敗 |
 | `FETCH_DATES_FAILED` | XML からの日付取得失敗 |
