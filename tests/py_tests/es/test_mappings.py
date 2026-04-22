@@ -106,6 +106,20 @@ class TestBioProjectMapping:
         assert props["grant"]["type"] == "nested"
         assert props["grant"]["properties"]["agency"]["type"] == "nested"
 
+    def test_grant_agency_shares_organization_properties(self) -> None:
+        """CP2 会話 2: grant.agency は organization と同一 properties を持つ (共通 helper 経由)。"""
+        mapping = get_bioproject_mapping()
+        props = mapping["mappings"]["properties"]
+        agency_props = props["grant"]["properties"]["agency"]["properties"]
+        organization_props = props["organization"]["properties"]
+        assert agency_props == organization_props
+        # role / organizationType / department / url も agency 側に含まれる (Grant.agency では常に None だが mapping は統一)
+        for field in ("name", "abbreviation", "role", "organizationType", "department", "url"):
+            assert field in agency_props
+        # name は text + keyword subfield
+        assert agency_props["name"]["type"] == "text"
+        assert agency_props["name"]["fields"]["keyword"]["type"] == "keyword"
+
     def test_organization_name_has_keyword_subfield(self) -> None:
         mapping = get_bioproject_mapping()
         props = mapping["mappings"]["properties"]

@@ -23,9 +23,9 @@ from ddbj_search_converter.jsonl.jga import (
     parse_vendor,
 )
 from ddbj_search_converter.schema import (
-    Agency,
     ExternalLink,
     Grant,
+    Organization,
     Publication,
 )
 
@@ -703,12 +703,31 @@ class TestParseGrantsJga:
         assert isinstance(grant, Grant)
         assert grant.id_ == "22129008"
         assert grant.title == "Grant-in-Aid for Scientific Research on Innovative Areas"
-        assert grant.agency == [Agency(abbreviation="MEXT", name="Ministry of Education")]
+        # CP2 会話 2: Agency は共通型 Organization として構築される。
+        assert grant.agency == [Organization(name="Ministry of Education", abbreviation="MEXT")]
 
     def test_grant_with_agency_string(self) -> None:
         entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": "NIH"}}}
         grant = parse_grants(entry)[0]
-        assert grant.agency == [Agency(abbreviation=None, name="NIH")]
+        # CP2 会話 2: AGENCY が str の場合は abbreviation=None。
+        assert grant.agency == [Organization(name="NIH", abbreviation=None)]
+
+    def test_grant_agency_roles_are_none(self) -> None:
+        """CP2 会話 2: Grant.agency では role / organizationType / department / url は常に None。"""
+        entry = {
+            "GRANTS": {
+                "GRANT": {
+                    "grant_id": "22129008",
+                    "TITLE": "Grant-in-Aid",
+                    "AGENCY": {"abbr": "MEXT", "content": "Ministry of Education"},
+                }
+            }
+        }
+        agency = parse_grants(entry)[0].agency[0]
+        assert agency.role is None
+        assert agency.organizationType is None
+        assert agency.department is None
+        assert agency.url is None
 
     def test_empty_grant_id_becomes_none(self) -> None:
         entry = {"GRANTS": {"GRANT": {"grant_id": "", "TITLE": "T", "AGENCY": {"abbr": "X", "content": "Y"}}}}

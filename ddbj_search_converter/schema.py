@@ -54,15 +54,10 @@ class Publication(BaseModel):
     status: PublicationStatus | None = None
 
 
-class Agency(BaseModel):
-    abbreviation: str | None
-    name: str | None
-
-
 class Grant(BaseModel):
     id_: str | None = Field(default=None, alias="id")
     title: str | None
-    agency: list[Agency]
+    agency: list[Organization]
 
 
 class ExternalLink(BaseModel):

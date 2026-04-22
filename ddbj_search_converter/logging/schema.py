@@ -48,7 +48,6 @@ class DebugCategory(str, Enum):
     NORMALIZE_LOCUS_TAG_PREFIX = "normalize_locus_tag_prefix"
     NORMALIZE_LOCAL_ID = "normalize_local_id"
     NORMALIZE_ORGANIZATION_NAME = "normalize_organization_name"
-    NORMALIZE_GRANT_AGENCY = "normalize_grant_agency"
 
     # Normalize function failures (bs.py)
     NORMALIZE_OWNER_NAME = "normalize_owner_name"

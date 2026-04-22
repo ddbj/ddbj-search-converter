@@ -318,6 +318,10 @@ class TestParseGrant:
         grants = parse_grant(project)
         assert len(grants) == 1
         assert grants[0].id_ == "G001"
+        # CP2 会話 2: Agency が str の場合は abbreviation=None
+        agency = grants[0].agency[0]
+        assert agency.name == "NIH"
+        assert agency.abbreviation is None
 
     def test_grant_with_dict_agency(self) -> None:
         project = _make_project()
@@ -330,6 +334,20 @@ class TestParseGrant:
         assert len(grants) == 1
         assert grants[0].agency[0].name == "National Institutes of Health"
         assert grants[0].agency[0].abbreviation == "NIH"
+
+    def test_grant_agency_roles_are_none(self) -> None:
+        """CP2 会話 2: Grant.agency では role / organizationType / department / url は常に None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "Grant Title",
+            "Agency": {"abbr": "NIH", "content": "National Institutes of Health"},
+        }
+        agency = parse_grant(project)[0].agency[0]
+        assert agency.role is None
+        assert agency.organizationType is None
+        assert agency.department is None
+        assert agency.url is None
 
 
 class TestParseExternalLink:
@@ -438,12 +456,6 @@ class TestNormalizeProperties:
         project["Submission"]["Description"]["Organization"] = {"Name": "OrgName"}
         normalize_properties(project)
         assert project["Submission"]["Description"]["Organization"]["Name"] == {"content": "OrgName"}
-
-    def test_normalizes_grant_agency(self) -> None:
-        project = _make_project()
-        project["Project"]["ProjectDescr"]["Grant"] = {"Agency": "NIH"}
-        normalize_properties(project)
-        assert project["Project"]["ProjectDescr"]["Grant"]["Agency"] == {"abbr": "NIH", "content": "NIH"}
 
     def test_no_crash_on_empty_project(self) -> None:
         project: dict[str, Any] = {"Project": {"ProjectType": {}, "ProjectDescr": {}}}

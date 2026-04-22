@@ -75,7 +75,7 @@ bioproject:grant
 bioproject:agency
     a owl:ObjectProperty ;
     rdfs:label "agency" ;
-    rdfs:comment "Funding agency for a grant" .
+    rdfs:comment "Funding agency for a grant, represented as an Organization." .
 
 bioproject:externalLink
     a owl:ObjectProperty ;

@@ -26,7 +26,6 @@ from ddbj_search_converter.logging.logger import log_debug, log_error, log_info,
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
     Accessibility,
-    Agency,
     BioProject,
     ExternalLink,
     Grant,
@@ -257,7 +256,12 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
 
 
 def parse_grant(project: dict[str, Any], accession: str = "") -> list[Grant]:
-    """BioProject から Grant を抽出する。"""
+    """BioProject から Grant を抽出する。
+
+    Agency は共通型 Organization として構築する (CP2 会話 2)。
+    Agency が str の場合は abbreviation=None、dict の場合は `@abbr` を abbreviation に詰める。
+    role / organizationType / department / url は常に None (funding agency に該当する値がないため)。
+    """
     grants: list[Grant] = []
     try:
         grant = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Grant")
@@ -272,7 +276,7 @@ def parse_grant(project: dict[str, Any], accession: str = "") -> list[Grant]:
                     Grant(
                         id=item.get("GrantId"),
                         title=item.get("Title"),
-                        agency=[Agency(abbreviation=agency, name=agency)],
+                        agency=[Organization(name=agency, abbreviation=None)],
                     )
                 )
             elif isinstance(agency, dict):
@@ -281,9 +285,9 @@ def parse_grant(project: dict[str, Any], accession: str = "") -> list[Grant]:
                         id=item.get("GrantId"),
                         title=item.get("Title"),
                         agency=[
-                            Agency(
-                                abbreviation=agency.get("abbr"),
+                            Organization(
                                 name=agency.get("content"),
+                                abbreviation=agency.get("abbr"),
                             )
                         ],
                     )
@@ -412,7 +416,6 @@ def normalize_properties(project: dict[str, Any]) -> None:
     _normalize_locus_tag_prefix(project)
     _normalize_local_id(project)
     _normalize_organization_name(project)
-    _normalize_grant_agency(project)
 
 
 def _normalize_biosample_set_id(project: dict[str, Any]) -> None:
@@ -506,27 +509,6 @@ def _normalize_organization_name(project: dict[str, Any]) -> None:
         log_debug(
             f"failed to normalize organization name: {e}", debug_category=DebugCategory.NORMALIZE_ORGANIZATION_NAME
         )
-
-
-def _normalize_grant_agency(project: dict[str, Any]) -> None:
-    """Grant.Agency を正規化する。"""
-    try:
-        grant = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Grant")
-        if grant is None:
-            return
-
-        def _normalize_single(g: dict[str, Any]) -> None:
-            agency = g.get("Agency")
-            if isinstance(agency, str):
-                g["Agency"] = {"abbr": agency, "content": agency}
-
-        if isinstance(grant, list):
-            for item in grant:
-                _normalize_single(item)
-        elif isinstance(grant, dict):
-            _normalize_single(grant)
-    except Exception as e:
-        log_debug(f"failed to normalize grant agency: {e}", debug_category=DebugCategory.NORMALIZE_GRANT_AGENCY)
 
 
 # === Conversion ===
