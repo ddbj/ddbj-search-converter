@@ -321,6 +321,46 @@ class TestParsePublication:
         assert len(pubs) == 1
         assert pubs[0].dbType == "pubmed"
 
+    def test_publication_missing_id_doi(self) -> None:
+        """C1: DbType=eDOI で id 欠落 → dbType=doi, url=None (旧実装は 'https://doi.org/None' を生成)。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {"DbType": "eDOI"}
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].id_ is None
+        assert pubs[0].dbType == "doi"
+        assert pubs[0].url is None
+
+    def test_publication_missing_id_pubmed(self) -> None:
+        """C1: DbType=ePubmed で id 欠落 → dbType=pubmed, url=None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {"DbType": "ePubmed"}
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].id_ is None
+        assert pubs[0].dbType == "pubmed"
+        assert pubs[0].url is None
+
+    def test_publication_missing_id_numeric_dbtype(self) -> None:
+        """C1: 数字 DbType (isdigit fallback) で id 欠落 → dbType=pubmed, url=None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {"DbType": "12345"}
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].id_ is None
+        assert pubs[0].dbType == "pubmed"
+        assert pubs[0].url is None
+
+    def test_publication_missing_id_pmc(self) -> None:
+        """C1 defense: ePMC で id 欠落 → 既存 guard 維持で url=None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {"DbType": "ePMC"}
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].id_ is None
+        assert pubs[0].dbType == "pmc"
+        assert pubs[0].url is None
+
 
 class TestParseGrant:
     """Tests for parse_grant function."""

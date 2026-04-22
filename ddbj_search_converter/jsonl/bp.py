@@ -224,9 +224,11 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
             if raw_dbtype in _DBTYPE_NORMALIZE:
                 normalized = _DBTYPE_NORMALIZE[raw_dbtype]
                 if normalized == "doi":
-                    publication_url = f"https://doi.org/{id_}"
+                    if id_ is not None:
+                        publication_url = f"https://doi.org/{id_}"
                 elif normalized == "pubmed":
-                    publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+                    if id_ is not None:
+                        publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
                 elif normalized == "pmc":
                     if id_ is not None and id_.startswith("PMC"):
                         publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{id_}/"
@@ -236,7 +238,8 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
                         publication_url = f"https://doi.org/{id_}"
             elif isinstance(raw_dbtype, str) and raw_dbtype.isdigit():
                 normalized = "pubmed"
-                publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+                if id_ is not None:
+                    publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
             publications.append(
                 Publication(
                     title=(item.get("StructuredCitation") or {}).get("Title"),
