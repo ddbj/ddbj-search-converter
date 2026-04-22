@@ -491,6 +491,24 @@ JGA エントリーが `sameAs`（SECONDARY_ID）を持つ場合、ES bulk inser
 
 `*` = DRA ファイルインデックス DB にファイルが存在する場合のみ
 
+## isPartOf / type フィールド
+
+各エントリーには「どの DB に属するか」を示す `isPartOf` と、エントリータイプを示す `type` の 2 つのカテゴリ系フィールドがある。役割が異なるので使い分ける:
+
+- `isPartOf`: index 粒度の粗カテゴリ。DB 切替ファセット (front の Database ToggleButton) で利用する
+- `type`: 細分カテゴリ。SRA / JGA では submission / study / experiment などのエントリータイプを区別する
+
+| Index | `isPartOf` | `type` |
+|---|---|---|
+| BioProject | `"bioproject"` | `"bioproject"` (加えて `objectType` で `UmbrellaBioProject` / `BioProject` を区別) |
+| BioSample | `"biosample"` | `"biosample"` |
+| SRA | `"sra"` | `"sra-submission"` / `"sra-study"` / `"sra-experiment"` / `"sra-run"` / `"sra-sample"` / `"sra-analysis"` |
+| JGA | `"jga"` | `"jga-study"` / `"jga-dataset"` / `"jga-dac"` / `"jga-policy"` |
+| GEA | `"gea"` | `"gea"` |
+| MetaboBank | `"metabobank"` | `"metabobank"` |
+
+値は全 index で snake_case に統一している。ES の mapping は `isPartOf` を `keyword` 型として定義する (`ddbj_search_converter/es/mappings/common.py`)。
+
 ## Elasticsearch Index Alias
 
 | Alias | 対象 Index |

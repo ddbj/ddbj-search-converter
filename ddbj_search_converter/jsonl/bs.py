@@ -340,7 +340,7 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
         identifier=accession,
         properties={"BioSample": sample},
         distribution=make_bs_distribution(accession),
-        isPartOf="BioSample",
+        isPartOf="biosample",
         type="biosample",
         name=parse_name(sample, accession),
         url=f"{SEARCH_BASE_URL}/search/entry/biosample/{accession}",

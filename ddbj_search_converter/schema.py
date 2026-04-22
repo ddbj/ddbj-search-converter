@@ -98,7 +98,7 @@ class BioProject(BaseModel):
     identifier: str
     properties: Any
     distribution: list[Distribution]
-    isPartOf: Literal["BioProject"]
+    isPartOf: Literal["bioproject"]
     type_: Literal["bioproject"] = Field(alias="type")
     objectType: Literal["UmbrellaBioProject", "BioProject"]
     name: str | None
@@ -133,7 +133,7 @@ class BioSample(BaseModel):
     identifier: str
     properties: Any
     distribution: list[Distribution]
-    isPartOf: Literal["BioSample"]
+    isPartOf: Literal["biosample"]
     type_: Literal["biosample"] = Field(alias="type")
     name: str | None
     url: str

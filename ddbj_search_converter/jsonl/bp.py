@@ -524,7 +524,7 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
         identifier=accession,
         properties={"Project": project},
         distribution=make_bp_distribution(accession),
-        isPartOf="BioProject",
+        isPartOf="bioproject",
         type="bioproject",
         objectType=parse_object_type(project),
         name=parse_name(project, accession),

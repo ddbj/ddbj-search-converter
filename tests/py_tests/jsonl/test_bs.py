@@ -434,7 +434,7 @@ def _make_bs_instance(identifier: str) -> BioSample:
         identifier=identifier,
         properties={},
         distribution=[],
-        isPartOf="BioSample",
+        isPartOf="biosample",
         type="biosample",
         name=None,
         url="https://example.com",

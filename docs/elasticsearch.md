@@ -366,7 +366,7 @@ es_health_check -v
 
 Full 更新時にインデックスを削除→再作成→データ投入すると、投入完了までダウンタイムが発生する。Blue-Green Alias Swap パターンでは、新インデックスへのデータ投入完了後に alias をアトミックに切り替えることで、ゼロダウンタイムを実現する。
 
-> **NOTE**: `Publication.Reference` → `reference` / `Publication.DbType` → `dbType` の rename と GEA / MetaboBank の新 index (`gea` / `metabobank`) 追加により、既存 index との mapping 互換性が失われる。次回 deploy 時は必ず Blue-Green Alias Swap で新 index を別名で作成し、alias を一括 swap すること。既存の `--clean-es` フローは mapping が変わらない場合にのみ安全。
+> **NOTE**: `Publication.Reference` → `reference` / `Publication.DbType` → `dbType` の rename、`Publication.dbType` 値の小文字化 (`ePubmed` → `pubmed` 等) と `Publication.status` フィールド廃止 (2026-04-22)、GEA / MetaboBank の新 index (`gea` / `metabobank`) 追加により、既存 index との mapping 互換性が失われる。次回 deploy 時は必ず Blue-Green Alias Swap で新 index を別名で作成し、alias を一括 swap すること。既存の `--clean-es` フローは mapping が変わらない場合にのみ安全。
 
 ### 概念
 
