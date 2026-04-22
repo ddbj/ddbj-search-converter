@@ -221,6 +221,17 @@ class TestParseOrganization:
         orgs = parse_organization(project)
         assert orgs == []
 
+    def test_duplicate_organizations_deduplicated(self) -> None:
+        """同名 Organization が複数件来た場合、deduplicate_organizations helper で集約される (M3)。"""
+        project = _make_project()
+        project["Submission"]["Description"]["Organization"] = [
+            {"Name": "DDBJ Center", "type": "center", "role": "owner"},
+            {"Name": "DDBJ Center", "type": "center", "role": "owner"},
+        ]
+        orgs = parse_organization(project)
+        assert len(orgs) == 1
+        assert orgs[0].name == "DDBJ Center"
+
 
 class TestParsePublication:
     """Tests for parse_publication function."""

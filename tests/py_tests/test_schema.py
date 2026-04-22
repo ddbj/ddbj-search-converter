@@ -453,7 +453,7 @@ class TestMetaboBankExtensibleStringFields:
     """
 
     @pytest.mark.parametrize(
-        "study,experiment,submission",
+        ("study", "experiment", "submission"),
         [
             (["untargeted metabolite profiling"], ["NMR"], ["LC-MS"]),
             (["future_study_type"], ["novel_experiment"], ["UNKNOWN-MS"]),

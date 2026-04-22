@@ -34,6 +34,8 @@ from ddbj_search_converter.schema import (
 )
 from ddbj_search_converter.xml_utils import parse_xml
 
+# JGA XML の DB_TYPE は .lower() 後に lookup される。
+# 現状 "pubmed" のみが有効値で、未知値は dict.get() で None fallback (= dbType=None)。
 _PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {"pubmed": "pubmed"}
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]

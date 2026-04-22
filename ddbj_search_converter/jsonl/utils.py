@@ -6,7 +6,7 @@ from typing import Any
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import AccessionType, get_related_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
-from ddbj_search_converter.schema import Xref, XrefType
+from ddbj_search_converter.schema import Organization, Xref, XrefType
 
 URL_TEMPLATE: dict[XrefType, str] = {
     "biosample": f"{SEARCH_BASE_URL}/search/entry/biosample/{{id}}",
@@ -185,4 +185,22 @@ def get_dbxref_map(
         xrefs.sort(key=lambda x: x.identifier)
         result[accession] = xrefs
 
+    return result
+
+
+def deduplicate_organizations(organizations: list[Organization]) -> list[Organization]:
+    """Organization list を name (strip + case-sensitive) で重複排除する。
+
+    順序保持。`name.strip()` が空 (None も含む) のエントリは「同一」とみなして
+    2 つ目以降を捨てる。BP / BS の parse_organization で末尾呼び出しする想定
+    (SRA / JGA は構築中 dedupe で別パターン)。
+    """
+    seen: set[str] = set()
+    result: list[Organization] = []
+    for org in organizations:
+        key = (org.name or "").strip()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(org)
     return result

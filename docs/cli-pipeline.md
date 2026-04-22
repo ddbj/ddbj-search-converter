@@ -17,6 +17,29 @@ Phase 3: ES 投入
     JSONL -> Elasticsearch
 ```
 
+## Elasticsearch インデックス一覧 (14 indexes)
+
+パイプラインで管理する Elasticsearch index は全 14 個。`es_create_index --index <group>` で group alias の backing index を一括作成する。
+
+| Index | グループ | 説明 |
+|---|---|---|
+| `bioproject` | (singleton) | BioProject |
+| `biosample` | (singleton) | BioSample |
+| `sra-submission` | `sra` | SRA Submission |
+| `sra-study` | `sra` | SRA Study |
+| `sra-experiment` | `sra` | SRA Experiment |
+| `sra-run` | `sra` | SRA Run |
+| `sra-sample` | `sra` | SRA Sample |
+| `sra-analysis` | `sra` | SRA Analysis |
+| `jga-study` | `jga` | JGA Study |
+| `jga-dataset` | `jga` | JGA Dataset |
+| `jga-dac` | `jga` | JGA Data Access Committee |
+| `jga-policy` | `jga` | JGA Policy |
+| `gea` | (singleton) | Gene Expression Atlas |
+| `metabobank` | (singleton) | MetaboBank |
+
+`sra` group alias は 6 indexes、`jga` group alias は 4 indexes をまとめる。`es_bulk_insert` は個別 index 単位で実行する (Phase 3 example 参照)。alias 管理の詳細は [docs/elasticsearch.md](./elasticsearch.md) 参照。
+
 ## 初回実行（Full）
 
 初回実行時は `--full` フラグを使用し、全データを処理する。

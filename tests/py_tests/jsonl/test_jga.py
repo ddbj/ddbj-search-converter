@@ -640,7 +640,7 @@ class TestParsePublicationsJga:
     """Tests for parse_publications function (JGA study-specific)."""
 
     def test_single_pubmed_published(self) -> None:
-        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "24336570", "status": "published", "DB_TYPE": "PUBMED"}}}
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "24336570", "DB_TYPE": "PUBMED"}}}
         pubs = parse_publications(entry)
         assert len(pubs) == 1
         assert isinstance(pubs[0], Publication)

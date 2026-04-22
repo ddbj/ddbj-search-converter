@@ -353,6 +353,27 @@ class TestParseOrganization:
         assert orgs[0].role is None
         assert orgs[0].organizationType is None
 
+    def test_duplicate_owner_names_deduplicated(self) -> None:
+        """Owner.Name に同名が複数あれば deduplicate_organizations helper で集約 (M3)。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": [{"content": "DDBJ"}, {"content": "DDBJ"}]}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="DDBJ")]
+
+    def test_whitespace_owner_names_deduplicated(self) -> None:
+        """Owner.Name の whitespace 違いも同一とみなして dedupe (M3)。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": ["DDBJ", " DDBJ "]}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="DDBJ")]
+
+    def test_case_sensitive_owner_names_kept_separate(self) -> None:
+        """Owner.Name の case 違いは別物として保持 (case-sensitive dedupe, M3)。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": ["DDBJ", "ddbj"]}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="DDBJ"), Organization(name="ddbj")]
+
 
 class TestParseSameAs:
     """Tests for parse_same_as function."""

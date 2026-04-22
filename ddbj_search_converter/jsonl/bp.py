@@ -21,7 +21,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bp_distribution
-from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import deduplicate_organizations, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
@@ -204,7 +204,7 @@ def parse_organization(project: dict[str, Any], accession: str = "") -> list[Org
                     )
     except Exception as e:
         log_warn(f"failed to parse organization: {e}", accession=accession)
-    return organizations
+    return deduplicate_organizations(organizations)
 
 
 def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publication]:

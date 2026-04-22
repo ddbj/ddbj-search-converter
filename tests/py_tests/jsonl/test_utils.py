@@ -10,8 +10,14 @@ from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import finalize_relation_db, init_dblink_db
-from ddbj_search_converter.jsonl.utils import URL_TEMPLATE, ensure_attribute_list, get_dbxref_map, to_xref
-from ddbj_search_converter.schema import XrefType
+from ddbj_search_converter.jsonl.utils import (
+    URL_TEMPLATE,
+    deduplicate_organizations,
+    ensure_attribute_list,
+    get_dbxref_map,
+    to_xref,
+)
+from ddbj_search_converter.schema import Organization, XrefType
 
 
 class TestToXref:
@@ -325,3 +331,55 @@ class TestGetDbxrefMap:
         """空の accessions で空 dict を返す。"""
         result = get_dbxref_map(test_config, "biosample", [])
         assert result == {}
+
+
+class TestDeduplicateOrganizations:
+    """Tests for deduplicate_organizations helper (M3)."""
+
+    def test_duplicate_names_kept_once(self) -> None:
+        orgs = [Organization(name="DDBJ"), Organization(name="DDBJ")]
+        assert deduplicate_organizations(orgs) == [Organization(name="DDBJ")]
+
+    def test_whitespace_treated_as_duplicate(self) -> None:
+        orgs = [Organization(name="DDBJ"), Organization(name=" DDBJ ")]
+        assert deduplicate_organizations(orgs) == [Organization(name="DDBJ")]
+
+    def test_case_sensitive_not_deduplicated(self) -> None:
+        orgs = [Organization(name="DDBJ"), Organization(name="ddbj")]
+        assert deduplicate_organizations(orgs) == [
+            Organization(name="DDBJ"),
+            Organization(name="ddbj"),
+        ]
+
+    def test_order_preserved(self) -> None:
+        orgs = [
+            Organization(name="A"),
+            Organization(name="B"),
+            Organization(name="A"),
+            Organization(name="C"),
+        ]
+        result = deduplicate_organizations(orgs)
+        assert [o.name for o in result] == ["A", "B", "C"]
+
+    def test_empty_or_none_name_collapse_to_single(self) -> None:
+        orgs = [
+            Organization(name=None),
+            Organization(name=""),
+            Organization(name="   "),
+        ]
+        result = deduplicate_organizations(orgs)
+        assert len(result) == 1
+
+    def test_empty_input_returns_empty(self) -> None:
+        assert deduplicate_organizations([]) == []
+
+    def test_attributes_preserved_for_first_entry(self) -> None:
+        """重複時、最初に出現したエントリの属性が保持される。"""
+        orgs = [
+            Organization(name="DDBJ", abbreviation="DDBJ", role="owner"),
+            Organization(name="DDBJ", abbreviation="OTHER"),
+        ]
+        result = deduplicate_organizations(orgs)
+        assert len(result) == 1
+        assert result[0].abbreviation == "DDBJ"
+        assert result[0].role == "owner"
