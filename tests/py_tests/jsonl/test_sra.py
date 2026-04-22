@@ -13,6 +13,7 @@ import pytest
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.jsonl.sra import (
     XML_TYPES,
+    _get_text,
     _normalize_accessibility,
     _normalize_status,
     _parse_analysis_type,
@@ -610,6 +611,52 @@ class TestXrefLinkDbNormalization:
         assert _parse_publications({"STUDY_LINKS": None}, "STUDY_LINKS", "STUDY_LINK") == []
 
 
+class TestGetText:
+    """Tests for _get_text helper (M1: list / dict / non-str defense).
+
+    旧実装 (`return str(v)`) は list 値で `"['a', 'b']"` のような stringify ノイズを
+    生成した。新実装は list / dict-without-content / 非 str 値で `None` を返す。
+    """
+
+    def test_string_value(self) -> None:
+        assert _get_text({"k": "value"}, "k") == "value"
+
+    def test_dict_with_content(self) -> None:
+        assert _get_text({"k": {"content": "value"}}, "k") == "value"
+
+    def test_dict_without_content(self) -> None:
+        assert _get_text({"k": {"other": "value"}}, "k") is None
+
+    def test_dict_with_non_str_content(self) -> None:
+        assert _get_text({"k": {"content": 123}}, "k") is None
+
+    def test_list_with_str_first(self) -> None:
+        """list[str] は最初の要素を返す (multi-value 真対応は将来)。"""
+        assert _get_text({"k": ["first", "second"]}, "k") == "first"
+
+    def test_list_with_dict_content(self) -> None:
+        """list[dict-with-content] も同様に最初の str を抽出する。"""
+        assert _get_text({"k": [{"content": "first"}, {"content": "second"}]}, "k") == "first"
+
+    def test_list_skips_unusable_first_item(self) -> None:
+        """先頭が dict-without-content (None) の場合、次の要素まで進む。"""
+        assert _get_text({"k": [{"other": "x"}, "second"]}, "k") == "second"
+
+    def test_list_empty_returns_none(self) -> None:
+        assert _get_text({"k": []}, "k") is None
+
+    def test_int_value_returns_none(self) -> None:
+        """旧実装は str(v) で '123' を返したが、ノイズ排除のため None。"""
+        assert _get_text({"k": 123}, "k") is None
+
+    def test_missing_key_returns_none(self) -> None:
+        assert _get_text({"a": "x"}, "k") is None
+
+    def test_non_dict_input_returns_none(self) -> None:
+        assert _get_text(None, "k") is None
+        assert _get_text("not a dict", "k") is None  # type: ignore[arg-type]
+
+
 class TestParseLibrary:
     def test_typical_illumina_paired(self) -> None:
         exp = {
@@ -675,6 +722,22 @@ class TestParseLibrary:
         result = _parse_library(None)
         assert result["libraryLayout"] is None
         assert result["platform"] is None
+
+    def test_library_strategy_list_value(self) -> None:
+        """xmltodict が <LIBRARY_STRATEGY> を list で返した場合、最初の要素のみ抽出 (M1 防御)。
+
+        spec 上は `list[str]` 維持だが parser 側は単一値前提。multi-value 真対応は将来
+        実 multi-value fixture が現れた時点で別 PR で対応する。
+        """
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_STRATEGY": ["WGS", "RNA-Seq"]}}}
+        assert _parse_library(exp)["libraryStrategy"] == ["WGS"]
+
+    def test_instrument_model_list_value(self) -> None:
+        """xmltodict が <INSTRUMENT_MODEL> を list で返した場合、最初の要素のみ抽出 (M1 防御)。"""
+        exp = {"PLATFORM": {"ILLUMINA": {"INSTRUMENT_MODEL": ["Model A", "Model B"]}}}
+        result = _parse_library(exp)
+        assert result["platform"] == "ILLUMINA"
+        assert result["instrumentModel"] == ["Model A"]
 
 
 class TestLxmlCommentInExperiment:

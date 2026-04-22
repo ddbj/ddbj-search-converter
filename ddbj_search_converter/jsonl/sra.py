@@ -103,18 +103,34 @@ def _get_entries(parsed: dict[str, Any], set_key: str, entry_key: str) -> list[d
     return entries
 
 
-def _get_text(d: Any, key: str) -> str | None:
-    """辞書から文字列を取得する。"""
-    if d is None or not isinstance(d, dict):
-        return None
-    v = d.get(key)
+def _coerce_text(v: Any) -> str | None:
+    """xmltodict 値を str に正規化する。
+
+    list は最初の str / dict-with-content を抽出。dict は ``content`` フィールドを
+    str のときだけ採用。それ以外は ``None`` (旧 ``str(v)`` 撤廃で ``str([...])``
+    のような stringify ノイズが ES に流れるのを防止)。
+    """
     if v is None:
         return None
     if isinstance(v, str):
         return v
     if isinstance(v, dict):
-        return v.get("content")
-    return str(v)
+        content = v.get("content")
+        return content if isinstance(content, str) else None
+    if isinstance(v, list):
+        for item in v:
+            text = _coerce_text(item)
+            if text is not None:
+                return text
+        return None
+    return None
+
+
+def _get_text(d: Any, key: str) -> str | None:
+    """辞書から文字列を取得する。list / dict / 非 str 値の防御は ``_coerce_text`` に委譲。"""
+    if d is None or not isinstance(d, dict):
+        return None
+    return _coerce_text(d.get(key))
 
 
 def _normalize_status(status: str | None) -> Status:
