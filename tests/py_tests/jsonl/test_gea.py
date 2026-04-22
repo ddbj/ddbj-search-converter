@@ -204,7 +204,7 @@ class TestCreateGeaEntry:
 
         assert len(gea.publication) == 1
         assert gea.publication[0].id_ == "21187441"
-        assert gea.publication[0].dbType == "ePubmed"
+        assert gea.publication[0].dbType == "pubmed"
         assert gea.publication[0].url == "https://pubmed.ncbi.nlm.nih.gov/21187441/"
 
         assert gea.experimentType == ["transcription profiling by array"]

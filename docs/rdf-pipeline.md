@@ -128,4 +128,5 @@ COPY --from=ghcr.io/inutano/insdc-rdf:0.3.0 /usr/local/bin/insdc-rdf /usr/local/
 converter (`ontology/*.ttl`) と insdc-rdf は独立パイプラインで、同じ名前空間 URI を共有する。converter 側の語彙変更時は insdc-rdf 側にも追随が必要。
 
 - **`bioproject:Reference` → `bioproject:reference` / `bioproject:DbType` → `bioproject:dbType` rename**: converter の `Publication` 共通型を camelCase に統一したため、`ontology/bioproject.ttl` / `sra.ttl` / `jga.ttl` の語彙を rename 済。insdc-rdf 側の triple 生成は [insdc-rdf リポジトリの別 issue](https://github.com/inutano/insdc-rdf) で追随する想定。`insdc-rdf` のバイナリバージョンを bump する際に整合性を要確認。
+- **`Publication.dbType` 値の小文字化 (2026-04-22)**: NCBI BP XML の `ePubmed` / `eDOI` / `ePMC` / `eNotAvailable` を converter 側で `pubmed` / `doi` / `pmc` / `None` に正規化するよう変更 (NCBI DATATOOL 由来の `e` prefix 撤廃)。`Publication.status` フィールドは廃止。insdc-rdf 側が triple 生成時に BP XML の生値をそのまま使っている場合は、converter 出力と値が揃わないので追随が必要。
 - **GEA / MetaboBank の語彙新設**: `ontology/gea.ttl` / `ontology/metabobank.ttl` が新設。insdc-rdf は現状 4 source (BioProject/BioSample/SRA/SRA Experiment) のみ対応のため、GEA / MetaboBank は converter JSON-LD (`ontology/*.jsonld`) でのみ RDF 公開される。

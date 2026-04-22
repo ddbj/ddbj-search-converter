@@ -566,7 +566,7 @@ class TestXrefLinkDbNormalization:
         pubs = _parse_publications(entry, "STUDY_LINKS", "STUDY_LINK")
         assert len(pubs) == 1
         assert pubs[0].id_ == "12345"
-        assert pubs[0].dbType == "ePubmed"
+        assert pubs[0].dbType == "pubmed"
         assert pubs[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
 
     def test_bioproject_db_not_included(self) -> None:
@@ -602,7 +602,7 @@ class TestXrefLinkDbNormalization:
         }
         pubs = _parse_publications(entry, "STUDY_LINKS", "STUDY_LINK")
         assert [p.id_ for p in pubs] == ["1", "2"]
-        assert all(p.dbType == "ePubmed" for p in pubs)
+        assert all(p.dbType == "pubmed" for p in pubs)
 
     def test_no_links_element_returns_empty(self) -> None:
         assert _parse_publications({"accession": "X"}, "STUDY_LINKS", "STUDY_LINK") == []

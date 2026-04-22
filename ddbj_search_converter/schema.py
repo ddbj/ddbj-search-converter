@@ -40,8 +40,7 @@ class Organization(BaseModel):
     url: str | None = None
 
 
-PublicationDbType = Literal["ePubmed", "eDOI", "ePMC", "eNotAvailable"]
-PublicationStatus = Literal["ePublished", "eUnpublished"]
+PublicationDbType = Literal["pubmed", "doi", "pmc"]
 
 
 class Publication(BaseModel):
@@ -51,7 +50,6 @@ class Publication(BaseModel):
     reference: str | None = None
     url: str | None = None
     dbType: PublicationDbType | None = None
-    status: PublicationStatus | None = None
 
 
 class Grant(BaseModel):

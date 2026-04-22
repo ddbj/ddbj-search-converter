@@ -212,7 +212,7 @@ class TestParsePubmedDoiPublications:
         idf = {"PubMed ID": ["12345", "67890"]}
         pubs = parse_pubmed_doi_publications(idf)
         assert [p.id_ for p in pubs] == ["12345", "67890"]
-        assert all(p.dbType == "ePubmed" for p in pubs)
+        assert all(p.dbType == "pubmed" for p in pubs)
         assert pubs[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
         assert pubs[1].url == "https://pubmed.ncbi.nlm.nih.gov/67890/"
 
@@ -221,7 +221,7 @@ class TestParsePubmedDoiPublications:
         pubs = parse_pubmed_doi_publications(idf)
         assert len(pubs) == 1
         assert pubs[0].id_ == "10.1038/nature12345"
-        assert pubs[0].dbType == "eDOI"
+        assert pubs[0].dbType == "doi"
         assert pubs[0].url == "https://doi.org/10.1038/nature12345"
 
     def test_both_pubmed_and_doi_separate_entries(self) -> None:
@@ -229,9 +229,9 @@ class TestParsePubmedDoiPublications:
         idf = {"PubMed ID": ["12345"], "Publication DOI": ["10.1038/foo"]}
         pubs = parse_pubmed_doi_publications(idf)
         assert len(pubs) == 2
-        assert pubs[0].dbType == "ePubmed"
+        assert pubs[0].dbType == "pubmed"
         assert pubs[0].id_ == "12345"
-        assert pubs[1].dbType == "eDOI"
+        assert pubs[1].dbType == "doi"
         assert pubs[1].id_ == "10.1038/foo"
 
     def test_empty_values_skipped(self) -> None:
@@ -253,7 +253,7 @@ class TestParsePubmedDoiPublications:
         assert len(pubs) == 1
         assert pubs[0].id_ == "10.5511/foo"
         assert pubs[0].url == "https://doi.org/10.5511/foo"
-        assert pubs[0].dbType == "eDOI"
+        assert pubs[0].dbType == "doi"
 
     def test_doi_prefix_lowercase_stripped(self) -> None:
         """`doi: ` prefix (小文字、case-insensitive) も strip される。"""
@@ -310,7 +310,7 @@ class TestParsePubmedDoiPublications:
         pubs = parse_pubmed_doi_publications(idf)
         assert pubs[0].id_ == "http://ssrn.com/abstract=4137686"
         assert pubs[0].url == "http://ssrn.com/abstract=4137686"
-        assert pubs[0].dbType == "eDOI"
+        assert pubs[0].dbType == "doi"
 
     def test_doi_trailing_dot_preserved(self) -> None:
         """末尾句読点タイポは元データ保持方針で strip しない。"""

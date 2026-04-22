@@ -6,7 +6,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal, get_args
+from typing import Any, Literal
 
 from ddbj_search_converter.config import (
     JGA_BASE_DIR_NAME,
@@ -30,18 +30,11 @@ from ddbj_search_converter.schema import (
     Organization,
     Publication,
     PublicationDbType,
-    PublicationStatus,
     Xref,
 )
 from ddbj_search_converter.xml_utils import parse_xml
 
-_VALID_PUB_DB_TYPES: frozenset[str] = frozenset(get_args(PublicationDbType))
-_VALID_PUB_STATUSES: frozenset[str] = frozenset(get_args(PublicationStatus))
-_PUB_STATUS_MAP: dict[str, PublicationStatus] = {
-    "published": "ePublished",
-    "unpublished": "eUnpublished",
-}
-_PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {"pubmed": "ePubmed"}
+_PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {"pubmed": "pubmed"}
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 INDEX_NAMES: list[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -240,10 +233,8 @@ def parse_organization(entry: dict[str, Any], index_name: IndexName, accession: 
 def parse_publications(entry: dict[str, Any], accession: str = "") -> list[Publication]:
     """jga-study エントリから Publication を抽出する。
 
-    PUBLICATIONS/PUBLICATION (@id, @status, DB_TYPE) を共通型 Publication に詰める。
-    DB_TYPE は lower() 正規化後 "pubmed" → "ePubmed"。
-    @status は lower() 正規化後 "published" → "ePublished" / "unpublished" → "eUnpublished"。
-    未知値は Literal safeguard で None fallback。
+    PUBLICATIONS/PUBLICATION (@id, DB_TYPE) を共通型 Publication に詰める。
+    DB_TYPE は lower() 正規化後 "pubmed" のみ採用、未知値は None fallback。
     """
     publications: list[Publication] = []
     try:
@@ -263,30 +254,16 @@ def parse_publications(entry: dict[str, Any], accession: str = "") -> list[Publi
             raw_db = item.get("DB_TYPE")
             db_type: PublicationDbType | None = None
             if isinstance(raw_db, str):
-                mapped_db = _PUB_DB_TYPE_MAP.get(raw_db.strip().lower())
-                if mapped_db is not None:
-                    db_type = mapped_db
-                elif raw_db in _VALID_PUB_DB_TYPES:
-                    db_type = raw_db  # type: ignore[assignment]
-
-            raw_status = item.get("status")
-            status: PublicationStatus | None = None
-            if isinstance(raw_status, str):
-                mapped_status = _PUB_STATUS_MAP.get(raw_status.strip().lower())
-                if mapped_status is not None:
-                    status = mapped_status
-                elif raw_status in _VALID_PUB_STATUSES:
-                    status = raw_status  # type: ignore[assignment]
+                db_type = _PUB_DB_TYPE_MAP.get(raw_db.strip().lower())
 
             url: str | None = None
-            if db_type == "ePubmed" and pub_id:
+            if db_type == "pubmed" and pub_id:
                 url = f"https://pubmed.ncbi.nlm.nih.gov/{pub_id}/"
 
             publications.append(
                 Publication(
                     id=pub_id,
                     dbType=db_type,
-                    status=status,
                     url=url,
                 )
             )

@@ -50,7 +50,7 @@ gea:reference
 gea:dbType
     a owl:DatatypeProperty ;
     rdfs:label "dbType" ;
-    rdfs:comment "Publication database type: ePubmed, eDOI, ePMC, or eNotAvailable" .
+    rdfs:comment "Publication database type: pubmed, doi, or pmc" .
 
 gea:experimentType
     a owl:DatatypeProperty ;

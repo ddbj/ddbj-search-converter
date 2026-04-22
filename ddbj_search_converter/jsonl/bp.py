@@ -35,7 +35,6 @@ from ddbj_search_converter.schema import (
     OrganizationType,
     Publication,
     PublicationDbType,
-    PublicationStatus,
     Status,
     Xref,
 )
@@ -47,8 +46,12 @@ DEFAULT_PARALLEL_NUM = 64
 # Literal safeguard: 想定外値は None fallback として扱う
 _VALID_ORG_TYPES: frozenset[str] = frozenset(get_args(OrganizationType))
 _VALID_ORG_ROLES: frozenset[str] = frozenset(get_args(OrganizationRole))
-_VALID_PUB_DB_TYPES: frozenset[str] = frozenset(get_args(PublicationDbType))
-_VALID_PUB_STATUSES: frozenset[str] = frozenset(get_args(PublicationStatus))
+
+_DBTYPE_NORMALIZE: dict[str, PublicationDbType] = {
+    "ePubmed": "pubmed",
+    "eDOI": "doi",
+    "ePMC": "pmc",
+}
 
 EXTERNAL_LINK_MAP = {
     "GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
@@ -215,30 +218,25 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
         pub_list = publication if isinstance(publication, list) else [publication]
         for item in pub_list:
             id_ = item.get("id")
-            dbtype = item.get("DbType")
-            publication_url = None
-            if dbtype == "eDOI":
-                publication_url = f"https://doi.org/{id_}"
-            elif dbtype == "ePubmed":
-                publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
-            elif dbtype == "ePMC":
-                if id_ is not None and id_.startswith("PMC"):
-                    publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{id_}/"
-                elif id_ is not None and id_.isdigit():
-                    publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{id_}/"
-                elif id_ is not None and id_.startswith("10."):
+            raw_dbtype = item.get("DbType")
+            normalized: PublicationDbType | None = None
+            publication_url: str | None = None
+            if raw_dbtype in _DBTYPE_NORMALIZE:
+                normalized = _DBTYPE_NORMALIZE[raw_dbtype]
+                if normalized == "doi":
                     publication_url = f"https://doi.org/{id_}"
-            elif dbtype == "eNotAvailable":
-                # 論文 ID 取得不可を明示するケース。url は None のまま。
-                publication_url = None
-            elif dbtype is not None and dbtype.isdigit():
-                dbtype = "ePubmed"
+                elif normalized == "pubmed":
+                    publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+                elif normalized == "pmc":
+                    if id_ is not None and id_.startswith("PMC"):
+                        publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{id_}/"
+                    elif id_ is not None and id_.isdigit():
+                        publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{id_}/"
+                    elif id_ is not None and id_.startswith("10."):
+                        publication_url = f"https://doi.org/{id_}"
+            elif isinstance(raw_dbtype, str) and raw_dbtype.isdigit():
+                normalized = "pubmed"
                 publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
-            if dbtype is not None and dbtype not in _VALID_PUB_DB_TYPES:
-                dbtype = None
-            status = item.get("status")
-            if status is not None and status not in _VALID_PUB_STATUSES:
-                status = None
             publications.append(
                 Publication(
                     title=(item.get("StructuredCitation") or {}).get("Title"),
@@ -246,8 +244,7 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
                     reference=item.get("Reference"),
                     id=id_,
                     url=publication_url,
-                    dbType=dbtype,
-                    status=status,
+                    dbType=normalized,
                 )
             )
     except Exception as e:

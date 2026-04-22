@@ -415,7 +415,7 @@ def _parse_publications(
         publications.append(
             Publication(
                 id=pub_id_norm,
-                dbType="ePubmed",
+                dbType="pubmed",
                 url=f"https://pubmed.ncbi.nlm.nih.gov/{pub_id_norm}/",
             )
         )

@@ -267,7 +267,7 @@ class TestJGA:
             title=None,
             description=None,
             organization=[Organization(name="Individual")],
-            publication=[Publication(id="24336570", dbType="ePubmed", status="ePublished")],
+            publication=[Publication(id="24336570", dbType="pubmed")],
             studyType=["Exome Sequencing"],
             vendor=["Illumina"],
             dbXrefs=[],
@@ -346,7 +346,7 @@ class TestGEA:
         kwargs["description"] = "A test description"
         kwargs["organization"] = [Organization(name="Kyushu University", role="submitter")]
         kwargs["publication"] = [
-            Publication(id="21187441", dbType="ePubmed", url="https://pubmed.ncbi.nlm.nih.gov/21187441/")
+            Publication(id="21187441", dbType="pubmed", url="https://pubmed.ncbi.nlm.nih.gov/21187441/")
         ]
         kwargs["experimentType"] = ["transcription profiling by array", "RNA-seq of coding RNA"]
         kwargs["dateModified"] = "2025-01-31"
@@ -355,7 +355,7 @@ class TestGEA:
         assert gea.organization[0].name == "Kyushu University"
         assert gea.organization[0].role == "submitter"
         assert gea.publication[0].id_ == "21187441"
-        assert gea.publication[0].dbType == "ePubmed"
+        assert gea.publication[0].dbType == "pubmed"
         assert gea.experimentType == ["transcription profiling by array", "RNA-seq of coding RNA"]
         assert gea.dateCreated is None
         assert gea.dateModified == "2025-01-31"
@@ -423,7 +423,7 @@ class TestMetaboBank:
         kwargs = _make_minimal_metabobank_kwargs()
         kwargs["title"] = "Arabidopsis thaliana leaf metabolite analysis"
         kwargs["organization"] = [Organization(name="Kazusa DNA Research Institute", role="submitter")]
-        kwargs["publication"] = [Publication(id="10.1038/sample", dbType="eDOI", url="https://doi.org/10.1038/sample")]
+        kwargs["publication"] = [Publication(id="10.1038/sample", dbType="doi", url="https://doi.org/10.1038/sample")]
         kwargs["studyType"] = ["untargeted metabolite profiling"]
         kwargs["experimentType"] = [
             "liquid chromatography-mass spectrometry",
@@ -526,46 +526,41 @@ class TestPublication:
         assert pub.reference is None
         assert pub.url is None
         assert pub.dbType is None
-        assert pub.status is None
 
-    @pytest.mark.parametrize("dbtype", ["ePubmed", "eDOI", "ePMC", "eNotAvailable"])
+    @pytest.mark.parametrize("dbtype", ["pubmed", "doi", "pmc"])
     def test_valid_dbtype_values(self, dbtype: str) -> None:
         pub = Publication(dbType=dbtype)  # type: ignore[arg-type]
         assert pub.dbType == dbtype
 
-    @pytest.mark.parametrize("invalid_dbtype", ["PUBMED", "pubmed", "PubMed", "doi"])
+    @pytest.mark.parametrize("invalid_dbtype", ["PUBMED", "PubMed", "ePubmed", "eDOI", "ePMC", "eNotAvailable", ""])
     def test_invalid_dbtype_raises(self, invalid_dbtype: str) -> None:
-        """大文字含む非正規値はすべて ValidationError (parse 側で正規化すること)."""
+        """旧 e-prefix 値や大小文字揺れは ValidationError (parse 側で正規化すること)."""
         with pytest.raises(ValidationError):
             Publication(dbType=invalid_dbtype)  # type: ignore[arg-type]
-
-    @pytest.mark.parametrize("status", ["ePublished", "eUnpublished"])
-    def test_valid_status_values(self, status: str) -> None:
-        pub = Publication(status=status)  # type: ignore[arg-type]
-        assert pub.status == status
-
-    @pytest.mark.parametrize("invalid_status", ["published", "unpublished", "preprint"])
-    def test_invalid_status_raises(self, invalid_status: str) -> None:
-        with pytest.raises(ValidationError):
-            Publication(status=invalid_status)  # type: ignore[arg-type]
 
     def test_reference_field_name(self) -> None:
         pub = Publication(reference="Nature 2024")
         assert pub.reference == "Nature 2024"
 
     def test_dbtype_field_name(self) -> None:
-        pub = Publication(dbType="ePubmed")
-        assert pub.dbType == "ePubmed"
+        pub = Publication(dbType="pubmed")
+        assert pub.dbType == "pubmed"
 
     def test_id_alias_in_input_and_output(self) -> None:
-        pub = Publication(id="12345", dbType="ePubmed")
+        pub = Publication(id="12345", dbType="pubmed")
         assert pub.id_ == "12345"
         dumped = pub.model_dump(by_alias=True)
         assert dumped["id"] == "12345"
-        assert dumped["dbType"] == "ePubmed"
+        assert dumped["dbType"] == "pubmed"
         assert "id_" not in dumped
         assert "Reference" not in dumped
         assert "DbType" not in dumped
+
+    def test_status_field_removed(self) -> None:
+        """status フィールドは廃止済 (model に status 属性が定義されていない)."""
+        pub = Publication()
+        assert "status" not in Publication.model_fields
+        assert not hasattr(pub, "status")
 
 
 class TestBioSamplePackage:
@@ -783,10 +778,10 @@ class TestSra:
 
     def test_publication_accepts_list(self) -> None:
         kwargs = _make_minimal_sra_kwargs()
-        kwargs["publication"] = [Publication(id="12345", dbType="ePubmed")]
+        kwargs["publication"] = [Publication(id="12345", dbType="pubmed")]
         sra = SRA(**kwargs)
         assert sra.publication[0].id_ == "12345"
-        assert sra.publication[0].dbType == "ePubmed"
+        assert sra.publication[0].dbType == "pubmed"
 
     def test_experiment_technical_metadata(self) -> None:
         kwargs = _make_minimal_sra_kwargs()

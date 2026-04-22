@@ -108,7 +108,6 @@ def get_publication_mapping() -> dict[str, Any]:
                 "reference": {"type": "keyword"},
                 "url": {"type": "keyword", "index": False},
                 "dbType": {"type": "keyword"},
-                "status": {"type": "keyword"},
             },
         },
     }

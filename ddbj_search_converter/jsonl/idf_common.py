@@ -106,7 +106,7 @@ def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication
         publications.append(
             Publication(
                 id=pmid_value,
-                dbType="ePubmed",
+                dbType="pubmed",
                 url=f"https://pubmed.ncbi.nlm.nih.gov/{pmid_value}/",
             )
         )
@@ -117,7 +117,7 @@ def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication
         publications.append(
             Publication(
                 id=doi_value,
-                dbType="eDOI",
+                dbType="doi",
                 url=_build_doi_url(doi_value),
             )
         )

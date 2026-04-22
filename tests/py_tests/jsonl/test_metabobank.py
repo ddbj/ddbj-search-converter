@@ -355,7 +355,7 @@ class TestCreateMetabobankEntry:
         pub = mtb.publication[0]
         assert pub.id_ == "10.5511/plantbiotechnology.12.0503a"
         assert pub.url == "https://doi.org/10.5511/plantbiotechnology.12.0503a"
-        assert pub.dbType == "eDOI"
+        assert pub.dbType == "doi"
 
     def test_mtbks264_properties_no_key_bleed(self) -> None:
         """MTBKS264 fixture: quote 対応で properties dict に改行 bleed の spurious key が混入しない。"""

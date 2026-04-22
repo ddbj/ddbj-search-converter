@@ -645,25 +645,16 @@ class TestParsePublicationsJga:
         assert len(pubs) == 1
         assert isinstance(pubs[0], Publication)
         assert pubs[0].id_ == "24336570"
-        assert pubs[0].dbType == "ePubmed"
-        assert pubs[0].status == "ePublished"
+        assert pubs[0].dbType == "pubmed"
         assert pubs[0].url == "https://pubmed.ncbi.nlm.nih.gov/24336570/"
 
     def test_lowercase_pubmed_normalizes(self) -> None:
-        """大小文字揺れ (pubmed / PubMed) も ePubmed に正規化。"""
-        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "pubmed", "status": "published"}}}
-        assert parse_publications(entry)[0].dbType == "ePubmed"
-
-    def test_status_unpublished_normalizes(self) -> None:
-        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "unpublished"}}}
-        assert parse_publications(entry)[0].status == "eUnpublished"
-
-    def test_invalid_status_falls_back_to_none(self) -> None:
-        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "preprint"}}}
-        assert parse_publications(entry)[0].status is None
+        """大小文字揺れ (pubmed / PubMed) も pubmed に正規化。"""
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "pubmed"}}}
+        assert parse_publications(entry)[0].dbType == "pubmed"
 
     def test_unknown_db_type_falls_back_to_none(self) -> None:
-        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "UNKNOWN", "status": "published"}}}
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "UNKNOWN"}}}
         pub = parse_publications(entry)[0]
         assert pub.dbType is None
         assert pub.url is None
@@ -672,8 +663,8 @@ class TestParsePublicationsJga:
         entry = {
             "PUBLICATIONS": {
                 "PUBLICATION": [
-                    {"id": "1", "DB_TYPE": "PUBMED", "status": "published"},
-                    {"id": "2", "DB_TYPE": "PUBMED", "status": "published"},
+                    {"id": "1", "DB_TYPE": "PUBMED"},
+                    {"id": "2", "DB_TYPE": "PUBMED"},
                 ]
             }
         }
