@@ -20,7 +20,12 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
-from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import (
+    deduplicate_organizations,
+    ensure_attribute_list,
+    get_dbxref_map,
+    write_jsonl,
+)
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.schema import (
     JGA,
@@ -192,18 +197,17 @@ def parse_organization(entry: dict[str, Any], index_name: IndexName, accession: 
     - jga-study: STUDY_ATTRIBUTES の TAG="Submitting organization" の VALUE
     - jga-dac: CONTACTS/CONTACT の @organisation (@name / @email は load しない)
 
-    name 文字列ベースで dedupe。role / organizationType / department / url / abbreviation は None。
+    role / organizationType / department / url / abbreviation は None。
+    dedupe は共通 util ``deduplicate_organizations`` に委譲する。
     """
     organizations: list[Organization] = []
-    seen: set[str] = set()
 
     def _add(raw: Any) -> None:
         if not isinstance(raw, str):
             return
         stripped = raw.strip()
-        if not stripped or stripped in seen:
+        if not stripped:
             return
-        seen.add(stripped)
         organizations.append(Organization(name=stripped))
 
     try:
@@ -229,7 +233,7 @@ def parse_organization(entry: dict[str, Any], index_name: IndexName, accession: 
     except Exception as e:
         log_warn(f"failed to parse organization: {e}", accession=accession)
 
-    return organizations
+    return deduplicate_organizations(organizations)
 
 
 def parse_publications(entry: dict[str, Any], accession: str = "") -> list[Publication]:
@@ -301,15 +305,18 @@ def parse_grants(entry: dict[str, Any], accession: str = "") -> list[Grant]:
             agency_obj = item.get("AGENCY")
             agencies: list[Organization] = []
             if isinstance(agency_obj, str):
-                if agency_obj.strip():
-                    agencies.append(Organization(name=agency_obj, abbreviation=None))
+                stripped = agency_obj.strip()
+                if stripped:
+                    agencies.append(Organization(name=stripped, abbreviation=None))
             elif isinstance(agency_obj, dict):
-                agencies.append(
-                    Organization(
-                        name=agency_obj.get("content"),
-                        abbreviation=agency_obj.get("abbr"),
+                content = agency_obj.get("content")
+                if isinstance(content, str) and content.strip():
+                    agencies.append(
+                        Organization(
+                            name=content.strip(),
+                            abbreviation=agency_obj.get("abbr"),
+                        )
                     )
-                )
 
             grants.append(Grant(id=grant_id, title=title, agency=agencies))
     except Exception as e:

@@ -40,7 +40,7 @@ class Organization(BaseModel):
     url: str | None = None
 
 
-PublicationDbType = Literal["pubmed", "doi", "pmc"]
+PublicationDbType = Literal["pubmed", "doi", "pmc", "other"]
 
 
 class Publication(BaseModel):

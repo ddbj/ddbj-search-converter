@@ -217,11 +217,14 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
 
         pub_list = publication if isinstance(publication, list) else [publication]
         for item in pub_list:
-            id_ = item.get("id")
+            if not isinstance(item, dict):
+                continue
+            raw_id = item.get("id")
+            id_: str | None = raw_id if isinstance(raw_id, str) else None
             raw_dbtype = item.get("DbType")
             normalized: PublicationDbType | None = None
             publication_url: str | None = None
-            if raw_dbtype in _DBTYPE_NORMALIZE:
+            if isinstance(raw_dbtype, str) and raw_dbtype in _DBTYPE_NORMALIZE:
                 normalized = _DBTYPE_NORMALIZE[raw_dbtype]
                 if normalized == "doi":
                     if id_ is not None:
@@ -235,16 +238,29 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
                     elif id_ is not None and id_.isdigit():
                         publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{id_}/"
                     elif id_ is not None and id_.startswith("10."):
+                        # ePMC 誤登録で id が DOI 形式のときは dbType も doi に倒し、
+                        # dbType/url の整合を保つ
+                        normalized = "doi"
                         publication_url = f"https://doi.org/{id_}"
             elif isinstance(raw_dbtype, str) and raw_dbtype.isdigit():
                 normalized = "pubmed"
                 if id_ is not None:
                     publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+            citation = item.get("StructuredCitation")
+            title_val = citation.get("Title") if isinstance(citation, dict) else None
+            pub_title: str | None = title_val if isinstance(title_val, str) else None
+            raw_date = item.get("date")
+            pub_date: str | None = raw_date if isinstance(raw_date, str) else None
+            raw_reference = item.get("Reference")
+            pub_reference: str | None = raw_reference if isinstance(raw_reference, str) else None
+            if not id_ and not pub_title and not pub_reference and normalized is None:
+                # id / title / reference / dbType すべて空なら情報価値ゼロの entry として skip
+                continue
             publications.append(
                 Publication(
-                    title=(item.get("StructuredCitation") or {}).get("Title"),
-                    date=item.get("date"),
-                    reference=item.get("Reference"),
+                    title=pub_title,
+                    date=pub_date,
+                    reference=pub_reference,
                     id=id_,
                     url=publication_url,
                     dbType=normalized,
@@ -270,28 +286,34 @@ def parse_grant(project: dict[str, Any], accession: str = "") -> list[Grant]:
 
         grant_list = grant if isinstance(grant, list) else [grant]
         for item in grant_list:
+            if not isinstance(item, dict):
+                continue
             agency = item.get("Agency")
+            agencies: list[Organization] = []
             if isinstance(agency, str):
-                grants.append(
-                    Grant(
-                        id=item.get("GrantId"),
-                        title=item.get("Title"),
-                        agency=[Organization(name=agency, abbreviation=None)],
-                    )
-                )
+                stripped = agency.strip()
+                if stripped:
+                    agencies.append(Organization(name=stripped, abbreviation=None))
             elif isinstance(agency, dict):
-                grants.append(
-                    Grant(
-                        id=item.get("GrantId"),
-                        title=item.get("Title"),
-                        agency=[
-                            Organization(
-                                name=agency.get("content"),
-                                abbreviation=agency.get("abbr"),
-                            )
-                        ],
+                content = agency.get("content")
+                if isinstance(content, str) and content.strip():
+                    agencies.append(
+                        Organization(
+                            name=content.strip(),
+                            abbreviation=agency.get("abbr"),
+                        )
                     )
+            raw_grant_id = item.get("GrantId")
+            grant_id: str | None = raw_grant_id if isinstance(raw_grant_id, str) else None
+            raw_title = item.get("Title")
+            grant_title: str | None = raw_title if isinstance(raw_title, str) else None
+            grants.append(
+                Grant(
+                    id=grant_id,
+                    title=grant_title,
+                    agency=agencies,
                 )
+            )
     except Exception as e:
         log_warn(f"failed to parse grant: {e}", accession=accession)
     return grants

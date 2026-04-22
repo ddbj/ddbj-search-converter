@@ -334,7 +334,10 @@ class TestGetDbxrefMap:
 
 
 class TestDeduplicateOrganizations:
-    """Tests for deduplicate_organizations helper (M3)."""
+    """Tests for deduplicate_organizations helper.
+
+    key は ``(name.strip(), role, organizationType)`` tuple。
+    """
 
     def test_duplicate_names_kept_once(self) -> None:
         orgs = [Organization(name="DDBJ"), Organization(name="DDBJ")]
@@ -373,11 +376,40 @@ class TestDeduplicateOrganizations:
     def test_empty_input_returns_empty(self) -> None:
         assert deduplicate_organizations([]) == []
 
+    def test_same_name_different_role_kept_separate(self) -> None:
+        """同 name でも role が異なれば別エントリとして保持する (SRA center+broker 想定)。"""
+        orgs = [
+            Organization(name="NIID", role=None),
+            Organization(name="NIID", role="broker"),
+        ]
+        result = deduplicate_organizations(orgs)
+        assert len(result) == 2
+        assert [o.role for o in result] == [None, "broker"]
+
+    def test_same_name_different_orgtype_kept_separate(self) -> None:
+        """同 name でも organizationType が異なれば別エントリとして保持する。"""
+        orgs = [
+            Organization(name="WUGSC", organizationType="institute"),
+            Organization(name="WUGSC", organizationType="center"),
+        ]
+        result = deduplicate_organizations(orgs)
+        assert len(result) == 2
+        assert [o.organizationType for o in result] == ["institute", "center"]
+
+    def test_same_name_owner_and_participant_kept_separate(self) -> None:
+        """BP の同一機関が role=owner / role=participant で出現する場合、両方残す。"""
+        orgs = [
+            Organization(name="NCBI", role="owner"),
+            Organization(name="NCBI", role="participant"),
+        ]
+        result = deduplicate_organizations(orgs)
+        assert len(result) == 2
+
     def test_attributes_preserved_for_first_entry(self) -> None:
-        """重複時、最初に出現したエントリの属性が保持される。"""
+        """(name, role, orgType) が完全一致する重複時、先勝ちで属性が残る。"""
         orgs = [
             Organization(name="DDBJ", abbreviation="DDBJ", role="owner"),
-            Organization(name="DDBJ", abbreviation="OTHER"),
+            Organization(name="DDBJ", abbreviation="OTHER", role="owner"),
         ]
         result = deduplicate_organizations(orgs)
         assert len(result) == 1

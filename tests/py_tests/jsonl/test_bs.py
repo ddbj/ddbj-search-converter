@@ -354,25 +354,75 @@ class TestParseOrganization:
         assert orgs[0].organizationType is None
 
     def test_duplicate_owner_names_deduplicated(self) -> None:
-        """Owner.Name に同名が複数あれば deduplicate_organizations helper で集約 (M3)。"""
+        """Owner.Name に同名が複数あれば deduplicate_organizations helper で集約。"""
         sample = _make_sample()
         sample["Owner"] = {"Name": [{"content": "DDBJ"}, {"content": "DDBJ"}]}
         orgs = parse_organization(sample)
         assert orgs == [Organization(name="DDBJ")]
 
     def test_whitespace_owner_names_deduplicated(self) -> None:
-        """Owner.Name の whitespace 違いも同一とみなして dedupe (M3)。"""
+        """Owner.Name の whitespace 違いも同一とみなして dedupe。"""
         sample = _make_sample()
         sample["Owner"] = {"Name": ["DDBJ", " DDBJ "]}
         orgs = parse_organization(sample)
         assert orgs == [Organization(name="DDBJ")]
 
     def test_case_sensitive_owner_names_kept_separate(self) -> None:
-        """Owner.Name の case 違いは別物として保持 (case-sensitive dedupe, M3)。"""
+        """Owner.Name の case 違いは別物として保持 (case-sensitive dedupe)。"""
         sample = _make_sample()
         sample["Owner"] = {"Name": ["DDBJ", "ddbj"]}
         orgs = parse_organization(sample)
         assert orgs == [Organization(name="DDBJ"), Organization(name="ddbj")]
+
+    def test_dict_empty_content_skipped(self) -> None:
+        """dict の content が空文字列 `""` なら skip (空 Organization を作らない)。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": ""}}
+        assert parse_organization(sample) == []
+
+    def test_dict_whitespace_content_skipped(self) -> None:
+        """dict の content が空白のみなら skip。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": "   "}}
+        assert parse_organization(sample) == []
+
+    def test_dict_without_content_key_skipped(self) -> None:
+        """dict に content key 自体が無ければ skip。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"abbreviation": "X"}}
+        assert parse_organization(sample) == []
+
+    def test_dict_non_str_content_skipped(self) -> None:
+        """dict の content が str でなければ skip (想定外入力への防御)。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": 123}}
+        assert parse_organization(sample) == []
+
+    def test_string_empty_skipped(self) -> None:
+        """str の空文字列は skip。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": ""}
+        assert parse_organization(sample) == []
+
+    def test_string_whitespace_only_skipped(self) -> None:
+        """str が空白のみなら skip。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": "   "}
+        assert parse_organization(sample) == []
+
+    def test_string_is_stripped(self) -> None:
+        """str の leading/trailing whitespace は name から除去する。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": "  DDBJ  "}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="DDBJ")]
+
+    def test_dict_content_is_stripped(self) -> None:
+        """dict の content の leading/trailing whitespace は name から除去する。"""
+        sample = _make_sample()
+        sample["Owner"] = {"Name": {"content": "  DDBJ  ", "abbreviation": "D"}}
+        orgs = parse_organization(sample)
+        assert orgs == [Organization(name="DDBJ", abbreviation="D")]
 
 
 class TestParseSameAs:

@@ -184,6 +184,7 @@ def parse_organization(sample: dict[str, Any], accession: str = "") -> list[Orga
 
     Owner.Name 由来。BS では role / organizationType の概念が無いため常に None。
     ``abbreviation`` は NCBI のみ XML attribute 由来で埋まる (DDBJ は常に None)。
+    str / dict のどちらでも ``.strip()`` 後に空なら skip し、name は strip 済みで格納する。
     """
     organizations: list[Organization] = []
     try:
@@ -196,15 +197,20 @@ def parse_organization(sample: dict[str, Any], accession: str = "") -> list[Orga
         name_list = name if isinstance(name, list) else [name]
         for item in name_list:
             if isinstance(item, str):
-                if item:
-                    organizations.append(Organization(name=item))
+                stripped = item.strip()
+                if not stripped:
+                    continue
+                organizations.append(Organization(name=stripped))
             elif isinstance(item, dict):
                 content = item.get("content")
-                if content is None:
+                if not isinstance(content, str):
+                    continue
+                stripped = content.strip()
+                if not stripped:
                     continue
                 organizations.append(
                     Organization(
-                        name=str(content),
+                        name=stripped,
                         abbreviation=item.get("abbreviation"),
                     )
                 )

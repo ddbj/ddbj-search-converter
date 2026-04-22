@@ -222,7 +222,7 @@ class TestParseOrganization:
         assert orgs == []
 
     def test_duplicate_organizations_deduplicated(self) -> None:
-        """同名 Organization が複数件来た場合、deduplicate_organizations helper で集約される (M3)。"""
+        """同名 Organization が完全一致で複数件来た場合、deduplicate_organizations helper で集約される。"""
         project = _make_project()
         project["Submission"]["Description"]["Organization"] = [
             {"Name": "DDBJ Center", "type": "center", "role": "owner"},
@@ -231,6 +231,28 @@ class TestParseOrganization:
         orgs = parse_organization(project)
         assert len(orgs) == 1
         assert orgs[0].name == "DDBJ Center"
+
+    def test_same_name_owner_and_participant_kept_separate(self) -> None:
+        """同名機関が owner と participant 両方で登場したら、dedup key (name, role, orgType) が異なるので両方保持する。"""
+        project = _make_project()
+        project["Submission"]["Description"]["Organization"] = [
+            {"Name": "NCBI", "type": "institute", "role": "owner"},
+            {"Name": "NCBI", "type": "institute", "role": "participant"},
+        ]
+        orgs = parse_organization(project)
+        assert len(orgs) == 2
+        assert [o.role for o in orgs] == ["owner", "participant"]
+
+    def test_same_name_different_orgtype_kept_separate(self) -> None:
+        """同名機関が organizationType 違いで登場したら別エントリとして保持する。"""
+        project = _make_project()
+        project["Submission"]["Description"]["Organization"] = [
+            {"Name": "NCBI", "type": "institute", "role": "owner"},
+            {"Name": "NCBI", "type": "center", "role": "owner"},
+        ]
+        orgs = parse_organization(project)
+        assert len(orgs) == 2
+        assert [o.organizationType for o in orgs] == ["institute", "center"]
 
 
 class TestParsePublication:
@@ -287,7 +309,7 @@ class TestParsePublication:
         assert pubs[0].url == "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3594186/"
 
     def test_publication_epmc_doi_format(self) -> None:
-        """DbType が ePMC だが ID が DOI 形式の場合、dbType は pmc のまま URL だけ DOI に倒す。"""
+        """DbType が ePMC だが ID が DOI 形式の場合、dbType を doi に倒して整合させる。"""
         project = _make_project()
         project["Project"]["ProjectDescr"]["Publication"] = {
             "id": "10.1007/s10531-014-0684-8",
@@ -295,7 +317,7 @@ class TestParsePublication:
         }
         pubs = parse_publication(project)
         assert len(pubs) == 1
-        assert pubs[0].dbType == "pmc"
+        assert pubs[0].dbType == "doi"
         assert pubs[0].url == "https://doi.org/10.1007/s10531-014-0684-8"
 
     def test_publication_not_available(self) -> None:
@@ -361,6 +383,99 @@ class TestParsePublication:
         assert pubs[0].dbType == "pmc"
         assert pubs[0].url is None
 
+    def test_publication_completely_empty_is_skipped(self) -> None:
+        """id / title / reference / dbType すべて空なら情報価値ゼロの entry として skip。
+
+        DbType=eNotAvailable + id/title/reference 欠落の組み合わせで発生。
+        """
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {"DbType": "eNotAvailable"}
+        assert parse_publication(project) == []
+
+    def test_publication_eNotAvailable_with_title_kept(self) -> None:
+        """eNotAvailable でも title が残っていれば Publication として保持する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "DbType": "eNotAvailable",
+            "StructuredCitation": {"Title": "unpublished paper"},
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].title == "unpublished paper"
+        assert pubs[0].dbType is None
+        assert pubs[0].url is None
+
+    def test_publication_eNotAvailable_with_reference_kept(self) -> None:
+        """eNotAvailable でも reference が残っていれば Publication として保持する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "DbType": "eNotAvailable",
+            "Reference": "Smith et al., submitted",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].reference == "Smith et al., submitted"
+
+    def test_publication_non_str_id_ignored(self) -> None:
+        """id が dict / list など非 str なら None として扱う (Pydantic validation を守る)。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": {"content": "12345"},
+            "DbType": "ePubmed",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].id_ is None
+        assert pubs[0].url is None
+
+    def test_publication_non_str_title_ignored(self) -> None:
+        """StructuredCitation.Title が dict など非 str なら title=None。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "12345",
+            "DbType": "ePubmed",
+            "StructuredCitation": {"Title": {"content": "A paper"}},
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].title is None
+
+    def test_publication_structuredcitation_non_dict_ignored(self) -> None:
+        """StructuredCitation が str などの非 dict なら title=None (None fallback)。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "12345",
+            "DbType": "ePubmed",
+            "StructuredCitation": "raw string",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].title is None
+
+    def test_publication_non_str_date_ignored(self) -> None:
+        """date が dict など非 str なら None に落とす。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "12345",
+            "DbType": "ePubmed",
+            "date": {"content": "2020-01-01"},
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].date is None
+
+    def test_publication_non_str_reference_ignored(self) -> None:
+        """Reference が list など非 str なら None に落とす。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "12345",
+            "DbType": "ePubmed",
+            "Reference": ["ref1", "ref2"],
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].reference is None
+
 
 class TestParseGrant:
     """Tests for parse_grant function."""
@@ -404,6 +519,93 @@ class TestParseGrant:
         assert agency.organizationType is None
         assert agency.department is None
         assert agency.url is None
+
+    def test_agency_dict_without_content_yields_empty_agencies(self) -> None:
+        """<Agency abbr="X" /> のように content が無ければ agencies=[] (空 Organization を作らない)。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "Grant Title",
+            "Agency": {"abbr": "NIH"},
+        }
+        grants = parse_grant(project)
+        assert len(grants) == 1
+        assert grants[0].agency == []
+
+    def test_agency_dict_empty_content_yields_empty_agencies(self) -> None:
+        """dict content が空文字列なら agencies=[]。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "T",
+            "Agency": {"abbr": "X", "content": ""},
+        }
+        assert parse_grant(project)[0].agency == []
+
+    def test_agency_dict_whitespace_content_yields_empty_agencies(self) -> None:
+        """dict content が空白のみなら agencies=[]。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "T",
+            "Agency": {"abbr": "X", "content": "   "},
+        }
+        assert parse_grant(project)[0].agency == []
+
+    def test_agency_str_empty_yields_empty_agencies(self) -> None:
+        """Agency が空文字列なら agencies=[]。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "T",
+            "Agency": "",
+        }
+        assert parse_grant(project)[0].agency == []
+
+    def test_agency_str_whitespace_yields_empty_agencies(self) -> None:
+        """Agency が空白のみなら agencies=[]。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "T",
+            "Agency": "   ",
+        }
+        assert parse_grant(project)[0].agency == []
+
+    def test_agency_str_is_stripped(self) -> None:
+        """Agency が str のとき leading/trailing whitespace は除去する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": "T",
+            "Agency": "  NIH  ",
+        }
+        agency = parse_grant(project)[0].agency[0]
+        assert agency.name == "NIH"
+
+    def test_grant_non_str_grant_id_ignored(self) -> None:
+        """GrantId が dict など非 str なら None に倒す (Pydantic validation を守る)。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": {"content": "G001"},
+            "Title": "T",
+            "Agency": "NIH",
+        }
+        grants = parse_grant(project)
+        assert len(grants) == 1
+        assert grants[0].id_ is None
+
+    def test_grant_non_str_title_ignored(self) -> None:
+        """Title が list など非 str なら None に倒す。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Grant"] = {
+            "GrantId": "G001",
+            "Title": ["T1", "T2"],
+            "Agency": "NIH",
+        }
+        grants = parse_grant(project)
+        assert len(grants) == 1
+        assert grants[0].title is None
 
 
 class TestParseExternalLink:

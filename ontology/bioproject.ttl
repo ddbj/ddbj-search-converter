@@ -65,7 +65,7 @@ bioproject:reference
 bioproject:dbType
     a owl:DatatypeProperty ;
     rdfs:label "dbType" ;
-    rdfs:comment "Publication database type: pubmed, doi, or pmc" .
+    rdfs:comment "Publication database type: pubmed, doi, pmc, or other (other = non-DOI URLs such as SSRN embedded in the source record)" .
 
 bioproject:grant
     a owl:ObjectProperty ;

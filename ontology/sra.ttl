@@ -45,7 +45,7 @@ sra:reference
 sra:dbType
     a owl:DatatypeProperty ;
     rdfs:label "dbType" ;
-    rdfs:comment "Publication database type: pubmed, doi, or pmc (SRA populates pubmed only)" .
+    rdfs:comment "Publication database type: pubmed, doi, pmc, or other (SRA populates pubmed only)" .
 
 sra:libraryStrategy
     a owl:DatatypeProperty ;

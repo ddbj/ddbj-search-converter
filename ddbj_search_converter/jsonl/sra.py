@@ -31,7 +31,12 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.jsonl.distribution import make_sra_distribution
-from ddbj_search_converter.jsonl.utils import ensure_attribute_list, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import (
+    deduplicate_organizations,
+    ensure_attribute_list,
+    get_dbxref_map,
+    write_jsonl,
+)
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
@@ -369,27 +374,27 @@ def _parse_organizations_from_entry_attrs(entry: Any) -> list[Organization]:
     xmltodict 正規化後は prefix 無しの dict key ("center_name" / "broker_name") に展開される。
     broker_name は role="broker" で追加。lab_name は部局名主体 (自由記述) のため load しない
     (Organization.name に詰めると center_name と意味衝突するため)。
-    name 文字列ベース (strip 後 case sensitive) で dedupe。
+    dedupe は共通 util ``deduplicate_organizations`` に委譲し、key は
+    ``(name, role, organizationType)``。center_name と broker_name が同一文字列でも
+    role が異なれば別エントリとして両方保持される。
     空文字 / 空白のみ / 非 str / 非 dict 入力は skip。
     """
     if not isinstance(entry, dict):
         return []
     orgs: list[Organization] = []
-    seen: set[str] = set()
 
     def _add(value: Any, role: OrganizationRole | None) -> None:
         if not isinstance(value, str):
             return
         stripped = value.strip()
-        if not stripped or stripped in seen:
+        if not stripped:
             return
-        seen.add(stripped)
         orgs.append(Organization(name=stripped, role=role))
 
     _add(entry.get("center_name"), None)
     _add(entry.get("broker_name"), "broker")
 
-    return orgs
+    return deduplicate_organizations(orgs)
 
 
 def _parse_publications(

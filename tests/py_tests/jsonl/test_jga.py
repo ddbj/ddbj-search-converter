@@ -736,6 +736,33 @@ class TestParseGrantsJga:
     def test_missing_grants_returns_empty(self) -> None:
         assert parse_grants({}) == []
 
+    def test_agency_dict_without_content_yields_empty_agencies(self) -> None:
+        """<AGENCY abbr="X" /> のように content が無ければ agencies=[]。"""
+        entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": {"abbr": "X"}}}}
+        grants = parse_grants(entry)
+        assert len(grants) == 1
+        assert grants[0].agency == []
+
+    def test_agency_dict_empty_content_yields_empty_agencies(self) -> None:
+        """dict content が空文字列なら agencies=[]。"""
+        entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": {"abbr": "X", "content": ""}}}}
+        assert parse_grants(entry)[0].agency == []
+
+    def test_agency_dict_whitespace_content_yields_empty_agencies(self) -> None:
+        """dict content が空白のみなら agencies=[]。"""
+        entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": {"abbr": "X", "content": "   "}}}}
+        assert parse_grants(entry)[0].agency == []
+
+    def test_agency_str_empty_yields_empty_agencies(self) -> None:
+        """AGENCY が空文字列なら agencies=[]。"""
+        entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": ""}}}
+        assert parse_grants(entry)[0].agency == []
+
+    def test_agency_str_is_stripped(self) -> None:
+        """AGENCY が str のとき leading/trailing whitespace は除去する。"""
+        entry = {"GRANTS": {"GRANT": {"grant_id": "G1", "TITLE": "T", "AGENCY": "  NIH  "}}}
+        assert parse_grants(entry)[0].agency[0].name == "NIH"
+
 
 class TestParseExternalLinkJga:
     """Tests for parse_external_link function (JGA type-specific dispatch)."""

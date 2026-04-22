@@ -189,16 +189,17 @@ def get_dbxref_map(
 
 
 def deduplicate_organizations(organizations: list[Organization]) -> list[Organization]:
-    """Organization list を name (strip + case-sensitive) で重複排除する。
+    """Organization list を ``(name, role, organizationType)`` で重複排除する。
 
-    順序保持。`name.strip()` が空 (None も含む) のエントリは「同一」とみなして
-    2 つ目以降を捨てる。BP / BS の parse_organization で末尾呼び出しする想定
-    (SRA / JGA は構築中 dedupe で別パターン)。
+    順序保持。`name.strip()` + `role` + `organizationType` が一致するエントリは
+    2 つ目以降を捨て、最初の entry の属性 (abbreviation / department / url) が残る。
+    同名機関でも役割が異なれば別エントリとして両方保持する (SRA の
+    ``center_name == broker_name`` や BP の owner / participant 両立が該当)。
     """
-    seen: set[str] = set()
+    seen: set[tuple[str, str | None, str | None]] = set()
     result: list[Organization] = []
     for org in organizations:
-        key = (org.name or "").strip()
+        key = ((org.name or "").strip(), org.role, org.organizationType)
         if key in seen:
             continue
         seen.add(key)

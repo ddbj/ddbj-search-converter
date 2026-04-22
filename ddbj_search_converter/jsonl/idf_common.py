@@ -11,7 +11,8 @@ import csv
 import re
 from pathlib import Path
 
-from ddbj_search_converter.schema import Organization, Publication
+from ddbj_search_converter.jsonl.utils import deduplicate_organizations
+from ddbj_search_converter.schema import Organization, Publication, PublicationDbType
 
 _DOI_PREFIX_RE = re.compile(
     r"^\s*(?:DOI\s*:\s*|https?://(?:dx\.)?doi\.org/|(?:dx\.)?doi\.org/)",
@@ -79,18 +80,17 @@ def parse_submitter_affiliations(idf: dict[str, list[str]]) -> list[Organization
     """IDF の Person Affiliation から Organization list を構築する。
 
     GEA / MetaboBank IDF の Person Roles は全件 "submitter" 単一値のため、role は
-    "submitter" を固定する。空値は skip し、unique 化する。
+    "submitter" を固定する。空値は skip し、共通 util ``deduplicate_organizations``
+    に dedupe を委譲する。
     """
     affiliations = idf.get("Person Affiliation", [])
-    seen: set[str] = set()
     organizations: list[Organization] = []
     for affiliation in affiliations:
         name = affiliation.strip()
-        if not name or name in seen:
+        if not name:
             continue
-        seen.add(name)
         organizations.append(Organization(name=name, role="submitter"))
-    return organizations
+    return deduplicate_organizations(organizations)
 
 
 def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication]:
@@ -114,10 +114,13 @@ def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication
         doi_value = _normalize_doi_value(doi)
         if not doi_value:
             continue
+        # DOI 形式 (`10.xxx/...`) 以外 (SSRN URL 等) は dbType="other" に倒し、
+        # dbType=doi と URL のセマンティクス矛盾を防ぐ
+        dbtype: PublicationDbType = "doi" if doi_value.startswith("10.") else "other"
         publications.append(
             Publication(
                 id=doi_value,
-                dbType="doi",
+                dbType=dbtype,
                 url=_build_doi_url(doi_value),
             )
         )

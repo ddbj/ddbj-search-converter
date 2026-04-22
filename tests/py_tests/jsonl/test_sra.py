@@ -513,12 +513,19 @@ class TestParseOrganizationsFromEntryAttrs:
             Organization(name="DRA", role="broker"),
         ]
 
-    def test_center_name_and_broker_name_same_value_dedup(self) -> None:
-        """center_name == broker_name は name dedupe で 1 要素のみ (center 先勝ち)。"""
+    def test_center_name_and_broker_name_same_value_keeps_both(self) -> None:
+        """center_name == broker_name でも role が異なれば両方保持する。
+
+        dedup key は ``(name, role, organizationType)`` のため、同一機関が
+        center 役 (role=None) と broker 役 (role="broker") の両方を務める投稿を
+        別エントリとして保持する。
+        """
         entry = {"center_name": "NIID", "broker_name": "NIID"}
         orgs = _parse_organizations_from_entry_attrs(entry)
-        assert orgs == [Organization(name="NIID")]
-        assert orgs[0].role is None
+        assert orgs == [
+            Organization(name="NIID", role=None),
+            Organization(name="NIID", role="broker"),
+        ]
 
     def test_broker_name_empty_string_skipped(self) -> None:
         assert _parse_organizations_from_entry_attrs({"broker_name": ""}) == []

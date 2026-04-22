@@ -50,7 +50,7 @@ gea:reference
 gea:dbType
     a owl:DatatypeProperty ;
     rdfs:label "dbType" ;
-    rdfs:comment "Publication database type: pubmed, doi, or pmc" .
+    rdfs:comment "Publication database type: pubmed, doi, pmc, or other (other = non-DOI URLs such as SSRN stored in IDF Publication DOI column)" .
 
 gea:experimentType
     a owl:DatatypeProperty ;

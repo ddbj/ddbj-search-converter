@@ -304,12 +304,29 @@ class TestParsePubmedDoiPublications:
         assert pubs[0].id_ == "10.1038/nature12345"
         assert pubs[0].url == "https://doi.org/10.1038/nature12345"
 
-    def test_doi_non_doi_url_kept_as_url(self) -> None:
-        """DOI 以外の URL (SSRN 等) は生値のまま `id` / `url` に入り、doi.org で二重 wrap しない。"""
+    def test_doi_non_doi_url_marked_as_other(self) -> None:
+        """DOI 以外の URL (SSRN 等) は生値のまま `id` / `url` に入り、`dbType="other"` に倒す。
+
+        DOI 形式 (`10.xxx/...`) でないのに `dbType="doi"` にすると、
+        publication.dbType=doi と URL のセマンティクスが矛盾するのを防ぐ。
+        """
         idf = {"Publication DOI": ["http://ssrn.com/abstract=4137686"]}
         pubs = parse_pubmed_doi_publications(idf)
         assert pubs[0].id_ == "http://ssrn.com/abstract=4137686"
         assert pubs[0].url == "http://ssrn.com/abstract=4137686"
+        assert pubs[0].dbType == "other"
+
+    def test_doi_https_non_doi_url_marked_as_other(self) -> None:
+        """https:// で始まる非 DOI URL も `dbType="other"`。"""
+        idf = {"Publication DOI": ["https://example.com/paper"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].url == "https://example.com/paper"
+        assert pubs[0].dbType == "other"
+
+    def test_doi_formatted_value_marked_as_doi(self) -> None:
+        """正規の DOI 形式 (`10.xxx/...`) は `dbType="doi"` を維持する。"""
+        idf = {"Publication DOI": ["10.1038/nature12345"]}
+        pubs = parse_pubmed_doi_publications(idf)
         assert pubs[0].dbType == "doi"
 
     def test_doi_trailing_dot_preserved(self) -> None:
