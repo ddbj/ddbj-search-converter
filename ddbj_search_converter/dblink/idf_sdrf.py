@@ -11,6 +11,7 @@ GEA と MetaboBank で使用する。
 ``Metabolonote:SE*`` / ``RPMM:RPMM*`` / ``Metabolights:MTBLS*`` 等の他 prefix は silent skip。
 """
 
+import csv
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -31,6 +32,9 @@ class IdfSdrfResult:
 def parse_idf_file(idf_path: Path) -> tuple[str | None, list[str]]:
     """IDF ファイルから BioProject ID と Related study 値を抽出する。
 
+    MAGE-TAB 仕様に従い ``csv.reader(quotechar='"')`` で quote 囲み値を正しく扱う
+    (``idf_common.parse_idf`` と一貫)。
+
     Returns:
         ``(bioproject, related_studies)``:
         - ``bioproject``: 最初に見つかった ``Comment[BioProject]`` の最初の非空値 (無ければ ``None``)
@@ -40,14 +44,13 @@ def parse_idf_file(idf_path: Path) -> tuple[str | None, list[str]]:
     bioproject: str | None = None
     related_studies: list[str] = []
 
-    with idf_path.open("r", encoding="utf-8") as f:
-        for raw_line in f:
-            line = raw_line.rstrip("\n").rstrip("\r")
-            if not line:
+    with idf_path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, delimiter="\t", quotechar='"')
+        for row in reader:
+            if not row:
                 continue
-            parts = line.split("\t")
-            tag = parts[0].strip()
-            values = [v.strip() for v in parts[1:]]
+            tag = row[0].strip()
+            values = [v.strip() for v in row[1:]]
 
             if tag == "Comment[BioProject]" and bioproject is None:
                 for v in values:
@@ -63,7 +66,9 @@ def parse_idf_file(idf_path: Path) -> tuple[str | None, list[str]]:
 def parse_sdrf_file(sdrf_path: Path) -> dict[str, set[str]]:
     """SDRF ファイルから BioSample / SRA_RUN / SRA_EXPERIMENT の値を抽出する。
 
-    列名は strict case match (``Comment[BioSample]`` / ``Comment[SRA_RUN]`` / ``Comment[SRA_EXPERIMENT]``)。
+    MAGE-TAB 仕様に従い ``csv.reader(quotechar='"')`` で quote 囲み値を正しく扱う
+    (``idf_common.parse_idf`` と一貫)。列名は strict case match
+    (``Comment[BioSample]`` / ``Comment[SRA_RUN]`` / ``Comment[SRA_EXPERIMENT]``)。
     列が存在しない場合は対応 key の value は空 set。空 cell / 空白のみ cell は skip。
 
     Returns:
@@ -81,11 +86,12 @@ def parse_sdrf_file(sdrf_path: Path) -> dict[str, set[str]]:
         "Comment[SRA_EXPERIMENT]": "sra_experiment",
     }
 
-    with sdrf_path.open("r", encoding="utf-8") as f:
-        header_line = f.readline()
-        if not header_line:
+    with sdrf_path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, delimiter="\t", quotechar='"')
+        try:
+            header = next(reader)
+        except StopIteration:
             return result
-        header = header_line.rstrip("\n").rstrip("\r").split("\t")
 
         # 列名 → 列 index の map を構築 (該当列が無ければ entry なし)
         indexes: list[tuple[int, str]] = []
@@ -97,14 +103,12 @@ def parse_sdrf_file(sdrf_path: Path) -> dict[str, set[str]]:
         if not indexes:
             return result
 
-        for raw_line in f:
-            line = raw_line.rstrip("\n").rstrip("\r")
-            if not line:
+        for row in reader:
+            if not row:
                 continue
-            cols = line.split("\t")
             for idx, key in indexes:
-                if idx < len(cols):
-                    value = cols[idx].strip()
+                if idx < len(row):
+                    value = row[idx].strip()
                     if value:
                         result[key].add(value)
 

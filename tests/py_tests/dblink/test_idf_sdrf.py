@@ -116,6 +116,24 @@ Investigation Title\tTest
         _, related_studies = parse_idf_file(idf_path)
         assert related_studies == []
 
+    def test_quoted_value_with_tab_kept_as_single_value(self, tmp_path: Path) -> None:
+        """MAGE-TAB 仕様で quote 囲み値の中の tab はリテラル保持し、1 値として扱う。"""
+        idf_content = 'Comment[BioProject]\t"PRJDB1234\tnote"\n'
+        idf_path = tmp_path / "test.idf.txt"
+        idf_path.write_text(idf_content, encoding="utf-8")
+
+        bioproject, _ = parse_idf_file(idf_path)
+        assert bioproject == "PRJDB1234\tnote"
+
+    def test_quoted_value_with_newline_kept_as_single_value(self, tmp_path: Path) -> None:
+        """MAGE-TAB 仕様で quote 囲み値の中の newline はリテラル保持し、行分割しない。"""
+        idf_content = 'Comment[Related study]\t"JGA:JGAS000001\nline2"\tNBDC:hum0001\n'
+        idf_path = tmp_path / "test.idf.txt"
+        idf_path.write_text(idf_content, encoding="utf-8")
+
+        _, related_studies = parse_idf_file(idf_path)
+        assert related_studies == ["JGA:JGAS000001\nline2", "NBDC:hum0001"]
+
 
 class TestParseSdrfFile:
     """Tests for parse_sdrf_file function."""
@@ -227,6 +245,31 @@ DF\tDRR000002
 
         result = parse_sdrf_file(sdrf_path)
         assert result["sra_run"] == {"DRR000001", "DRR000002"}
+
+    def test_quoted_cell_with_tab_kept_as_single_value(self, tmp_path: Path) -> None:
+        """MAGE-TAB 仕様で quote 囲み cell 内の tab はリテラル保持し、cell 境界として扱わない。"""
+        sdrf_content = (
+            "Source Name\tComment[BioSample]\tComment[description]\n"
+            'AF\t"SAMD00001\tnote"\tdescription\n'
+        )
+        sdrf_path = tmp_path / "test.sdrf.txt"
+        sdrf_path.write_text(sdrf_content, encoding="utf-8")
+
+        result = parse_sdrf_file(sdrf_path)
+        assert result["biosample"] == {"SAMD00001\tnote"}
+
+    def test_quoted_cell_with_newline_kept_as_single_row(self, tmp_path: Path) -> None:
+        """MAGE-TAB 仕様で quote 囲み cell 内の newline はリテラル保持し、行境界として扱わない。"""
+        sdrf_content = (
+            "Source Name\tComment[BioSample]\n"
+            'AF\t"SAMD00001\nsecond-line"\n'
+            "BF\tSAMD00002\n"
+        )
+        sdrf_path = tmp_path / "test.sdrf.txt"
+        sdrf_path.write_text(sdrf_content, encoding="utf-8")
+
+        result = parse_sdrf_file(sdrf_path)
+        assert result["biosample"] == {"SAMD00001\nsecond-line", "SAMD00002"}
 
     def test_real_fixture_e_gead_1096(self) -> None:
         """実 fixture E-GEAD-1096 で SRA_RUN / SRA_EXPERIMENT を抽出できることを確認 (E2E)。"""
