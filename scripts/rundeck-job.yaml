@@ -34,7 +34,7 @@
       description: Recreate app container (for JGA mount refresh)
       passSecureInput: 'false'
       script: |-
-        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter
         cd $PROJECT_DIR
 
         podman-compose -f compose.yml stop app
@@ -46,7 +46,7 @@
       description: Run pipeline (incremental)
       passSecureInput: 'false'
       script: |-
-        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter
         cd $PROJECT_DIR
 
         podman-compose -f compose.yml exec -T app bash /app/scripts/run_pipeline.sh --parallel 16
@@ -54,7 +54,7 @@
       description: Cleanup old results
       passSecureInput: 'false'
       script: |-
-        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter-2603
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter
         cd $PROJECT_DIR
 
         podman-compose -f compose.yml exec -T app cleanup_old_results --keep 3
