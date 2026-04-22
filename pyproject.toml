@@ -32,6 +32,7 @@ tests = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
+    "pytest-xdist",
     "ruff",
 ]
 
@@ -80,6 +81,7 @@ cleanup_old_results = "ddbj_search_converter.cli.cleanup_old_results:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests/py_tests"]
+addopts = ["-n", "auto"]
 
 [tool.mypy]
 files = ["./ddbj_search_converter/**/*.py", "./tests/py_tests/**/*.py"]

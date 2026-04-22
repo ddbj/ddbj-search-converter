@@ -8,8 +8,8 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.date_cache import db as date_cache_db
 from ddbj_search_converter.date_cache.db import (
-    CHUNK_SIZE,
     date_cache_exists,
     fetch_bp_accessions_modified_since_from_cache,
     fetch_bp_dates_from_cache,
@@ -171,47 +171,59 @@ class TestFetchModifiedSince:
 
 
 class TestChunkBoundary:
-    def test_chunk_boundary_below(self, tmp_path: Path) -> None:
+    def test_chunk_boundary_below(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(date_cache_db, "CHUNK_SIZE", 100)
+        n = date_cache_db.CHUNK_SIZE - 1
         config = _make_config(tmp_path)
         init_date_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "2026-01-01T00:00:00Z", None, None) for i in range(CHUNK_SIZE - 1)]
+        rows = [(f"PRJDB{i}", "2026-01-01T00:00:00Z", None, None) for i in range(n)]
         count = insert_bp_dates(config, rows)
-        assert count == CHUNK_SIZE - 1
+        assert count == n
 
         finalize_date_cache_db(config)
 
-        accessions = [f"PRJDB{i}" for i in range(CHUNK_SIZE - 1)]
+        accessions = [f"PRJDB{i}" for i in range(n)]
         result = fetch_bp_dates_from_cache(config, accessions)
-        assert len(result) == CHUNK_SIZE - 1
+        assert len(result) == n
 
-    def test_chunk_boundary_exact(self, tmp_path: Path) -> None:
+    def test_chunk_boundary_exact(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(date_cache_db, "CHUNK_SIZE", 100)
+        n = date_cache_db.CHUNK_SIZE
         config = _make_config(tmp_path)
         init_date_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "2026-01-01T00:00:00Z", None, None) for i in range(CHUNK_SIZE)]
+        rows = [(f"PRJDB{i}", "2026-01-01T00:00:00Z", None, None) for i in range(n)]
         count = insert_bp_dates(config, rows)
-        assert count == CHUNK_SIZE
+        assert count == n
 
         finalize_date_cache_db(config)
 
-        accessions = [f"PRJDB{i}" for i in range(CHUNK_SIZE)]
+        accessions = [f"PRJDB{i}" for i in range(n)]
         result = fetch_bp_dates_from_cache(config, accessions)
-        assert len(result) == CHUNK_SIZE
+        assert len(result) == n
 
-    def test_chunk_boundary_above(self, tmp_path: Path) -> None:
+    def test_chunk_boundary_above(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(date_cache_db, "CHUNK_SIZE", 100)
+        n = date_cache_db.CHUNK_SIZE + 1
         config = _make_config(tmp_path)
         init_date_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "2026-01-01T00:00:00Z", None, None) for i in range(CHUNK_SIZE + 1)]
+        rows = [(f"PRJDB{i}", "2026-01-01T00:00:00Z", None, None) for i in range(n)]
         count = insert_bp_dates(config, rows)
-        assert count == CHUNK_SIZE + 1
+        assert count == n
 
         finalize_date_cache_db(config)
 
-        accessions = [f"PRJDB{i}" for i in range(CHUNK_SIZE + 1)]
+        accessions = [f"PRJDB{i}" for i in range(n)]
         result = fetch_bp_dates_from_cache(config, accessions)
-        assert len(result) == CHUNK_SIZE + 1
+        assert len(result) == n
 
 
 accession_strategy = st.text(

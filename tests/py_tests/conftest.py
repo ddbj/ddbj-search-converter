@@ -4,9 +4,13 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
+from hypothesis import settings
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import _ctx
+
+settings.register_profile("default", deadline=None)
+settings.load_profile("default")
 
 
 @pytest.fixture

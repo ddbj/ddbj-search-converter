@@ -40,6 +40,7 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 TABLE_NAME = "accessions"
+QUERY_BATCH_SIZE = 10000
 
 
 def _tmp_sra_db_path(config: Config) -> Path:
@@ -759,10 +760,8 @@ def get_accession_info_bulk(
     result: dict[str, AccessionInfo] = {}
 
     with duckdb.connect(db_path, read_only=True) as conn:
-        # バッチサイズを制限してクエリを実行
-        batch_size = 10000
-        for i in range(0, len(accessions), batch_size):
-            batch = accessions[i : i + batch_size]
+        for i in range(0, len(accessions), QUERY_BATCH_SIZE):
+            batch = accessions[i : i + QUERY_BATCH_SIZE]
             placeholders = ", ".join(["?"] * len(batch))
             rows = conn.execute(
                 f"""
@@ -894,9 +893,8 @@ def lookup_submissions_for_accessions(
     result: dict[str, str] = {}
 
     with duckdb.connect(db_path, read_only=True) as conn:
-        batch_size = 10000
-        for i in range(0, len(accessions), batch_size):
-            batch = accessions[i : i + batch_size]
+        for i in range(0, len(accessions), QUERY_BATCH_SIZE):
+            batch = accessions[i : i + QUERY_BATCH_SIZE]
             placeholders = ", ".join(["?"] * len(batch))
             rows = conn.execute(
                 f"""
@@ -937,11 +935,9 @@ def get_submission_accessions(
     result: dict[str, list[str]] = {s: [] for s in submissions}
 
     with duckdb.connect(db_path, read_only=True) as conn:
-        # バッチサイズを制限してクエリを実行
-        batch_size = 10000
         submission_list = list(submissions)
-        for i in range(0, len(submission_list), batch_size):
-            batch = submission_list[i : i + batch_size]
+        for i in range(0, len(submission_list), QUERY_BATCH_SIZE):
+            batch = submission_list[i : i + QUERY_BATCH_SIZE]
             placeholders = ", ".join(["?"] * len(batch))
             rows = conn.execute(
                 f"""

@@ -7,8 +7,8 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.status_cache import db as status_cache_db
 from ddbj_search_converter.status_cache.db import (
-    CHUNK_SIZE,
     fetch_bp_statuses_from_cache,
     fetch_bs_statuses_from_cache,
     finalize_status_cache_db,
@@ -114,47 +114,53 @@ class TestStatusCacheExists:
 
 
 class TestChunkBoundary:
-    def test_chunk_boundary_below(self, tmp_path):
+    def test_chunk_boundary_below(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(status_cache_db, "CHUNK_SIZE", 100)
+        n = status_cache_db.CHUNK_SIZE - 1
         config = _make_config(tmp_path)
         init_status_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "public") for i in range(CHUNK_SIZE - 1)]
+        rows = [(f"PRJDB{i}", "public") for i in range(n)]
         count = insert_bp_statuses(config, rows)
-        assert count == CHUNK_SIZE - 1
+        assert count == n
 
         finalize_status_cache_db(config)
 
-        accessions = [f"PRJDB{i}" for i in range(CHUNK_SIZE - 1)]
+        accessions = [f"PRJDB{i}" for i in range(n)]
         result = fetch_bp_statuses_from_cache(config, accessions)
-        assert len(result) == CHUNK_SIZE - 1
+        assert len(result) == n
 
-    def test_chunk_boundary_exact(self, tmp_path):
+    def test_chunk_boundary_exact(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(status_cache_db, "CHUNK_SIZE", 100)
+        n = status_cache_db.CHUNK_SIZE
         config = _make_config(tmp_path)
         init_status_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "public") for i in range(CHUNK_SIZE)]
+        rows = [(f"PRJDB{i}", "public") for i in range(n)]
         count = insert_bp_statuses(config, rows)
-        assert count == CHUNK_SIZE
+        assert count == n
 
         finalize_status_cache_db(config)
 
-        accessions = [f"PRJDB{i}" for i in range(CHUNK_SIZE)]
+        accessions = [f"PRJDB{i}" for i in range(n)]
         result = fetch_bp_statuses_from_cache(config, accessions)
-        assert len(result) == CHUNK_SIZE
+        assert len(result) == n
 
-    def test_chunk_boundary_above(self, tmp_path):
+    def test_chunk_boundary_above(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(status_cache_db, "CHUNK_SIZE", 100)
+        n = status_cache_db.CHUNK_SIZE + 1
         config = _make_config(tmp_path)
         init_status_cache_db(config)
 
-        rows = [(f"PRJDB{i}", "public") for i in range(CHUNK_SIZE + 1)]
+        rows = [(f"PRJDB{i}", "public") for i in range(n)]
         count = insert_bp_statuses(config, rows)
-        assert count == CHUNK_SIZE + 1
+        assert count == n
 
         finalize_status_cache_db(config)
 
-        accessions = [f"PRJDB{i}" for i in range(CHUNK_SIZE + 1)]
+        accessions = [f"PRJDB{i}" for i in range(n)]
         result = fetch_bp_statuses_from_cache(config, accessions)
-        assert len(result) == CHUNK_SIZE + 1
+        assert len(result) == n
 
 
 accession_strategy = st.text(

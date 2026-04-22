@@ -13,6 +13,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from ddbj_search_converter import sra_accessions_tab
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.sra_accessions_tab import (
     finalize_db,
@@ -887,8 +888,12 @@ class TestGetAccessionInfoBulk:
         assert "SRR000001" in result
         assert "SRR999999" not in result
 
-    def test_batch_split_at_10001(self, tmp_path: Path) -> None:
-        """10001 行でバッチ分割される。"""
+    def test_batch_split_above_batch_size(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """QUERY_BATCH_SIZE + 1 行でバッチ分割される。"""
+        monkeypatch.setattr(sra_accessions_tab, "QUERY_BATCH_SIZE", 100)
+        n = sra_accessions_tab.QUERY_BATCH_SIZE + 1
         rows = [
             (
                 f"SRR{i:06d}",
@@ -905,15 +910,19 @@ class TestGetAccessionInfoBulk:
                 None,
                 None,
             )
-            for i in range(10001)
+            for i in range(n)
         ]
         config = _make_config_with_db(tmp_path, "sra", rows)
-        accessions = [f"SRR{i:06d}" for i in range(10001)]
+        accessions = [f"SRR{i:06d}" for i in range(n)]
         result = get_accession_info_bulk(config, "sra", accessions)
-        assert len(result) == 10001
+        assert len(result) == n
 
-    def test_batch_boundary_at_10000(self, tmp_path: Path) -> None:
-        """10000 行境界 (ちょうど 1 バッチ)。"""
+    def test_batch_boundary_equal_to_batch_size(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """QUERY_BATCH_SIZE 行境界 (ちょうど 1 バッチ)。"""
+        monkeypatch.setattr(sra_accessions_tab, "QUERY_BATCH_SIZE", 100)
+        n = sra_accessions_tab.QUERY_BATCH_SIZE
         rows = [
             (
                 f"SRR{i:06d}",
@@ -930,12 +939,12 @@ class TestGetAccessionInfoBulk:
                 None,
                 None,
             )
-            for i in range(10000)
+            for i in range(n)
         ]
         config = _make_config_with_db(tmp_path, "sra", rows)
-        accessions = [f"SRR{i:06d}" for i in range(10000)]
+        accessions = [f"SRR{i:06d}" for i in range(n)]
         result = get_accession_info_bulk(config, "sra", accessions)
-        assert len(result) == 10000
+        assert len(result) == n
 
     def test_duplicate_accession_overwritten(self, tmp_path: Path) -> None:
         """同一 accession の複数行は dict 上書きで最後の値になる。"""
