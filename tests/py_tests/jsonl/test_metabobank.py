@@ -36,6 +36,8 @@ METABOBANK_FIXTURE_BASE = (
     Path(__file__).parent.parent.parent / "fixtures" / "usr" / "local" / "shared_data" / "metabobank" / "study"
 )
 MTBKS102_IDF = METABOBANK_FIXTURE_BASE / "MTBKS102" / "MTBKS102.idf.txt"
+MTBKS70_IDF = METABOBANK_FIXTURE_BASE / "MTBKS70" / "MTBKS70.idf.txt"
+MTBKS264_IDF = METABOBANK_FIXTURE_BASE / "MTBKS264" / "MTBKS264.idf.txt"
 
 
 class TestIterateMetabobankIdfFiles:
@@ -342,6 +344,34 @@ class TestCreateMetabobankEntry:
         mtb = create_metabobank_entry("MTBKS102", idf, dbxrefs=[xref])
         assert len(mtb.dbXrefs) == 1
         assert mtb.dbXrefs[0].identifier == "PRJDB1"
+
+    def test_mtbks70_doi_prefix_normalized(self) -> None:
+        """MTBKS70 fixture: Publication DOI の `DOI: ` prefix が strip され url が正しく組まれる。"""
+        idf = parse_idf(MTBKS70_IDF)
+        mtb = create_metabobank_entry("MTBKS70", idf)
+
+        assert len(mtb.publication) == 1
+        pub = mtb.publication[0]
+        assert pub.id_ == "10.5511/plantbiotechnology.12.0503a"
+        assert pub.url == "https://doi.org/10.5511/plantbiotechnology.12.0503a"
+        assert pub.dbType == "eDOI"
+
+    def test_mtbks264_properties_no_key_bleed(self) -> None:
+        """MTBKS264 fixture: quote 対応で properties dict に改行 bleed の spurious key が混入しない。"""
+        idf = parse_idf(MTBKS264_IDF)
+        mtb = create_metabobank_entry("MTBKS264", idf)
+
+        # bleed があると本来 value である Protocol Description の改行以降が key として混入
+        assert not any(k.startswith("Interested individuals") for k in mtb.properties)
+        assert not any(k.startswith("Stool samples") for k in mtb.properties)
+        # bleed 解消前は 58 keys、解消後は 33 keys (正当な IDF tag のみ)
+        assert len(mtb.properties) <= 40
+
+        # Protocol Description は quote で囲まれた複数行 value の list (要素 ≥ 6)
+        protocol_desc = mtb.properties.get("Protocol Description")
+        assert isinstance(protocol_desc, list)
+        assert len(protocol_desc) >= 6
+        assert protocol_desc[0].startswith("Volunteers were recruited")
 
 
 class TestGenerateMetabobankJsonlE2E:

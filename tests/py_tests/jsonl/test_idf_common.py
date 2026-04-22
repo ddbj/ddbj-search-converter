@@ -106,6 +106,73 @@ class TestParseIdf:
         # 空行を含む "PubMed ID" は値なし (空 list)
         assert result.get("PubMed ID") == []
 
+    def test_quoted_value_with_newline_kept_as_single_value(self, tmp_path: Path) -> None:
+        """MAGE-TAB 仕様: double quote で囲まれた値内の改行は 1 value として保持される。"""
+        idf_path = tmp_path / "test.idf.txt"
+        idf_path.write_text('Title\t"line1\nline2"\n', encoding="utf-8")
+        result = parse_idf(idf_path)
+        assert result == {"Title": ["line1\nline2"]}
+
+    def test_quoted_value_with_tab_kept_as_single_value(self, tmp_path: Path) -> None:
+        """quote 内の tab も区切り扱いされず 1 value として保持される。"""
+        idf_path = tmp_path / "test.idf.txt"
+        idf_path.write_text('Title\t"a\tb"\n', encoding="utf-8")
+        result = parse_idf(idf_path)
+        assert result == {"Title": ["a\tb"]}
+
+    def test_quoted_value_with_blank_line(self, tmp_path: Path) -> None:
+        """quote 内の空行 (MTBKS264 Protocol Description 風のケース) も保持される。"""
+        idf_path = tmp_path / "test.idf.txt"
+        idf_path.write_text('Title\t"l1\n\nl3"\n', encoding="utf-8")
+        result = parse_idf(idf_path)
+        assert result == {"Title": ["l1\n\nl3"]}
+
+    def test_quoted_multi_value_boundary(self, tmp_path: Path) -> None:
+        """quote 境界を挟んだ tab は値区切りとして正しく認識される。"""
+        idf_path = tmp_path / "test.idf.txt"
+        idf_path.write_text('Tag\t"val with\nnewline"\t"next val"\n', encoding="utf-8")
+        result = parse_idf(idf_path)
+        assert result == {"Tag": ["val with\nnewline", "next val"]}
+
+    def test_metabobank_fixture_mtbks264_no_spurious_keys(self) -> None:
+        """MTBKS264 fixture で quote 対応により改行 bleed の spurious key が消える。"""
+        idf_path = (
+            Path(__file__).parent.parent.parent
+            / "fixtures"
+            / "usr"
+            / "local"
+            / "shared_data"
+            / "metabobank"
+            / "study"
+            / "MTBKS264"
+            / "MTBKS264.idf.txt"
+        )
+        result = parse_idf(idf_path)
+        # quote 内改行 bleed で本来 value が key になっていたのが消える
+        assert not any(k.startswith("Interested individuals") for k in result)
+        assert not any(k.startswith("Stool samples") for k in result)
+        # bleed 解消前は 58 keys、解消後は 33 keys (正当な IDF tag のみ)。
+        # 今後 fixture が差し替わっても「bleed が再発すれば key 数が跳ね上がる」ことを検知する上限。
+        assert len(result) <= 40
+
+    def test_metabobank_fixture_mtbks264_protocol_description_multi_value(self) -> None:
+        """MTBKS264 の Protocol Description は quote で囲まれた複数行 value の list。"""
+        idf_path = (
+            Path(__file__).parent.parent.parent
+            / "fixtures"
+            / "usr"
+            / "local"
+            / "shared_data"
+            / "metabobank"
+            / "study"
+            / "MTBKS264"
+            / "MTBKS264.idf.txt"
+        )
+        result = parse_idf(idf_path)
+        descriptions = result["Protocol Description"]
+        assert len(descriptions) >= 6
+        assert descriptions[0].startswith("Volunteers were recruited")
+
 
 class TestParseSubmitterAffiliations:
     """parse_submitter_affiliations: Person Affiliation から Organization list を構築する。"""
@@ -178,3 +245,82 @@ class TestParsePubmedDoiPublications:
     def test_empty_values_for_both_returns_empty(self) -> None:
         idf = {"PubMed ID": [""], "Publication DOI": [""]}
         assert parse_pubmed_doi_publications(idf) == []
+
+    def test_doi_prefix_uppercase_stripped(self) -> None:
+        """`DOI: ` prefix (大文字、コロン後空白) が strip される。"""
+        idf = {"Publication DOI": ["DOI: 10.5511/foo"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert len(pubs) == 1
+        assert pubs[0].id_ == "10.5511/foo"
+        assert pubs[0].url == "https://doi.org/10.5511/foo"
+        assert pubs[0].dbType == "eDOI"
+
+    def test_doi_prefix_lowercase_stripped(self) -> None:
+        """`doi: ` prefix (小文字、case-insensitive) も strip される。"""
+        idf = {"Publication DOI": ["doi: 10.1038/bar"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1038/bar"
+        assert pubs[0].url == "https://doi.org/10.1038/bar"
+
+    def test_doi_prefix_no_space(self) -> None:
+        """コロン後空白なしの `DOI:` prefix も strip される。"""
+        idf = {"Publication DOI": ["DOI:10.1/x"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1/x"
+        assert pubs[0].url == "https://doi.org/10.1/x"
+
+    def test_doi_url_https_stripped(self) -> None:
+        """`https://doi.org/` URL prefix が strip され、url は doi.org 版に再構築される。"""
+        idf = {"Publication DOI": ["https://doi.org/10.1/x"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1/x"
+        assert pubs[0].url == "https://doi.org/10.1/x"
+
+    def test_doi_url_http_stripped(self) -> None:
+        """`http://doi.org/` も strip され、url は https 版で再構築される (https 優先)。"""
+        idf = {"Publication DOI": ["http://doi.org/10.1/x"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1/x"
+        assert pubs[0].url == "https://doi.org/10.1/x"
+
+    def test_doi_url_dx_stripped(self) -> None:
+        """旧 resolver `https://dx.doi.org/` も strip される。"""
+        idf = {"Publication DOI": ["https://dx.doi.org/10.1/x"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1/x"
+        assert pubs[0].url == "https://doi.org/10.1/x"
+
+    def test_doi_protocol_less_stripped(self) -> None:
+        """protocol なしの `doi.org/` prefix も strip される (MTBKS 実データで観測)。"""
+        idf = {"Publication DOI": ["doi.org/10.1038/s41597-025-04518-7"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1038/s41597-025-04518-7"
+        assert pubs[0].url == "https://doi.org/10.1038/s41597-025-04518-7"
+
+    def test_doi_already_normalized_unchanged(self) -> None:
+        """正規の DOI (`10.xxx/...`) は変更されない。"""
+        idf = {"Publication DOI": ["10.1038/nature12345"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1038/nature12345"
+        assert pubs[0].url == "https://doi.org/10.1038/nature12345"
+
+    def test_doi_non_doi_url_kept_as_url(self) -> None:
+        """DOI 以外の URL (SSRN 等) は生値のまま `id` / `url` に入り、doi.org で二重 wrap しない。"""
+        idf = {"Publication DOI": ["http://ssrn.com/abstract=4137686"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "http://ssrn.com/abstract=4137686"
+        assert pubs[0].url == "http://ssrn.com/abstract=4137686"
+        assert pubs[0].dbType == "eDOI"
+
+    def test_doi_trailing_dot_preserved(self) -> None:
+        """末尾句読点タイポは元データ保持方針で strip しない。"""
+        idf = {"Publication DOI": ["10.1073/pnas.2311372120."]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert pubs[0].id_ == "10.1073/pnas.2311372120."
+        assert pubs[0].url == "https://doi.org/10.1073/pnas.2311372120."
+
+    def test_doi_case_insensitive_variants(self) -> None:
+        """`DOI:` / `doi:` / `Doi:` 全て case-insensitive で同じ結果になる。"""
+        idf = {"Publication DOI": ["Doi: 10", "DOI:10", "doi:10"]}
+        pubs = parse_pubmed_doi_publications(idf)
+        assert [p.id_ for p in pubs] == ["10", "10", "10"]

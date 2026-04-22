@@ -113,7 +113,8 @@ class TestBioProjectMapping:
         agency_props = props["grant"]["properties"]["agency"]["properties"]
         organization_props = props["organization"]["properties"]
         assert agency_props == organization_props
-        # role / organizationType / department / url も agency 側に含まれる (Grant.agency では常に None だが mapping は統一)
+        # role / organizationType / department / url も agency 側に含まれる
+        # (Grant.agency では常に None だが mapping は統一)
         for field in ("name", "abbreviation", "role", "organizationType", "department", "url"):
             assert field in agency_props
         # name は text + keyword subfield
