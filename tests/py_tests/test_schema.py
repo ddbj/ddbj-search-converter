@@ -1,6 +1,8 @@
 """Tests for ddbj_search_converter.schema module."""
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 from pydantic import ValidationError
 
 from ddbj_search_converter.schema import (
@@ -445,6 +447,45 @@ class TestMetaboBank:
         assert '"isPartOf":"metabobank"' in json_str
 
 
+class TestMetaboBankExtensibleStringFields:
+    """MetaboBank の studyType / experimentType / submissionType は MetaboBank 側の値追加に
+    追従するため Literal 化せず list[str] として任意文字列を透過する。
+    """
+
+    @pytest.mark.parametrize(
+        "study,experiment,submission",
+        [
+            (["untargeted metabolite profiling"], ["NMR"], ["LC-MS"]),
+            (["future_study_type"], ["novel_experiment"], ["UNKNOWN-MS"]),
+            (["Untargeted Metabolite Profiling"], ["direct infusion-mass spectrometry"], ["GC-MS"]),
+        ],
+    )
+    def test_known_and_unknown_pass_through(
+        self, study: list[str], experiment: list[str], submission: list[str]
+    ) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs.update({"studyType": study, "experimentType": experiment, "submissionType": submission})
+        mtb = MetaboBank(**kwargs)
+        assert mtb.studyType == study
+        assert mtb.experimentType == experiment
+        assert mtb.submissionType == submission
+
+    @given(
+        study=st.lists(st.text(min_size=1, max_size=100), max_size=5),
+        experiment=st.lists(st.text(min_size=1, max_size=100), max_size=5),
+        submission=st.lists(st.text(min_size=1, max_size=100), max_size=5),
+    )
+    def test_arbitrary_strings_pass_through(
+        self, study: list[str], experiment: list[str], submission: list[str]
+    ) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs.update({"studyType": study, "experimentType": experiment, "submissionType": submission})
+        mtb = MetaboBank(**kwargs)
+        assert mtb.studyType == study
+        assert mtb.experimentType == experiment
+        assert mtb.submissionType == submission
+
+
 class TestOrganization:
     def test_all_defaults_are_none(self) -> None:
         org = Organization()
@@ -641,113 +682,81 @@ def _make_minimal_sra_kwargs() -> dict:
     }
 
 
-class TestLibrarySourceLiteral:
+class TestSraExtensibleStringFields:
+    """SRA の librarySource / libraryLayout / platform / analysisType は、INSDC 側の値追加に
+    追従するため Literal 化せず任意文字列を透過する。既知値・未知値・PBT で検証する。
+    """
+
     @pytest.mark.parametrize(
         "value",
         [
             "GENOMIC",
-            "METAGENOMIC",
-            "TRANSCRIPTOMIC",
-            "VIRAL RNA",
-            "OTHER",
-            "METATRANSCRIPTOMIC",
             "TRANSCRIPTOMIC SINGLE CELL",
-            "GENOMIC SINGLE CELL",
             "SYNTHETIC",
+            "FUTURE_LIBRARY_SOURCE",
+            "genomic",
         ],
     )
-    def test_all_9_values_accepted(self, value: str) -> None:
+    def test_library_source_pass_through(self, value: str) -> None:
         kwargs = _make_minimal_sra_kwargs()
         kwargs["librarySource"] = [value]
         sra = SRA(**kwargs)
         assert sra.librarySource == [value]
 
-    @pytest.mark.parametrize("invalid", ["genomic", "GENOMIC ", "OTHER_MIX", ""])
-    def test_invalid_values_rejected(self, invalid: str) -> None:
-        kwargs = _make_minimal_sra_kwargs()
-        kwargs["librarySource"] = [invalid]
-        with pytest.raises(ValidationError):
-            SRA(**kwargs)
-
-
-class TestLibraryLayoutLiteral:
-    @pytest.mark.parametrize("value", ["PAIRED", "SINGLE"])
-    def test_valid_values(self, value: str) -> None:
+    @pytest.mark.parametrize("value", ["PAIRED", "SINGLE", "MULTI", "unknown", "single"])
+    def test_library_layout_pass_through(self, value: str) -> None:
         kwargs = _make_minimal_sra_kwargs()
         kwargs["libraryLayout"] = value
         sra = SRA(**kwargs)
         assert sra.libraryLayout == value
 
-    @pytest.mark.parametrize("invalid", ["paired", "single", "MULTI", ""])
-    def test_invalid_values_rejected(self, invalid: str) -> None:
-        kwargs = _make_minimal_sra_kwargs()
-        kwargs["libraryLayout"] = invalid
-        with pytest.raises(ValidationError):
-            SRA(**kwargs)
-
-
-class TestPlatformLiteral:
     @pytest.mark.parametrize(
         "value",
-        [
-            "ILLUMINA",
-            "OXFORD_NANOPORE",
-            "PACBIO_SMRT",
-            "ION_TORRENT",
-            "LS454",
-            "CAPILLARY",
-            "DNBSEQ",
-            "BGISEQ",
-            "ELEMENT",
-            "ABI_SOLID",
-            "COMPLETE_GENOMICS",
-            "HELICOS",
-            "ULTIMA",
-            "GENEMIND",
-            "VELA_DIAGNOSTICS",
-            "TAPESTRI",
-            "GENAPSYS",
-            "SINGULAR_GENOMICS",
-            "GENEUS_TECH",
-            "SALUS",
-        ],
+        ["ILLUMINA", "SALUS", "FUTURE_SEQUENCER", "custom-vendor", "illumina"],
     )
-    def test_all_20_values_accepted(self, value: str) -> None:
+    def test_platform_pass_through(self, value: str) -> None:
         kwargs = _make_minimal_sra_kwargs()
         kwargs["platform"] = value
         sra = SRA(**kwargs)
         assert sra.platform == value
 
-    @pytest.mark.parametrize("invalid", ["illumina", "Illumina", "NOVEL_VENDOR", ""])
-    def test_invalid_values_rejected(self, invalid: str) -> None:
-        kwargs = _make_minimal_sra_kwargs()
-        kwargs["platform"] = invalid
-        with pytest.raises(ValidationError):
-            SRA(**kwargs)
-
-
-class TestAnalysisTypeLiteral:
     @pytest.mark.parametrize(
         "value",
-        [
-            "DE_NOVO_ASSEMBLY",
-            "REFERENCE_ALIGNMENT",
-            "ABUNDANCE_MEASUREMENT",
-            "SEQUENCE_ANNOTATION",
-        ],
+        ["DE_NOVO_ASSEMBLY", "VARIANT_CALLING", "novel_analysis", "de_novo_assembly"],
     )
-    def test_valid_values(self, value: str) -> None:
+    def test_analysis_type_pass_through(self, value: str) -> None:
         kwargs = _make_minimal_sra_kwargs()
         kwargs["analysisType"] = value
         sra = SRA(**kwargs)
         assert sra.analysisType == value
 
-    @pytest.mark.parametrize("invalid", ["de_novo_assembly", "VARIANT_CALLING", ""])
-    def test_invalid_values_rejected(self, invalid: str) -> None:
+    @given(
+        library_sources=st.lists(st.text(min_size=1, max_size=100), max_size=5),
+        library_layout=st.text(min_size=1, max_size=100),
+        platform=st.text(min_size=1, max_size=100),
+        analysis_type=st.text(min_size=1, max_size=100),
+    )
+    def test_arbitrary_strings_pass_through(
+        self,
+        library_sources: list[str],
+        library_layout: str,
+        platform: str,
+        analysis_type: str,
+    ) -> None:
         kwargs = _make_minimal_sra_kwargs()
-        kwargs["analysisType"] = invalid
-        with pytest.raises(ValidationError):
-            SRA(**kwargs)
+        kwargs.update(
+            {
+                "librarySource": library_sources,
+                "libraryLayout": library_layout,
+                "platform": platform,
+                "analysisType": analysis_type,
+            }
+        )
+        sra = SRA(**kwargs)
+        assert sra.librarySource == library_sources
+        assert sra.libraryLayout == library_layout
+        assert sra.platform == platform
+        assert sra.analysisType == analysis_type
 
 
 class TestSra:

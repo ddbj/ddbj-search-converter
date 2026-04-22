@@ -17,7 +17,7 @@ import sys
 from collections.abc import Callable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
 from pathlib import Path
-from typing import Any, Literal, cast, get_args
+from typing import Any, Literal
 
 from ddbj_search_converter.config import (
     JSONL_DIR_NAME,
@@ -37,13 +37,9 @@ from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
     SRA,
     Accessibility,
-    AnalysisType,
-    LibraryLayout,
-    LibrarySource,
     Organism,
     Organization,
     OrganizationRole,
-    Platform,
     Publication,
     Status,
     XrefType,
@@ -59,11 +55,6 @@ from ddbj_search_converter.xml_utils import parse_xml
 
 DEFAULT_BATCH_SIZE = 5000
 DEFAULT_PARALLEL_NUM = 8
-
-_VALID_LIBRARY_SOURCES: frozenset[str] = frozenset(get_args(LibrarySource))
-_VALID_LIBRARY_LAYOUTS: frozenset[str] = frozenset(get_args(LibraryLayout))
-_VALID_PLATFORMS: frozenset[str] = frozenset(get_args(Platform))
-_VALID_ANALYSIS_TYPES: frozenset[str] = frozenset(get_args(AnalysisType))
 
 # XML types
 XML_TYPES: list[SraXmlType] = ["submission", "study", "experiment", "run", "sample", "analysis"]
@@ -455,21 +446,21 @@ def _parse_library(experiment: Any) -> dict[str, Any]:
             if strategy:
                 result["libraryStrategy"] = [strategy]
             source = _get_text(descriptor, "LIBRARY_SOURCE")
-            if source is not None and source in _VALID_LIBRARY_SOURCES:
+            if source:
                 result["librarySource"] = [source]
             selection = _get_text(descriptor, "LIBRARY_SELECTION")
             if selection:
                 result["librarySelection"] = [selection]
             layout_obj = descriptor.get("LIBRARY_LAYOUT")
             if isinstance(layout_obj, dict):
-                valid_layouts = [k for k in layout_obj if k in _VALID_LIBRARY_LAYOUTS]
-                if len(valid_layouts) == 1:
-                    result["libraryLayout"] = valid_layouts[0]
+                layout_keys = list(layout_obj.keys())
+                if len(layout_keys) == 1:
+                    result["libraryLayout"] = layout_keys[0]
     platform_obj = experiment.get("PLATFORM")
     if isinstance(platform_obj, dict):
-        valid_platforms = [k for k in platform_obj if k in _VALID_PLATFORMS]
-        if len(valid_platforms) == 1:
-            platform_key = valid_platforms[0]
+        platform_keys = list(platform_obj.keys())
+        if len(platform_keys) == 1:
+            platform_key = platform_keys[0]
             result["platform"] = platform_key
             inner = platform_obj.get(platform_key)
             if isinstance(inner, dict):
@@ -479,19 +470,19 @@ def _parse_library(experiment: Any) -> dict[str, Any]:
     return result
 
 
-def _parse_analysis_type(analysis: Any) -> AnalysisType | None:
-    """ANALYSIS_TYPE の親キーを AnalysisType Literal として返す (analysis 専用)。
+def _parse_analysis_type(analysis: Any) -> str | None:
+    """ANALYSIS_TYPE の親キー (単一) をそのまま str として返す (analysis 専用)。
 
-    想定外値 / 複数キーは None fallback。
+    複数キーは None fallback。
     """
     if not isinstance(analysis, dict):
         return None
     at_obj = analysis.get("ANALYSIS_TYPE")
     if not isinstance(at_obj, dict):
         return None
-    valid_keys = [k for k in at_obj if k in _VALID_ANALYSIS_TYPES]
-    if len(valid_keys) == 1:
-        return cast(AnalysisType, valid_keys[0])
+    keys = list(at_obj.keys())
+    if len(keys) == 1:
+        return str(keys[0])
     return None
 
 

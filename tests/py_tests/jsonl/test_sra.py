@@ -635,20 +635,32 @@ class TestParseLibrary:
         exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"SINGLE": None}}}}
         assert _parse_library(exp)["libraryLayout"] == "SINGLE"
 
-    def test_library_source_invalid_value_falls_back_to_empty_list(self) -> None:
-        """想定外値は空 list fallback。"""
-        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_SOURCE": "NOVEL_SOURCE_NOT_IN_LITERAL"}}}
-        assert _parse_library(exp)["librarySource"] == []
+    def test_library_source_unknown_value_passes_through(self) -> None:
+        """INSDC 側の値追加に追従するため、未知値もそのまま透過する。"""
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_SOURCE": "NOVEL_SOURCE_FROM_UPSTREAM"}}}
+        assert _parse_library(exp)["librarySource"] == ["NOVEL_SOURCE_FROM_UPSTREAM"]
 
     def test_library_layout_multi_fallbacks_to_none(self) -> None:
-        """複数キー (PAIRED + SINGLE 同居) は None fallback。"""
+        """複数キー (PAIRED + SINGLE 同居) は None fallback (single value 前提維持)。"""
         exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"PAIRED": {}, "SINGLE": {}}}}}
         assert _parse_library(exp)["libraryLayout"] is None
 
+    def test_library_layout_unknown_single_key_passes_through(self) -> None:
+        """未知の LIBRARY_LAYOUT 親キーもそのまま str で透過する (単一キー条件は維持)。"""
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"MIXED": {}}}}}
+        assert _parse_library(exp)["libraryLayout"] == "MIXED"
+
     def test_platform_multi_fallbacks_to_none(self) -> None:
-        """複数 platform キーは None fallback。"""
+        """複数 platform キーは None fallback (single value 前提維持)。"""
         exp = {"PLATFORM": {"ILLUMINA": {}, "OXFORD_NANOPORE": {}}}
         assert _parse_library(exp)["platform"] is None
+
+    def test_platform_unknown_single_key_passes_through(self) -> None:
+        """新興メーカー等の未知 PLATFORM 親キーもそのまま str で透過する。"""
+        exp = {"PLATFORM": {"FUTURE_SEQUENCER": {"INSTRUMENT_MODEL": "Future 1"}}}
+        result = _parse_library(exp)
+        assert result["platform"] == "FUTURE_SEQUENCER"
+        assert result["instrumentModel"] == ["Future 1"]
 
     def test_no_library_descriptor_returns_defaults(self) -> None:
         result = _parse_library({})
@@ -666,24 +678,8 @@ class TestParseLibrary:
 
 
 class TestLxmlCommentInExperiment:
-    """lxml Comment quirk で cyfunction キーが残ったケースでも安全側に None fallback する。"""
-
-    def test_platform_with_comment_quirk_selects_valid_key(self) -> None:
-        """PLATFORM dict に cyfunction 想定外キーが混ざっても、valid_platforms==1 なら採用。"""
-        exp = {
-            "PLATFORM": {
-                "ILLUMINA": {"INSTRUMENT_MODEL": "Illumina"},
-                "<cyfunction Comment at 0x...>": "ignored",
-            }
-        }
-        result = _parse_library(exp)
-        assert result["platform"] == "ILLUMINA"
-        assert result["instrumentModel"] == ["Illumina"]
-
-    def test_layout_with_only_comment_quirk_returns_none(self) -> None:
-        """LIBRARY_LAYOUT に cyfunction 想定外キーのみの場合 None fallback。"""
-        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"<cyfunction Comment at 0x...>": "ignored"}}}}
-        assert _parse_library(exp)["libraryLayout"] is None
+    """xml_utils._element_to_dict が lxml Comment / ProcessingInstruction を skip するため、
+    実際の XML parse ではコメントが混ざっても technical metadata が欠損しないことを検証する。"""
 
     def test_end_to_end_parse_experiment_with_comment_xml(self) -> None:
         """XML に <!-- comment --> を含んでも PAIRED / ILLUMINA / INSTRUMENT_MODEL が正しく取れる。"""
@@ -724,11 +720,13 @@ class TestParseAnalysisType:
         analysis = {"ANALYSIS_TYPE": {value: {}}}
         assert _parse_analysis_type(analysis) == value
 
-    def test_unknown_key_falls_back_to_none(self) -> None:
+    def test_unknown_single_key_passes_through(self) -> None:
+        """未知の ANALYSIS_TYPE 親キーもそのまま str で透過する (INSDC 側の値追加に追従)。"""
         analysis = {"ANALYSIS_TYPE": {"UNKNOWN_TYPE": {}}}
-        assert _parse_analysis_type(analysis) is None
+        assert _parse_analysis_type(analysis) == "UNKNOWN_TYPE"
 
     def test_multiple_keys_fall_back_to_none(self) -> None:
+        """複数キーは single value 前提を維持して None fallback。"""
         analysis = {"ANALYSIS_TYPE": {"DE_NOVO_ASSEMBLY": {}, "REFERENCE_ALIGNMENT": {}}}
         assert _parse_analysis_type(analysis) is None
 

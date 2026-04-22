@@ -156,50 +156,6 @@ class BioSample(BaseModel):
 
 # === SRA ===
 
-LibrarySource = Literal[
-    "GENOMIC",
-    "METAGENOMIC",
-    "TRANSCRIPTOMIC",
-    "VIRAL RNA",
-    "OTHER",
-    "METATRANSCRIPTOMIC",
-    "TRANSCRIPTOMIC SINGLE CELL",
-    "GENOMIC SINGLE CELL",
-    "SYNTHETIC",
-]
-
-LibraryLayout = Literal["PAIRED", "SINGLE"]
-
-Platform = Literal[
-    "ILLUMINA",
-    "OXFORD_NANOPORE",
-    "PACBIO_SMRT",
-    "ION_TORRENT",
-    "LS454",
-    "CAPILLARY",
-    "DNBSEQ",
-    "BGISEQ",
-    "ELEMENT",
-    "ABI_SOLID",
-    "COMPLETE_GENOMICS",
-    "HELICOS",
-    "ULTIMA",
-    "GENEMIND",
-    "VELA_DIAGNOSTICS",
-    "TAPESTRI",
-    "GENAPSYS",
-    "SINGULAR_GENOMICS",
-    "GENEUS_TECH",
-    "SALUS",
-]
-
-AnalysisType = Literal[
-    "DE_NOVO_ASSEMBLY",
-    "REFERENCE_ALIGNMENT",
-    "ABUNDANCE_MEASUREMENT",
-    "SEQUENCE_ANNOTATION",
-]
-
 
 class SRA(BaseModel):
     identifier: str
@@ -217,12 +173,12 @@ class SRA(BaseModel):
     organization: list[Organization]
     publication: list[Publication]
     libraryStrategy: list[str]
-    librarySource: list[LibrarySource]
+    librarySource: list[str]
     librarySelection: list[str]
-    libraryLayout: LibraryLayout | None
-    platform: Platform | None
+    libraryLayout: str | None
+    platform: str | None
     instrumentModel: list[str]
-    analysisType: AnalysisType | None
+    analysisType: str | None
     dbXrefs: list[Xref]
     sameAs: list[Xref]
     status: Status
@@ -290,49 +246,6 @@ class GEA(BaseModel):
 
 # === MetaboBank ===
 
-MetabobankStudyType = Literal[
-    "untargeted metabolite profiling",
-    "targeted metabolite profiling",
-    "metabolite target analysis",
-    "lipid profiling",
-    "metabolite profiling",
-    "metabolomics",
-    "volatile organic compound",
-    "blood metabolite profiling",
-]
-
-MetabobankExperimentType = Literal[
-    "liquid chromatography-mass spectrometry",
-    "fourier transform ion cyclotron resonance mass spectrometry",
-    "time-of-flight mass spectrometry",
-    "gas chromatography-mass spectrometry",
-    "quadrupole mass spectrometer",
-    "tandem mass spectrometry",
-    "orbitrap",
-    "data-dependent acquisition",
-    "capillary electrophoresis-mass spectrometry",
-    "flow injection analysis-mass spectrometry",
-    "ion mobility spectrometry-mass spectrometry",
-    "nuclear magnetic resonance spectroscopy",
-    "direct infusion-mass spectrometry",
-    "mass spectrometry imaging",
-    "SWATH MS",
-    "selected reaction monitoring",
-    "selective ion monitoring",
-    "ultra-performance liquid chromatography-mass spectrometry",
-]
-
-MetabobankSubmissionType = Literal[
-    "LC-DAD-MS",
-    "LC-MS",
-    "GC-MS",
-    "CE-MS",
-    "FIA-MS",
-    "NMR",
-    "DI-MS",
-    "MSI",
-]
-
 
 class MetaboBank(BaseModel):
     identifier: str
@@ -347,9 +260,9 @@ class MetaboBank(BaseModel):
     description: str | None = None
     organization: list[Organization] = Field(default_factory=list)
     publication: list[Publication] = Field(default_factory=list)
-    studyType: list[MetabobankStudyType] = Field(default_factory=list)
-    experimentType: list[MetabobankExperimentType] = Field(default_factory=list)
-    submissionType: list[MetabobankSubmissionType] = Field(default_factory=list)
+    studyType: list[str] = Field(default_factory=list)
+    experimentType: list[str] = Field(default_factory=list)
+    submissionType: list[str] = Field(default_factory=list)
     dbXrefs: list[Xref] = Field(default_factory=list)
     sameAs: list[Xref] = Field(default_factory=list)
     status: Literal["public"]

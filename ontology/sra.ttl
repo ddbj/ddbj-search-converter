@@ -55,7 +55,7 @@ sra:libraryStrategy
 sra:librarySource
     a owl:DatatypeProperty ;
     rdfs:label "librarySource" ;
-    rdfs:comment "INSDC LIBRARY_SOURCE (experiment only; 9 controlled values: GENOMIC, METAGENOMIC, TRANSCRIPTOMIC, VIRAL RNA, OTHER, METATRANSCRIPTOMIC, TRANSCRIPTOMIC SINGLE CELL, GENOMIC SINGLE CELL, SYNTHETIC)" .
+    rdfs:comment "INSDC LIBRARY_SOURCE (experiment only; controlled vocabulary such as GENOMIC, TRANSCRIPTOMIC, METAGENOMIC, retained as free string to follow upstream additions)" .
 
 sra:librarySelection
     a owl:DatatypeProperty ;
@@ -65,12 +65,12 @@ sra:librarySelection
 sra:libraryLayout
     a owl:DatatypeProperty ;
     rdfs:label "libraryLayout" ;
-    rdfs:comment "INSDC LIBRARY_LAYOUT (experiment only; 2 values: PAIRED or SINGLE)" .
+    rdfs:comment "INSDC LIBRARY_LAYOUT (experiment only; typically PAIRED or SINGLE, stored as free string)" .
 
 sra:platform
     a owl:DatatypeProperty ;
     rdfs:label "platform" ;
-    rdfs:comment "INSDC PLATFORM (experiment only; 20 controlled values: ILLUMINA, OXFORD_NANOPORE, PACBIO_SMRT, ION_TORRENT, LS454, CAPILLARY, DNBSEQ, BGISEQ, ELEMENT, ABI_SOLID, COMPLETE_GENOMICS, HELICOS, ULTIMA, GENEMIND, VELA_DIAGNOSTICS, TAPESTRI, GENAPSYS, SINGULAR_GENOMICS, GENEUS_TECH, SALUS)" .
+    rdfs:comment "INSDC PLATFORM (experiment only; controlled vocabulary such as ILLUMINA, OXFORD_NANOPORE, PACBIO_SMRT, retained as free string to follow new sequencer vendor additions)" .
 
 sra:instrumentModel
     a owl:DatatypeProperty ;
@@ -80,4 +80,4 @@ sra:instrumentModel
 sra:analysisType
     a owl:DatatypeProperty ;
     rdfs:label "analysisType" ;
-    rdfs:comment "INSDC ANALYSIS_TYPE parent key (analysis only; 4 controlled values: DE_NOVO_ASSEMBLY, REFERENCE_ALIGNMENT, ABUNDANCE_MEASUREMENT, SEQUENCE_ANNOTATION)" .
+    rdfs:comment "INSDC ANALYSIS_TYPE parent key (analysis only; controlled vocabulary such as DE_NOVO_ASSEMBLY, REFERENCE_ALIGNMENT, retained as free string to follow upstream additions)" .

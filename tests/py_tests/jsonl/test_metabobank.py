@@ -185,15 +185,15 @@ class TestExtractStudyType:
         idf = {"Comment[Study type]": ["untargeted metabolite profiling", "lipid profiling"]}
         assert extract_study_type(idf) == ["untargeted metabolite profiling", "lipid profiling"]
 
-    def test_invalid_value_filtered(self) -> None:
-        assert extract_study_type({"Comment[Study type]": ["NOT_IN_LITERAL"]}) == []
+    def test_unknown_value_passes_through(self) -> None:
+        assert extract_study_type({"Comment[Study type]": ["NOT_PREVIOUSLY_SEEN"]}) == ["NOT_PREVIOUSLY_SEEN"]
 
-    def test_mixed_valid_and_invalid_keeps_valid_only(self) -> None:
+    def test_mixed_known_and_unknown_all_pass_through(self) -> None:
         idf = {"Comment[Study type]": ["metabolomics", "unknown value", "lipid profiling"]}
-        assert extract_study_type(idf) == ["metabolomics", "lipid profiling"]
+        assert extract_study_type(idf) == ["metabolomics", "unknown value", "lipid profiling"]
 
     @pytest.mark.parametrize("value", ALL_STUDY_TYPES)
-    def test_all_literal_values_pass(self, value: str) -> None:
+    def test_all_known_values_pass(self, value: str) -> None:
         assert extract_study_type({"Comment[Study type]": [value]}) == [value]
 
     def test_fixture_mtbks102(self) -> None:
@@ -217,10 +217,10 @@ class TestExtractExperimentType:
             "time-of-flight mass spectrometry",
         ]
 
-    def test_invalid_value_filtered(self) -> None:
-        assert extract_experiment_type({"Comment[Experiment type]": ["TOF MS"]}) == []
+    def test_unknown_value_passes_through(self) -> None:
+        assert extract_experiment_type({"Comment[Experiment type]": ["TOF MS"]}) == ["TOF MS"]
 
-    def test_mixed_valid_and_invalid_keeps_valid_only(self) -> None:
+    def test_mixed_known_and_unknown_all_pass_through(self) -> None:
         idf = {
             "Comment[Experiment type]": [
                 "liquid chromatography-mass spectrometry",
@@ -230,11 +230,12 @@ class TestExtractExperimentType:
         }
         assert extract_experiment_type(idf) == [
             "liquid chromatography-mass spectrometry",
+            "novel method 2030",
             "orbitrap",
         ]
 
     @pytest.mark.parametrize("value", ALL_EXPERIMENT_TYPES)
-    def test_all_literal_values_pass(self, value: str) -> None:
+    def test_all_known_values_pass(self, value: str) -> None:
         assert extract_experiment_type({"Comment[Experiment type]": [value]}) == [value]
 
     def test_fixture_mtbks102(self) -> None:
@@ -252,15 +253,15 @@ class TestExtractSubmissionType:
     def test_single(self) -> None:
         assert extract_submission_type({"Comment[Submission type]": ["LC-DAD-MS"]}) == ["LC-DAD-MS"]
 
-    def test_invalid_value_filtered(self) -> None:
-        assert extract_submission_type({"Comment[Submission type]": ["HPLC-XYZ"]}) == []
+    def test_unknown_value_passes_through(self) -> None:
+        assert extract_submission_type({"Comment[Submission type]": ["HPLC-XYZ"]}) == ["HPLC-XYZ"]
 
-    def test_mixed_valid_and_invalid_keeps_valid_only(self) -> None:
+    def test_mixed_known_and_unknown_all_pass_through(self) -> None:
         idf = {"Comment[Submission type]": ["LC-MS", "unknown-MS", "GC-MS"]}
-        assert extract_submission_type(idf) == ["LC-MS", "GC-MS"]
+        assert extract_submission_type(idf) == ["LC-MS", "unknown-MS", "GC-MS"]
 
     @pytest.mark.parametrize("value", ALL_SUBMISSION_TYPES)
-    def test_all_literal_values_pass(self, value: str) -> None:
+    def test_all_known_values_pass(self, value: str) -> None:
         assert extract_submission_type({"Comment[Submission type]": [value]}) == [value]
 
     def test_fixture_mtbks102(self) -> None:

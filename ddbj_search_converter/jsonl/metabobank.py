@@ -4,7 +4,6 @@ import argparse
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import cast, get_args
 
 from ddbj_search_converter.config import (
     JSONL_DIR_NAME,
@@ -25,15 +24,8 @@ from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.schema import (
     MetaboBank,
-    MetabobankExperimentType,
-    MetabobankStudyType,
-    MetabobankSubmissionType,
     Xref,
 )
-
-_VALID_STUDY_TYPES: frozenset[str] = frozenset(get_args(MetabobankStudyType))
-_VALID_EXPERIMENT_TYPES: frozenset[str] = frozenset(get_args(MetabobankExperimentType))
-_VALID_SUBMISSION_TYPES: frozenset[str] = frozenset(get_args(MetabobankSubmissionType))
 
 
 def iterate_metabobank_idf_files(base_path: Path) -> Iterator[tuple[str, Path]]:
@@ -81,37 +73,19 @@ def extract_description(idf: dict[str, list[str]]) -> str | None:
     return _first_value(idf, "Study Description")
 
 
-def extract_study_type(idf: dict[str, list[str]]) -> list[MetabobankStudyType]:
-    """MetaboBank IDF から studyType を抽出する (Comment[Study type] の非空値 list、Literal 非該当値は skip)。"""
-    values = _non_empty_list(idf, "Comment[Study type]")
-    kept = [cast(MetabobankStudyType, v) for v in values if v in _VALID_STUDY_TYPES]
-    if len(kept) != len(values):
-        skipped = [v for v in values if v not in _VALID_STUDY_TYPES]
-        log_debug("skipped unknown metabobank study type values", values=skipped)
-
-    return kept
+def extract_study_type(idf: dict[str, list[str]]) -> list[str]:
+    """MetaboBank IDF から studyType を抽出する (Comment[Study type] の非空値 list)。"""
+    return _non_empty_list(idf, "Comment[Study type]")
 
 
-def extract_experiment_type(idf: dict[str, list[str]]) -> list[MetabobankExperimentType]:
-    """MetaboBank IDF から experimentType を抽出する (Comment[Experiment type]、Literal 非該当値は skip)。"""
-    values = _non_empty_list(idf, "Comment[Experiment type]")
-    kept = [cast(MetabobankExperimentType, v) for v in values if v in _VALID_EXPERIMENT_TYPES]
-    if len(kept) != len(values):
-        skipped = [v for v in values if v not in _VALID_EXPERIMENT_TYPES]
-        log_debug("skipped unknown metabobank experiment type values", values=skipped)
-
-    return kept
+def extract_experiment_type(idf: dict[str, list[str]]) -> list[str]:
+    """MetaboBank IDF から experimentType を抽出する (Comment[Experiment type] の非空値 list)。"""
+    return _non_empty_list(idf, "Comment[Experiment type]")
 
 
-def extract_submission_type(idf: dict[str, list[str]]) -> list[MetabobankSubmissionType]:
-    """MetaboBank IDF から submissionType を抽出する (Comment[Submission type]、Literal 非該当値は skip)。"""
-    values = _non_empty_list(idf, "Comment[Submission type]")
-    kept = [cast(MetabobankSubmissionType, v) for v in values if v in _VALID_SUBMISSION_TYPES]
-    if len(kept) != len(values):
-        skipped = [v for v in values if v not in _VALID_SUBMISSION_TYPES]
-        log_debug("skipped unknown metabobank submission type values", values=skipped)
-
-    return kept
+def extract_submission_type(idf: dict[str, list[str]]) -> list[str]:
+    """MetaboBank IDF から submissionType を抽出する (Comment[Submission type] の非空値 list)。"""
+    return _non_empty_list(idf, "Comment[Submission type]")
 
 
 def extract_dates(idf: dict[str, list[str]]) -> tuple[str | None, str | None, str | None]:
