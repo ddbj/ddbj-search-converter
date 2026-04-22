@@ -42,6 +42,7 @@ from ddbj_search_converter.schema import (
     LibrarySource,
     Organism,
     Organization,
+    OrganizationRole,
     Platform,
     Publication,
     Status,
@@ -195,7 +196,7 @@ def parse_submission(
             "description": _parse_submission_description(submission),
             "properties": parsed,
             "submission_date": submission.get("submission_date"),
-            "organization": _parse_organization_from_center_name(submission),
+            "organization": _parse_organizations_from_entry_attrs(submission),
             "publication": _parse_publications(submission, "SUBMISSION_LINKS", "SUBMISSION_LINK"),
         }
     except Exception as e:
@@ -223,7 +224,7 @@ def parse_study(
                     "description": _get_text(descriptor, "STUDY_ABSTRACT")
                     or _get_text(descriptor, "STUDY_DESCRIPTION"),
                     "properties": {"STUDY_SET": {"STUDY": study}},
-                    "organization": _parse_organization_from_center_name(study),
+                    "organization": _parse_organizations_from_entry_attrs(study),
                     "publication": _parse_publications(study, "STUDY_LINKS", "STUDY_LINK"),
                 }
             )
@@ -252,7 +253,7 @@ def parse_experiment(
                     "title": _get_text(exp, "TITLE"),
                     "description": _get_text(design, "DESIGN_DESCRIPTION"),
                     "properties": {"EXPERIMENT_SET": {"EXPERIMENT": exp}},
-                    "organization": _parse_organization_from_center_name(exp),
+                    "organization": _parse_organizations_from_entry_attrs(exp),
                     "publication": _parse_publications(exp, "EXPERIMENT_LINKS", "EXPERIMENT_LINK"),
                     **library_fields,
                 }
@@ -278,7 +279,7 @@ def parse_run(
                 "title": _get_text(run, "TITLE"),
                 "description": None,
                 "properties": {"RUN_SET": {"RUN": run}},
-                "organization": _parse_organization_from_center_name(run),
+                "organization": _parse_organizations_from_entry_attrs(run),
                 "publication": _parse_publications(run, "RUN_LINKS", "RUN_LINK"),
             }
             for run in runs
@@ -318,7 +319,7 @@ def parse_sample(
                     "description": _get_text(sample, "DESCRIPTION"),
                     "organism": organism,
                     "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
-                    "organization": _parse_organization_from_center_name(sample),
+                    "organization": _parse_organizations_from_entry_attrs(sample),
                     "publication": _parse_publications(sample, "SAMPLE_LINKS", "SAMPLE_LINK"),
                 }
             )
@@ -343,7 +344,7 @@ def parse_analysis(
                 "title": _get_text(analysis, "TITLE"),
                 "description": _get_text(analysis, "DESCRIPTION"),
                 "properties": {"ANALYSIS_SET": {"ANALYSIS": analysis}},
-                "organization": _parse_organization_from_center_name(analysis),
+                "organization": _parse_organizations_from_entry_attrs(analysis),
                 "publication": _parse_publications(analysis, "ANALYSIS_LINKS", "ANALYSIS_LINK"),
                 "analysisType": _parse_analysis_type(analysis),
             }
@@ -355,21 +356,33 @@ def parse_analysis(
     return []
 
 
-def _parse_organization_from_center_name(entry: Any) -> list[Organization]:
-    """SRA entry の `@center_name` 属性から Organization を抽出する。
+def _parse_organizations_from_entry_attrs(entry: Any) -> list[Organization]:
+    """SRA entry の root attributes (`@center_name` / `@broker_name`) から Organization を抽出する。
 
-    xmltodict 正規化後は prefix 無しの dict key "center_name" に展開される。
-    空文字 / 非 str / 非 dict 入力は空 list を返す。
+    xmltodict 正規化後は prefix 無しの dict key ("center_name" / "broker_name") に展開される。
+    broker_name は role="broker" で追加。lab_name は部局名主体のため load しない
+    (Phase A §3.2.5 「Person/部局責務外」方針、§4.11 L7 参照)。
+    name 文字列ベース (strip 後 case sensitive) で dedupe。
+    空文字 / 空白のみ / 非 str / 非 dict 入力は skip。
     """
     if not isinstance(entry, dict):
         return []
-    center_name = entry.get("center_name")
-    if not isinstance(center_name, str):
-        return []
-    stripped = center_name.strip()
-    if not stripped:
-        return []
-    return [Organization(name=stripped)]
+    orgs: list[Organization] = []
+    seen: set[str] = set()
+
+    def _add(value: Any, role: OrganizationRole | None) -> None:
+        if not isinstance(value, str):
+            return
+        stripped = value.strip()
+        if not stripped or stripped in seen:
+            return
+        seen.add(stripped)
+        orgs.append(Organization(name=stripped, role=role))
+
+    _add(entry.get("center_name"), None)
+    _add(entry.get("broker_name"), "broker")
+
+    return orgs
 
 
 def _parse_publications(

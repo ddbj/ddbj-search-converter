@@ -126,6 +126,50 @@ class TestExtractDescription:
         assert extract_description({"Experiment Description": ["Wrong"]}) is None
 
 
+ALL_STUDY_TYPES = [
+    "untargeted metabolite profiling",
+    "targeted metabolite profiling",
+    "metabolite target analysis",
+    "lipid profiling",
+    "metabolite profiling",
+    "metabolomics",
+    "volatile organic compound",
+    "blood metabolite profiling",
+]
+
+ALL_EXPERIMENT_TYPES = [
+    "liquid chromatography-mass spectrometry",
+    "fourier transform ion cyclotron resonance mass spectrometry",
+    "time-of-flight mass spectrometry",
+    "gas chromatography-mass spectrometry",
+    "quadrupole mass spectrometer",
+    "tandem mass spectrometry",
+    "orbitrap",
+    "data-dependent acquisition",
+    "capillary electrophoresis-mass spectrometry",
+    "flow injection analysis-mass spectrometry",
+    "ion mobility spectrometry-mass spectrometry",
+    "nuclear magnetic resonance spectroscopy",
+    "direct infusion-mass spectrometry",
+    "mass spectrometry imaging",
+    "SWATH MS",
+    "selected reaction monitoring",
+    "selective ion monitoring",
+    "ultra-performance liquid chromatography-mass spectrometry",
+]
+
+ALL_SUBMISSION_TYPES = [
+    "LC-DAD-MS",
+    "LC-MS",
+    "GC-MS",
+    "CE-MS",
+    "FIA-MS",
+    "NMR",
+    "DI-MS",
+    "MSI",
+]
+
+
 class TestExtractStudyType:
     def test_empty(self) -> None:
         assert extract_study_type({}) == []
@@ -136,7 +180,19 @@ class TestExtractStudyType:
         ]
 
     def test_multiple(self) -> None:
-        assert extract_study_type({"Comment[Study type]": ["a", "b"]}) == ["a", "b"]
+        idf = {"Comment[Study type]": ["untargeted metabolite profiling", "lipid profiling"]}
+        assert extract_study_type(idf) == ["untargeted metabolite profiling", "lipid profiling"]
+
+    def test_invalid_value_filtered(self) -> None:
+        assert extract_study_type({"Comment[Study type]": ["NOT_IN_LITERAL"]}) == []
+
+    def test_mixed_valid_and_invalid_keeps_valid_only(self) -> None:
+        idf = {"Comment[Study type]": ["metabolomics", "unknown value", "lipid profiling"]}
+        assert extract_study_type(idf) == ["metabolomics", "lipid profiling"]
+
+    @pytest.mark.parametrize("value", ALL_STUDY_TYPES)
+    def test_all_literal_values_pass(self, value: str) -> None:
+        assert extract_study_type({"Comment[Study type]": [value]}) == [value]
 
     def test_fixture_mtbks102(self) -> None:
         idf = parse_idf(MTBKS102_IDF)
@@ -148,8 +204,36 @@ class TestExtractExperimentType:
         assert extract_experiment_type({}) == []
 
     def test_multiple(self) -> None:
-        idf = {"Comment[Experiment type]": ["liquid chromatography-mass spectrometry", "TOF MS"]}
-        assert extract_experiment_type(idf) == ["liquid chromatography-mass spectrometry", "TOF MS"]
+        idf = {
+            "Comment[Experiment type]": [
+                "liquid chromatography-mass spectrometry",
+                "time-of-flight mass spectrometry",
+            ]
+        }
+        assert extract_experiment_type(idf) == [
+            "liquid chromatography-mass spectrometry",
+            "time-of-flight mass spectrometry",
+        ]
+
+    def test_invalid_value_filtered(self) -> None:
+        assert extract_experiment_type({"Comment[Experiment type]": ["TOF MS"]}) == []
+
+    def test_mixed_valid_and_invalid_keeps_valid_only(self) -> None:
+        idf = {
+            "Comment[Experiment type]": [
+                "liquid chromatography-mass spectrometry",
+                "novel method 2030",
+                "orbitrap",
+            ]
+        }
+        assert extract_experiment_type(idf) == [
+            "liquid chromatography-mass spectrometry",
+            "orbitrap",
+        ]
+
+    @pytest.mark.parametrize("value", ALL_EXPERIMENT_TYPES)
+    def test_all_literal_values_pass(self, value: str) -> None:
+        assert extract_experiment_type({"Comment[Experiment type]": [value]}) == [value]
 
     def test_fixture_mtbks102(self) -> None:
         idf = parse_idf(MTBKS102_IDF)
@@ -165,6 +249,17 @@ class TestExtractSubmissionType:
 
     def test_single(self) -> None:
         assert extract_submission_type({"Comment[Submission type]": ["LC-DAD-MS"]}) == ["LC-DAD-MS"]
+
+    def test_invalid_value_filtered(self) -> None:
+        assert extract_submission_type({"Comment[Submission type]": ["HPLC-XYZ"]}) == []
+
+    def test_mixed_valid_and_invalid_keeps_valid_only(self) -> None:
+        idf = {"Comment[Submission type]": ["LC-MS", "unknown-MS", "GC-MS"]}
+        assert extract_submission_type(idf) == ["LC-MS", "GC-MS"]
+
+    @pytest.mark.parametrize("value", ALL_SUBMISSION_TYPES)
+    def test_all_literal_values_pass(self, value: str) -> None:
+        assert extract_submission_type({"Comment[Submission type]": [value]}) == [value]
 
     def test_fixture_mtbks102(self) -> None:
         idf = parse_idf(MTBKS102_IDF)

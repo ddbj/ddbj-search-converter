@@ -17,7 +17,7 @@ from ddbj_search_converter.jsonl.sra import (
     _normalize_status,
     _parse_analysis_type,
     _parse_library,
-    _parse_organization_from_center_name,
+    _parse_organizations_from_entry_attrs,
     _parse_publications,
     _parse_submission_description,
     create_sra_entry,
@@ -473,30 +473,88 @@ class TestCreateSraEntryProperties:
         assert study["DESCRIPTOR"]["STUDY_TITLE"] == "Title"
 
 
-class TestParseOrganizationFromCenterName:
+class TestParseOrganizationsFromEntryAttrs:
     def test_center_name_present(self) -> None:
         entry = {"accession": "DRA000072", "center_name": "NIID"}
-        orgs = _parse_organization_from_center_name(entry)
+        orgs = _parse_organizations_from_entry_attrs(entry)
         assert orgs == [Organization(name="NIID")]
         assert orgs[0].role is None
         assert orgs[0].organizationType is None
 
     def test_center_name_trimmed(self) -> None:
         entry = {"center_name": "  NIID  "}
-        orgs = _parse_organization_from_center_name(entry)
+        orgs = _parse_organizations_from_entry_attrs(entry)
         assert orgs == [Organization(name="NIID")]
 
     def test_center_name_missing_returns_empty(self) -> None:
-        assert _parse_organization_from_center_name({"accession": "X"}) == []
+        assert _parse_organizations_from_entry_attrs({"accession": "X"}) == []
 
     def test_center_name_empty_string_returns_empty(self) -> None:
-        assert _parse_organization_from_center_name({"center_name": ""}) == []
-        assert _parse_organization_from_center_name({"center_name": "   "}) == []
+        assert _parse_organizations_from_entry_attrs({"center_name": ""}) == []
+        assert _parse_organizations_from_entry_attrs({"center_name": "   "}) == []
 
     def test_non_dict_input_returns_empty(self) -> None:
-        assert _parse_organization_from_center_name(None) == []
-        assert _parse_organization_from_center_name([]) == []
-        assert _parse_organization_from_center_name("NIID") == []
+        assert _parse_organizations_from_entry_attrs(None) == []
+        assert _parse_organizations_from_entry_attrs([]) == []
+        assert _parse_organizations_from_entry_attrs("NIID") == []
+
+    def test_broker_name_present(self) -> None:
+        """broker_name 単独は role='broker' の Organization を返す。"""
+        orgs = _parse_organizations_from_entry_attrs({"broker_name": "DRA"})
+        assert orgs == [Organization(name="DRA", role="broker")]
+
+    def test_broker_name_and_center_name(self) -> None:
+        """center + broker 両方で 2 要素。center は role=None、broker は role='broker'。"""
+        entry = {"center_name": "NIES", "broker_name": "DRA"}
+        orgs = _parse_organizations_from_entry_attrs(entry)
+        assert orgs == [
+            Organization(name="NIES"),
+            Organization(name="DRA", role="broker"),
+        ]
+
+    def test_center_name_and_broker_name_same_value_dedup(self) -> None:
+        """center_name == broker_name は name dedupe で 1 要素のみ (center 先勝ち)。"""
+        entry = {"center_name": "NIID", "broker_name": "NIID"}
+        orgs = _parse_organizations_from_entry_attrs(entry)
+        assert orgs == [Organization(name="NIID")]
+        assert orgs[0].role is None
+
+    def test_broker_name_empty_string_skipped(self) -> None:
+        assert _parse_organizations_from_entry_attrs({"broker_name": ""}) == []
+        assert _parse_organizations_from_entry_attrs({"broker_name": "   "}) == []
+
+    def test_broker_name_trimmed(self) -> None:
+        orgs = _parse_organizations_from_entry_attrs({"broker_name": "  DRA  "})
+        assert orgs == [Organization(name="DRA", role="broker")]
+
+    def test_broker_name_non_str_returns_empty(self) -> None:
+        assert _parse_organizations_from_entry_attrs({"broker_name": 123}) == []
+        assert _parse_organizations_from_entry_attrs({"broker_name": None}) == []
+
+    def test_dedupe_is_case_sensitive(self) -> None:
+        """case sensitive dedupe: 'DRA' と 'dra' は別 Organization。"""
+        entry = {"center_name": "DRA", "broker_name": "dra"}
+        orgs = _parse_organizations_from_entry_attrs(entry)
+        assert orgs == [
+            Organization(name="DRA"),
+            Organization(name="dra", role="broker"),
+        ]
+
+    def test_lab_name_ignored(self) -> None:
+        """lab_name は load しない (Option B、Person/部局責務外方針)。"""
+        assert _parse_organizations_from_entry_attrs({"lab_name": "Laboratory of Ecogenetics"}) == []
+
+    def test_lab_name_with_center_name_only_returns_center(self) -> None:
+        """center_name + lab_name でも Organization は center のみ。"""
+        entry = {"center_name": "NIES", "lab_name": "Laboratory of X"}
+        orgs = _parse_organizations_from_entry_attrs(entry)
+        assert orgs == [Organization(name="NIES")]
+
+    def test_lab_name_with_broker_name(self) -> None:
+        """broker_name + lab_name でも Organization は broker のみ。"""
+        entry = {"broker_name": "DRA", "lab_name": "Laboratory of X"}
+        orgs = _parse_organizations_from_entry_attrs(entry)
+        assert orgs == [Organization(name="DRA", role="broker")]
 
 
 class TestXrefLinkDbNormalization:

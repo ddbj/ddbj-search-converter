@@ -295,6 +295,50 @@ class GEA(BaseModel):
 
 # === MetaboBank ===
 
+# §4.6.4 Phase C で全 110 件 controlled vocab 確認済 (unique 値数は値列挙そのまま)
+MetabobankStudyType = Literal[
+    "untargeted metabolite profiling",
+    "targeted metabolite profiling",
+    "metabolite target analysis",
+    "lipid profiling",
+    "metabolite profiling",
+    "metabolomics",
+    "volatile organic compound",
+    "blood metabolite profiling",
+]
+
+MetabobankExperimentType = Literal[
+    "liquid chromatography-mass spectrometry",
+    "fourier transform ion cyclotron resonance mass spectrometry",
+    "time-of-flight mass spectrometry",
+    "gas chromatography-mass spectrometry",
+    "quadrupole mass spectrometer",
+    "tandem mass spectrometry",
+    "orbitrap",
+    "data-dependent acquisition",
+    "capillary electrophoresis-mass spectrometry",
+    "flow injection analysis-mass spectrometry",
+    "ion mobility spectrometry-mass spectrometry",
+    "nuclear magnetic resonance spectroscopy",
+    "direct infusion-mass spectrometry",
+    "mass spectrometry imaging",
+    "SWATH MS",
+    "selected reaction monitoring",
+    "selective ion monitoring",
+    "ultra-performance liquid chromatography-mass spectrometry",
+]
+
+MetabobankSubmissionType = Literal[
+    "LC-DAD-MS",
+    "LC-MS",
+    "GC-MS",
+    "CE-MS",
+    "FIA-MS",
+    "NMR",
+    "DI-MS",
+    "MSI",
+]
+
 
 class MetaboBank(BaseModel):
     identifier: str
@@ -309,9 +353,9 @@ class MetaboBank(BaseModel):
     description: str | None = None
     organization: list[Organization] = Field(default_factory=list)
     publication: list[Publication] = Field(default_factory=list)
-    studyType: list[str] = Field(default_factory=list)
-    experimentType: list[str] = Field(default_factory=list)
-    submissionType: list[str] = Field(default_factory=list)
+    studyType: list[MetabobankStudyType] = Field(default_factory=list)
+    experimentType: list[MetabobankExperimentType] = Field(default_factory=list)
+    submissionType: list[MetabobankSubmissionType] = Field(default_factory=list)
     dbXrefs: list[Xref] = Field(default_factory=list)
     sameAs: list[Xref] = Field(default_factory=list)
     status: Literal["public"]
