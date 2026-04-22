@@ -7,7 +7,9 @@ from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, resolve_alias_to_indexes
 from ddbj_search_converter.es.mappings.bioproject import get_bioproject_mapping
 from ddbj_search_converter.es.mappings.biosample import get_biosample_mapping
+from ddbj_search_converter.es.mappings.gea import get_gea_mapping
 from ddbj_search_converter.es.mappings.jga import JGA_INDEXES, JgaIndexType, get_jga_mapping
+from ddbj_search_converter.es.mappings.metabobank import get_metabobank_mapping
 from ddbj_search_converter.es.mappings.sra import SRA_INDEXES, SraIndexType, get_sra_mapping
 
 IndexName = Literal[
@@ -23,6 +25,8 @@ IndexName = Literal[
     "jga-dataset",
     "jga-dac",
     "jga-policy",
+    "gea",
+    "metabobank",
 ]
 
 ALL_INDEXES: list[IndexName] = [
@@ -38,9 +42,11 @@ ALL_INDEXES: list[IndexName] = [
     "jga-dataset",
     "jga-dac",
     "jga-policy",
+    "gea",
+    "metabobank",
 ]
 
-IndexGroup = Literal["bioproject", "biosample", "sra", "jga", "all"]
+IndexGroup = Literal["bioproject", "biosample", "sra", "jga", "gea", "metabobank", "all"]
 
 ALIASES: dict[str, list[IndexName]] = {
     "sra": cast("list[IndexName]", list(SRA_INDEXES)),
@@ -66,6 +72,10 @@ def get_mapping_for_index(index: IndexName) -> dict[str, Any]:
         return get_bioproject_mapping()
     if index == "biosample":
         return get_biosample_mapping()
+    if index == "gea":
+        return get_gea_mapping()
+    if index == "metabobank":
+        return get_metabobank_mapping()
     if index.startswith("sra-"):
         return get_sra_mapping(cast("SraIndexType", index))
     if index.startswith("jga-"):

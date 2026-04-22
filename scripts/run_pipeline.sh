@@ -45,6 +45,8 @@ STEP_NAMES=(
     "jsonl_bs"
     "jsonl_sra"
     "jsonl_jga"
+    "jsonl_gea"
+    "jsonl_metabobank"
     "es_create"
     "es_bulk"
     "es_delete_blacklist"
@@ -79,6 +81,8 @@ declare -A STEP_DESC=(
     ["jsonl_bs"]="Generate BioSample JSONL"
     ["jsonl_sra"]="Generate SRA JSONL"
     ["jsonl_jga"]="Generate JGA JSONL"
+    ["jsonl_gea"]="Generate GEA JSONL"
+    ["jsonl_metabobank"]="Generate MetaboBank JSONL"
     ["es_create"]="Create Elasticsearch indexes"
     ["es_bulk"]="Bulk insert to Elasticsearch"
     ["es_delete_blacklist"]="Delete blacklisted documents from Elasticsearch"
@@ -108,6 +112,8 @@ declare -A STEP_PHASE=(
     ["jsonl_bs"]="PHASE 2: JSONL Generation"
     ["jsonl_sra"]="PHASE 2: JSONL Generation"
     ["jsonl_jga"]="PHASE 2: JSONL Generation"
+    ["jsonl_gea"]="PHASE 2: JSONL Generation"
+    ["jsonl_metabobank"]="PHASE 2: JSONL Generation"
     ["es_create"]="PHASE 3: Elasticsearch"
     ["es_bulk"]="PHASE 3: Elasticsearch"
     ["es_delete_blacklist"]="PHASE 3: Elasticsearch"
@@ -549,6 +555,18 @@ phase2_jsonl() {
         log_info "[SKIP] jsonl_jga (--from-step)"
     fi
 
+    if ! should_skip_step "jsonl_gea"; then
+        jsonl_cmds+=("generate_gea_jsonl")
+    else
+        log_info "[SKIP] jsonl_gea (--from-step)"
+    fi
+
+    if ! should_skip_step "jsonl_metabobank"; then
+        jsonl_cmds+=("generate_metabobank_jsonl")
+    else
+        log_info "[SKIP] jsonl_metabobank (--from-step)"
+    fi
+
     if [[ ${#jsonl_cmds[@]} -gt 0 ]]; then
         # Run JSONL generation sequentially to avoid resource contention
         for cmd in "${jsonl_cmds[@]}"; do
@@ -597,6 +615,8 @@ phase3_legacy() {
         local bs_dir="${RESULT_DIR}/biosample/jsonl/${DATE_STR}"
         local sra_dir="${RESULT_DIR}/sra/jsonl/${DATE_STR}"
         local jga_dir="${RESULT_DIR}/jga/jsonl/${DATE_STR}"
+        local gea_dir="${RESULT_DIR}/gea/jsonl/${DATE_STR}"
+        local metabobank_dir="${RESULT_DIR}/metabobank/jsonl/${DATE_STR}"
 
         run_cmd "es_bulk_insert --index bioproject --dir ${bp_dir}"
         run_cmd "es_bulk_insert --index biosample --dir ${bs_dir}"
@@ -610,6 +630,8 @@ phase3_legacy() {
         run_cmd "es_bulk_insert --index jga-dataset --dir ${jga_dir} --pattern 'jga-dataset.jsonl'"
         run_cmd "es_bulk_insert --index jga-dac --dir ${jga_dir} --pattern 'jga-dac.jsonl'"
         run_cmd "es_bulk_insert --index jga-policy --dir ${jga_dir} --pattern 'jga-policy.jsonl'"
+        run_cmd "es_bulk_insert --index gea --dir ${gea_dir} --pattern 'gea.jsonl'"
+        run_cmd "es_bulk_insert --index metabobank --dir ${metabobank_dir} --pattern 'metabobank.jsonl'"
     fi
 
     # Step: es_delete_blacklist
@@ -628,6 +650,8 @@ phase3_blue_green() {
     local bs_dir="${RESULT_DIR}/biosample/jsonl/${DATE_STR}"
     local sra_dir="${RESULT_DIR}/sra/jsonl/${DATE_STR}"
     local jga_dir="${RESULT_DIR}/jga/jsonl/${DATE_STR}"
+    local gea_dir="${RESULT_DIR}/gea/jsonl/${DATE_STR}"
+    local metabobank_dir="${RESULT_DIR}/metabobank/jsonl/${DATE_STR}"
 
     # Step: es_create_bg
     if should_skip_step "es_create_bg"; then
@@ -654,6 +678,8 @@ phase3_blue_green() {
         run_cmd "es_bulk_insert --index jga-dataset --target-index jga-dataset-${DATE_STR} --dir ${jga_dir} --pattern 'jga-dataset.jsonl'"
         run_cmd "es_bulk_insert --index jga-dac --target-index jga-dac-${DATE_STR} --dir ${jga_dir} --pattern 'jga-dac.jsonl'"
         run_cmd "es_bulk_insert --index jga-policy --target-index jga-policy-${DATE_STR} --dir ${jga_dir} --pattern 'jga-policy.jsonl'"
+        run_cmd "es_bulk_insert --index gea --target-index gea-${DATE_STR} --dir ${gea_dir} --pattern 'gea.jsonl'"
+        run_cmd "es_bulk_insert --index metabobank --target-index metabobank-${DATE_STR} --dir ${metabobank_dir} --pattern 'metabobank.jsonl'"
     fi
 
     # Step: es_blacklist_bg

@@ -52,6 +52,24 @@ def make_jga_distribution(index_name: str, accession: str) -> list[Distribution]
     ]
 
 
+def make_gea_distribution(accession: str) -> list[Distribution]:
+    """GEA の distribution を生成する。"""
+
+    return [
+        _json_dist("gea", accession),
+        _jsonld_dist("gea", accession),
+    ]
+
+
+def make_metabobank_distribution(accession: str) -> list[Distribution]:
+    """MetaboBank の distribution を生成する。"""
+
+    return [
+        _json_dist("metabobank", accession),
+        _jsonld_dist("metabobank", accession),
+    ]
+
+
 def make_sra_distribution(
     entry_type: str,
     identifier: str,

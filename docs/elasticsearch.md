@@ -366,6 +366,8 @@ es_health_check -v
 
 Full 更新時にインデックスを削除→再作成→データ投入すると、投入完了までダウンタイムが発生する。Blue-Green Alias Swap パターンでは、新インデックスへのデータ投入完了後に alias をアトミックに切り替えることで、ゼロダウンタイムを実現する。
 
+> **NOTE**: CP1 deploy では `Publication.Reference` → `reference` / `Publication.DbType` → `dbType` の rename と GEA / MetaboBank の新 index (`gea` / `metabobank`) 追加により、既存 index との mapping 互換性が失われる。deploy 時は必ず Blue-Green Alias Swap で新 index を別名で作成し、alias を一括 swap すること。既存の `--clean-es` フローは mapping が変わらない場合にのみ安全。
+
 ### 概念
 
 ```plain
@@ -397,9 +399,11 @@ API 側は alias 経由でアクセスするため、変更不要。
 | `jga-dataset` | `jga-dataset-{YYYYMMDD}` |
 | `jga-dac` | `jga-dac-{YYYYMMDD}` |
 | `jga-policy` | `jga-policy-{YYYYMMDD}` |
+| `gea` | `gea-{YYYYMMDD}` |
+| `metabobank` | `metabobank-{YYYYMMDD}` |
 | `sra` | 上記 SRA 6 インデックス |
 | `jga` | 上記 JGA 4 インデックス |
-| `entries` | 上記 12 インデックス全て |
+| `entries` | 上記 14 インデックス全て |
 
 ### Full 更新フロー
 
@@ -410,7 +414,7 @@ es_create_index --index all --date-suffix 20260413
 # 2. 新インデックスにデータ投入（旧インデックスが検索に使われ続ける）
 es_bulk_insert --index bioproject --target-index bioproject-20260413 --dir ${bp_dir}
 es_bulk_insert --index biosample --target-index biosample-20260413 --dir ${bs_dir}
-# ... (12 インデックス分)
+# ... (14 インデックス分、gea / metabobank を含む)
 
 # 3. 新インデックスから blacklist を削除
 es_delete_blacklist --target-suffix 20260413 --force

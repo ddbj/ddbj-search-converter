@@ -1,0 +1,68 @@
+@prefix metabobank: <http://ddbj.nig.ac.jp/ontologies/metabobank/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://ddbj.nig.ac.jp/ontologies/metabobank/>
+    a owl:Ontology ;
+    rdfs:label "DDBJ MetaboBank Ontology" ;
+    rdfs:comment "Vocabulary for DDBJ MetaboBank metabolomics metadata" .
+
+metabobank:status
+    a owl:DatatypeProperty ;
+    rdfs:label "status" ;
+    rdfs:comment "INSDC record status: always public for MetaboBank" .
+
+metabobank:accessibility
+    a owl:DatatypeProperty ;
+    rdfs:label "accessibility" ;
+    rdfs:comment "Access level: always public-access for MetaboBank" .
+
+metabobank:properties
+    a owl:ObjectProperty ;
+    rdfs:label "properties" ;
+    rdfs:comment "Original IDF tag-value pairs preserved as a JSON object" .
+
+metabobank:organism
+    a owl:ObjectProperty ;
+    rdfs:label "organism" ;
+    rdfs:comment "Target organism (always null for MetaboBank because IDF does not record organism and SDRF is not joined)" .
+
+metabobank:dbXrefs
+    a owl:ObjectProperty ;
+    rdfs:label "dbXrefs" ;
+    rdfs:comment "Cross-references to related entries in other databases" .
+
+metabobank:organization
+    a owl:ObjectProperty ;
+    rdfs:label "organization" ;
+    rdfs:comment "Submitting organization derived from IDF Person Affiliation entries (role is fixed to submitter)" .
+
+metabobank:publication
+    a owl:ObjectProperty ;
+    rdfs:label "publication" ;
+    rdfs:comment "Publication associated with the MetaboBank study (PubMed ID and Publication DOI stored as separate entries)" .
+
+metabobank:reference
+    a owl:DatatypeProperty ;
+    rdfs:label "reference" ;
+    rdfs:comment "Publication reference identifier" .
+
+metabobank:dbType
+    a owl:DatatypeProperty ;
+    rdfs:label "dbType" ;
+    rdfs:comment "Publication database type: ePubmed, eDOI, ePMC, or eNotAvailable" .
+
+metabobank:studyType
+    a owl:DatatypeProperty ;
+    rdfs:label "studyType" ;
+    rdfs:comment "Study category from IDF Comment[Study type] (e.g. untargeted metabolite profiling, lipid profiling)" .
+
+metabobank:experimentType
+    a owl:DatatypeProperty ;
+    rdfs:label "experimentType" ;
+    rdfs:comment "Analytical method from IDF Comment[Experiment type] (e.g. liquid chromatography-mass spectrometry, NMR)" .
+
+metabobank:submissionType
+    a owl:DatatypeProperty ;
+    rdfs:label "submissionType" ;
+    rdfs:comment "Submission category from IDF Comment[Submission type] (e.g. LC-MS, GC-MS, CE-MS)" .

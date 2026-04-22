@@ -4,12 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from ddbj_search_converter.schema import (
+    GEA,
     JGA,
     SRA,
     BioProject,
     BioSample,
     BioSamplePackage,
     Distribution,
+    MetaboBank,
     Organism,
     Organization,
     Publication,
@@ -280,6 +282,169 @@ class TestJGA:
         assert jga.vendor == ["Illumina"]
 
 
+def _make_minimal_gea_kwargs() -> dict:
+    return {
+        "identifier": "E-GEAD-1005",
+        "properties": {},
+        "distribution": [],
+        "isPartOf": "gea",
+        "type": "gea",
+        "url": "https://ddbj.nig.ac.jp/search/entry/gea/E-GEAD-1005",
+        "status": "public",
+        "accessibility": "public-access",
+    }
+
+
+class TestGEA:
+    def test_minimal_instance(self) -> None:
+        gea = GEA(**_make_minimal_gea_kwargs())
+        assert gea.identifier == "E-GEAD-1005"
+        assert gea.isPartOf == "gea"
+        assert gea.type_ == "gea"
+        assert gea.name is None
+        assert gea.organism is None
+        assert gea.title is None
+        assert gea.description is None
+        assert gea.organization == []
+        assert gea.publication == []
+        assert gea.experimentType == []
+        assert gea.dbXrefs == []
+        assert gea.sameAs == []
+        assert gea.dateCreated is None
+        assert gea.dateModified is None
+        assert gea.datePublished is None
+
+    def test_is_part_of_literal_rejects_other(self) -> None:
+        kwargs = _make_minimal_gea_kwargs()
+        kwargs["isPartOf"] = "jga"
+        with pytest.raises(ValidationError):
+            GEA(**kwargs)
+
+    def test_type_literal_rejects_other(self) -> None:
+        kwargs = _make_minimal_gea_kwargs()
+        kwargs["type"] = "metabobank"
+        with pytest.raises(ValidationError):
+            GEA(**kwargs)
+
+    def test_status_literal_rejects_private(self) -> None:
+        kwargs = _make_minimal_gea_kwargs()
+        kwargs["status"] = "private"
+        with pytest.raises(ValidationError):
+            GEA(**kwargs)
+
+    def test_accessibility_literal_rejects_controlled_access(self) -> None:
+        kwargs = _make_minimal_gea_kwargs()
+        kwargs["accessibility"] = "controlled-access"
+        with pytest.raises(ValidationError):
+            GEA(**kwargs)
+
+    def test_with_populated_common_types(self) -> None:
+        kwargs = _make_minimal_gea_kwargs()
+        kwargs["title"] = "Test study"
+        kwargs["description"] = "A test description"
+        kwargs["organization"] = [Organization(name="Kyushu University", role="submitter")]
+        kwargs["publication"] = [
+            Publication(id="21187441", dbType="ePubmed", url="https://pubmed.ncbi.nlm.nih.gov/21187441/")
+        ]
+        kwargs["experimentType"] = ["transcription profiling by array", "RNA-seq of coding RNA"]
+        kwargs["dateModified"] = "2025-01-31"
+        kwargs["datePublished"] = "2025-01-31"
+        gea = GEA(**kwargs)
+        assert gea.organization[0].name == "Kyushu University"
+        assert gea.organization[0].role == "submitter"
+        assert gea.publication[0].id_ == "21187441"
+        assert gea.publication[0].dbType == "ePubmed"
+        assert gea.experimentType == ["transcription profiling by array", "RNA-seq of coding RNA"]
+        assert gea.dateCreated is None
+        assert gea.dateModified == "2025-01-31"
+        assert gea.datePublished == "2025-01-31"
+
+    def test_json_output_uses_alias(self) -> None:
+        gea = GEA(**_make_minimal_gea_kwargs())
+        json_str = gea.model_dump_json(by_alias=True)
+        assert '"type":"gea"' in json_str
+        assert '"isPartOf":"gea"' in json_str
+
+
+def _make_minimal_metabobank_kwargs() -> dict:
+    return {
+        "identifier": "MTBKS102",
+        "properties": {},
+        "distribution": [],
+        "isPartOf": "metabobank",
+        "type": "metabobank",
+        "url": "https://ddbj.nig.ac.jp/search/entry/metabobank/MTBKS102",
+        "status": "public",
+        "accessibility": "public-access",
+    }
+
+
+class TestMetaboBank:
+    def test_minimal_instance(self) -> None:
+        mtb = MetaboBank(**_make_minimal_metabobank_kwargs())
+        assert mtb.identifier == "MTBKS102"
+        assert mtb.isPartOf == "metabobank"
+        assert mtb.type_ == "metabobank"
+        assert mtb.organization == []
+        assert mtb.publication == []
+        assert mtb.studyType == []
+        assert mtb.experimentType == []
+        assert mtb.submissionType == []
+        assert mtb.dbXrefs == []
+        assert mtb.dateCreated is None
+
+    def test_is_part_of_literal_rejects_other(self) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs["isPartOf"] = "gea"
+        with pytest.raises(ValidationError):
+            MetaboBank(**kwargs)
+
+    def test_type_literal_rejects_other(self) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs["type"] = "gea"
+        with pytest.raises(ValidationError):
+            MetaboBank(**kwargs)
+
+    def test_status_literal_rejects_private(self) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs["status"] = "private"
+        with pytest.raises(ValidationError):
+            MetaboBank(**kwargs)
+
+    def test_accessibility_literal_rejects_controlled_access(self) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs["accessibility"] = "controlled-access"
+        with pytest.raises(ValidationError):
+            MetaboBank(**kwargs)
+
+    def test_with_populated_common_types(self) -> None:
+        kwargs = _make_minimal_metabobank_kwargs()
+        kwargs["title"] = "Arabidopsis thaliana leaf metabolite analysis"
+        kwargs["organization"] = [Organization(name="Kazusa DNA Research Institute", role="submitter")]
+        kwargs["publication"] = [Publication(id="10.1038/sample", dbType="eDOI", url="https://doi.org/10.1038/sample")]
+        kwargs["studyType"] = ["untargeted metabolite profiling"]
+        kwargs["experimentType"] = [
+            "liquid chromatography-mass spectrometry",
+            "fourier transform ion cyclotron resonance mass spectrometry",
+        ]
+        kwargs["submissionType"] = ["LC-DAD-MS"]
+        kwargs["dateCreated"] = "2022-05-22"
+        kwargs["dateModified"] = "2022-05-22"
+        kwargs["datePublished"] = "2022-05-22"
+        mtb = MetaboBank(**kwargs)
+        assert mtb.title == "Arabidopsis thaliana leaf metabolite analysis"
+        assert mtb.studyType == ["untargeted metabolite profiling"]
+        assert len(mtb.experimentType) == 2
+        assert mtb.submissionType == ["LC-DAD-MS"]
+        assert mtb.dateCreated == "2022-05-22"
+
+    def test_json_output_uses_alias(self) -> None:
+        mtb = MetaboBank(**_make_minimal_metabobank_kwargs())
+        json_str = mtb.model_dump_json(by_alias=True)
+        assert '"type":"metabobank"' in json_str
+        assert '"isPartOf":"metabobank"' in json_str
+
+
 class TestOrganization:
     def test_all_defaults_are_none(self) -> None:
         org = Organization()
@@ -378,28 +543,28 @@ class TestBioSamplePackage:
 
 
 def _make_minimal_bs_kwargs() -> dict:
-    return dict(
-        identifier="SAMD00000001",
-        properties={},
-        distribution=[],
-        isPartOf="BioSample",
-        type="biosample",
-        name=None,
-        url="https://example.com",
-        organism=None,
-        title=None,
-        description=None,
-        organization=[],
-        model=[],
-        package=None,
-        dbXrefs=[],
-        sameAs=[],
-        status="public",
-        accessibility="public-access",
-        dateCreated=None,
-        dateModified=None,
-        datePublished=None,
-    )
+    return {
+        "identifier": "SAMD00000001",
+        "properties": {},
+        "distribution": [],
+        "isPartOf": "BioSample",
+        "type": "biosample",
+        "name": None,
+        "url": "https://example.com",
+        "organism": None,
+        "title": None,
+        "description": None,
+        "organization": [],
+        "model": [],
+        "package": None,
+        "dbXrefs": [],
+        "sameAs": [],
+        "status": "public",
+        "accessibility": "public-access",
+        "dateCreated": None,
+        "dateModified": None,
+        "datePublished": None,
+    }
 
 
 class TestBioSample:
@@ -446,34 +611,34 @@ class TestBioSample:
 
 
 def _make_minimal_sra_kwargs() -> dict:
-    return dict(
-        identifier="DRX000001",
-        properties={},
-        distribution=[],
-        isPartOf="sra",
-        type="sra-experiment",
-        name=None,
-        url="https://example.com",
-        organism=None,
-        title=None,
-        description=None,
-        organization=[],
-        publication=[],
-        libraryStrategy=[],
-        librarySource=[],
-        librarySelection=[],
-        libraryLayout=None,
-        platform=None,
-        instrumentModel=[],
-        analysisType=None,
-        dbXrefs=[],
-        sameAs=[],
-        status="public",
-        accessibility="public-access",
-        dateCreated=None,
-        dateModified=None,
-        datePublished=None,
-    )
+    return {
+        "identifier": "DRX000001",
+        "properties": {},
+        "distribution": [],
+        "isPartOf": "sra",
+        "type": "sra-experiment",
+        "name": None,
+        "url": "https://example.com",
+        "organism": None,
+        "title": None,
+        "description": None,
+        "organization": [],
+        "publication": [],
+        "libraryStrategy": [],
+        "librarySource": [],
+        "librarySelection": [],
+        "libraryLayout": None,
+        "platform": None,
+        "instrumentModel": [],
+        "analysisType": None,
+        "dbXrefs": [],
+        "sameAs": [],
+        "status": "public",
+        "accessibility": "public-access",
+        "dateCreated": None,
+        "dateModified": None,
+        "datePublished": None,
+    }
 
 
 class TestLibrarySourceLiteral:

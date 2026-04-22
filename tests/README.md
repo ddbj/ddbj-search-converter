@@ -60,6 +60,9 @@ tests/
             test_bs.py          # jsonl.bs モジュール
             test_jga.py         # jsonl.jga モジュール
             test_sra.py         # jsonl.sra モジュール
+            test_gea.py         # jsonl.gea モジュール
+            test_metabobank.py  # jsonl.metabobank モジュール
+            test_idf_common.py  # jsonl.idf_common モジュール (GEA/MetaboBank 共通 IDF parse)
             test_regenerate.py  # jsonl.regenerate モジュール
 ```
 

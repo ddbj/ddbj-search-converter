@@ -28,7 +28,7 @@ from ddbj_search_converter.jsonl.sra import (
     process_submission_xml,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
-from ddbj_search_converter.schema import SRA, Organization, Publication
+from ddbj_search_converter.schema import SRA, Organization
 from ddbj_search_converter.sra.tar_reader import SraXmlType
 
 

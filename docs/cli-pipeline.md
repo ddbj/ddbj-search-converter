@@ -70,7 +70,9 @@ generate_bp_jsonl --full
 generate_bs_jsonl --full
 generate_sra_jsonl --full
 generate_jga_jsonl
-# 出力: {result_dir}/jsonl/{YYYYMMDD}/*.jsonl (12 files)
+generate_gea_jsonl
+generate_metabobank_jsonl
+# 出力: {result_dir}/{type}/jsonl/{YYYYMMDD}/*.jsonl
 
 # === Phase 3: ES 投入 ===
 
@@ -79,6 +81,8 @@ es_create_index --index bioproject
 es_create_index --index biosample
 es_create_index --index sra
 es_create_index --index jga
+es_create_index --index gea
+es_create_index --index metabobank
 
 # 10. データ投入
 es_bulk_insert --index bioproject
@@ -93,6 +97,8 @@ es_bulk_insert --index jga-study
 es_bulk_insert --index jga-dataset
 es_bulk_insert --index jga-dac
 es_bulk_insert --index jga-policy
+es_bulk_insert --index gea
+es_bulk_insert --index metabobank
 
 # 11. blacklist に含まれるドキュメントを削除
 es_delete_blacklist --force
@@ -108,6 +114,9 @@ generate_bp_jsonl
 generate_bs_jsonl
 generate_sra_jsonl
 generate_jga_jsonl
+# GEA / MetaboBank は差分更新非対応で常に全件走査
+generate_gea_jsonl
+generate_metabobank_jsonl
 ```
 
 ### last_run.json
@@ -143,6 +152,8 @@ generate_jga_jsonl
 | BioSample | XML の `last_update` フィールド |
 | SRA | Accessions.tab の `Updated` カラム |
 | JGA | 常に全件処理（`null` 固定） |
+| GEA | 常に全件処理（IDF 全走査、`last_run.json` に含めない） |
+| MetaboBank | 常に全件処理（IDF 全走査、`last_run.json` に含めない） |
 
 ## 一括実行スクリプト
 
@@ -218,6 +229,8 @@ generate_jga_jsonl
   jsonl_bs             Generate BioSample JSONL
   jsonl_sra            Generate SRA JSONL
   jsonl_jga            Generate JGA JSONL
+  jsonl_gea            Generate GEA JSONL
+  jsonl_metabobank     Generate MetaboBank JSONL
 
 === PHASE 3: Elasticsearch ===
   es_create            Create Elasticsearch indexes
@@ -258,22 +271,26 @@ PHASE 2: JSONL Generation
 ├── [逐次] generate_bp_jsonl [--full] [--parallel-num N]
 ├── [逐次] generate_bs_jsonl [--full] [--parallel-num N]
 ├── [逐次] generate_sra_jsonl [--full] [--parallel-num N]
-└── [逐次] generate_jga_jsonl
+├── [逐次] generate_jga_jsonl
+├── [逐次] generate_gea_jsonl
+└── [逐次] generate_metabobank_jsonl
 # --parallel-num は各コマンド内部の並列度 (デフォルト: 4)
+# GEA / MetaboBank は IDF 全件走査なので常に全件処理 (差分更新非対応、
+# last_run.json の DataType Literal にも含めない)
 
 PHASE 3: Elasticsearch (--clean-es / デフォルト)
 [--clean-es 指定時] es_delete_index --index all --skip-missing --force
     ↓
 es_create_index --index all --skip-existing
     ↓
-[順次] es_bulk_insert (12 インデックス)
+[順次] es_bulk_insert (14 インデックス)
     ↓
 es_delete_blacklist --force
 
 PHASE 3: Elasticsearch (--blue-green)
 es_create_index --index all --date-suffix ${DATE_STR}
     ↓
-[順次] es_bulk_insert --target-index {name}-${DATE_STR} (12 インデックス)
+[順次] es_bulk_insert --target-index {name}-${DATE_STR} (14 インデックス)
     ↓
 es_delete_blacklist --target-suffix ${DATE_STR} --force
     ↓

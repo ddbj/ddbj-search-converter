@@ -17,6 +17,8 @@ Elasticsearch に投入する各ドキュメント型 (`ddbj_search_converter/sc
 | BioSample | `http://ddbj.nig.ac.jp/ontologies/biosample/` | `biosample:` |
 | SRA | `http://ddbj.nig.ac.jp/ontologies/sra/` | `sra:` |
 | JGA | `http://ddbj.nig.ac.jp/ontologies/jga/` | `jga:` |
+| GEA | `http://ddbj.nig.ac.jp/ontologies/gea/` | `gea:` |
+| MetaboBank | `http://ddbj.nig.ac.jp/ontologies/metabobank/` | `metabobank:` |
 
 各 `.jsonld` で `@vocab` としてデフォルト名前空間を設定しているため、独自プロパティは context 内で明示しなくても自動的に各名前空間の URI に展開される。
 

@@ -42,21 +42,23 @@ DDBJ Search Converter のデータフローと構造。
 |   sync_ncbi_tar            -- download/merge --> {result}/sra_tar/NCBI_SRA  |
 |   sync_dra_tar             -- archive DRA XML -> {result}/sra_tar/DRA.tar   |
 |                                                                             |
-|   generate_bp_jsonl  -- tmp_xml + date_cache + blacklist [+ dblink]         |
-|   generate_bs_jsonl  -- tmp_xml + date_cache + blacklist [+ dblink]         |
-|   generate_sra_jsonl -- tar + accessions_db + blacklist [+ dblink]          |
-|   generate_jga_jsonl -- XML/CSV + blacklist [+ dblink]                      |
+|   generate_bp_jsonl          -- tmp_xml + date_cache + blacklist [+ dblink] |
+|   generate_bs_jsonl          -- tmp_xml + date_cache + blacklist [+ dblink] |
+|   generate_sra_jsonl         -- tar + accessions_db + blacklist [+ dblink]  |
+|   generate_jga_jsonl         -- XML/CSV + blacklist [+ dblink]              |
+|   generate_gea_jsonl         -- IDF [+ dblink]                              |
+|   generate_metabobank_jsonl  -- IDF [+ dblink]                              |
 |   ※ dblink (dbXrefs) はデフォルトで含めない。--include-dbxrefs で有効化     |
 |                                                                             |
-|   Output: {result}/jsonl/{YYYYMMDD}/*.jsonl (12 files)                      |
+|   Output: {result}/{type}/jsonl/{YYYYMMDD}/*.jsonl                          |
 +-----------------------------------------------------------------------------+
                                       |
                                       v
 +-----------------------------------------------------------------------------+
 | Phase 3: Elasticsearch Ingestion                                            |
 |                                                                             |
-|   es_create_index      -- bioproject, biosample, sra, jga                   |
-|   es_bulk_insert       -- 12 indexes + 3 aliases (sra, jga, entries)        |
+|   es_create_index      -- bioproject, biosample, sra, jga, gea, metabobank  |
+|   es_bulk_insert       -- 14 indexes + 3 aliases (sra, jga, entries)        |
 |   es_delete_blacklist  -- blacklist に含まれる doc を ES から削除           |
 +-----------------------------------------------------------------------------+
 ```
@@ -402,6 +404,22 @@ BioProject エントリーは umbrella 階層構造に対応しており、`pare
 
 JGA エントリーが `sameAs`（SECONDARY_ID）を持つ場合、ES bulk insert 時に Secondary ID を `_id` とするエイリアスドキュメントを同一インデックスに追加投入する。エイリアスドキュメントの `_source` は Primary ドキュメントと同一（`identifier` は Primary ID のまま）。これにより Secondary ID でも API からエントリーを取得できる。ただしプレフィックス（英字部分）が Primary ID と異なる Secondary ID（例: `AGDD_000001`）は除外する。
 
+### GEA
+
+| ファイルパターン | ES Index |
+|-----------------|----------|
+| `gea.jsonl` | `gea` |
+
+全 IDF ファイルを 1 本の JSONL に集約して出力する。単一 index 構成（Microarray / Sequencing の区別は `experimentType` 値で表現）。
+
+### MetaboBank
+
+| ファイルパターン | ES Index |
+|-----------------|----------|
+| `metabobank.jsonl` | `metabobank` |
+
+全 IDF ファイルを 1 本の JSONL に集約して出力する。`{accession}.idf.txt` が欠損しているディレクトリはログ出力のうえ除外する。
+
 ### properties フィールド
 
 各エントリーの `properties` フィールドには、元の XML を dict に変換した構造がそのまま格納される。基本は xmltodict の標準挙動（単一子要素は dict、複数子要素は list、テキストノード・XML の attribute 値・None はスカラー）。
@@ -468,6 +486,8 @@ JGA エントリーが `sameAs`（SECONDARY_ID）を持つ場合、ES bulk inser
 | SRA (DRA) 全般 | o | o | o | - | - |
 | SRA (DRA) sra-run | o | o | o | o* | o* |
 | JGA | o | o | - | - | - |
+| GEA | o | o | - | - | - |
+| MetaboBank | o | o | - | - | - |
 
 `*` = DRA ファイルインデックス DB にファイルが存在する場合のみ
 

@@ -4,7 +4,9 @@ from ddbj_search_converter.es.mappings import (
     INDEX_SETTINGS,
     get_bioproject_mapping,
     get_biosample_mapping,
+    get_gea_mapping,
     get_jga_mapping,
+    get_metabobank_mapping,
     get_sra_mapping,
 )
 from ddbj_search_converter.es.mappings.common import get_common_mapping
@@ -345,6 +347,74 @@ class TestJgaMapping:
         for jga_type in ("jga-study", "jga-dac", "jga-policy"):
             props = get_jga_mapping(jga_type)["mappings"]["properties"]
             assert "datasetType" not in props
+
+
+class TestGeaMapping:
+    def test_has_common_properties(self) -> None:
+        props = get_gea_mapping()["mappings"]["properties"]
+        assert "identifier" in props
+        assert "title" in props
+        assert "description" in props
+        assert "status" in props
+        assert "accessibility" in props
+        assert "dateCreated" in props
+        assert "dateModified" in props
+        assert "datePublished" in props
+
+    def test_has_organization_from_common_helper(self) -> None:
+        props = get_gea_mapping()["mappings"]["properties"]
+        assert props["organization"]["type"] == "nested"
+
+    def test_has_publication_from_common_helper(self) -> None:
+        props = get_gea_mapping()["mappings"]["properties"]
+        assert props["publication"]["type"] == "nested"
+        assert props["publication"]["properties"]["dbType"] == {"type": "keyword"}
+
+    def test_experiment_type_is_keyword(self) -> None:
+        props = get_gea_mapping()["mappings"]["properties"]
+        assert props["experimentType"] == {"type": "keyword"}
+
+    def test_does_not_include_grant_or_external_link(self) -> None:
+        """GEA schema に grant / externalLink は無いため mapping にも含まない。"""
+        props = get_gea_mapping()["mappings"]["properties"]
+        assert "grant" not in props
+        assert "externalLink" not in props
+
+    def test_settings_applied(self) -> None:
+        mapping = get_gea_mapping()
+        assert mapping["settings"] == INDEX_SETTINGS
+
+
+class TestMetabobankMapping:
+    def test_has_common_properties(self) -> None:
+        props = get_metabobank_mapping()["mappings"]["properties"]
+        assert "identifier" in props
+        assert "title" in props
+        assert "description" in props
+        assert "status" in props
+        assert "accessibility" in props
+        assert "dateCreated" in props
+
+    def test_has_organization_and_publication(self) -> None:
+        props = get_metabobank_mapping()["mappings"]["properties"]
+        assert props["organization"]["type"] == "nested"
+        assert props["publication"]["type"] == "nested"
+
+    def test_three_keyword_fields(self) -> None:
+        """studyType / experimentType / submissionType は keyword (aggregation 前提)。"""
+        props = get_metabobank_mapping()["mappings"]["properties"]
+        assert props["studyType"] == {"type": "keyword"}
+        assert props["experimentType"] == {"type": "keyword"}
+        assert props["submissionType"] == {"type": "keyword"}
+
+    def test_does_not_include_grant_or_external_link(self) -> None:
+        props = get_metabobank_mapping()["mappings"]["properties"]
+        assert "grant" not in props
+        assert "externalLink" not in props
+
+    def test_settings_applied(self) -> None:
+        mapping = get_metabobank_mapping()
+        assert mapping["settings"] == INDEX_SETTINGS
 
 
 class TestIndexSettings:

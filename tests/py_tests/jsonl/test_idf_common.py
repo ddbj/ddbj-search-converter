@@ -71,9 +71,7 @@ class TestParseIdf:
             / "E-GEAD-1005.idf.txt"
         )
         result = parse_idf(idf_path)
-        assert result["Investigation Title"] == [
-            "RT2ProfilerTM PCR Array-Human common cytokines (CBX140)"
-        ]
+        assert result["Investigation Title"] == ["RT2ProfilerTM PCR Array-Human common cytokines (CBX140)"]
         assert result["Person Affiliation"] == ["Kyushu University"]
         assert result["Person Roles"] == ["submitter"]
         assert result["PubMed ID"] == ["21187441"]

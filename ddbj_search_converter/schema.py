@@ -265,3 +265,57 @@ class JGA(BaseModel):
     dateCreated: str | None
     dateModified: str | None
     datePublished: str | None
+
+
+# === GEA ===
+
+
+class GEA(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: list[Distribution]
+    isPartOf: Literal["gea"]
+    type_: Literal["gea"] = Field(alias="type")
+    name: str | None = None
+    url: str
+    organism: Organism | None = None
+    title: str | None = None
+    description: str | None = None
+    organization: list[Organization] = Field(default_factory=list)
+    publication: list[Publication] = Field(default_factory=list)
+    experimentType: list[str] = Field(default_factory=list)
+    dbXrefs: list[Xref] = Field(default_factory=list)
+    sameAs: list[Xref] = Field(default_factory=list)
+    status: Literal["public"]
+    accessibility: Literal["public-access"]
+    dateCreated: str | None = None
+    dateModified: str | None = None
+    datePublished: str | None = None
+
+
+# === MetaboBank ===
+
+
+class MetaboBank(BaseModel):
+    identifier: str
+    properties: Any
+    distribution: list[Distribution]
+    isPartOf: Literal["metabobank"]
+    type_: Literal["metabobank"] = Field(alias="type")
+    name: str | None = None
+    url: str
+    organism: Organism | None = None
+    title: str | None = None
+    description: str | None = None
+    organization: list[Organization] = Field(default_factory=list)
+    publication: list[Publication] = Field(default_factory=list)
+    studyType: list[str] = Field(default_factory=list)
+    experimentType: list[str] = Field(default_factory=list)
+    submissionType: list[str] = Field(default_factory=list)
+    dbXrefs: list[Xref] = Field(default_factory=list)
+    sameAs: list[Xref] = Field(default_factory=list)
+    status: Literal["public"]
+    accessibility: Literal["public-access"]
+    dateCreated: str | None = None
+    dateModified: str | None = None
+    datePublished: str | None = None

@@ -26,7 +26,6 @@ from ddbj_search_converter.schema import (
     Agency,
     ExternalLink,
     Grant,
-    Organization,
     Publication,
 )
 
@@ -471,9 +470,7 @@ class TestExtractStudyType:
 
     def test_other_with_empty_new_falls_back(self) -> None:
         entry = {
-            "DESCRIPTOR": {
-                "STUDY_TYPES": {"STUDY_TYPE": {"existing_study_type": "Other", "new_study_type": "   "}}
-            }
+            "DESCRIPTOR": {"STUDY_TYPES": {"STUDY_TYPE": {"existing_study_type": "Other", "new_study_type": "   "}}}
         }
         assert extract_study_type(entry) == ["Other"]
 
@@ -530,9 +527,7 @@ class TestParseVendor:
     """Tests for parse_vendor function."""
 
     def test_single_vendor(self) -> None:
-        entry = {
-            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "Vendor", "VALUE": "Illumina"}}
-        }
+        entry = {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "Vendor", "VALUE": "Illumina"}}}
         assert parse_vendor(entry) == ["Illumina"]
 
     def test_multiple_vendors_in_list(self) -> None:
@@ -584,9 +579,7 @@ class TestParseOrganization:
     def test_study_dedupe_on_equal_names(self) -> None:
         entry = {
             "center_name": "DBCLS",
-            "STUDY_ATTRIBUTES": {
-                "STUDY_ATTRIBUTE": {"TAG": "Submitting organization", "VALUE": "DBCLS"}
-            },
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "Submitting organization", "VALUE": "DBCLS"}},
         }
         orgs = parse_organization(entry, "jga-study")
         assert [o.name for o in orgs] == ["DBCLS"]
@@ -634,9 +627,7 @@ class TestParseOrganization:
     def test_dataset_uses_only_center_name(self) -> None:
         entry = {
             "center_name": "Individual",
-            "STUDY_ATTRIBUTES": {
-                "STUDY_ATTRIBUTE": {"TAG": "Submitting organization", "VALUE": "should-be-ignored"}
-            },
+            "STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "Submitting organization", "VALUE": "should-be-ignored"}},
         }
         orgs = parse_organization(entry, "jga-dataset")
         assert [o.name for o in orgs] == ["Individual"]
@@ -649,11 +640,7 @@ class TestParsePublicationsJga:
     """Tests for parse_publications function (JGA study-specific)."""
 
     def test_single_pubmed_published(self) -> None:
-        entry = {
-            "PUBLICATIONS": {
-                "PUBLICATION": {"id": "24336570", "status": "published", "DB_TYPE": "PUBMED"}
-            }
-        }
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "24336570", "status": "published", "DB_TYPE": "PUBMED"}}}
         pubs = parse_publications(entry)
         assert len(pubs) == 1
         assert isinstance(pubs[0], Publication)
@@ -664,33 +651,19 @@ class TestParsePublicationsJga:
 
     def test_lowercase_pubmed_normalizes(self) -> None:
         """大小文字揺れ (pubmed / PubMed) も ePubmed に正規化。"""
-        entry = {
-            "PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "pubmed", "status": "published"}}
-        }
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "pubmed", "status": "published"}}}
         assert parse_publications(entry)[0].dbType == "ePubmed"
 
     def test_status_unpublished_normalizes(self) -> None:
-        entry = {
-            "PUBLICATIONS": {
-                "PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "unpublished"}
-            }
-        }
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "unpublished"}}}
         assert parse_publications(entry)[0].status == "eUnpublished"
 
     def test_invalid_status_falls_back_to_none(self) -> None:
-        entry = {
-            "PUBLICATIONS": {
-                "PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "preprint"}
-            }
-        }
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "PUBMED", "status": "preprint"}}}
         assert parse_publications(entry)[0].status is None
 
     def test_unknown_db_type_falls_back_to_none(self) -> None:
-        entry = {
-            "PUBLICATIONS": {
-                "PUBLICATION": {"id": "1", "DB_TYPE": "UNKNOWN", "status": "published"}
-            }
-        }
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "1", "DB_TYPE": "UNKNOWN", "status": "published"}}}
         pub = parse_publications(entry)[0]
         assert pub.dbType is None
         assert pub.url is None
@@ -738,11 +711,7 @@ class TestParseGrantsJga:
         assert grant.agency == [Agency(abbreviation=None, name="NIH")]
 
     def test_empty_grant_id_becomes_none(self) -> None:
-        entry = {
-            "GRANTS": {
-                "GRANT": {"grant_id": "", "TITLE": "T", "AGENCY": {"abbr": "X", "content": "Y"}}
-            }
-        }
+        entry = {"GRANTS": {"GRANT": {"grant_id": "", "TITLE": "T", "AGENCY": {"abbr": "X", "content": "Y"}}}}
         assert parse_grants(entry)[0].id_ is None
 
     def test_multiple_grants_list(self) -> None:
@@ -808,9 +777,7 @@ class TestParseExternalLinkJga:
     def test_policy_link(self) -> None:
         entry = {
             "POLICY_LINKS": {
-                "POLICY_LINK": {
-                    "URL_LINK": {"LABEL": "NBDC Policy", "URL": "https://humandbs.dbcls.jp/en/nbdc-policy"}
-                }
+                "POLICY_LINK": {"URL_LINK": {"LABEL": "NBDC Policy", "URL": "https://humandbs.dbcls.jp/en/nbdc-policy"}}
             }
         }
         links = parse_external_link(entry, "jga-policy")

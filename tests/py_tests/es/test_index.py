@@ -11,8 +11,8 @@ from ddbj_search_converter.es.index import (
 
 class TestAllIndexes:
     def test_all_indexes_count(self) -> None:
-        """All 12 indexes should be defined."""
-        assert len(ALL_INDEXES) == 12
+        """All 14 indexes should be defined."""
+        assert len(ALL_INDEXES) == 14
 
     def test_all_indexes_list(self) -> None:
         expected = [
@@ -28,6 +28,8 @@ class TestAllIndexes:
             "jga-dataset",
             "jga-dac",
             "jga-policy",
+            "gea",
+            "metabobank",
         ]
         assert expected == ALL_INDEXES
 
@@ -63,9 +65,17 @@ class TestGetIndexesForGroup:
         ]
         assert indexes == expected
 
+    def test_gea_group(self) -> None:
+        indexes = get_indexes_for_group("gea")
+        assert indexes == ["gea"]
+
+    def test_metabobank_group(self) -> None:
+        indexes = get_indexes_for_group("metabobank")
+        assert indexes == ["metabobank"]
+
     def test_all_group(self) -> None:
         indexes = get_indexes_for_group("all")
-        assert len(indexes) == 12
+        assert len(indexes) == 14
 
 
 class TestGetMappingForIndex:
@@ -103,6 +113,22 @@ class TestGetMappingForIndex:
             props = mapping["mappings"]["properties"]
             assert "identifier" in props
             assert "dbXrefs" in props
+
+    def test_gea_mapping(self) -> None:
+        mapping = get_mapping_for_index("gea")
+        props = mapping["mappings"]["properties"]
+        assert "identifier" in props
+        assert "experimentType" in props
+        assert "organization" in props
+        assert "publication" in props
+
+    def test_metabobank_mapping(self) -> None:
+        mapping = get_mapping_for_index("metabobank")
+        props = mapping["mappings"]["properties"]
+        assert "identifier" in props
+        assert "studyType" in props
+        assert "experimentType" in props
+        assert "submissionType" in props
 
 
 class TestAliases:
