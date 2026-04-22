@@ -65,11 +65,11 @@ JMP036\tSAMD00657133
 """
         (mtb_dir / "MTBKS232.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
+        result = process_idf_sdrf_dir(mtb_dir)
 
-        assert mtb_id == "MTBKS232"
-        assert bp_id == "PRJDB17011"
-        assert bs_ids == {"SAMD00657132", "SAMD00657133"}
+        assert result.entry_id == "MTBKS232"
+        assert result.bioproject == "PRJDB17011"
+        assert result.biosamples == {"SAMD00657132", "SAMD00657133"}
 
     def test_handles_missing_idf(self, tmp_path: Path) -> None:
         """IDF がない場合も処理できる。"""
@@ -81,11 +81,11 @@ S1\tSAMD00001
 """
         (mtb_dir / "MTBKS100.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
+        result = process_idf_sdrf_dir(mtb_dir)
 
-        assert mtb_id == "MTBKS100"
-        assert bp_id is None
-        assert bs_ids == {"SAMD00001"}
+        assert result.entry_id == "MTBKS100"
+        assert result.bioproject is None
+        assert result.biosamples == {"SAMD00001"}
 
     def test_handles_missing_sdrf(self, tmp_path: Path) -> None:
         """SDRF がない場合も処理できる。"""
@@ -96,22 +96,22 @@ S1\tSAMD00001
 """
         (mtb_dir / "MTBKS100.idf.txt").write_text(idf_content, encoding="utf-8")
 
-        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
+        result = process_idf_sdrf_dir(mtb_dir)
 
-        assert mtb_id == "MTBKS100"
-        assert bp_id == "PRJDB1234"
-        assert bs_ids == set()
+        assert result.entry_id == "MTBKS100"
+        assert result.bioproject == "PRJDB1234"
+        assert result.biosamples == set()
 
     def test_handles_empty_dir(self, tmp_path: Path) -> None:
         """IDF も SDRF もない場合も処理できる。"""
         mtb_dir = tmp_path / "MTBKS100"
         mtb_dir.mkdir()
 
-        mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
+        result = process_idf_sdrf_dir(mtb_dir)
 
-        assert mtb_id == "MTBKS100"
-        assert bp_id is None
-        assert bs_ids == set()
+        assert result.entry_id == "MTBKS100"
+        assert result.bioproject is None
+        assert result.biosamples == set()
 
 
 class TestLoadPreserveFile:

@@ -108,27 +108,30 @@ def main() -> None:
         mtb_to_bp: IdPairs = set()
         mtb_to_bs: IdPairs = set()
 
-        # IDF/SDRF ファイルから抽出
+        # IDF/SDRF ファイルから抽出 (CP2 会話 4 時点で SRA / JGA / humandbs は GEA 側のみ実装済、
+        # MetaboBank は staging 実データで SDRF SRA 列 0 件 / Related study 有意義値 4 件のため棚上げ継続。
+        # dblink/idf_sdrf.py の共通 helper は既に両 DB 共有のため、将来 MetaboBank 再開時は本関数に
+        # 数十行追加するだけで GEA と対称の構造になる (es-field-design §3.6.4 参照))
         dir_count = 0
         for mtb_dir in iterate_metabobank_dirs(METABOBANK_BASE_PATH):
-            mtb_id, bp_id, bs_ids = process_idf_sdrf_dir(mtb_dir)
+            result = process_idf_sdrf_dir(mtb_dir)
             dir_count += 1
 
-            if bp_id:
-                if is_valid_accession(bp_id, "bioproject"):
-                    mtb_to_bp.add((mtb_id, bp_id))
+            if result.bioproject:
+                if is_valid_accession(result.bioproject, "bioproject"):
+                    mtb_to_bp.add((result.entry_id, result.bioproject))
                 else:
                     log_debug(
-                        f"skipping invalid bioproject: {bp_id}",
-                        accession=bp_id,
+                        f"skipping invalid bioproject: {result.bioproject}",
+                        accession=result.bioproject,
                         file=str(mtb_dir),
                         debug_category=DebugCategory.INVALID_ACCESSION_ID,
                         source="metabobank",
                     )
 
-            for bs_id in bs_ids:
+            for bs_id in result.biosamples:
                 if is_valid_accession(bs_id, "biosample"):
-                    mtb_to_bs.add((mtb_id, bs_id))
+                    mtb_to_bs.add((result.entry_id, bs_id))
                 else:
                     log_debug(
                         f"skipping invalid biosample: {bs_id}",

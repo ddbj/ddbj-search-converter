@@ -48,11 +48,11 @@ AF\tSAMD00001
 """
         (gea_dir / "E-GEAD-291.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
+        result = process_idf_sdrf_dir(gea_dir)
 
-        assert gea_id == "E-GEAD-291"
-        assert bp_id == "PRJDB7770"
-        assert bs_ids == {"SAMD00001"}
+        assert result.entry_id == "E-GEAD-291"
+        assert result.bioproject == "PRJDB7770"
+        assert result.biosamples == {"SAMD00001"}
 
     def test_handles_missing_idf(self, tmp_path: Path) -> None:
         """IDF がない場合も処理できる。"""
@@ -64,11 +64,11 @@ AF\tSAMD00001
 """
         (gea_dir / "E-GEAD-100.sdrf.txt").write_text(sdrf_content, encoding="utf-8")
 
-        gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
+        result = process_idf_sdrf_dir(gea_dir)
 
-        assert gea_id == "E-GEAD-100"
-        assert bp_id is None
-        assert bs_ids == {"SAMD00001"}
+        assert result.entry_id == "E-GEAD-100"
+        assert result.bioproject is None
+        assert result.biosamples == {"SAMD00001"}
 
     def test_handles_missing_sdrf(self, tmp_path: Path) -> None:
         """SDRF がない場合も処理できる。"""
@@ -79,8 +79,33 @@ AF\tSAMD00001
 """
         (gea_dir / "E-GEAD-100.idf.txt").write_text(idf_content, encoding="utf-8")
 
-        gea_id, bp_id, bs_ids = process_idf_sdrf_dir(gea_dir)
+        result = process_idf_sdrf_dir(gea_dir)
 
-        assert gea_id == "E-GEAD-100"
-        assert bp_id == "PRJDB1234"
-        assert bs_ids == set()
+        assert result.entry_id == "E-GEAD-100"
+        assert result.bioproject == "PRJDB1234"
+        assert result.biosamples == set()
+
+
+class TestGeaSdrfSraHarvest:
+    """Tests for GEA SDRF SRA_RUN / SRA_EXPERIMENT harvesting (G/M10)."""
+
+    def test_real_fixture_e_gead_1096_has_sra_values(self) -> None:
+        """実 fixture E-GEAD-1096 で SRA_RUN / SRA_EXPERIMENT を抽出できる (E2E)。"""
+        fixture_dir = (
+            Path(__file__).parent.parent.parent / "fixtures/usr/local/resources/gea/experiment/E-GEAD-1000/E-GEAD-1096"
+        )
+        assert fixture_dir.exists(), f"fixture missing: {fixture_dir}"
+
+        result = process_idf_sdrf_dir(fixture_dir)
+
+        assert result.entry_id == "E-GEAD-1096"
+        assert len(result.biosamples) > 0, "biosamples should be populated"
+        assert len(result.sra_runs) > 0, "sra_runs should be populated for E-GEAD-1096"
+        assert len(result.sra_experiments) > 0, "sra_experiments should be populated"
+        # format check
+        for run_id in result.sra_runs:
+            assert run_id[0] in "SDE", f"bad sra-run prefix: {run_id}"
+            assert run_id[1:3] == "RR", f"bad sra-run body: {run_id}"
+        for exp_id in result.sra_experiments:
+            assert exp_id[0] in "SDE", f"bad sra-experiment prefix: {exp_id}"
+            assert exp_id[1:3] == "RX", f"bad sra-experiment body: {exp_id}"
