@@ -84,9 +84,11 @@ show_log --run-name create_dblink_bp_bs_relations --latest | \
   jq -r '.accession // empty' | sort | uniq -c | sort -rn | head -20
 ```
 
-### show_dblink_counts: relation 件数
+### show_dblink_counts: 無向 edge 数
 
-dblink DB の relation 件数を (src_type, dst_type) ペアごとに確認。オプションなし。
+dblink DB の無向 edge 数を type ペアごとに確認。オプションなし。
+
+半辺化スキーマのため `dbxref` は 1 edge あたり 2 行持つが、本コマンドは `(LEAST(a,b), GREATEST(a,b))` で canonical にまとめた上で COUNT/2 を出力するので、表示値は無向 edge 数と一致する。
 
 ```bash
 show_dblink_counts
@@ -104,7 +106,7 @@ show_log_summary --raw
 # 3. FAILED なら ERROR ログを確認
 show_log --run-name create_dblink_bp_bs_relations --latest --level ERROR
 
-# 4. relation 件数が期待通りか確認
+# 4. 無向 edge 数が期待通りか確認
 show_dblink_counts
 
 # 5. 必要に応じて DEBUG ログを確認（想定内のスキップなど）

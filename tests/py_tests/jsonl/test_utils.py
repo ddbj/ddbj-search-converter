@@ -9,7 +9,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.dblink.db import finalize_relation_db, init_dblink_db
+from ddbj_search_converter.dblink.db import finalize_dblink_db, init_dblink_db
 from ddbj_search_converter.jsonl.utils import (
     URL_TEMPLATE,
     deduplicate_organizations,
@@ -316,8 +316,8 @@ class TestGetDbxrefMap:
         init_dblink_db(test_config)
         tmp_db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
         with duckdb.connect(str(tmp_db_path)) as conn:
-            conn.execute("INSERT INTO relation VALUES ('bioproject', 'PRJDB100', 'biosample', 'SAMD1')")
-        finalize_relation_db(test_config)
+            conn.execute("INSERT INTO raw_edges VALUES ('bioproject', 'PRJDB100', 'biosample', 'SAMD1')")
+        finalize_dblink_db(test_config)
 
         result = get_dbxref_map(test_config, "biosample", ["SAMD1"])
 

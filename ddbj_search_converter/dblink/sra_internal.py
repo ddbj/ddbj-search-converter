@@ -31,7 +31,7 @@ BioSample <-> SRA:
 - BioSample <-> Analysis
 
 出力:
-- dblink.tmp.duckdb (relation テーブル) に挿入
+- dblink.tmp.duckdb (raw_edges テーブル) に挿入
 """
 
 from ddbj_search_converter.config import BP_ID_TO_ACCESSION_FILE_NAME, BS_ID_TO_ACCESSION_FILE_NAME, Config, get_config

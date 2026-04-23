@@ -6,7 +6,7 @@ GEA (Gene Expression Archive) の IDF/SDRF ファイルから関連を抽出し�
     - {E-GEAD-NNN}/{E-GEAD-NNN}.idf.txt
     - {E-GEAD-NNN}/{E-GEAD-NNN}.sdrf.txt
 
-出力 (dblink.duckdb への relation 投入):
+出力 (dblink.duckdb への raw_edges 投入):
 - gea -> bioproject        (IDF の Comment[BioProject] から)
 - gea -> biosample         (SDRF の Comment[BioSample] から)
 - gea -> sra-run           (SDRF の Comment[SRA_RUN] から)

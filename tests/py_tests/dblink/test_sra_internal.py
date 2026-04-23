@@ -61,10 +61,10 @@ def _make_config(tmp_path: Path, source: str, rows: list) -> Config:  # type: ig
 
 
 def _get_relations(config: Config) -> list[tuple[str, str, str, str]]:
-    """DBLink DB から全 relation を取得する。"""
+    """DBLink DB (tmp) の raw_edges から全 edge を取得する。"""
     db_path = config.const_dir / "dblink" / "dblink.tmp.duckdb"
     with duckdb.connect(str(db_path)) as conn:
-        rows = conn.execute("SELECT src_type, src_accession, dst_type, dst_accession FROM relation").fetchall()
+        rows = conn.execute("SELECT src_type, src_accession, dst_type, dst_accession FROM raw_edges").fetchall()
     return rows
 
 

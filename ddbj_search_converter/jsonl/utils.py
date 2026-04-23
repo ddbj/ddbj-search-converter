@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
-from ddbj_search_converter.dblink.db import AccessionType, get_related_entities_bulk
+from ddbj_search_converter.dblink.db import AccessionType, get_linked_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Organization, Xref, XrefType
 
@@ -174,10 +174,10 @@ def get_dbxref_map(
     if not accessions:
         return {}
 
-    relations = get_related_entities_bulk(config, entity_type=entity_type, accessions=accessions)
+    linked_map = get_linked_entities_bulk(config, entity_type=entity_type, accessions=accessions)
 
     result: dict[str, list[Xref]] = {}
-    for accession, related_list in relations.items():
+    for accession, related_list in linked_map.items():
         xrefs: list[Xref] = []
         for related_type, related_id in related_list:
             xref = to_xref(related_id, type_hint=related_type)

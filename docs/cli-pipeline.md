@@ -447,7 +447,7 @@ es_bulk_insert --index jga-study \
 | `create_dblink_jga_relations` | - | JGA 関連を抽出（humandbs は TSV から読み込み） |
 | `create_dblink_sra_internal_relations` | - | SRA 内部関連 + BioProject/BioSample ↔ SRA 関連を抽出 |
 | `create_dblink_insdc_relations` | - | TRAD PostgreSQL から INSDC 配列 accession 関連を抽出 |
-| `finalize_dblink_db` | - | DBLink DB と Umbrella DB を確定 |
+| `finalize_dblink_db` | - | `raw_edges` → `dbxref` 変換 (半辺化 + DISTINCT + ORDER BY)、index 作成、Umbrella DB 確定、atomic replace |
 | `dump_dblink_files` | - | DBLink DB から TSV ファイルを出力 |
 
 ### JSONL 生成
@@ -483,7 +483,7 @@ es_bulk_insert --index jga-study \
 |---------|----------|------|
 | `show_log_summary` | `--date`, `--raw` | run_name ごとのサマリー |
 | `show_log` | `--date`, `--run-name`, `--level`, `--latest` | ログ詳細表示 |
-| `show_dblink_counts` | - | DBLink relation 件数を JSON 出力 |
+| `show_dblink_counts` | - | DBLink の無向 edge 数を type ペアごとに JSON 出力 (`dbxref` 半辺化行を canonical にまとめて COUNT/2) |
 
 ### メンテナンス
 

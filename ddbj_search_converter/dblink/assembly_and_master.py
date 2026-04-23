@@ -30,7 +30,7 @@ dump_dblink_files CLI コマンドで出力する。
     - create_dblink_bp_bs_relations で生成
 
 出力:
-- dblink.tmp.duckdb (relation テーブル) に挿入
+- dblink.tmp.duckdb (raw_edges テーブル) に挿入
 """
 
 import time

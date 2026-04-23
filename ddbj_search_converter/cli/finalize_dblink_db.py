@@ -1,5 +1,5 @@
 from ddbj_search_converter.config import get_config
-from ddbj_search_converter.dblink.db import finalize_relation_db, finalize_umbrella_db
+from ddbj_search_converter.dblink.db import finalize_dblink_db, finalize_umbrella_db
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 
@@ -7,7 +7,7 @@ def main() -> None:
     config = get_config()
     with run_logger(config=config):
         log_info("finalizing dblink database")
-        finalize_relation_db(config)
+        finalize_dblink_db(config)
         finalize_umbrella_db(config)
 
 

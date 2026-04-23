@@ -26,7 +26,7 @@ dump_dblink_files CLI コマンドで出力する。
 - XML は事前に prepare_biosample_xml, prepare_bioproject_xml で分割する必要がある
 
 出力:
-- dblink.tmp.duckdb (relation テーブル) に挿入
+- dblink.tmp.duckdb (raw_edges テーブル) に挿入
 - bp_id_to_accession.tsv, bs_id_to_accession.tsv (数字ID -> accession マッピング)
 
 処理フロー:

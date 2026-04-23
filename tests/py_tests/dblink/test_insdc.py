@@ -86,7 +86,7 @@ class TestWriteInsdcRelations:
 
         db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
         with duckdb.connect(str(db_path)) as conn:
-            rows = conn.execute("SELECT * FROM relation ORDER BY src_accession").fetchall()
+            rows = conn.execute("SELECT * FROM raw_edges ORDER BY src_accession").fetchall()
 
         assert len(rows) == 2
         # normalize_edge("insdc", "AB000001", "bioproject", "PRJDB12345")
@@ -108,7 +108,7 @@ class TestWriteInsdcRelations:
 
         db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
         with duckdb.connect(str(db_path)) as conn:
-            rows = conn.execute("SELECT * FROM relation ORDER BY src_accession").fetchall()
+            rows = conn.execute("SELECT * FROM raw_edges ORDER BY src_accession").fetchall()
 
         assert len(rows) == 2
         # normalize_edge("insdc", "AB000001", "biosample", "SAMD00000001")
@@ -132,10 +132,10 @@ class TestWriteInsdcRelations:
 
         db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
         with duckdb.connect(str(db_path)) as conn:
-            rows = conn.execute("SELECT * FROM relation").fetchall()
+            rows = conn.execute("SELECT * FROM raw_edges").fetchall()
 
         assert len(rows) == 2
-        accessions = {row[3] for row in rows}  # insdc accessions are in dst_accession
+        accessions = {row[3] for row in rows}  # insdc accessions are in dst_accession of raw_edges
         assert "AB000002" not in accessions
 
     def test_iterates_all_trad_dbs(self, insdc_config: Config) -> None:

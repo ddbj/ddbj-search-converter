@@ -245,15 +245,59 @@ accession 間の関連を格納する DuckDB。
 - `{const_dir}/dblink/dblink.duckdb`
 
 ```sql
-CREATE TABLE relation (
-    src_type TEXT,       -- AccessionType
-    src_accession TEXT,
-    dst_type TEXT,       -- AccessionType
-    dst_accession TEXT
-)
+CREATE TABLE dbxref (
+    accession_type TEXT,     -- このエントリー側の AccessionType
+    accession TEXT,
+    linked_type TEXT,        -- 隣接する AccessionType
+    linked_accession TEXT
+);
+-- 物理 sort: ORDER BY accession_type, accession, linked_type, linked_accession
+-- index: idx_dbxref_accession (accession_type, accession)
+--        idx_dbxref_unique    (accession_type, accession, linked_type, linked_accession) UNIQUE
 ```
 
-無向グラフとして管理（`(A, B)` と `(B, A)` は正規化により同一）。
+**半辺化スキーマ (half-edge)**。無向 edge `{A, B}` は `dbxref` に 2 行として保存される (`A→B` と `B→A`)。これにより `WHERE accession_type=? AND accession=?` の単一 WHERE だけで両 endpoint の隣接を取得でき、DuckDB の zone map が常に効く (point lookup でも SEQ_SCAN にならない)。UNION ALL による逆方向検索が不要になる。
+
+ストレージは canonical 形の約 2 倍になるが、`normalize_edge` によって TSV 段階では `(A, B)` 1 行で済む (A ≤ B 正規化)。DB 構築時に `build_dbxref_table` が `UNION ALL` で両方向を mirror する。
+
+#### 中間 table: `raw_edges`
+
+DBLink 構築中の一時テーブル。各 `create_dblink_*` コマンドが canonical edge をここに append し、`finalize_dblink_db` で `dbxref` に変換した後 `DROP TABLE raw_edges` される。
+
+```sql
+CREATE TABLE raw_edges (
+    src_type TEXT,
+    src_accession TEXT,
+    dst_type TEXT,
+    dst_accession TEXT
+);
+-- normalize_edge() により (src_type, src_accession) <= (dst_type, dst_accession) の canonical 形で挿入される
+```
+
+#### finalize_dblink_db の内部処理
+
+`finalize_dblink_db` は以下を順に実行する:
+
+1. `build_dbxref_table`: `raw_edges` を UNION ALL で両方向に mirror し、`SELECT DISTINCT ... ORDER BY accession_type, accession, linked_type, linked_accession` で `dbxref` を構築
+2. `create_dbxref_indexes`: `idx_dbxref_accession` と `idx_dbxref_unique` を作成
+3. `DROP TABLE raw_edges`
+4. tmp DB から final DB へ atomic replace
+
+#### 無向 edge 数の算出 (`show_dblink_counts` が内部で使う集計)
+
+`dbxref` は 1 つの無向 edge を 2 行で持つため、単純な GROUP BY だと件数が 2 倍になる。無向 edge 数を出すときは canonical にまとめて COUNT/2 する:
+
+```sql
+SELECT
+    LEAST(accession_type, linked_type) AS type_a,
+    GREATEST(accession_type, linked_type) AS type_b,
+    COUNT(*) / 2 AS edge_count
+FROM dbxref
+GROUP BY type_a, type_b
+ORDER BY type_a, type_b;
+```
+
+self-pair (同一 type 同士の関連、例えば `(bioproject, bioproject)`) も、`LEAST`/`GREATEST` で同じキーに落ちて COUNT=2 → /2 で 1 edge となり整合する。
 
 ### Umbrella DB
 

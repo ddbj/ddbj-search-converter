@@ -41,7 +41,7 @@ Outputs:
 """
 
 from ddbj_search_converter.config import DBLINK_OUTPUT_PATH, get_config
-from ddbj_search_converter.dblink.db import AccessionType, export_relations
+from ddbj_search_converter.dblink.db import AccessionType, export_edges
 from ddbj_search_converter.logging.logger import log_info, run_logger
 
 # Export target relations
@@ -73,7 +73,7 @@ def main() -> None:
         for type_a, type_b, rel_path in EXPORT_RELATIONS:
             output_path = DBLINK_OUTPUT_PATH.joinpath(rel_path)
             log_info(f"exporting {type_a} <-> {type_b}", file=str(output_path))
-            export_relations(config, output_path, type_a=type_a, type_b=type_b)
+            export_edges(config, output_path, type_a=type_a, type_b=type_b)
 
 
 if __name__ == "__main__":

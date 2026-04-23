@@ -1,6 +1,8 @@
-"""Show DBLink relation counts CLI.
+"""Show DBLink 無向 edge 数 CLI.
 
-Queries dblink.tmp.duckdb and outputs (src_type, dst_type) pair counts as JSON.
+dblink DB (``dbxref`` 半辺化 table) を参照し、type ペアごとの無向 edge 数を
+JSON で出力する。1 つの無向 edge は ``dbxref`` に 2 行存在するため、
+``LEAST / GREATEST`` で canonical にまとめたうえで ``COUNT(*) / 2`` を出す。
 """
 
 import argparse
@@ -21,7 +23,7 @@ def _get_db_path(const_dir: Path) -> Path:
     return const_dir.joinpath("dblink", TMP_DBLINK_DB_FILE_NAME)
 
 
-def get_relation_counts(const_dir: Path) -> list[dict[str, object]]:
+def get_edge_counts(const_dir: Path) -> list[dict[str, object]]:
     db_path = _get_db_path(const_dir)
     if not db_path.exists():
         print(f"DBLink database not found: {db_path}", file=sys.stderr)
@@ -30,19 +32,22 @@ def get_relation_counts(const_dir: Path) -> list[dict[str, object]]:
     con = duckdb.connect(str(db_path), read_only=True)
     try:
         rows = con.execute("""
-            SELECT src_type, dst_type, COUNT(*) as count
-            FROM relation
-            GROUP BY src_type, dst_type
+            SELECT
+                LEAST(accession_type, linked_type) AS type_a,
+                GREATEST(accession_type, linked_type) AS type_b,
+                COUNT(*) / 2 AS count
+            FROM dbxref
+            GROUP BY LEAST(accession_type, linked_type), GREATEST(accession_type, linked_type)
             ORDER BY count DESC
         """).fetchall()
     finally:
         con.close()
 
-    return [{"src_type": src_type, "dst_type": dst_type, "count": count} for src_type, dst_type, count in rows]
+    return [{"type_a": type_a, "type_b": type_b, "count": count} for type_a, type_b, count in rows]
 
 
 def parse_args(args: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Show DBLink relation counts by (src_type, dst_type) pair as JSON.")
+    parser = argparse.ArgumentParser(description="Show DBLink 無向 edge 数 by (type_a, type_b) pair as JSON.")
 
     return parser.parse_args(args)
 
@@ -52,7 +57,7 @@ def main() -> None:
 
     config = get_config()
 
-    results = get_relation_counts(config.const_dir)
+    results = get_edge_counts(config.const_dir)
     print(json.dumps(results, indent=2, ensure_ascii=False))
 
 

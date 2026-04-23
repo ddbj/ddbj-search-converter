@@ -12,7 +12,7 @@ DBLink データベースに挿入する。
     - project_id が SAM% で始まる行 → insdc-biosample 関連
 
 出力:
-- dblink.tmp.duckdb (relation テーブル) に挿入
+- dblink.tmp.duckdb (raw_edges テーブル) に挿入
 """
 
 import time
@@ -30,7 +30,7 @@ from ddbj_search_converter.dblink.db import (
     AccessionType,
     IdPairs,
     get_tmp_dir,
-    load_relations_from_tsv,
+    load_edges_from_tsv,
     load_to_db,
     normalize_edge,
 )
@@ -133,7 +133,7 @@ def _write_insdc_relations(
                 time.sleep(RETRY_WAIT_SECONDS)
 
         if count > 0:
-            load_relations_from_tsv(config, tsv_path)
+            load_edges_from_tsv(config, tsv_path)
         log_info(f"loaded {count} insdc-{dst_type} from {dbname}")
 
 
