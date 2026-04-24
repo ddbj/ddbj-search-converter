@@ -231,6 +231,33 @@ class TestLoadInsdcPreservedFile:
 
         assert pairs == {("WEIRD_ACC_123", "PRJDB12345")}
 
+    def test_skips_empty_insdc_accession(self, insdc_config: Config) -> None:
+        """INSDC 側が空文字列の行 ('\\tPRJDB...') は silent ghost edge を作らずスキップする。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text("\tPRJDB12345\nAB000001\tPRJDB99999\n   \tPRJDB00001\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert pairs == {("AB000001", "PRJDB99999")}
+
+    def test_skips_single_column_line(self, insdc_config: Config) -> None:
+        """タブ区切りが崩れた 1 カラムの行はスキップする。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text("AB000001_PRJDB12345\nAB000001\tPRJDB99999\n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert pairs == {("AB000001", "PRJDB99999")}
+
+    def test_strips_surrounding_whitespace(self, insdc_config: Config) -> None:
+        """各カラムの前後空白は除去する (BOM 混入等の保険)。"""
+        preserved_path = insdc_config.const_dir.joinpath("dblink", "insdc_bp_preserved.tsv")
+        preserved_path.write_text(" AB000001 \t PRJDB12345 \n")
+
+        pairs = _load_insdc_preserved_file(insdc_config, INSDC_BP_PRESERVED_REL_PATH, "bioproject")
+
+        assert pairs == {("AB000001", "PRJDB12345")}
+
 
 class TestNormalizeEdgeInsdc:
     """normalize_edge で insdc タイプの正規化テスト。"""

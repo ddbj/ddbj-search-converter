@@ -1,12 +1,34 @@
 """JSONL 生成用の共通ユーティリティ関数。"""
 
+import re
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeGuard
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import AccessionType, get_linked_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Organization, Xref, XrefType
+
+_EXTERNAL_URL_RE = re.compile(r"^https?://[^\s/][^\s]*$")
+
+
+def is_valid_external_url(url: Any) -> TypeGuard[str]:
+    """ExternalLink.url として妥当かを軽量検査する。
+
+    - http:// または https:// で始まる
+    - 空白を含まない
+    - host 部分が空でない (``https:///foo`` を弾く)
+
+    厳密な URL 構文検査ではなく、ユーザ入力レベルの不正値 (``javascript:``、空白混入、
+    空文字) を落とすための最低限のガード。invalid な URL を持つ ExternalLink は
+    呼び出し側で drop する (log は出さず silent drop)。``TypeGuard[str]`` を返すので
+    ``if is_valid_external_url(x):`` 以降は ``x: str`` として narrow される。
+    """
+    if not isinstance(url, str):
+        return False
+    candidate = url.strip()
+    return bool(_EXTERNAL_URL_RE.match(candidate))
+
 
 URL_TEMPLATE: dict[XrefType, str] = {
     "biosample": f"{SEARCH_BASE_URL}/search/entry/biosample/{{id}}",

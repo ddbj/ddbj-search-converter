@@ -24,6 +24,7 @@ from ddbj_search_converter.jsonl.utils import (
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
+    is_valid_external_url,
     write_jsonl,
 )
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
@@ -40,8 +41,16 @@ from ddbj_search_converter.schema import (
 from ddbj_search_converter.xml_utils import parse_xml
 
 # JGA XML の DB_TYPE は .lower() 後に lookup される。
-# 現状 "pubmed" のみが有効値で、未知値は dict.get() で None fallback (= dbType=None)。
-_PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {"pubmed": "pubmed"}
+# 実データ上は "pubmed" のみだが、BP と揃えて e-prefix / doi / pmc も受け入れる。
+# URL 生成は pubmed のみで、doi/pmc は id のみ保持 (将来上流が出し始めたら URL 生成を追加)。
+_PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {
+    "pubmed": "pubmed",
+    "epubmed": "pubmed",
+    "doi": "doi",
+    "edoi": "doi",
+    "pmc": "pmc",
+    "epmc": "pmc",
+}
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 INDEX_NAMES: list[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -354,7 +363,7 @@ def parse_external_link(entry: dict[str, Any], index_name: IndexName, accession:
             if not isinstance(url_link, dict):
                 continue
             url = url_link.get("URL")
-            if not isinstance(url, str) or not url.strip():
+            if not is_valid_external_url(url):
                 continue
             raw_label = url_link.get("LABEL")
             label = raw_label if isinstance(raw_label, str) and raw_label.strip() else url

@@ -659,6 +659,23 @@ class TestParsePublicationsJga:
         assert pub.dbType is None
         assert pub.url is None
 
+    def test_e_prefix_pubmed_normalizes(self) -> None:
+        entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "42", "DB_TYPE": "ePubmed"}}}
+        pub = parse_publications(entry)[0]
+        assert pub.dbType == "pubmed"
+        assert pub.url == "https://pubmed.ncbi.nlm.nih.gov/42/"
+
+    def test_doi_and_pmc_accepted_without_url(self) -> None:
+        """doi/pmc (e-prefix 含む) は dbType は正規化されるが URL は現状 None のまま。"""
+        doi_entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "10.1000/xyz", "DB_TYPE": "eDOI"}}}
+        pmc_entry = {"PUBLICATIONS": {"PUBLICATION": {"id": "PMC1", "DB_TYPE": "PMC"}}}
+        doi_pub = parse_publications(doi_entry)[0]
+        pmc_pub = parse_publications(pmc_entry)[0]
+        assert doi_pub.dbType == "doi"
+        assert doi_pub.url is None
+        assert pmc_pub.dbType == "pmc"
+        assert pmc_pub.url is None
+
     def test_multiple_publications_list(self) -> None:
         entry = {
             "PUBLICATIONS": {
@@ -830,3 +847,18 @@ class TestParseExternalLinkJga:
 
     def test_missing_parent_key_returns_empty(self) -> None:
         assert parse_external_link({}, "jga-study") == []
+
+    def test_invalid_url_silently_dropped(self) -> None:
+        """javascript:, 空白混入などの不正 URL は silent に drop する。"""
+        entry = {
+            "STUDY_LINKS": {
+                "STUDY_LINK": [
+                    {"URL_LINK": {"LABEL": "bad", "URL": "javascript:alert(1)"}},
+                    {"URL_LINK": {"LABEL": "ok", "URL": "https://example.com"}},
+                    {"URL_LINK": {"LABEL": "bad", "URL": "https://has space.com"}},
+                    {"URL_LINK": {"LABEL": "empty", "URL": ""}},
+                ]
+            }
+        }
+        links = parse_external_link(entry, "jga-study")
+        assert [link.url for link in links] == ["https://example.com"]

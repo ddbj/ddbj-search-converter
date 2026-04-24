@@ -15,6 +15,7 @@ from ddbj_search_converter.jsonl.utils import (
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
+    is_valid_external_url,
     to_xref,
 )
 from ddbj_search_converter.schema import Organization, XrefType
@@ -385,6 +386,78 @@ class TestDeduplicateOrganizations:
         result = deduplicate_organizations(orgs)
         assert len(result) == 2
         assert [o.role for o in result] == [None, "broker"]
+
+
+class TestIsValidExternalUrl:
+    """Tests for is_valid_external_url helper.
+
+    厳密な URL 構文検査ではなく、ExternalLink.url に明らかな不正値が流入するのを
+    防ぐための軽量ガード。http(s):// で始まり空白を含まず host が非空であればよい。
+    """
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "http://example.com",
+            "https://example.com",
+            "https://example.com/",
+            "https://example.com/path/to/resource",
+            "https://example.com/path?query=1&x=2",
+            "https://example.com:8080/path",
+            "https://sub.domain.example.com/",
+            "https://example.com/#fragment",
+            "https://example.com/path%20with%20encoded",
+        ],
+    )
+    def test_accepts_common_urls(self, url: str) -> None:
+        assert is_valid_external_url(url) is True
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "",
+            "   ",
+            "not a url",
+            "example.com",
+            "//example.com",
+            "ftp://example.com",
+            "javascript:alert(1)",
+            "data:text/html,<script>",
+            "mailto:foo@example.com",
+            "https:",
+            "https://",
+            "https:///",
+            "https:/// ",
+            "https:// has space",
+            "https://example.com has space",
+            "http:/example.com",
+            "HTTP://example.com",  # 大文字スキーム は許容しない (入力データは統一前提)
+        ],
+    )
+    def test_rejects_invalid_urls(self, url: str) -> None:
+        assert is_valid_external_url(url) is False
+
+    @pytest.mark.parametrize("value", [None, 123, 1.5, True, [], {}, b"https://example.com"])
+    def test_rejects_non_string(self, value: Any) -> None:
+        assert is_valid_external_url(value) is False
+
+    def test_strips_surrounding_whitespace_before_validation(self) -> None:
+        assert is_valid_external_url("  https://example.com  ") is True
+        assert is_valid_external_url("\thttps://example.com\n") is True
+
+    @given(st.text())
+    def test_never_crashes(self, value: str) -> None:
+        """任意の文字列入力で例外を出さず bool を返す。"""
+        result = is_valid_external_url(value)
+        assert isinstance(result, bool)
+
+    @given(st.text(alphabet=st.characters(blacklist_categories=["Cc", "Cs", "Zs"]), min_size=1))
+    def test_non_http_schemes_rejected(self, value: str) -> None:
+        """http(s) 以外で始まる文字列は必ず reject される。"""
+        candidate = value.strip()
+        if candidate.startswith(("http://", "https://")):
+            return
+        assert is_valid_external_url(candidate) is False
 
     def test_same_name_different_orgtype_kept_separate(self) -> None:
         """同 name でも organizationType が異なれば別エントリとして保持する。"""

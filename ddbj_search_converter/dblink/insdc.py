@@ -164,18 +164,34 @@ def _load_insdc_preserved_file(
             if not line:
                 continue
             parts = line.split("\t")
-            if len(parts) >= 2:
-                insdc_acc, target_acc = parts[0], parts[1]
-                if not is_valid_accession(target_acc, dst_type):
-                    log_debug(
-                        f"skipping invalid {dst_type}: {target_acc}",
-                        accession=target_acc,
-                        file=str(preserved_path),
-                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                        source="insdc-preserved",
-                    )
-                    continue
-                pairs.add((insdc_acc, target_acc))
+            if len(parts) < 2:
+                log_debug(
+                    f"skipping malformed line (expected tab-separated 2 columns): {line!r}",
+                    file=str(preserved_path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="insdc-preserved",
+                )
+                continue
+            insdc_acc = parts[0].strip()
+            target_acc = parts[1].strip()
+            if not insdc_acc:
+                log_debug(
+                    f"skipping empty insdc accession: {line!r}",
+                    file=str(preserved_path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="insdc-preserved",
+                )
+                continue
+            if not is_valid_accession(target_acc, dst_type):
+                log_debug(
+                    f"skipping invalid {dst_type}: {target_acc}",
+                    accession=target_acc,
+                    file=str(preserved_path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="insdc-preserved",
+                )
+                continue
+            pairs.add((insdc_acc, target_acc))
 
     log_info(
         f"loaded {len(pairs)} insdc-{dst_type} from preserved file",

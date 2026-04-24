@@ -21,7 +21,12 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bp_distribution
-from ddbj_search_converter.jsonl.utils import deduplicate_organizations, get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import (
+    deduplicate_organizations,
+    get_dbxref_map,
+    is_valid_external_url,
+    write_jsonl,
+)
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
@@ -325,6 +330,8 @@ def parse_external_link(project: dict[str, Any], accession: str = "") -> list[Ex
     def _obj_to_external_link(obj: dict[str, Any]) -> ExternalLink | None:
         url = obj.get("URL")
         if url is not None:
+            if not is_valid_external_url(url):
+                return None
             label = obj.get("label")
             return ExternalLink(url=url, label=label if label is not None else url)
 
@@ -335,6 +342,8 @@ def parse_external_link(project: dict[str, Any], accession: str = "") -> list[Ex
             if db is not None and id_ is not None:
                 if db in EXTERNAL_LINK_MAP:
                     url = EXTERNAL_LINK_MAP[db] + id_
+                    if not is_valid_external_url(url):
+                        return None
                     label = obj.get("label", id_)
                     return ExternalLink(url=url, label=label)
                 log_debug(

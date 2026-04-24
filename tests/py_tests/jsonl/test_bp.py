@@ -631,6 +631,29 @@ class TestParseExternalLink:
         assert len(links) == 1
         assert "GSE12345" in links[0].url
 
+    def test_invalid_url_silently_dropped(self) -> None:
+        """javascript:, mailto:, 空白混入など不正な URL は silent に drop する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["ExternalLink"] = [
+            {"URL": "javascript:alert(1)", "label": "bad"},
+            {"URL": "https://example.com", "label": "ok"},
+            {"URL": "https://has space.com", "label": "bad"},
+            {"URL": ""},
+        ]
+        links = parse_external_link(project)
+        assert [link.url for link in links] == ["https://example.com"]
+
+    def test_dbxref_invalid_url_dropped(self) -> None:
+        """dbXREF から生成した URL が破綻していても drop する。
+        id 末尾に改行などが混じると URL テンプレート連結で不正形式になり得るための保険。
+        """
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["ExternalLink"] = {
+            "dbXREF": {"db": "GEO", "ID": "GSE 12345"},  # id に空白混入
+        }
+        links = parse_external_link(project)
+        assert links == []
+
 
 class TestParseSameAs:
     """Tests for parse_same_as function."""

@@ -420,27 +420,35 @@ def process_preserved_file(config: Config, bs_to_bp: IdPairs) -> None:
             if not line:
                 continue
             parts = line.split("\t")
-            if len(parts) >= 2:
-                bs, bp = parts[0], parts[1]
-                if not is_valid_accession(bs, "biosample"):
-                    log_debug(
-                        f"skipping invalid biosample: {bs}",
-                        accession=bs,
-                        file=str(preserved_path),
-                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                        source="preserved",
-                    )
-                    continue
-                if not is_valid_accession(bp, "bioproject"):
-                    log_debug(
-                        f"skipping invalid bioproject: {bp}",
-                        accession=bp,
-                        file=str(preserved_path),
-                        debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                        source="preserved",
-                    )
-                    continue
-                bs_to_bp.add((bs, bp))
+            if len(parts) < 2:
+                log_debug(
+                    f"skipping malformed line (expected tab-separated 2 columns): {line!r}",
+                    file=str(preserved_path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="preserved",
+                )
+                continue
+            bs = parts[0].strip()
+            bp = parts[1].strip()
+            if not is_valid_accession(bs, "biosample"):
+                log_debug(
+                    f"skipping invalid biosample: {bs}",
+                    accession=bs,
+                    file=str(preserved_path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="preserved",
+                )
+                continue
+            if not is_valid_accession(bp, "bioproject"):
+                log_debug(
+                    f"skipping invalid bioproject: {bp}",
+                    accession=bp,
+                    file=str(preserved_path),
+                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                    source="preserved",
+                )
+                continue
+            bs_to_bp.add((bs, bp))
 
 
 def main() -> None:
