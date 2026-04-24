@@ -58,6 +58,16 @@ _DBTYPE_NORMALIZE: dict[str, PublicationDbType] = {
     "ePMC": "pmc",
 }
 
+_RELEVANCE_KEYS: tuple[str, ...] = (
+    "Agricultural",
+    "Medical",
+    "Industrial",
+    "Environmental",
+    "Evolution",
+    "ModelOrganism",
+    "Other",
+)
+
 EXTERNAL_LINK_MAP = {
     "GEO": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=",
     "dbGaP": "https://www.ncbi.nlm.nih.gov/gap/advanced_search/?TERM=",
@@ -159,6 +169,63 @@ def parse_description(project: dict[str, Any], accession: str = "") -> str | Non
     except Exception as e:
         log_warn(f"failed to parse description: {e}", accession=accession)
         return None
+
+
+def parse_project_type(project: dict[str, Any], accession: str = "") -> list[str]:
+    """BioProject から projectType を抽出する。
+
+    取得元: Project.ProjectType.ProjectTypeSubmission.ProjectDataTypeSet.DataType
+    NCBI のみ値が入る (DDBJ は ProjectTypeTopAdmin で DataType を持たないので空)。
+    """
+    data_types: list[str] = []
+    try:
+        submission = ((project.get("Project") or {}).get("ProjectType") or {}).get("ProjectTypeSubmission")
+        if not submission:
+            return []
+        data_type_set = submission.get("ProjectDataTypeSet")
+        if not data_type_set:
+            return []
+        data_type = data_type_set.get("DataType")
+        if data_type is None:
+            return []
+        items = data_type if isinstance(data_type, list) else [data_type]
+        for item in items:
+            if isinstance(item, str):
+                stripped = item.strip()
+                if stripped:
+                    data_types.append(stripped)
+            elif isinstance(item, dict):
+                content = item.get("content")
+                if isinstance(content, str) and content.strip():
+                    data_types.append(content.strip())
+    except Exception as e:
+        log_warn(f"failed to parse projectType: {e}", accession=accession)
+    return data_types
+
+
+def parse_relevance(project: dict[str, Any], accession: str = "") -> list[str]:
+    """BioProject から relevance を抽出する。
+
+    取得元: Project.ProjectDescr.Relevance.<TagName>
+    XSD で 7 値 (Agricultural/Medical/Industrial/Environmental/Evolution/ModelOrganism/Other)、
+    content が "yes" のタグ名のみを順序保持で返す。
+    """
+    relevance: list[str] = []
+    try:
+        relevance_obj = ((project.get("Project") or {}).get("ProjectDescr") or {}).get("Relevance")
+        if not isinstance(relevance_obj, dict):
+            return []
+        for key in _RELEVANCE_KEYS:
+            value = relevance_obj.get(key)
+            if value is None:
+                continue
+            if isinstance(value, dict):
+                value = value.get("content")
+            if isinstance(value, str) and value.strip().lower() == "yes":
+                relevance.append(key)
+    except Exception as e:
+        log_warn(f"failed to parse relevance: {e}", accession=accession)
+    return relevance
 
 
 def parse_organization(project: dict[str, Any], accession: str = "") -> list[Organization]:
@@ -566,6 +633,8 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
         organism=parse_organism(project, is_ddbj, accession),
         title=parse_title(project, accession),
         description=parse_description(project, accession),
+        projectType=parse_project_type(project, accession),
+        relevance=parse_relevance(project, accession),
         organization=parse_organization(project, accession),
         publication=parse_publication(project, accession),
         grant=parse_grant(project, accession),

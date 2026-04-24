@@ -13,6 +13,7 @@ import pytest
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.jsonl.sra import (
     XML_TYPES,
+    _find_sample_attr,
     _get_text,
     _normalize_accessibility,
     _normalize_status,
@@ -20,16 +21,18 @@ from ddbj_search_converter.jsonl.sra import (
     _parse_library,
     _parse_organizations_from_entry_attrs,
     _parse_publications,
+    _parse_sample_derived_from,
     _parse_submission_description,
     create_sra_entry,
     parse_analysis,
     parse_experiment,
+    parse_sample,
     parse_study,
     parse_submission,
     process_submission_xml,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
-from ddbj_search_converter.schema import SRA, Organization
+from ddbj_search_converter.schema import SRA, Organization, Xref
 from ddbj_search_converter.sra.tar_reader import SraXmlType
 
 
@@ -548,18 +551,22 @@ class TestParseOrganizationsFromEntryAttrs:
             Organization(name="dra", role="broker"),
         ]
 
-    def test_lab_name_ignored(self) -> None:
-        """lab_name は load しない (Option B、Person/部局責務外方針)。"""
+    def test_lab_name_alone_is_ignored(self) -> None:
+        """lab_name 単独 (center_name/broker_name 無し) では Organization を作らない。
+
+        lab_name は center_name の ``department`` に詰める仕様のため、
+        center_name がなければ詰め込み先自体がない。
+        """
         assert _parse_organizations_from_entry_attrs({"lab_name": "Laboratory of Ecogenetics"}) == []
 
-    def test_lab_name_with_center_name_only_returns_center(self) -> None:
-        """center_name + lab_name でも Organization は center のみ。"""
+    def test_lab_name_with_center_name_fills_department(self) -> None:
+        """center_name + lab_name → center Organization の department に lab_name を詰める。"""
         entry = {"center_name": "NIES", "lab_name": "Laboratory of X"}
         orgs = _parse_organizations_from_entry_attrs(entry)
-        assert orgs == [Organization(name="NIES")]
+        assert orgs == [Organization(name="NIES", department="Laboratory of X")]
 
-    def test_lab_name_with_broker_name(self) -> None:
-        """broker_name + lab_name でも Organization は broker のみ。"""
+    def test_lab_name_with_broker_name_not_attached(self) -> None:
+        """broker_name + lab_name では broker に lab_name を付けない (broker は別機関扱い)。"""
         entry = {"broker_name": "DRA", "lab_name": "Laboratory of X"}
         orgs = _parse_organizations_from_entry_attrs(entry)
         assert orgs == [Organization(name="DRA", role="broker")]
@@ -883,3 +890,253 @@ class TestSubmissionPropertiesShape:
         assert len(results) == 1
         assert "ANALYSIS_SET" in results[0]["properties"]
         assert results[0]["analysisType"] == "DE_NOVO_ASSEMBLY"
+
+
+class TestFindSampleAttr:
+    """Tests for _find_sample_attr (SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE lookup)."""
+
+    def test_no_attributes_returns_none(self) -> None:
+        assert _find_sample_attr({}, {"collection_date"}) is None
+
+    def test_sample_attributes_not_dict(self) -> None:
+        assert _find_sample_attr({"SAMPLE_ATTRIBUTES": "malformed"}, {"host"}) is None
+
+    def test_match_tag(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {
+                "SAMPLE_ATTRIBUTE": [
+                    {"TAG": "collection_date", "VALUE": "2020-01-01"},
+                    {"TAG": "geo_loc_name", "VALUE": "Japan:Tokyo"},
+                ]
+            }
+        }
+        assert _find_sample_attr(sample, {"collection_date"}) == "2020-01-01"
+        assert _find_sample_attr(sample, {"geo_loc_name"}) == "Japan:Tokyo"
+
+    def test_single_dict_not_wrapped_in_list(self) -> None:
+        """SAMPLE_ATTRIBUTE が 1 件の時 dict (list でない) でも処理できる。"""
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": {"TAG": "host", "VALUE": "Homo sapiens"}}
+        }
+        assert _find_sample_attr(sample, {"host"}) == "Homo sapiens"
+
+    def test_trim_value(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "host", "VALUE": "  Homo sapiens  "}]}
+        }
+        assert _find_sample_attr(sample, {"host"}) == "Homo sapiens"
+
+    def test_empty_value_returns_none(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "host", "VALUE": "   "}]}
+        }
+        assert _find_sample_attr(sample, {"host"}) is None
+
+    def test_multiple_tags_accept_any(self) -> None:
+        """tags set で alternative TAG 名 (derived-from / derived_from) 両方受け入れる。"""
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "derived-from", "VALUE": "SAMN001"}]}
+        }
+        assert _find_sample_attr(sample, {"derived-from", "derived_from"}) == "SAMN001"
+
+
+class TestParseSampleDerivedFrom:
+    """Tests for _parse_sample_derived_from (bs.py と同 regex で SAM[NDE]\\d+ 抽出)."""
+
+    def test_returns_empty_when_missing(self) -> None:
+        assert _parse_sample_derived_from({}) == []
+
+    def test_single_id(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "derived-from", "VALUE": "SAMN07792362"}]}
+        }
+        result = _parse_sample_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMN07792362"]
+        assert result[0].type_ == "biosample"
+        assert "SAMN07792362" in result[0].url
+
+    def test_comma_separated(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {
+                "SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "SAMD001, SAMD002, SAMD003"}]
+            }
+        }
+        result = _parse_sample_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMD001", "SAMD002", "SAMD003"]
+
+    def test_deduplicates_preserving_order(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {
+                "SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "SAMD001, SAMD001, SAMD002"}]
+            }
+        }
+        result = _parse_sample_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMD001", "SAMD002"]
+
+    @pytest.mark.parametrize("tag", ["derived-from", "derived_from"])
+    def test_accept_both_tag_spellings(self, tag: str) -> None:
+        """TAG=derived-from / derived_from の両方で ID 抽出できる。"""
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": tag, "VALUE": "SAMD001"}]}
+        }
+        result = _parse_sample_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMD001"]
+
+    def test_placeholder_without_ids_returns_empty(self) -> None:
+        sample: dict[str, Any] = {
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "not applicable"}]}
+        }
+        assert _parse_sample_derived_from(sample) == []
+
+
+class TestParseSampleAttributes:
+    """parse_sample が SAMPLE_ATTRIBUTE 由来の field (collectionDate / geoLocName / derivedFrom) を dict に詰める。"""
+
+    def test_sample_with_new_attributes(self) -> None:
+        xml = b"""<?xml version="1.0"?>
+<SAMPLE_SET>
+  <SAMPLE accession="DRS000001" center_name="NIID">
+    <TITLE>T</TITLE>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>collection_date</TAG>
+        <VALUE>2020-01-15</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>geo_loc_name</TAG>
+        <VALUE>Japan:Kagawa</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>derived_from</TAG>
+        <VALUE>SAMD001, SAMD002</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</SAMPLE_SET>
+"""
+        results = parse_sample(xml, "DRA000001")
+        assert len(results) == 1
+        r = results[0]
+        assert r["collectionDate"] == "2020-01-15"
+        assert r["geoLocName"] == "Japan:Kagawa"
+        assert [x.identifier for x in r["derivedFrom"]] == ["SAMD001", "SAMD002"]
+
+    def test_sample_without_attributes(self) -> None:
+        xml = b"""<?xml version="1.0"?>
+<SAMPLE_SET>
+  <SAMPLE accession="DRS000002" center_name="NIID">
+    <TITLE>T</TITLE>
+  </SAMPLE>
+</SAMPLE_SET>
+"""
+        results = parse_sample(xml, "DRA000002")
+        assert len(results) == 1
+        r = results[0]
+        assert r["collectionDate"] is None
+        assert r["geoLocName"] is None
+        assert r["derivedFrom"] == []
+
+
+class TestParseLibraryDescriptorFields:
+    """_parse_library が LIBRARY_DESCRIPTOR 配下から libraryName / libraryConstructionProtocol を抽出する。"""
+
+    def test_library_name_and_protocol_extracted(self) -> None:
+        exp = {
+            "DESIGN": {
+                "LIBRARY_DESCRIPTOR": {
+                    "LIBRARY_NAME": "An funestus library",
+                    "LIBRARY_CONSTRUCTION_PROTOCOL": "Standard Solexa protocol",
+                }
+            }
+        }
+        result = _parse_library(exp)
+        assert result["libraryName"] == "An funestus library"
+        assert result["libraryConstructionProtocol"] == "Standard Solexa protocol"
+
+    def test_missing_returns_none(self) -> None:
+        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {}}}
+        result = _parse_library(exp)
+        assert result["libraryName"] is None
+        assert result["libraryConstructionProtocol"] is None
+
+    def test_dict_with_content_extracted(self) -> None:
+        """xmltodict で LIBRARY_NAME が {content: 'X'} 形式でも正しく取得できる (_get_text 経由)。"""
+        exp = {
+            "DESIGN": {
+                "LIBRARY_DESCRIPTOR": {
+                    "LIBRARY_NAME": {"content": "My Lib"},
+                    "LIBRARY_CONSTRUCTION_PROTOCOL": "plain text",
+                }
+            }
+        }
+        result = _parse_library(exp)
+        assert result["libraryName"] == "My Lib"
+        assert result["libraryConstructionProtocol"] == "plain text"
+
+
+class TestCreateSraEntryAttributeFields:
+    """create_sra_entry が parsed dict の Attribute 由来 field を SRA instance に渡す。"""
+
+    def test_experiment_library_fields(self) -> None:
+        parsed: dict[str, Any] = {
+            "accession": "DRR000001",
+            "properties": {"EXPERIMENT_SET": {"EXPERIMENT": {}}},
+            "libraryName": "My Library",
+            "libraryConstructionProtocol": "Custom protocol text that could be long.",
+        }
+        sra_entry = create_sra_entry(
+            "experiment",
+            parsed,
+            "public",
+            "public-access",
+            None,
+            None,
+            None,
+        )
+        assert sra_entry.libraryName == "My Library"
+        assert sra_entry.libraryConstructionProtocol == "Custom protocol text that could be long."
+
+    def test_sample_new_fields(self) -> None:
+        parsed: dict[str, Any] = {
+            "accession": "DRS000001",
+            "properties": {"SAMPLE_SET": {"SAMPLE": {}}},
+            "collectionDate": "2020-01-15",
+            "geoLocName": "Japan:Kagawa",
+            "derivedFrom": [
+                Xref(identifier="SAMD001", type="biosample", url="https://ex.co/SAMD001"),
+            ],
+        }
+        sra_entry = create_sra_entry(
+            "sample",
+            parsed,
+            "public",
+            "public-access",
+            None,
+            None,
+            None,
+        )
+        assert sra_entry.collectionDate == "2020-01-15"
+        assert sra_entry.geoLocName == "Japan:Kagawa"
+        assert len(sra_entry.derivedFrom) == 1
+        assert sra_entry.derivedFrom[0].identifier == "SAMD001"
+
+    def test_defaults_when_absent(self) -> None:
+        """parsed dict に該当 field が無い時、全て None / 空 list になる。"""
+        parsed: dict[str, Any] = {
+            "accession": "DRS000001",
+            "properties": {"SAMPLE_SET": {"SAMPLE": {}}},
+        }
+        sra_entry = create_sra_entry(
+            "sample",
+            parsed,
+            "public",
+            "public-access",
+            None,
+            None,
+            None,
+        )
+        assert sra_entry.collectionDate is None
+        assert sra_entry.geoLocName is None
+        assert sra_entry.derivedFrom == []
+        assert sra_entry.libraryName is None
+        assert sra_entry.libraryConstructionProtocol is None

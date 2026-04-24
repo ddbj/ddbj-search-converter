@@ -20,6 +20,11 @@ def get_bioproject_specific_mapping() -> dict[str, Any]:
     """
     return {
         "objectType": {"type": "keyword"},
+        "projectType": {
+            "type": "text",
+            "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+        },
+        "relevance": {"type": "keyword"},
         "parentBioProjects": {"type": "object", "enabled": False},
         "childBioProjects": {"type": "object", "enabled": False},
     }

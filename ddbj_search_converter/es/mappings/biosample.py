@@ -12,6 +12,10 @@ from ddbj_search_converter.es.mappings.common import (
 
 def get_biosample_specific_mapping() -> dict[str, Any]:
     """Return BioSample-specific mapping properties."""
+    text_keyword_256: dict[str, Any] = {
+        "type": "text",
+        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+    }
     return {
         "model": {"type": "keyword"},
         "package": {
@@ -21,6 +25,18 @@ def get_biosample_specific_mapping() -> dict[str, Any]:
                 "displayName": {"type": "keyword", "index": False},
             },
         },
+        "derivedFrom": {
+            "type": "nested",
+            "properties": {
+                "identifier": {"type": "keyword"},
+                "type": {"type": "keyword"},
+                "url": {"type": "keyword", "index": False},
+            },
+        },
+        "geoLocName": {"type": "text"},
+        "collectionDate": {"type": "text"},
+        "host": text_keyword_256,
+        "strain": text_keyword_256,
     }
 
 

@@ -423,6 +423,16 @@ XML ファイル単位で分割されたファイルが出力される。
 
 BioProject エントリーは umbrella 階層構造に対応しており、`parentBioProjects` / `childBioProjects` フィールドで直接の親子関係（推移的閉包ではない）を保持する。これらのフィールドの値は Umbrella DB から取得される。Xref の type は `"bioproject"` で統一し、フィールド名自体が方向を示す。umbrella 関連は `dbXrefs` には含めない。
 
+BioProject には以下のファセット候補フィールドが含まれる:
+- `projectType`: `ProjectType.ProjectTypeSubmission.ProjectDataTypeSet.DataType` から抽出 (NCBI のみ値あり)。例: "Genome sequencing" / "Transcriptome"
+- `relevance`: `ProjectDescr.Relevance.*` の 7 子要素 (Agricultural / Medical / Industrial / Environmental / Evolution / ModelOrganism / Other) で `"yes"` となっているタグ名
+
+BioSample には以下のファセット候補フィールドが含まれる:
+- `derivedFrom`: `Attributes/Attribute[@attribute_name∈{derived-from, derived_from}]` の値から regex `SAM[NDE]\d+` で ID 抽出。NCBI 自由文埋め込み / DDBJ カンマ区切りの両方を統一処理
+- `geoLocName` / `collectionDate` / `host` / `strain`: `Attributes/Attribute[@attribute_name=...]` から直接抽出
+
+詳細は [schema.py](../ddbj_search_converter/schema.py) を参照。
+
 ### SRA
 
 | ファイルパターン | ES Index |
@@ -436,6 +446,11 @@ BioProject エントリーは umbrella 階層構造に対応しており、`pare
 
 並列処理のためバッチ単位（5000 submissions/batch）で分割されたファイルが出力される。
 `es_bulk_insert` では `--pattern` オプションで対象ファイルを絞り込む。
+
+SRA には以下の type 別ファセット候補フィールドが含まれる:
+- sra-submission: `Organization.department` に `SUBMISSION/@lab_name` を詰める (center Organization のみ、broker には付けない)
+- sra-sample: `collectionDate` / `geoLocName` (`SAMPLE_ATTRIBUTE[TAG=...]` から抽出)、`derivedFrom` (BioSample と同じ regex `SAM[NDE]\d+` で ID 抽出、nested Xref 構造)
+- sra-experiment: `libraryName` / `libraryConstructionProtocol` (`LIBRARY_DESCRIPTOR/LIBRARY_NAME` と `/LIBRARY_CONSTRUCTION_PROTOCOL` から抽出)
 
 ### JGA
 

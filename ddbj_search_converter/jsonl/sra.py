@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import re
 import sys
 from collections.abc import Callable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
@@ -47,6 +48,7 @@ from ddbj_search_converter.schema import (
     OrganizationRole,
     Publication,
     Status,
+    Xref,
     XrefType,
 )
 from ddbj_search_converter.sra.tar_reader import SraXmlType, TarXMLReader, get_dra_tar_path, get_ncbi_tar_path
@@ -92,6 +94,9 @@ SRA_ATTRIBUTE_PATHS: dict[SraXmlType, list[list[str]]] = {
     "sample": [["SAMPLE_SET", "SAMPLE", "SAMPLE_ATTRIBUTES", "SAMPLE_ATTRIBUTE"]],
     "analysis": [["ANALYSIS_SET", "ANALYSIS", "ANALYSIS_ATTRIBUTES", "ANALYSIS_ATTRIBUTE"]],
 }
+
+# SAMPLE_ATTRIBUTE.VALUE から BioSample 形式の ID を抽出する regex (bs.py と同 pattern)。
+_SAMPLE_DERIVED_FROM_ID_RE = re.compile(r"SAM[NDE]\d+")
 
 
 # === Parse functions ===
@@ -302,6 +307,59 @@ def parse_run(
     return []
 
 
+def _find_sample_attr(sample: Any, tags: set[str]) -> str | None:
+    """SAMPLE_ATTRIBUTES/SAMPLE_ATTRIBUTE から TAG が合致する最初の VALUE を返す。
+
+    parse_xml 直後は SAMPLE_ATTRIBUTE が dict / list どちらも取り得るので両対応。
+    VALUE が str 以外または空文字 (strip 後) なら skip して次を探す。
+    """
+    if not isinstance(sample, dict):
+        return None
+    attrs_obj = sample.get("SAMPLE_ATTRIBUTES")
+    if not isinstance(attrs_obj, dict):
+        return None
+    items = attrs_obj.get("SAMPLE_ATTRIBUTE")
+    if items is None:
+        return None
+    attr_list = items if isinstance(items, list) else [items]
+    for attr in attr_list:
+        if not isinstance(attr, dict):
+            continue
+        tag = attr.get("TAG")
+        if isinstance(tag, str) and tag in tags:
+            value = attr.get("VALUE")
+            if isinstance(value, str):
+                stripped = value.strip()
+                if stripped:
+                    return stripped
+    return None
+
+
+def _parse_sample_derived_from(sample: Any) -> list[Xref]:
+    """SAMPLE_ATTRIBUTE の derived-from / derived_from TAG から Xref list を生成する。
+
+    値は NCBI 自由文 (BioSample ID が embed) / DDBJ カンマ区切り ID リストの
+    両形式が想定されるため regex ``SAM[NDE]\\d+`` で ID 抽出する。
+    """
+    content = _find_sample_attr(sample, {"derived-from", "derived_from"})
+    if content is None:
+        return []
+    xrefs: list[Xref] = []
+    seen: set[str] = set()
+    for id_ in _SAMPLE_DERIVED_FROM_ID_RE.findall(content):
+        if id_ in seen:
+            continue
+        seen.add(id_)
+        xrefs.append(
+            Xref(
+                identifier=id_,
+                type="biosample",
+                url=f"{SEARCH_BASE_URL}/search/entry/biosample/{id_}",
+            )
+        )
+    return xrefs
+
+
 def parse_sample(
     xml_bytes: bytes,
     accession: str,
@@ -333,6 +391,9 @@ def parse_sample(
                     "properties": {"SAMPLE_SET": {"SAMPLE": sample}},
                     "organization": _parse_organizations_from_entry_attrs(sample),
                     "publication": _parse_publications(sample, "SAMPLE_LINKS", "SAMPLE_LINK"),
+                    "collectionDate": _find_sample_attr(sample, {"collection_date"}),
+                    "geoLocName": _find_sample_attr(sample, {"geo_loc_name"}),
+                    "derivedFrom": _parse_sample_derived_from(sample),
                 }
             )
     except Exception as e:
@@ -369,11 +430,16 @@ def parse_analysis(
 
 
 def _parse_organizations_from_entry_attrs(entry: Any) -> list[Organization]:
-    """SRA entry の root attributes (`@center_name` / `@broker_name`) から Organization を抽出する。
+    """SRA entry の root attributes から Organization を抽出する。
 
-    xmltodict 正規化後は prefix 無しの dict key ("center_name" / "broker_name") に展開される。
-    broker_name は role="broker" で追加。lab_name は部局名主体 (自由記述) のため load しない
-    (Organization.name に詰めると center_name と意味衝突するため)。
+    xmltodict 正規化後は prefix 無しの dict key ("center_name" / "broker_name" /
+    "lab_name") に展開される。
+    - ``center_name``: 所属機関名。role は None
+    - ``broker_name``: データ中継機関名。role="broker"
+    - ``lab_name``: sra-submission で出現する部局名。``center_name`` の
+      ``department`` フィールドに詰める (役割が同じ組織の下部構造を表すため)。
+      broker_name には lab_name を紐付けない (broker は別機関扱い)
+
     dedupe は共通 util ``deduplicate_organizations`` に委譲し、key は
     ``(name, role, organizationType)``。center_name と broker_name が同一文字列でも
     role が異なれば別エントリとして両方保持される。
@@ -383,15 +449,22 @@ def _parse_organizations_from_entry_attrs(entry: Any) -> list[Organization]:
         return []
     orgs: list[Organization] = []
 
-    def _add(value: Any, role: OrganizationRole | None) -> None:
+    lab_name_raw = entry.get("lab_name")
+    lab_name: str | None = None
+    if isinstance(lab_name_raw, str):
+        lab_name_stripped = lab_name_raw.strip()
+        if lab_name_stripped:
+            lab_name = lab_name_stripped
+
+    def _add(value: Any, role: OrganizationRole | None, department: str | None = None) -> None:
         if not isinstance(value, str):
             return
         stripped = value.strip()
         if not stripped:
             return
-        orgs.append(Organization(name=stripped, role=role))
+        orgs.append(Organization(name=stripped, role=role, department=department))
 
-    _add(entry.get("center_name"), None)
+    _add(entry.get("center_name"), None, lab_name)
     _add(entry.get("broker_name"), "broker")
 
     return deduplicate_organizations(orgs)
@@ -456,6 +529,8 @@ def _parse_library(experiment: Any) -> dict[str, Any]:
         "libraryLayout": None,
         "platform": None,
         "instrumentModel": [],
+        "libraryName": None,
+        "libraryConstructionProtocol": None,
     }
     if not isinstance(experiment, dict):
         return result
@@ -477,6 +552,12 @@ def _parse_library(experiment: Any) -> dict[str, Any]:
                 layout_keys = list(layout_obj.keys())
                 if len(layout_keys) == 1:
                     result["libraryLayout"] = layout_keys[0]
+            library_name = _get_text(descriptor, "LIBRARY_NAME")
+            if library_name:
+                result["libraryName"] = library_name
+            protocol = _get_text(descriptor, "LIBRARY_CONSTRUCTION_PROTOCOL")
+            if protocol:
+                result["libraryConstructionProtocol"] = protocol
     platform_obj = experiment.get("PLATFORM")
     if isinstance(platform_obj, dict):
         platform_keys = list(platform_obj.keys())
@@ -607,7 +688,12 @@ def create_sra_entry(
         libraryLayout=parsed.get("libraryLayout"),
         platform=parsed.get("platform"),
         instrumentModel=parsed.get("instrumentModel") or [],
+        libraryName=parsed.get("libraryName"),
+        libraryConstructionProtocol=parsed.get("libraryConstructionProtocol"),
         analysisType=parsed.get("analysisType"),
+        collectionDate=parsed.get("collectionDate"),
+        geoLocName=parsed.get("geoLocName"),
+        derivedFrom=parsed.get("derivedFrom") or [],
         dbXrefs=[],
         sameAs=[],
         status=status,

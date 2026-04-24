@@ -15,7 +15,9 @@ from ddbj_search_converter.jsonl.bp import (
     parse_object_type,
     parse_organism,
     parse_organization,
+    parse_project_type,
     parse_publication,
+    parse_relevance,
     parse_same_as,
     parse_status,
     parse_title,
@@ -1001,3 +1003,164 @@ class TestXmlEntryToBpInstanceProperties:
         project = _make_project()
         bp = xml_entry_to_bp_instance({"Project": project}, is_ddbj=True)
         assert bp.name is None
+
+
+class TestParseProjectType:
+    """Tests for parse_project_type function."""
+
+    def test_no_project_type_submission_returns_empty(self) -> None:
+        """DDBJ (UmbrellaBioProject) は ProjectTypeSubmission 無しで空 list。"""
+        project = _make_project()
+        assert parse_project_type(project) == []
+
+    def test_no_data_type_set_returns_empty(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectType"] = {"ProjectTypeSubmission": {}}
+        assert parse_project_type(project) == []
+
+    def test_single_data_type(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectType"] = {
+            "ProjectTypeSubmission": {
+                "ProjectDataTypeSet": {"DataType": "Genome sequencing"},
+            }
+        }
+        assert parse_project_type(project) == ["Genome sequencing"]
+
+    def test_multiple_data_types_preserve_order(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectType"] = {
+            "ProjectTypeSubmission": {
+                "ProjectDataTypeSet": {"DataType": ["Genome sequencing", "Transcriptome", "Variation"]},
+            }
+        }
+        assert parse_project_type(project) == ["Genome sequencing", "Transcriptome", "Variation"]
+
+    def test_data_type_as_dict_with_content(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectType"] = {
+            "ProjectTypeSubmission": {
+                "ProjectDataTypeSet": {"DataType": {"content": "Genome sequencing"}},
+            }
+        }
+        assert parse_project_type(project) == ["Genome sequencing"]
+
+    def test_strips_whitespace(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectType"] = {
+            "ProjectTypeSubmission": {
+                "ProjectDataTypeSet": {"DataType": "  Genome sequencing  "},
+            }
+        }
+        assert parse_project_type(project) == ["Genome sequencing"]
+
+    def test_empty_and_whitespace_skipped(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectType"] = {
+            "ProjectTypeSubmission": {
+                "ProjectDataTypeSet": {"DataType": ["", "  ", "Genome sequencing"]},
+            }
+        }
+        assert parse_project_type(project) == ["Genome sequencing"]
+
+    def test_non_str_and_non_dict_elements_skipped(self) -> None:
+        """None / int 等、str / dict 以外の要素は skip される (例外を出さない)。"""
+        project = _make_project()
+        project["Project"]["ProjectType"] = {
+            "ProjectTypeSubmission": {
+                "ProjectDataTypeSet": {"DataType": [None, 42, "Genome sequencing"]},
+            }
+        }
+        assert parse_project_type(project) == ["Genome sequencing"]
+
+
+class TestParseRelevance:
+    """Tests for parse_relevance function."""
+
+    def test_no_relevance_returns_empty(self) -> None:
+        project = _make_project()
+        assert parse_relevance(project) == []
+
+    def test_single_yes(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {"Medical": "yes"}
+        assert parse_relevance(project) == ["Medical"]
+
+    def test_multiple_yes_returned_in_xsd_order(self) -> None:
+        """dict の挿入順に関わらず XSD 定義順 (Agricultural→Medical→Industrial→...→Other) で返す。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {
+            "Other": "yes",
+            "Medical": "yes",
+            "Agricultural": "yes",
+        }
+        assert parse_relevance(project) == ["Agricultural", "Medical", "Other"]
+
+    def test_no_value_excluded(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {
+            "Medical": "no",
+            "Agricultural": "yes",
+        }
+        assert parse_relevance(project) == ["Agricultural"]
+
+    def test_dict_wrapping_with_content(self) -> None:
+        """xmltodict で {TagName: {content: 'yes'}} の形でもマッチする。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {"Medical": {"content": "yes"}}
+        assert parse_relevance(project) == ["Medical"]
+
+    def test_case_insensitive_yes(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {
+            "Medical": "YES",
+            "Agricultural": " Yes ",
+            "Other": "yes",
+        }
+        assert parse_relevance(project) == ["Agricultural", "Medical", "Other"]
+
+    def test_unknown_keys_ignored(self) -> None:
+        """XSD で定義されている 7 key 以外は無視する。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {
+            "NotInXsd": "yes",
+            "Medical": "yes",
+        }
+        assert parse_relevance(project) == ["Medical"]
+
+    def test_all_seven_xsd_keys(self) -> None:
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {
+            "Agricultural": "yes",
+            "Medical": "yes",
+            "Industrial": "yes",
+            "Environmental": "yes",
+            "Evolution": "yes",
+            "ModelOrganism": "yes",
+            "Other": "yes",
+        }
+        assert parse_relevance(project) == [
+            "Agricultural",
+            "Medical",
+            "Industrial",
+            "Environmental",
+            "Evolution",
+            "ModelOrganism",
+            "Other",
+        ]
+
+    def test_non_string_value_excluded(self) -> None:
+        """数値や content 無 dict は無視。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = {
+            "Medical": 1,
+            "Agricultural": {},
+            "Other": "yes",
+        }
+        assert parse_relevance(project) == ["Other"]
+
+    def test_relevance_not_dict_returns_empty(self) -> None:
+        """Relevance が文字列 / None 等 dict 以外なら空 list (例外を出さない)。"""
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Relevance"] = "yes"
+        assert parse_relevance(project) == []

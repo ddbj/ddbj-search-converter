@@ -5,23 +5,31 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from ddbj_search_converter.jsonl.bs import (
+    _find_attr,
     normalize_properties,
     parse_accessibility,
     parse_accession,
     parse_bs_package,
+    parse_collection_date,
+    parse_derived_from,
     parse_description,
+    parse_geo_loc_name,
+    parse_host,
     parse_model,
     parse_name,
     parse_organism,
     parse_organization,
     parse_same_as,
     parse_status,
+    parse_strain,
     parse_title,
     xml_entry_to_bs_instance,
 )
-from ddbj_search_converter.schema import BioSample, BioSamplePackage, Organization
+from ddbj_search_converter.schema import BioSample, BioSamplePackage, Organization, Xref
 
 
 def _make_sample(overrides: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -621,3 +629,306 @@ class TestXmlEntryToBsInstanceProperties:
         sample["Owner"] = {"Name": {"content": "NCBI", "abbreviation": "NCBI"}}
         bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=False)
         assert bs.organization == [Organization(name="NCBI", abbreviation="NCBI")]
+
+
+class TestFindAttr:
+    """Tests for _find_attr helper (Attributes/Attribute lookup)."""
+
+    def test_no_attributes_element(self) -> None:
+        sample: dict[str, Any] = {}
+        assert _find_attr(sample, {"host"}) is None
+
+    def test_attributes_empty_dict(self) -> None:
+        sample = _make_sample()
+        assert _find_attr(sample, {"host"}) is None
+
+    def test_match_by_attribute_name(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {"attribute_name": "host", "content": "Homo sapiens"},
+                {"attribute_name": "strain", "content": "DSM 17216"},
+            ]
+        }
+        assert _find_attr(sample, {"host"}) == "Homo sapiens"
+        assert _find_attr(sample, {"strain"}) == "DSM 17216"
+
+    def test_match_by_harmonized_name(self) -> None:
+        """NCBI で attribute_name='derived-from' + harmonized_name='derived_from' の時、
+        harmonized 側でもマッチする。
+        """
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {
+                    "attribute_name": "derived-from",
+                    "harmonized_name": "derived_from",
+                    "content": "SAMN001",
+                }
+            ]
+        }
+        assert _find_attr(sample, {"derived_from"}) == "SAMN001"
+        assert _find_attr(sample, {"derived-from"}) == "SAMN001"
+
+    def test_single_dict_not_wrapped_in_list(self) -> None:
+        """Attribute が 1 件の時 dict (list でない) でも処理できる。"""
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": {"attribute_name": "host", "content": "Mus musculus"}}
+        assert _find_attr(sample, {"host"}) == "Mus musculus"
+
+    def test_strips_content(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "host", "content": "  Homo sapiens  "}]}
+        assert _find_attr(sample, {"host"}) == "Homo sapiens"
+
+    def test_empty_content_skipped(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "host", "content": "   "}]}
+        assert _find_attr(sample, {"host"}) is None
+
+    def test_returns_first_match(self) -> None:
+        """複数マッチした場合は最初の 1 件を返す。"""
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {"attribute_name": "host", "content": "Homo sapiens"},
+                {"attribute_name": "host", "content": "Mus musculus"},
+            ]
+        }
+        assert _find_attr(sample, {"host"}) == "Homo sapiens"
+
+    def test_attributes_not_dict_returns_none(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = "malformed"  # type: ignore[assignment]
+        assert _find_attr(sample, {"host"}) is None
+
+
+class TestParseGeoLocName:
+    def test_returns_none_when_missing(self) -> None:
+        assert parse_geo_loc_name(_make_sample()) is None
+
+    def test_returns_value(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [{"attribute_name": "geo_loc_name", "content": "Japan:Kagawa, Aji city"}]
+        }
+        assert parse_geo_loc_name(sample) == "Japan:Kagawa, Aji city"
+
+
+class TestParseCollectionDate:
+    def test_returns_none_when_missing(self) -> None:
+        assert parse_collection_date(_make_sample()) is None
+
+    @pytest.mark.parametrize(
+        "value",
+        ["1991-10-17", "2012", "24-SEP-2004", "missing", "N/A", "not determined", "not applicable"],
+    )
+    def test_returns_raw_value_including_placeholder(self, value: str) -> None:
+        """placeholder 値も生透過する。"""
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "collection_date", "content": value}]}
+        assert parse_collection_date(sample) == value
+
+
+class TestParseHost:
+    def test_returns_none_when_missing(self) -> None:
+        assert parse_host(_make_sample()) is None
+
+    def test_returns_value(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "host", "content": "Homo sapiens"}]}
+        assert parse_host(sample) == "Homo sapiens"
+
+
+class TestParseStrain:
+    def test_returns_none_when_missing(self) -> None:
+        assert parse_strain(_make_sample()) is None
+
+    def test_returns_value(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "strain", "content": "DSM 17216"}]}
+        assert parse_strain(sample) == "DSM 17216"
+
+
+class TestParseDerivedFrom:
+    def test_returns_empty_when_missing(self) -> None:
+        assert parse_derived_from(_make_sample()) == []
+
+    def test_ncbi_free_text_single_id(self) -> None:
+        """NCBI: attribute_name='derived-from' + harmonized_name='derived_from' + 自由文 embed。"""
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {
+                    "attribute_name": "derived-from",
+                    "harmonized_name": "derived_from",
+                    "content": (
+                        "This biosample is a metagenomic assembly obtained from the "
+                        "subsurface metagenome sample SAMN07792362"
+                    ),
+                }
+            ]
+        }
+        result = parse_derived_from(sample)
+        assert len(result) == 1
+        assert result[0].identifier == "SAMN07792362"
+        assert result[0].type_ == "biosample"
+        assert result[0].url.endswith("/search/entry/biosample/SAMN07792362")
+
+    def test_ncbi_free_text_multiple_ids(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {
+                    "attribute_name": "derived-from",
+                    "content": "Derived from BioSamples: SAMN02228699, SAMN02228700, SAMN02228701",
+                }
+            ]
+        }
+        result = parse_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMN02228699", "SAMN02228700", "SAMN02228701"]
+
+    def test_ddbj_comma_separated(self) -> None:
+        """DDBJ: attribute_name='derived_from' + カンマ区切り ID リスト。"""
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {"attribute_name": "derived_from", "content": "SAMD00056903, SAMD00056904, SAMD00056905"}
+            ]
+        }
+        result = parse_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMD00056903", "SAMD00056904", "SAMD00056905"]
+
+    def test_sam_ea_prefix_not_accepted(self) -> None:
+        """regex ``SAM[NDE]\\d+`` は EBI 系 (SAMEA / SAMEG 等) を**意図的に拾わない**。
+
+        derivedFrom 値として取り込むのは NCBI (SAMN*) / DDBJ (SAMD*) のみ。
+        "SAMEA1234567" は 'SAM' + 'E' + 'A...' なので '[NDE]\\d+' にマッチしない
+        (4 文字目 'A' が数字でない)。EBI 対応が必要になったら regex を拡張する。
+        """
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "derived_from", "content": "SAMEA1234567"}]}
+        result = parse_derived_from(sample)
+        assert result == []
+
+    def test_invalid_prefix_ignored(self) -> None:
+        """SAM[NDE] 以外の prefix (SAMX / SAMF 等) は取らない。"""
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [{"attribute_name": "derived_from", "content": "SAMX123, SAMF456, SAMD999"}]
+        }
+        result = parse_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMD999"]
+
+    def test_deduplicates_preserving_order(self) -> None:
+        """同じ ID が複数出現したら初出位置のみ残る。"""
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {
+                    "attribute_name": "derived_from",
+                    "content": "SAMD001, SAMN002, SAMD001, SAMN002, SAMD003",
+                }
+            ]
+        }
+        result = parse_derived_from(sample)
+        assert [x.identifier for x in result] == ["SAMD001", "SAMN002", "SAMD003"]
+
+    def test_empty_content_returns_empty(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "derived_from", "content": "   "}]}
+        assert parse_derived_from(sample) == []
+
+    def test_placeholder_without_ids_returns_empty(self) -> None:
+        """'missing' / 'not applicable' 等、ID を含まない値は空 list。"""
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "derived_from", "content": "not applicable"}]}
+        assert parse_derived_from(sample) == []
+
+
+class TestParseDerivedFromPBT:
+    """hypothesis PBT で bug を探す (NCBI 自由文 / DDBJ カンマ区切りを統一抽出)。"""
+
+    @given(
+        ids=st.lists(
+            st.from_regex(r"SAM[NDE]\d{1,10}", fullmatch=True),
+            min_size=0,
+            max_size=10,
+        )
+    )
+    def test_comma_separated_recovers_unique_ids_in_order(self, ids: list[str]) -> None:
+        """DDBJ 形式: ID をカンマ結合した content から元の順序で dedup 抽出できる。"""
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "derived_from", "content": ", ".join(ids)}]}
+        expected: list[str] = []
+        seen: set[str] = set()
+        for id_ in ids:
+            if id_ not in seen:
+                seen.add(id_)
+                expected.append(id_)
+        result = parse_derived_from(sample)
+        assert [x.identifier for x in result] == expected
+
+    @given(
+        prefix=st.text(alphabet=st.sampled_from("abcdefghijklmnopqrtuvwxyz .,:-"), max_size=40),
+        ids=st.lists(
+            st.from_regex(r"SAM[NDE]\d{1,10}", fullmatch=True),
+            min_size=1,
+            max_size=5,
+        ),
+    )
+    def test_free_text_embed_extracts_all_ids(self, prefix: str, ids: list[str]) -> None:
+        """NCBI 形式: 自由文 (SAM letter を含まない alphabet) に埋めても全 ID 抽出 + dedup できる。"""
+        content = prefix + " " + " ... ".join(ids) + " end."
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "derived-from", "content": content}]}
+        expected: list[str] = []
+        seen: set[str] = set()
+        for id_ in ids:
+            if id_ not in seen:
+                seen.add(id_)
+                expected.append(id_)
+        result = parse_derived_from(sample)
+        assert [x.identifier for x in result] == expected
+
+    @given(ids=st.lists(st.from_regex(r"SAM[NDE]\d{1,10}", fullmatch=True), min_size=0, max_size=8))
+    def test_all_results_are_biosample_xrefs(self, ids: list[str]) -> None:
+        """生成された Xref は常に type='biosample'、url は identifier を含む。"""
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "derived_from", "content": ", ".join(ids)}]}
+        result = parse_derived_from(sample)
+        for xref in result:
+            assert isinstance(xref, Xref)
+            assert xref.type_ == "biosample"
+            assert xref.identifier in xref.url
+
+
+class TestXmlEntryIncludesAttributeFields:
+    """xml_entry_to_bs_instance が Attribute 由来の各 field を BioSample に詰める。"""
+
+    def test_all_new_fields_default_none_or_empty_when_absent(self) -> None:
+        sample = _make_sample()
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=True)
+        assert bs.derivedFrom == []
+        assert bs.geoLocName is None
+        assert bs.collectionDate is None
+        assert bs.host is None
+        assert bs.strain is None
+
+    def test_all_new_fields_populated(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [
+                {"attribute_name": "geo_loc_name", "content": "Japan:Kagawa"},
+                {"attribute_name": "collection_date", "content": "2020-01-15"},
+                {"attribute_name": "host", "content": "Homo sapiens"},
+                {"attribute_name": "strain", "content": "DSM 17216"},
+                {"attribute_name": "derived_from", "content": "SAMD00056903, SAMD00056904"},
+            ]
+        }
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=True)
+        assert bs.geoLocName == "Japan:Kagawa"
+        assert bs.collectionDate == "2020-01-15"
+        assert bs.host == "Homo sapiens"
+        assert bs.strain == "DSM 17216"
+        assert [x.identifier for x in bs.derivedFrom] == ["SAMD00056903", "SAMD00056904"]

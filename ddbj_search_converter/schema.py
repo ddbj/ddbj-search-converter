@@ -106,6 +106,8 @@ class BioProject(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
+    projectType: list[str] = Field(default_factory=list)
+    relevance: list[str] = Field(default_factory=list)
     organization: list[Organization] = Field(default_factory=list)
     publication: list[Publication] = Field(default_factory=list)
     grant: list[Grant] = Field(default_factory=list)
@@ -140,6 +142,11 @@ class BioSample(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
+    derivedFrom: list[Xref] = Field(default_factory=list)
+    geoLocName: str | None = None
+    collectionDate: str | None = None
+    host: str | None = None
+    strain: str | None = None
     organization: list[Organization] = Field(default_factory=list)
     model: list[str] = Field(default_factory=list)
     package: BioSamplePackage | None
@@ -176,7 +183,12 @@ class SRA(BaseModel):
     libraryLayout: str | None
     platform: str | None
     instrumentModel: list[str] = Field(default_factory=list)
+    libraryName: str | None = None
+    libraryConstructionProtocol: str | None = None
     analysisType: str | None
+    collectionDate: str | None = None
+    geoLocName: str | None = None
+    derivedFrom: list[Xref] = Field(default_factory=list)
     dbXrefs: list[Xref] = Field(default_factory=list)
     sameAs: list[Xref] = Field(default_factory=list)
     status: Status

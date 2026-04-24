@@ -33,9 +33,11 @@ def get_sra_specific_mapping(index_type: SraIndexType) -> dict[str, Any]:
     """Return SRA type 別の specific mapping.
 
     - sra-experiment: libraryStrategy / librarySource / librarySelection /
-      libraryLayout / platform / instrumentModel (text + keyword subfield)
+      libraryLayout / platform / instrumentModel / libraryName (text + keyword)、
+      libraryConstructionProtocol (text 単独、長文)
     - sra-analysis: analysisType (text + keyword subfield)
-    - sra-study / sra-run / sra-sample / sra-submission: 追加 specific なし
+    - sra-sample: collectionDate / geoLocName (text 単独)、derivedFrom (nested)
+    - sra-study / sra-run / sra-submission: 追加 specific なし
     """
     text_keyword_256: dict[str, Any] = {
         "type": "text",
@@ -49,9 +51,24 @@ def get_sra_specific_mapping(index_type: SraIndexType) -> dict[str, Any]:
             "libraryLayout": text_keyword_256,
             "platform": text_keyword_256,
             "instrumentModel": text_keyword_256,
+            "libraryName": text_keyword_256,
+            "libraryConstructionProtocol": {"type": "text"},
         }
     if index_type == "sra-analysis":
         return {"analysisType": text_keyword_256}
+    if index_type == "sra-sample":
+        return {
+            "collectionDate": {"type": "text"},
+            "geoLocName": {"type": "text"},
+            "derivedFrom": {
+                "type": "nested",
+                "properties": {
+                    "identifier": {"type": "keyword"},
+                    "type": {"type": "keyword"},
+                    "url": {"type": "keyword", "index": False},
+                },
+            },
+        }
     return {}
 
 

@@ -46,14 +46,8 @@ def get_common_mapping() -> dict[str, Any]:
                 },
             },
         },
-        "title": {
-            "type": "text",
-            "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
-        },
-        "description": {
-            "type": "text",
-            "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
-        },
+        "title": {"type": "text"},
+        "description": {"type": "text"},
         "dbXrefs": {"type": "object", "enabled": False},
         "sameAs": {
             "type": "nested",
@@ -81,7 +75,7 @@ def get_organization_properties() -> dict[str, Any]:
         "abbreviation": {"type": "keyword"},
         "role": {"type": "keyword"},
         "organizationType": {"type": "keyword"},
-        "department": {"type": "keyword"},
+        "department": {"type": "text"},
         "url": {"type": "keyword", "index": False},
     }
 
@@ -103,10 +97,7 @@ def get_publication_mapping() -> dict[str, Any]:
             "type": "nested",
             "properties": {
                 "id": {"type": "keyword"},
-                "title": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
-                },
+                "title": {"type": "text"},
                 "date": {"type": "keyword"},
                 "reference": {"type": "keyword"},
                 "url": {"type": "keyword", "index": False},
@@ -128,10 +119,7 @@ def get_grant_mapping() -> dict[str, Any]:
             "type": "nested",
             "properties": {
                 "id": {"type": "keyword"},
-                "title": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword", "ignore_above": 512}},
-                },
+                "title": {"type": "text"},
                 "agency": {
                     "type": "nested",
                     "properties": get_organization_properties(),

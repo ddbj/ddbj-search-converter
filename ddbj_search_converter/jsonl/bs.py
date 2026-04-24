@@ -1,6 +1,7 @@
 """BioSample JSONL 生成モジュール。"""
 
 import argparse
+import re
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -45,8 +46,40 @@ DEFAULT_PARALLEL_NUM = 64
 
 BS_ATTRIBUTE_PATHS: list[list[str]] = [["Attributes", "Attribute"]]
 
+# NCBI / DDBJ BioSample で `SAM[NDE]{accession_number}` 形式の ID を抽出する regex。
+# 両方の format (NCBI 自由文 embed / DDBJ カンマ区切り) を単一 regex でカバー。
+_DERIVED_FROM_ID_RE = re.compile(r"SAM[NDE]\d+")
+
 
 # === Parse functions ===
+
+
+def _find_attr(sample: dict[str, Any], names: set[str]) -> str | None:
+    """BioSample の Attributes/Attribute から attribute_name / harmonized_name が
+    names に合致する最初のエントリの content を strip して返す。
+
+    ``ensure_attribute_list`` で事前に Attribute は常に list 化されている前提。
+    content が str 以外または空文字 (strip 後) の場合は skip して次を探す。
+    """
+    attributes_obj = sample.get("Attributes")
+    if not isinstance(attributes_obj, dict):
+        return None
+    items = attributes_obj.get("Attribute")
+    if items is None:
+        return None
+    attr_list = items if isinstance(items, list) else [items]
+    for attr in attr_list:
+        if not isinstance(attr, dict):
+            continue
+        attr_name = attr.get("attribute_name")
+        harmonized = attr.get("harmonized_name")
+        if attr_name in names or harmonized in names:
+            content = attr.get("content")
+            if isinstance(content, str):
+                stripped = content.strip()
+                if stripped:
+                    return stripped
+    return None
 
 
 def parse_accession(sample: dict[str, Any], is_ddbj: bool) -> str:
@@ -219,6 +252,79 @@ def parse_organization(sample: dict[str, Any], accession: str = "") -> list[Orga
     return deduplicate_organizations(organizations)
 
 
+def parse_geo_loc_name(sample: dict[str, Any], accession: str = "") -> str | None:
+    """BioSample から geoLocName (地理情報) を抽出する。"""
+    try:
+        return _find_attr(sample, {"geo_loc_name"})
+    except Exception as e:
+        log_warn(f"failed to parse geoLocName: {e}", accession=accession)
+        return None
+
+
+def parse_collection_date(sample: dict[str, Any], accession: str = "") -> str | None:
+    """BioSample から collectionDate を抽出する。
+
+    "missing" / "N/A" / "not determined" などの placeholder 値も生透過する。
+    """
+    try:
+        return _find_attr(sample, {"collection_date"})
+    except Exception as e:
+        log_warn(f"failed to parse collectionDate: {e}", accession=accession)
+        return None
+
+
+def parse_host(sample: dict[str, Any], accession: str = "") -> str | None:
+    """BioSample から host (宿主種) を抽出する。"""
+    try:
+        return _find_attr(sample, {"host"})
+    except Exception as e:
+        log_warn(f"failed to parse host: {e}", accession=accession)
+        return None
+
+
+def parse_strain(sample: dict[str, Any], accession: str = "") -> str | None:
+    """BioSample から strain (株名) を抽出する。"""
+    try:
+        return _find_attr(sample, {"strain"})
+    except Exception as e:
+        log_warn(f"failed to parse strain: {e}", accession=accession)
+        return None
+
+
+def parse_derived_from(sample: dict[str, Any], accession: str = "") -> list[Xref]:
+    """BioSample から derivedFrom を抽出する。
+
+    入力形式は 2 種類:
+    - NCBI: ``attribute_name="derived-from"`` (ハイフン) + ``harmonized_name="derived_from"``、
+      値は自由文 (例: "This biosample is a metagenomic assembly obtained from ... SAMN07792362")
+    - DDBJ: ``attribute_name="derived_from"`` (アンダースコア)、
+      値はカンマ区切り ID リスト (例: "SAMD00134975, SAMD00134978")
+
+    どちらも regex ``SAM[NDE]\\d+`` で ID 抽出して同じ処理に吸収する。
+    重複は順序保持で除去。ID 0 件なら空 list。
+    """
+    xrefs: list[Xref] = []
+    try:
+        content = _find_attr(sample, {"derived-from", "derived_from"})
+        if content is None:
+            return []
+        seen: set[str] = set()
+        for id_ in _DERIVED_FROM_ID_RE.findall(content):
+            if id_ in seen:
+                continue
+            seen.add(id_)
+            xrefs.append(
+                Xref(
+                    identifier=id_,
+                    type="biosample",
+                    url=f"{SEARCH_BASE_URL}/search/entry/biosample/{id_}",
+                )
+            )
+    except Exception as e:
+        log_warn(f"failed to parse derivedFrom: {e}", accession=accession)
+    return xrefs
+
+
 def parse_same_as(sample: dict[str, Any], accession: str = "") -> list[Xref]:
     """BioSample から sameAs (SRA ID) を抽出する。"""
     xrefs: list[Xref] = []
@@ -361,6 +467,11 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
         organization=parse_organization(sample, accession),
         model=parse_model(sample, accession),
         package=parse_bs_package(sample, is_ddbj, accession),
+        derivedFrom=parse_derived_from(sample, accession),
+        geoLocName=parse_geo_loc_name(sample, accession),
+        collectionDate=parse_collection_date(sample, accession),
+        host=parse_host(sample, accession),
+        strain=parse_strain(sample, accession),
         dbXrefs=[],  # 後で更新
         sameAs=parse_same_as(sample, accession),
         status=parse_status(sample, accession),
