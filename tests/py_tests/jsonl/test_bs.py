@@ -19,6 +19,7 @@ from ddbj_search_converter.jsonl.bs import (
     parse_description,
     parse_geo_loc_name,
     parse_host,
+    parse_isolate,
     parse_model,
     parse_name,
     parse_organism,
@@ -709,9 +710,7 @@ class TestParseGeoLocName:
 
     def test_returns_value(self) -> None:
         sample = _make_sample()
-        sample["Attributes"] = {
-            "Attribute": [{"attribute_name": "geo_loc_name", "content": "Japan:Kagawa, Aji city"}]
-        }
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "geo_loc_name", "content": "Japan:Kagawa, Aji city"}]}
         assert parse_geo_loc_name(sample) == "Japan:Kagawa, Aji city"
 
 
@@ -748,6 +747,28 @@ class TestParseStrain:
         sample = _make_sample()
         sample["Attributes"] = {"Attribute": [{"attribute_name": "strain", "content": "DSM 17216"}]}
         assert parse_strain(sample) == "DSM 17216"
+
+
+class TestParseIsolate:
+    def test_returns_none_when_missing(self) -> None:
+        assert parse_isolate(_make_sample()) is None
+
+    def test_returns_value(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "isolate", "content": "DGRP-26"}]}
+        assert parse_isolate(sample) == "DGRP-26"
+
+    def test_returns_value_via_harmonized_name(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [{"attribute_name": "isolate_id", "harmonized_name": "isolate", "content": "patient-7"}]
+        }
+        assert parse_isolate(sample) == "patient-7"
+
+    def test_strips_whitespace(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {"Attribute": [{"attribute_name": "isolate", "content": "  isolate-42  "}]}
+        assert parse_isolate(sample) == "isolate-42"
 
 
 class TestParseDerivedFrom:
@@ -792,9 +813,7 @@ class TestParseDerivedFrom:
         """DDBJ: attribute_name='derived_from' + カンマ区切り ID リスト。"""
         sample = _make_sample()
         sample["Attributes"] = {
-            "Attribute": [
-                {"attribute_name": "derived_from", "content": "SAMD00056903, SAMD00056904, SAMD00056905"}
-            ]
+            "Attribute": [{"attribute_name": "derived_from", "content": "SAMD00056903, SAMD00056904, SAMD00056905"}]
         }
         result = parse_derived_from(sample)
         assert [x.identifier for x in result] == ["SAMD00056903", "SAMD00056904", "SAMD00056905"]
@@ -914,6 +933,7 @@ class TestXmlEntryIncludesAttributeFields:
         assert bs.collectionDate is None
         assert bs.host is None
         assert bs.strain is None
+        assert bs.isolate is None
 
     def test_all_new_fields_populated(self) -> None:
         sample = _make_sample()
@@ -923,6 +943,7 @@ class TestXmlEntryIncludesAttributeFields:
                 {"attribute_name": "collection_date", "content": "2020-01-15"},
                 {"attribute_name": "host", "content": "Homo sapiens"},
                 {"attribute_name": "strain", "content": "DSM 17216"},
+                {"attribute_name": "isolate", "content": "DGRP-26"},
                 {"attribute_name": "derived_from", "content": "SAMD00056903, SAMD00056904"},
             ]
         }
@@ -931,4 +952,5 @@ class TestXmlEntryIncludesAttributeFields:
         assert bs.collectionDate == "2020-01-15"
         assert bs.host == "Homo sapiens"
         assert bs.strain == "DSM 17216"
+        assert bs.isolate == "DGRP-26"
         assert [x.identifier for x in bs.derivedFrom] == ["SAMD00056903", "SAMD00056904"]

@@ -291,6 +291,19 @@ def parse_strain(sample: dict[str, Any], accession: str = "") -> str | None:
         return None
 
 
+def parse_isolate(sample: dict[str, Any], accession: str = "") -> str | None:
+    """BioSample から isolate (分離株識別子) を抽出する。
+
+    NCBI / DDBJ ともに ``attribute_name="isolate"``。strain (既知系統) と区別
+    される個別の分離体を識別する自由記述値。
+    """
+    try:
+        return _find_attr(sample, {"isolate"})
+    except Exception as e:
+        log_warn(f"failed to parse isolate: {e}", accession=accession)
+        return None
+
+
 def parse_derived_from(sample: dict[str, Any], accession: str = "") -> list[Xref]:
     """BioSample から derivedFrom を抽出する。
 
@@ -472,6 +485,7 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
         collectionDate=parse_collection_date(sample, accession),
         host=parse_host(sample, accession),
         strain=parse_strain(sample, accession),
+        isolate=parse_isolate(sample, accession),
         dbXrefs=[],  # 後で更新
         sameAs=parse_same_as(sample, accession),
         status=parse_status(sample, accession),

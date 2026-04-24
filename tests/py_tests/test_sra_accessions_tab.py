@@ -888,9 +888,7 @@ class TestGetAccessionInfoBulk:
         assert "SRR000001" in result
         assert "SRR999999" not in result
 
-    def test_batch_split_above_batch_size(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_batch_split_above_batch_size(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """QUERY_BATCH_SIZE + 1 行でバッチ分割される。"""
         monkeypatch.setattr(sra_accessions_tab, "QUERY_BATCH_SIZE", 100)
         n = sra_accessions_tab.QUERY_BATCH_SIZE + 1
@@ -917,9 +915,7 @@ class TestGetAccessionInfoBulk:
         result = get_accession_info_bulk(config, "sra", accessions)
         assert len(result) == n
 
-    def test_batch_boundary_equal_to_batch_size(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_batch_boundary_equal_to_batch_size(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """QUERY_BATCH_SIZE 行境界 (ちょうど 1 バッチ)。"""
         monkeypatch.setattr(sra_accessions_tab, "QUERY_BATCH_SIZE", 100)
         n = sra_accessions_tab.QUERY_BATCH_SIZE

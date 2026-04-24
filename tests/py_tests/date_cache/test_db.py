@@ -171,9 +171,7 @@ class TestFetchModifiedSince:
 
 
 class TestChunkBoundary:
-    def test_chunk_boundary_below(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_chunk_boundary_below(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(date_cache_db, "CHUNK_SIZE", 100)
         n = date_cache_db.CHUNK_SIZE - 1
         config = _make_config(tmp_path)
@@ -189,9 +187,7 @@ class TestChunkBoundary:
         result = fetch_bp_dates_from_cache(config, accessions)
         assert len(result) == n
 
-    def test_chunk_boundary_exact(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_chunk_boundary_exact(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(date_cache_db, "CHUNK_SIZE", 100)
         n = date_cache_db.CHUNK_SIZE
         config = _make_config(tmp_path)
@@ -207,9 +203,7 @@ class TestChunkBoundary:
         result = fetch_bp_dates_from_cache(config, accessions)
         assert len(result) == n
 
-    def test_chunk_boundary_above(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_chunk_boundary_above(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(date_cache_db, "CHUNK_SIZE", 100)
         n = date_cache_db.CHUNK_SIZE + 1
         config = _make_config(tmp_path)

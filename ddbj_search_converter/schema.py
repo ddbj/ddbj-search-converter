@@ -147,6 +147,7 @@ class BioSample(BaseModel):
     collectionDate: str | None = None
     host: str | None = None
     strain: str | None = None
+    isolate: str | None = None
     organization: list[Organization] = Field(default_factory=list)
     model: list[str] = Field(default_factory=list)
     package: BioSamplePackage | None

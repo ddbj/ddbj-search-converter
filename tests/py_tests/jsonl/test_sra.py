@@ -915,9 +915,7 @@ class TestFindSampleAttr:
 
     def test_single_dict_not_wrapped_in_list(self) -> None:
         """SAMPLE_ATTRIBUTE が 1 件の時 dict (list でない) でも処理できる。"""
-        sample: dict[str, Any] = {
-            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": {"TAG": "host", "VALUE": "Homo sapiens"}}
-        }
+        sample: dict[str, Any] = {"SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": {"TAG": "host", "VALUE": "Homo sapiens"}}}
         assert _find_sample_attr(sample, {"host"}) == "Homo sapiens"
 
     def test_trim_value(self) -> None:
@@ -927,9 +925,7 @@ class TestFindSampleAttr:
         assert _find_sample_attr(sample, {"host"}) == "Homo sapiens"
 
     def test_empty_value_returns_none(self) -> None:
-        sample: dict[str, Any] = {
-            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "host", "VALUE": "   "}]}
-        }
+        sample: dict[str, Any] = {"SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "host", "VALUE": "   "}]}}
         assert _find_sample_attr(sample, {"host"}) is None
 
     def test_multiple_tags_accept_any(self) -> None:
@@ -957,18 +953,14 @@ class TestParseSampleDerivedFrom:
 
     def test_comma_separated(self) -> None:
         sample: dict[str, Any] = {
-            "SAMPLE_ATTRIBUTES": {
-                "SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "SAMD001, SAMD002, SAMD003"}]
-            }
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "SAMD001, SAMD002, SAMD003"}]}
         }
         result = _parse_sample_derived_from(sample)
         assert [x.identifier for x in result] == ["SAMD001", "SAMD002", "SAMD003"]
 
     def test_deduplicates_preserving_order(self) -> None:
         sample: dict[str, Any] = {
-            "SAMPLE_ATTRIBUTES": {
-                "SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "SAMD001, SAMD001, SAMD002"}]
-            }
+            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": "derived_from", "VALUE": "SAMD001, SAMD001, SAMD002"}]}
         }
         result = _parse_sample_derived_from(sample)
         assert [x.identifier for x in result] == ["SAMD001", "SAMD002"]
@@ -976,9 +968,7 @@ class TestParseSampleDerivedFrom:
     @pytest.mark.parametrize("tag", ["derived-from", "derived_from"])
     def test_accept_both_tag_spellings(self, tag: str) -> None:
         """TAG=derived-from / derived_from の両方で ID 抽出できる。"""
-        sample: dict[str, Any] = {
-            "SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": tag, "VALUE": "SAMD001"}]}
-        }
+        sample: dict[str, Any] = {"SAMPLE_ATTRIBUTES": {"SAMPLE_ATTRIBUTE": [{"TAG": tag, "VALUE": "SAMD001"}]}}
         result = _parse_sample_derived_from(sample)
         assert [x.identifier for x in result] == ["SAMD001"]
 

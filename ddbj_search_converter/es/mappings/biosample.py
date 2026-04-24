@@ -37,6 +37,7 @@ def get_biosample_specific_mapping() -> dict[str, Any]:
         "collectionDate": {"type": "text"},
         "host": text_keyword_256,
         "strain": text_keyword_256,
+        "isolate": text_keyword_256,
     }
 
 

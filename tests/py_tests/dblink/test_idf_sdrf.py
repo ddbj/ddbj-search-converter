@@ -248,10 +248,7 @@ DF\tDRR000002
 
     def test_quoted_cell_with_tab_kept_as_single_value(self, tmp_path: Path) -> None:
         """MAGE-TAB 仕様で quote 囲み cell 内の tab はリテラル保持し、cell 境界として扱わない。"""
-        sdrf_content = (
-            "Source Name\tComment[BioSample]\tComment[description]\n"
-            'AF\t"SAMD00001\tnote"\tdescription\n'
-        )
+        sdrf_content = 'Source Name\tComment[BioSample]\tComment[description]\nAF\t"SAMD00001\tnote"\tdescription\n'
         sdrf_path = tmp_path / "test.sdrf.txt"
         sdrf_path.write_text(sdrf_content, encoding="utf-8")
 
@@ -260,11 +257,7 @@ DF\tDRR000002
 
     def test_quoted_cell_with_newline_kept_as_single_row(self, tmp_path: Path) -> None:
         """MAGE-TAB 仕様で quote 囲み cell 内の newline はリテラル保持し、行境界として扱わない。"""
-        sdrf_content = (
-            "Source Name\tComment[BioSample]\n"
-            'AF\t"SAMD00001\nsecond-line"\n'
-            "BF\tSAMD00002\n"
-        )
+        sdrf_content = 'Source Name\tComment[BioSample]\nAF\t"SAMD00001\nsecond-line"\nBF\tSAMD00002\n'
         sdrf_path = tmp_path / "test.sdrf.txt"
         sdrf_path.write_text(sdrf_content, encoding="utf-8")
 

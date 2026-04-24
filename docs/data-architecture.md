@@ -429,7 +429,7 @@ BioProject には以下のファセット候補フィールドが含まれる:
 
 BioSample には以下のファセット候補フィールドが含まれる:
 - `derivedFrom`: `Attributes/Attribute[@attribute_name∈{derived-from, derived_from}]` の値から regex `SAM[NDE]\d+` で ID 抽出。NCBI 自由文埋め込み / DDBJ カンマ区切りの両方を統一処理
-- `geoLocName` / `collectionDate` / `host` / `strain`: `Attributes/Attribute[@attribute_name=...]` から直接抽出
+- `geoLocName` / `collectionDate` / `host` / `strain` / `isolate`: `Attributes/Attribute[@attribute_name=...]` から直接抽出 (`isolate` は strain と区別される個別分離株識別子)
 
 詳細は [schema.py](../ddbj_search_converter/schema.py) を参照。
 

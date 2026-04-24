@@ -197,7 +197,7 @@ class TestBioSampleMapping:
     def test_has_biosample_specific_fields(self) -> None:
         mapping = get_biosample_mapping()
         props = mapping["mappings"]["properties"]
-        for field in ("model", "package", "derivedFrom", "geoLocName", "collectionDate", "host", "strain"):
+        for field in ("model", "package", "derivedFrom", "geoLocName", "collectionDate", "host", "strain", "isolate"):
             assert field in props, f"Missing field: {field}"
 
     def test_attributes_mapping_removed(self) -> None:
@@ -246,6 +246,11 @@ class TestBioSampleMapping:
         props = get_biosample_mapping()["mappings"]["properties"]
         _assert_text_keyword(props, "host")
         _assert_text_keyword(props, "strain")
+
+    def test_isolate_is_text_keyword(self) -> None:
+        """isolate は短い識別子で facet/term 想定のため text+keyword。"""
+        props = get_biosample_mapping()["mappings"]["properties"]
+        _assert_text_keyword(props, "isolate")
 
     def test_geo_loc_name_is_text_only(self) -> None:
         """geoLocName は 'Japan:Kagawa, Aji city, Seto Inland Sea' のような階層値で
