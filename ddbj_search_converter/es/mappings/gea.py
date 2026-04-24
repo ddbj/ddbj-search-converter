@@ -13,7 +13,12 @@ from ddbj_search_converter.es.mappings.common import (
 
 def get_gea_specific_mapping() -> dict[str, Any]:
     """Return the GEA-specific mapping properties."""
-    return {"experimentType": {"type": "keyword"}}
+    return {
+        "experimentType": {
+            "type": "text",
+            "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+        },
+    }
 
 
 def get_gea_mapping() -> dict[str, Any]:

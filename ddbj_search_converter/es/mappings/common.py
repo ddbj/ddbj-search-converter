@@ -40,7 +40,10 @@ def get_common_mapping() -> dict[str, Any]:
             "type": "object",
             "properties": {
                 "identifier": {"type": "keyword"},
-                "name": {"type": "keyword"},
+                "name": {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+                },
             },
         },
         "title": {

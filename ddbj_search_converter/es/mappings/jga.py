@@ -29,13 +29,17 @@ JGA_INDEXES: list[JgaIndexType] = [
 
 def get_jga_specific_mapping(index_type: JgaIndexType) -> dict[str, Any]:
     """Return the JGA-specific mapping properties for the specified index type."""
+    text_keyword_256: dict[str, Any] = {
+        "type": "text",
+        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+    }
     if index_type == "jga-study":
         return {
-            "studyType": {"type": "keyword"},
-            "vendor": {"type": "keyword"},
+            "studyType": text_keyword_256,
+            "vendor": text_keyword_256,
         }
     if index_type == "jga-dataset":
-        return {"datasetType": {"type": "keyword"}}
+        return {"datasetType": text_keyword_256}
     return {}
 
 

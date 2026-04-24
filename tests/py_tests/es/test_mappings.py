@@ -1,5 +1,7 @@
 """Tests for ES mapping generation."""
 
+from typing import Any
+
 from ddbj_search_converter.es.mappings import (
     INDEX_SETTINGS,
     get_bioproject_mapping,
@@ -12,6 +14,16 @@ from ddbj_search_converter.es.mappings import (
 from ddbj_search_converter.es.mappings.common import get_common_mapping
 from ddbj_search_converter.es.mappings.jga import JGA_INDEXES
 from ddbj_search_converter.es.mappings.sra import SRA_INDEXES
+
+
+def _assert_text_keyword(props: dict[str, Any], field_name: str, ignore_above: int = 256) -> None:
+    """Assert that ``field_name`` is text + keyword subfield with given ignore_above."""
+    field = props[field_name]
+    assert field["type"] == "text", f"{field_name} should be text"
+    assert "fields" in field, f"{field_name} missing fields"
+    assert "keyword" in field["fields"], f"{field_name} missing keyword subfield"
+    assert field["fields"]["keyword"]["type"] == "keyword"
+    assert field["fields"]["keyword"]["ignore_above"] == ignore_above
 
 
 class TestCommonMapping:
@@ -67,6 +79,16 @@ class TestCommonMapping:
         assert mapping["organism"]["type"] == "object"
         assert "identifier" in mapping["organism"]["properties"]
         assert "name" in mapping["organism"]["properties"]
+
+    def test_organism_identifier_is_keyword(self) -> None:
+        """organism.identifier (TaxID) は完全一致のみで keyword 維持。"""
+        mapping = get_common_mapping()
+        assert mapping["organism"]["properties"]["identifier"] == {"type": "keyword"}
+
+    def test_organism_name_has_text_keyword_subfield(self) -> None:
+        """organism.name は自然言語 (種名 + 株名 + 部位) なので text + keyword。"""
+        mapping = get_common_mapping()
+        _assert_text_keyword(mapping["organism"]["properties"], "name")
 
     def test_text_fields_have_keyword_subfield(self) -> None:
         """text fields should have keyword sub-field for sorting/aggregation."""
@@ -258,24 +280,29 @@ class TestSraMapping:
             assert props["publication"]["type"] == "nested"
 
     def test_sra_experiment_has_library_fields(self) -> None:
-        """experiment specific: library / platform 系は keyword。"""
+        """experiment specific: library / platform 系も text + keyword。"""
         mapping = get_sra_mapping("sra-experiment")
         props = mapping["mappings"]["properties"]
-        for field in ["libraryStrategy", "librarySource", "librarySelection", "libraryLayout", "platform"]:
-            assert props[field] == {"type": "keyword"}, f"{field} should be keyword"
+        for field in [
+            "libraryStrategy",
+            "librarySource",
+            "librarySelection",
+            "libraryLayout",
+            "platform",
+        ]:
+            _assert_text_keyword(props, field)
 
     def test_sra_experiment_instrument_model_has_text_keyword_subfield(self) -> None:
         """instrumentModel は自然言語なので text + keyword subfield。"""
         mapping = get_sra_mapping("sra-experiment")
         props = mapping["mappings"]["properties"]
-        assert props["instrumentModel"]["type"] == "text"
-        assert props["instrumentModel"]["fields"]["keyword"]["type"] == "keyword"
-        assert props["instrumentModel"]["fields"]["keyword"]["ignore_above"] == 256
+        _assert_text_keyword(props, "instrumentModel")
 
     def test_sra_analysis_has_analysis_type(self) -> None:
+        """analysisType も text + keyword。"""
         mapping = get_sra_mapping("sra-analysis")
         props = mapping["mappings"]["properties"]
-        assert props["analysisType"] == {"type": "keyword"}
+        _assert_text_keyword(props, "analysisType")
 
     def test_non_experiment_types_have_no_library_fields(self) -> None:
         """experiment 以外では library* / platform / instrumentModel 不在。"""
@@ -337,14 +364,16 @@ class TestJgaMapping:
         assert "grant" in props
         assert props["grant"]["type"] == "nested"
 
-    def test_study_has_study_type_and_vendor_as_keyword(self) -> None:
+    def test_study_has_study_type_and_vendor_text_keyword(self) -> None:
+        """studyType / vendor は text + keyword。"""
         props = get_jga_mapping("jga-study")["mappings"]["properties"]
-        assert props["studyType"] == {"type": "keyword"}
-        assert props["vendor"] == {"type": "keyword"}
+        _assert_text_keyword(props, "studyType")
+        _assert_text_keyword(props, "vendor")
 
-    def test_dataset_has_dataset_type_as_keyword(self) -> None:
+    def test_dataset_has_dataset_type_text_keyword(self) -> None:
+        """datasetType も text + keyword。"""
         props = get_jga_mapping("jga-dataset")["mappings"]["properties"]
-        assert props["datasetType"] == {"type": "keyword"}
+        _assert_text_keyword(props, "datasetType")
 
     def test_non_study_types_have_no_publication_or_grant(self) -> None:
         for jga_type in ("jga-dataset", "jga-dac", "jga-policy"):
@@ -385,9 +414,10 @@ class TestGeaMapping:
         assert props["publication"]["type"] == "nested"
         assert props["publication"]["properties"]["dbType"] == {"type": "keyword"}
 
-    def test_experiment_type_is_keyword(self) -> None:
+    def test_experiment_type_text_keyword(self) -> None:
+        """experimentType も text + keyword。"""
         props = get_gea_mapping()["mappings"]["properties"]
-        assert props["experimentType"] == {"type": "keyword"}
+        _assert_text_keyword(props, "experimentType")
 
     def test_does_not_include_grant_or_external_link(self) -> None:
         """GEA schema に grant / externalLink は無いため mapping にも含まない。"""
@@ -415,12 +445,12 @@ class TestMetabobankMapping:
         assert props["organization"]["type"] == "nested"
         assert props["publication"]["type"] == "nested"
 
-    def test_three_keyword_fields(self) -> None:
-        """studyType / experimentType / submissionType は keyword (aggregation 前提)。"""
+    def test_three_text_keyword_fields(self) -> None:
+        """studyType / experimentType / submissionType は text + keyword。"""
         props = get_metabobank_mapping()["mappings"]["properties"]
-        assert props["studyType"] == {"type": "keyword"}
-        assert props["experimentType"] == {"type": "keyword"}
-        assert props["submissionType"] == {"type": "keyword"}
+        _assert_text_keyword(props, "studyType")
+        _assert_text_keyword(props, "experimentType")
+        _assert_text_keyword(props, "submissionType")
 
     def test_does_not_include_grant_or_external_link(self) -> None:
         props = get_metabobank_mapping()["mappings"]["properties"]

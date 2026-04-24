@@ -13,10 +13,14 @@ from ddbj_search_converter.es.mappings.common import (
 
 def get_metabobank_specific_mapping() -> dict[str, Any]:
     """Return the MetaboBank-specific mapping properties."""
+    text_keyword_256: dict[str, Any] = {
+        "type": "text",
+        "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+    }
     return {
-        "studyType": {"type": "keyword"},
-        "experimentType": {"type": "keyword"},
-        "submissionType": {"type": "keyword"},
+        "studyType": text_keyword_256,
+        "experimentType": text_keyword_256,
+        "submissionType": text_keyword_256,
     }
 
 
