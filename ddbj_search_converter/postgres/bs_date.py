@@ -12,6 +12,34 @@ from ddbj_search_converter.postgres.utils import format_date, postgres_connectio
 
 POSTGRES_DB_NAME = "biosample"
 
+BS_DATES_BULK_QUERY_TEMPLATE = """
+SELECT
+    s.accession_id,
+    p.create_date,
+    p.modified_date,
+    p.release_date
+FROM mass.biosample_summary s
+INNER JOIN (
+    SELECT DISTINCT ON (submission_id)
+        submission_id, create_date, modified_date, release_date
+    FROM mass.sample
+    ORDER BY submission_id
+) p ON s.submission_id = p.submission_id
+WHERE s.accession_id IN ({placeholders})
+"""
+
+BS_ACCESSIONS_MODIFIED_SINCE_QUERY = """
+SELECT s.accession_id
+FROM mass.biosample_summary s
+INNER JOIN (
+    SELECT DISTINCT ON (submission_id)
+        submission_id, modified_date
+    FROM mass.sample
+    ORDER BY submission_id
+) p ON s.submission_id = p.submission_id
+WHERE p.modified_date >= %s
+"""
+
 
 def fetch_bs_dates_bulk(
     config: Config,
@@ -22,17 +50,6 @@ def fetch_bs_dates_bulk(
 
     Returns:
         {accession: (dateCreated, dateModified, datePublished)}
-
-    SQL:
-        SELECT s.accession_id, p.create_date, p.modified_date, p.release_date
-        FROM mass.biosample_summary s
-        INNER JOIN (
-            SELECT DISTINCT ON (submission_id)
-                submission_id, create_date, modified_date, release_date
-            FROM mass.sample
-            ORDER BY submission_id
-        ) p ON s.submission_id = p.submission_id
-        WHERE s.accession_id IN (...)
     """
     accession_list = list(accessions)
     if not accession_list:
@@ -43,21 +60,7 @@ def fetch_bs_dates_bulk(
     try:
         with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
             placeholders = ",".join(["%s"] * len(accession_list))
-            query = f"""
-                    SELECT
-                        s.accession_id,
-                        p.create_date,
-                        p.modified_date,
-                        p.release_date
-                    FROM mass.biosample_summary s
-                    INNER JOIN (
-                        SELECT DISTINCT ON (submission_id)
-                            submission_id, create_date, modified_date, release_date
-                        FROM mass.sample
-                        ORDER BY submission_id
-                    ) p ON s.submission_id = p.submission_id
-                    WHERE s.accession_id IN ({placeholders})
-                """
+            query = BS_DATES_BULK_QUERY_TEMPLATE.format(placeholders=placeholders)
             cur.execute(query, accession_list)
             rows = cur.fetchall()
 
@@ -89,34 +92,12 @@ def fetch_bs_accessions_modified_since(
 
     Returns:
         modified_date >= since の accession の集合
-
-    SQL:
-        SELECT s.accession_id
-        FROM mass.biosample_summary s
-        INNER JOIN (
-            SELECT DISTINCT ON (submission_id)
-                submission_id, modified_date
-            FROM mass.sample
-            ORDER BY submission_id
-        ) p ON s.submission_id = p.submission_id
-        WHERE p.modified_date >= %s
     """
     result: set[str] = set()
 
     try:
         with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
-            query = """
-                    SELECT s.accession_id
-                    FROM mass.biosample_summary s
-                    INNER JOIN (
-                        SELECT DISTINCT ON (submission_id)
-                            submission_id, modified_date
-                        FROM mass.sample
-                        ORDER BY submission_id
-                    ) p ON s.submission_id = p.submission_id
-                    WHERE p.modified_date >= %s
-                """
-            cur.execute(query, (since,))
+            cur.execute(BS_ACCESSIONS_MODIFIED_SINCE_QUERY, (since,))
             rows = cur.fetchall()
 
             for row in rows:
