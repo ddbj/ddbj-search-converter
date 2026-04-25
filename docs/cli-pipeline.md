@@ -33,7 +33,11 @@ XML preparation (`prepare_bioproject_xml` / `prepare_biosample_xml` / `build_sra
 
 ### Phase 2 の並列度
 
-JSONL 生成は `--parallel-num` で各コマンド内部の並列度を指定する (デフォルト 4)。XML/IDF を batch 単位で処理するため並列化できる。`scripts/run_pipeline.sh --parallel N` で外側の並列度を指定する。
+JSONL 生成は `--parallel-num` で **各コマンド内部の worker 数** を指定する (CLI 単体起動時のデフォルトは `generate_bp_jsonl` / `generate_bs_jsonl` が 64、`generate_sra_jsonl` が 8)。XML/IDF を batch 単位で処理するため並列化できる。
+
+`scripts/run_pipeline.sh --parallel N` は内部で `--parallel-num N` として各 jsonl コマンドに伝播する (jsonl コマンド自体は順次実行)。デフォルトは 16 で、production の Rundeck job (`scripts/rundeck-job.yaml`) もこの値で運用している。
+
+`generate_bp_jsonl` / `generate_bs_jsonl` には `--resume` フラグがあり、出力先に同名 JSONL が既に存在するファイル (XML 単位) はスキップする。`run_pipeline.sh` は bp/bs にこのフラグを常に渡し、途中で失敗したときに再実行で続きから処理できるようにしている。`generate_sra_jsonl` / `generate_jga_jsonl` には `--resume` がなく、`generate_sra_jsonl` の途中再開は `--from-step jsonl_sra` 等で粗く戻すことになる。
 
 ### 主要なフラグ
 
@@ -92,8 +96,10 @@ JGA / GEA / MetaboBank は更新時刻フィールドがないため差分判定
 |------|-------------|
 | `bioproject` | `bioproject.jsonl` |
 | `biosample` | `biosample.jsonl` |
-| `sra` | type 別 6 ファイル (該当ありのみ生成) |
-| `jga` | type 別 4 ファイル (該当ありのみ生成) |
+| `sra` | `submission.jsonl` / `study.jsonl` / `experiment.jsonl` / `run.jsonl` / `sample.jsonl` / `analysis.jsonl` (該当ありのみ生成) |
+| `jga` | `jga-study.jsonl` / `jga-dataset.jsonl` / `jga-dac.jsonl` / `jga-policy.jsonl` (該当ありのみ生成) |
+
+SRA の通常パイプラインの命名 (`{dra,ncbi}_{type}_{NNNN}.jsonl`) とは異なる点に注意。`es_bulk_insert` で投入する際は entity ごとに `--index` と `--file` を明示する。
 
 **重要**: `regenerate_jsonl` は `last_run.json` を更新しない。次回の差分更新で同じ accession が再度処理される可能性がある。
 
@@ -105,7 +111,7 @@ ES への投入は `es_bulk_insert --index <name> --file <path>` で行う。SRA
 
 - `{result_dir}/logs/{YYYYMMDD}/`
 - `{result_dir}/{bioproject,biosample}/tmp_xml/{YYYYMMDD}/`
-- `{result_dir}/{bioproject,biosample,sra,jga}/jsonl/{YYYYMMDD}/`
+- `{result_dir}/{bioproject,biosample,sra,jga,gea,metabobank}/jsonl/{YYYYMMDD}/`
 - `{result_dir}/regenerate/{YYYYMMDD}/`
 - `{result_dir}/dblink/tmp/{YYYYMMDD}/`
 

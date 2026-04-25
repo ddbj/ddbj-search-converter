@@ -22,7 +22,16 @@ docker compose up -d --build
 docker compose exec app bash
 ```
 
-staging / production は `env.staging` または `env.production` を使い、`compose.override.podman.yml` を override に置く。詳細・落とし穴は [docs/deployment.md](docs/deployment.md)。
+staging / production は podman-compose で動かす。`env.staging` または `env.production` をコピーした `.env` と、podman 用 override をコピーで効かせる:
+
+```bash
+cp env.staging .env
+cp compose.override.podman.yml compose.override.yml  # podman-compose が自動で読み込む
+podman network create ddbj-search-network-staging || true
+podman-compose up -d --build
+```
+
+詳細・落とし穴と production の Rundeck job (`scripts/rundeck-job.yaml` で日次運用) は [docs/deployment.md](docs/deployment.md)。
 
 パイプラインの実行 (`scripts/run_pipeline.sh --full --blue-green` 等) と CLI コマンドリファレンスは [docs/cli-pipeline.md](docs/cli-pipeline.md)。
 

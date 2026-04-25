@@ -35,9 +35,9 @@ INDEX_SETTINGS: dict[str, Any] = {
 
 BULK_INSERT_SETTINGS: dict[str, Any] = {
     # Number of documents per bulk request.
-    # 10000 provides good throughput for large-scale data ingestion.
-    # Reduce if memory pressure occurs with very large documents.
-    "batch_size": 10000,
+    # Matches the CLI default (es_bulk_insert --batch-size). Tune via the CLI flag
+    # rather than mutating this constant.
+    "batch_size": 5000,
     # Number of threads for parallel_bulk.
     # 8 threads balance throughput and ES write queue pressure.
     "thread_count": 8,

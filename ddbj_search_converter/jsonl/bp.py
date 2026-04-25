@@ -52,10 +52,11 @@ DEFAULT_PARALLEL_NUM = 64
 _VALID_ORG_TYPES: frozenset[str] = frozenset(get_args(OrganizationType))
 _VALID_ORG_ROLES: frozenset[str] = frozenset(get_args(OrganizationRole))
 
-_DBTYPE_NORMALIZE: dict[str, PublicationDbType] = {
+_DBTYPE_NORMALIZE: dict[str, PublicationDbType | None] = {
     "ePubmed": "pubmed",
     "eDOI": "doi",
     "ePMC": "pmc",
+    "eNotAvailable": None,
 }
 
 _RELEVANCE_KEYS: tuple[str, ...] = (

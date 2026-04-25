@@ -268,17 +268,22 @@ class TestGetCleanupTargetParents:
 
         parents = get_cleanup_target_parents(config)
 
-        assert len(parents) == 9
         parent_strs = [str(p) for p in parents]
-        assert "/tmp/test/logs" in parent_strs
-        assert "/tmp/test/bioproject/tmp_xml" in parent_strs
-        assert "/tmp/test/biosample/tmp_xml" in parent_strs
-        assert "/tmp/test/bioproject/jsonl" in parent_strs
-        assert "/tmp/test/biosample/jsonl" in parent_strs
-        assert "/tmp/test/sra/jsonl" in parent_strs
-        assert "/tmp/test/jga/jsonl" in parent_strs
-        assert "/tmp/test/regenerate" in parent_strs
-        assert "/tmp/test/dblink/tmp" in parent_strs
+        expected = {
+            "/tmp/test/logs",
+            "/tmp/test/bioproject/tmp_xml",
+            "/tmp/test/biosample/tmp_xml",
+            "/tmp/test/bioproject/jsonl",
+            "/tmp/test/biosample/jsonl",
+            "/tmp/test/sra/jsonl",
+            "/tmp/test/jga/jsonl",
+            "/tmp/test/gea/jsonl",
+            "/tmp/test/metabobank/jsonl",
+            "/tmp/test/regenerate",
+            "/tmp/test/dblink/tmp",
+        }
+        assert set(parent_strs) == expected
+        assert len(parents) == len(expected)
 
 
 class TestParseArgs:
