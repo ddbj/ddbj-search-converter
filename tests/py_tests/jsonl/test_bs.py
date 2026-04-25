@@ -521,6 +521,7 @@ def _make_bs_instance(identifier: str) -> BioSample:
         organism=None,
         title=None,
         description=None,
+        derivedFrom=[],
         organization=[],
         model=[],
         package=None,

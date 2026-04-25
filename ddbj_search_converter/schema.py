@@ -106,16 +106,16 @@ class BioProject(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
-    projectType: list[str] = Field(default_factory=list)
-    relevance: list[str] = Field(default_factory=list)
-    organization: list[Organization] = Field(default_factory=list)
-    publication: list[Publication] = Field(default_factory=list)
-    grant: list[Grant] = Field(default_factory=list)
-    externalLink: list[ExternalLink] = Field(default_factory=list)
-    dbXrefs: list[Xref] = Field(default_factory=list)
-    parentBioProjects: list[Xref] = Field(default_factory=list)
-    childBioProjects: list[Xref] = Field(default_factory=list)
-    sameAs: list[Xref] = Field(default_factory=list)
+    projectType: list[str]
+    relevance: list[str]
+    organization: list[Organization]
+    publication: list[Publication]
+    grant: list[Grant]
+    externalLink: list[ExternalLink]
+    dbXrefs: list[Xref]
+    parentBioProjects: list[Xref]
+    childBioProjects: list[Xref]
+    sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
     dateCreated: str | None
@@ -142,17 +142,17 @@ class BioSample(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
-    derivedFrom: list[Xref] = Field(default_factory=list)
+    derivedFrom: list[Xref]
     geoLocName: str | None = None
     collectionDate: str | None = None
     host: str | None = None
     strain: str | None = None
     isolate: str | None = None
-    organization: list[Organization] = Field(default_factory=list)
-    model: list[str] = Field(default_factory=list)
+    organization: list[Organization]
+    model: list[str]
     package: BioSamplePackage | None
-    dbXrefs: list[Xref] = Field(default_factory=list)
-    sameAs: list[Xref] = Field(default_factory=list)
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
     dateCreated: str | None
@@ -176,22 +176,22 @@ class SRA(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
-    organization: list[Organization] = Field(default_factory=list)
-    publication: list[Publication] = Field(default_factory=list)
-    libraryStrategy: list[str] = Field(default_factory=list)
-    librarySource: list[str] = Field(default_factory=list)
-    librarySelection: list[str] = Field(default_factory=list)
+    organization: list[Organization]
+    publication: list[Publication]
+    libraryStrategy: list[str]
+    librarySource: list[str]
+    librarySelection: list[str]
     libraryLayout: str | None
     platform: str | None
-    instrumentModel: list[str] = Field(default_factory=list)
+    instrumentModel: list[str]
     libraryName: str | None = None
     libraryConstructionProtocol: str | None = None
     analysisType: str | None
     collectionDate: str | None = None
     geoLocName: str | None = None
-    derivedFrom: list[Xref] = Field(default_factory=list)
-    dbXrefs: list[Xref] = Field(default_factory=list)
-    sameAs: list[Xref] = Field(default_factory=list)
+    derivedFrom: list[Xref]
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
     dateCreated: str | None
@@ -213,13 +213,13 @@ class JGA(BaseModel):
     organism: Organism | None
     title: str | None
     description: str | None
-    organization: list[Organization] = Field(default_factory=list)
-    publication: list[Publication] = Field(default_factory=list)
-    grant: list[Grant] = Field(default_factory=list)
-    externalLink: list[ExternalLink] = Field(default_factory=list)
-    studyType: list[str] = Field(default_factory=list)
-    datasetType: list[str] = Field(default_factory=list)
-    vendor: list[str] = Field(default_factory=list)
+    organization: list[Organization]
+    publication: list[Publication]
+    grant: list[Grant]
+    externalLink: list[ExternalLink]
+    studyType: list[str]
+    datasetType: list[str]
+    vendor: list[str]
     dbXrefs: list[Xref]
     sameAs: list[Xref]
     status: Literal["public"]
@@ -243,11 +243,11 @@ class GEA(BaseModel):
     organism: Organism | None = None
     title: str | None = None
     description: str | None = None
-    organization: list[Organization] = Field(default_factory=list)
-    publication: list[Publication] = Field(default_factory=list)
-    experimentType: list[str] = Field(default_factory=list)
-    dbXrefs: list[Xref] = Field(default_factory=list)
-    sameAs: list[Xref] = Field(default_factory=list)
+    organization: list[Organization]
+    publication: list[Publication]
+    experimentType: list[str]
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Literal["public"]
     accessibility: Literal["public-access"]
     dateCreated: str | None = None
@@ -269,13 +269,13 @@ class MetaboBank(BaseModel):
     organism: Organism | None = None
     title: str | None = None
     description: str | None = None
-    organization: list[Organization] = Field(default_factory=list)
-    publication: list[Publication] = Field(default_factory=list)
-    studyType: list[str] = Field(default_factory=list)
-    experimentType: list[str] = Field(default_factory=list)
-    submissionType: list[str] = Field(default_factory=list)
-    dbXrefs: list[Xref] = Field(default_factory=list)
-    sameAs: list[Xref] = Field(default_factory=list)
+    organization: list[Organization]
+    publication: list[Publication]
+    studyType: list[str]
+    experimentType: list[str]
+    submissionType: list[str]
+    dbXrefs: list[Xref]
+    sameAs: list[Xref]
     status: Literal["public"]
     accessibility: Literal["public-access"]
     dateCreated: str | None = None

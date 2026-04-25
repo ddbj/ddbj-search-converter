@@ -760,6 +760,8 @@ def _make_bp_instance(identifier: str) -> BioProject:
         organism=None,
         title="Test",
         description=None,
+        projectType=[],
+        relevance=[],
         organization=[],
         publication=[],
         grant=[],

@@ -1,5 +1,7 @@
 """Tests for ddbj_search_converter.schema module."""
 
+import json
+
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -131,6 +133,8 @@ class TestBioProject:
             organism=None,
             title=None,
             description=None,
+            projectType=[],
+            relevance=[],
             organization=[],
             publication=[],
             grant=[],
@@ -183,6 +187,13 @@ class TestJGA:
             organism=Organism(identifier="9606", name="Homo sapiens"),
             title="Test Title",
             description="Test Description",
+            organization=[],
+            publication=[],
+            grant=[],
+            externalLink=[],
+            studyType=[],
+            datasetType=[],
+            vendor=[],
             dbXrefs=[],
             sameAs=[],
             status="public",
@@ -210,6 +221,13 @@ class TestJGA:
             organism=None,
             title=None,
             description=None,
+            organization=[],
+            publication=[],
+            grant=[],
+            externalLink=[],
+            studyType=[],
+            datasetType=[],
+            vendor=[],
             dbXrefs=[],
             sameAs=[],
             status="public",
@@ -222,36 +240,6 @@ class TestJGA:
         json_str = jga.model_dump_json(by_alias=True)
         assert '"type":"jga-study"' in json_str
         assert '"isPartOf":"jga"' in json_str
-
-    def test_new_list_fields_default_to_empty(self) -> None:
-        """organization / publication / grant / externalLink / studyType / datasetType / vendor は
-        default_factory=list で省略可能、全て空 list として生成される。"""
-        jga = JGA(
-            identifier="JGAS000001",
-            properties={},
-            distribution=[],
-            isPartOf="jga",
-            type="jga-study",
-            name=None,
-            url="https://example.com",
-            organism=None,
-            title=None,
-            description=None,
-            dbXrefs=[],
-            sameAs=[],
-            status="public",
-            accessibility="controlled-access",
-            dateCreated=None,
-            dateModified=None,
-            datePublished=None,
-        )
-        assert jga.organization == []
-        assert jga.publication == []
-        assert jga.grant == []
-        assert jga.externalLink == []
-        assert jga.studyType == []
-        assert jga.datasetType == []
-        assert jga.vendor == []
 
     def test_with_populated_common_types(self) -> None:
         """共通型 Organization / Publication と list[str] フィールドを渡して生成できる。"""
@@ -268,7 +256,10 @@ class TestJGA:
             description=None,
             organization=[Organization(name="Individual")],
             publication=[Publication(id="24336570", dbType="pubmed")],
+            grant=[],
+            externalLink=[],
             studyType=["Exome Sequencing"],
+            datasetType=[],
             vendor=["Illumina"],
             dbXrefs=[],
             sameAs=[],
@@ -292,6 +283,11 @@ def _make_minimal_gea_kwargs() -> dict:
         "isPartOf": "gea",
         "type": "gea",
         "url": "https://ddbj.nig.ac.jp/search/entry/gea/E-GEAD-1005",
+        "organization": [],
+        "publication": [],
+        "experimentType": [],
+        "dbXrefs": [],
+        "sameAs": [],
         "status": "public",
         "accessibility": "public-access",
     }
@@ -376,6 +372,13 @@ def _make_minimal_metabobank_kwargs() -> dict:
         "isPartOf": "metabobank",
         "type": "metabobank",
         "url": "https://ddbj.nig.ac.jp/search/entry/metabobank/MTBKS102",
+        "organization": [],
+        "publication": [],
+        "studyType": [],
+        "experimentType": [],
+        "submissionType": [],
+        "dbXrefs": [],
+        "sameAs": [],
         "status": "public",
         "accessibility": "public-access",
     }
@@ -590,6 +593,7 @@ def _make_minimal_bs_kwargs() -> dict:
         "organism": None,
         "title": None,
         "description": None,
+        "derivedFrom": [],
         "organization": [],
         "model": [],
         "package": None,
@@ -667,6 +671,7 @@ def _make_minimal_sra_kwargs() -> dict:
         "platform": None,
         "instrumentModel": [],
         "analysisType": None,
+        "derivedFrom": [],
         "dbXrefs": [],
         "sameAs": [],
         "status": "public",
@@ -809,3 +814,224 @@ class TestSra:
         kwargs["analysisType"] = "DE_NOVO_ASSEMBLY"
         sra = SRA(**kwargs)
         assert sra.analysisType == "DE_NOVO_ASSEMBLY"
+
+
+# === 配列フィールド必須化の契約テスト ===
+# api 側 (ddbj-search-api/schemas/entries.py) の *DetailResponse は本 schema を継承する。
+# 配列フィールドが OpenAPI 上で required として扱えるよう、SSOT 側で型レベル必須化している。
+# ここでは「JSONL 出力時に空でも key が消えない」「kwarg 省略で ValidationError」を担保する。
+
+
+def _make_minimal_bp_kwargs() -> dict:
+    return {
+        "identifier": "PRJDB500",
+        "properties": {},
+        "distribution": [],
+        "isPartOf": "bioproject",
+        "type": "bioproject",
+        "objectType": "BioProject",
+        "name": None,
+        "url": "https://example.com",
+        "organism": None,
+        "title": None,
+        "description": None,
+        "projectType": [],
+        "relevance": [],
+        "organization": [],
+        "publication": [],
+        "grant": [],
+        "externalLink": [],
+        "dbXrefs": [],
+        "parentBioProjects": [],
+        "childBioProjects": [],
+        "sameAs": [],
+        "status": "public",
+        "accessibility": "public-access",
+        "dateCreated": None,
+        "dateModified": None,
+        "datePublished": None,
+    }
+
+
+def _make_minimal_jga_kwargs() -> dict:
+    return {
+        "identifier": "JGAS000001",
+        "properties": {},
+        "distribution": [],
+        "isPartOf": "jga",
+        "type": "jga-study",
+        "name": None,
+        "url": "https://example.com",
+        "organism": None,
+        "title": None,
+        "description": None,
+        "organization": [],
+        "publication": [],
+        "grant": [],
+        "externalLink": [],
+        "studyType": [],
+        "datasetType": [],
+        "vendor": [],
+        "dbXrefs": [],
+        "sameAs": [],
+        "status": "public",
+        "accessibility": "controlled-access",
+        "dateCreated": None,
+        "dateModified": None,
+        "datePublished": None,
+    }
+
+
+_REQUIRED_LIST_FIELDS: dict[type, list[str]] = {
+    BioProject: [
+        "distribution",
+        "projectType",
+        "relevance",
+        "organization",
+        "publication",
+        "grant",
+        "externalLink",
+        "dbXrefs",
+        "parentBioProjects",
+        "childBioProjects",
+        "sameAs",
+    ],
+    BioSample: [
+        "distribution",
+        "derivedFrom",
+        "organization",
+        "model",
+        "dbXrefs",
+        "sameAs",
+    ],
+    SRA: [
+        "distribution",
+        "organization",
+        "publication",
+        "libraryStrategy",
+        "librarySource",
+        "librarySelection",
+        "instrumentModel",
+        "derivedFrom",
+        "dbXrefs",
+        "sameAs",
+    ],
+    JGA: [
+        "distribution",
+        "organization",
+        "publication",
+        "grant",
+        "externalLink",
+        "studyType",
+        "datasetType",
+        "vendor",
+        "dbXrefs",
+        "sameAs",
+    ],
+    GEA: [
+        "distribution",
+        "organization",
+        "publication",
+        "experimentType",
+        "dbXrefs",
+        "sameAs",
+    ],
+    MetaboBank: [
+        "distribution",
+        "organization",
+        "publication",
+        "studyType",
+        "experimentType",
+        "submissionType",
+        "dbXrefs",
+        "sameAs",
+    ],
+}
+
+
+_MAKE_KWARGS = {
+    BioProject: _make_minimal_bp_kwargs,
+    BioSample: _make_minimal_bs_kwargs,
+    SRA: _make_minimal_sra_kwargs,
+    JGA: _make_minimal_jga_kwargs,
+    GEA: _make_minimal_gea_kwargs,
+    MetaboBank: _make_minimal_metabobank_kwargs,
+}
+
+
+class TestRequiredListFieldsKeyContract:
+    """空 list でも JSON key として必ず出力されることを保証する。
+
+    Pydantic の dump 動作変更 (exclude_defaults / exclude_none / exclude_unset の
+    追加など) や schema 定義の default 復活で key が消えると、api 側の OpenAPI
+    required 化と整合しなくなる。
+    """
+
+    @pytest.mark.parametrize("model_cls", list(_REQUIRED_LIST_FIELDS.keys()))
+    def test_empty_list_keys_persist_in_json(self, model_cls: type) -> None:
+        instance = model_cls(**_MAKE_KWARGS[model_cls]())
+        dumped = json.loads(instance.model_dump_json(by_alias=True))
+        for field in _REQUIRED_LIST_FIELDS[model_cls]:
+            assert field in dumped, f"{model_cls.__name__}.{field} key が JSON 出力から消えている"
+            assert dumped[field] == [], f"{model_cls.__name__}.{field} は空 list として出力されるべき"
+
+
+class TestRequiredListFieldsValidation:
+    """各リスト系フィールドを kwarg から省略すると ValidationError。
+
+    Pydantic 型レベルで required になっていることを担保する。default が復活すると
+    このテストが通り抜けてしまうので、リグレッションを早期に検出できる。
+    """
+
+    @pytest.mark.parametrize(
+        ("model_cls", "field"),
+        [(cls, field) for cls, fields in _REQUIRED_LIST_FIELDS.items() for field in fields],
+    )
+    def test_missing_required_raises(self, model_cls: type, field: str) -> None:
+        kwargs = _MAKE_KWARGS[model_cls]()
+        del kwargs[field]
+        with pytest.raises(ValidationError):
+            model_cls(**kwargs)
+
+
+class TestBioProjectArrayFieldKeyPersistencePBT:
+    """配列の長さを 0..3 で振っても JSON key が消えないことを保証する PBT。
+
+    BioProject はリスト系フィールドが最多 (11 個) なので代表として使う。空 list
+    と要素ありの両方で key 存在を担保する。
+    """
+
+    @given(
+        organization=st.lists(
+            st.builds(Organization, name=st.text(min_size=1, max_size=20)),
+            min_size=0,
+            max_size=3,
+        ),
+        publication=st.lists(
+            st.builds(Publication, dbType=st.sampled_from(["pubmed", "doi", "pmc", "other"])),
+            min_size=0,
+            max_size=3,
+        ),
+        project_type=st.lists(st.text(min_size=1, max_size=20), min_size=0, max_size=3),
+        relevance=st.lists(st.text(min_size=1, max_size=20), min_size=0, max_size=3),
+    )
+    def test_list_lengths_do_not_drop_keys(
+        self,
+        organization: list[Organization],
+        publication: list[Publication],
+        project_type: list[str],
+        relevance: list[str],
+    ) -> None:
+        kwargs = _make_minimal_bp_kwargs()
+        kwargs.update(
+            {
+                "organization": organization,
+                "publication": publication,
+                "projectType": project_type,
+                "relevance": relevance,
+            }
+        )
+        bp = BioProject(**kwargs)
+        dumped = json.loads(bp.model_dump_json(by_alias=True))
+        for field in _REQUIRED_LIST_FIELDS[BioProject]:
+            assert field in dumped, f"BioProject.{field} key が JSON 出力から消えた"
