@@ -1,6 +1,6 @@
 # CLI パイプライン
 
-DDBJ Search Converter のパイプライン実行と差分更新。
+DDBJ Search Converter のパイプライン実行と差分更新。データ構造の詳細は [data-architecture.md](data-architecture.md) を、ES 操作・Blue-Green は [elasticsearch.md](elasticsearch.md) を参照する。
 
 ## パイプライン概要
 
@@ -17,134 +17,42 @@ Phase 3: ES 投入
     JSONL -> Elasticsearch
 ```
 
-## Elasticsearch インデックス一覧 (14 indexes)
+各 phase は明確な境界を持ち、独立して再起動・再実行できる。Phase 3 の ES 投入で失敗しても Phase 1/2 の成果は保持されるので、再投入は ES 操作だけで完結する。`run_pipeline.sh --from-step` で任意ステップから再開できる仕組みも、phase 境界がきれいだから実現できる。依存関係は一方向 (Phase 2 は Phase 1 の DBLink DB を読み、Phase 3 は Phase 2 の JSONL を読む)。
 
-パイプラインで管理する Elasticsearch index は全 14 個。`es_create_index --index <group>` で group alias の backing index を一括作成する。
+XML を直接 ES に投入せず JSONL を中間に挟むのは、(a) 差分更新の単位として JSONL ファイルが「ある日付時点で変換済みのエントリー集合」を表現できる、(b) JSONL 生成時と `es_delete_blacklist` の 2 段で blacklist を効かせられる、(c) ES 投入後の復元手段になる、(d) 人間が読める形でデバッグできる、の 4 点による。
 
-| Index | グループ | 説明 |
-|---|---|---|
-| `bioproject` | (singleton) | BioProject |
-| `biosample` | (singleton) | BioSample |
-| `sra-submission` | `sra` | SRA Submission |
-| `sra-study` | `sra` | SRA Study |
-| `sra-experiment` | `sra` | SRA Experiment |
-| `sra-run` | `sra` | SRA Run |
-| `sra-sample` | `sra` | SRA Sample |
-| `sra-analysis` | `sra` | SRA Analysis |
-| `jga-study` | `jga` | JGA Study |
-| `jga-dataset` | `jga` | JGA Dataset |
-| `jga-dac` | `jga` | JGA Data Access Committee |
-| `jga-policy` | `jga` | JGA Policy |
-| `gea` | (singleton) | Gene Expression Atlas |
-| `metabobank` | (singleton) | MetaboBank |
+## 一括実行
 
-`sra` group alias は 6 indexes、`jga` group alias は 4 indexes をまとめる。`es_bulk_insert` は個別 index 単位で実行する (Phase 3 example 参照)。alias 管理の詳細は [docs/elasticsearch.md](./elasticsearch.md) 参照。
+`scripts/run_pipeline.sh` で全 phase をまとめて実行する。`--list-steps` でステップ一覧、`--from-step <name>` で再開、`--dry-run` で実行内容のみ確認できる。
 
-## 初回実行（Full）
+### Phase 1 の DuckDB 順次制約
 
-初回実行時は `--full` フラグを使用し、全データを処理する。
+DBLink 構築の `create_dblink_*` コマンド群は **順次実行** する必要がある。DuckDB は single-writer 制約があり、複数プロセスが同時に書き込めないため。`run_pipeline.sh` はこれを順次実行に固定している。
 
-```bash
-# === Phase 1: 前処理 + DBLink 構築 ===
+XML preparation (`prepare_bioproject_xml` / `prepare_biosample_xml` / `build_sra_and_dra_accessions_db`) は独立しているので並列実行する。
 
-# 1. 外部リソースの存在確認
-check_external_resources
+### Phase 2 の並列度
 
-# 2. XML 準備 (batch 分割)
-prepare_bioproject_xml
-prepare_biosample_xml
-# 出力: {result_dir}/tmp_xml/bp/, {result_dir}/tmp_xml/bs/
+JSONL 生成は `--parallel-num` で各コマンド内部の並列度を指定する (デフォルト 4)。XML/IDF を batch 単位で処理するため並列化できる。`scripts/run_pipeline.sh --parallel N` で外側の並列度を指定する。
 
-# 3. SRA/DRA Accessions DB 構築
-build_sra_and_dra_accessions_db
-# 出力: {const_dir}/sra/sra_accessions.duckdb, dra_accessions.duckdb
+### 主要なフラグ
 
-# 4. DBLink DB 作成
-init_dblink_db
-create_dblink_bp_bs_relations
-create_dblink_bp_relations
-create_dblink_assembly_and_master_relations
-create_dblink_gea_relations
-create_dblink_metabobank_relations
-create_dblink_jga_relations
-create_dblink_sra_internal_relations
-create_dblink_insdc_relations
-finalize_dblink_db
-# 出力: {const_dir}/dblink/dblink.duckdb, umbrella.duckdb
+- `--full`: 差分判定なしの全件再生成 (初回または mapping 変更時)
+- `--blue-green`: ゼロダウンタイム更新 ([elasticsearch.md § Blue-Green Alias Swap](elasticsearch.md))。`--clean-es` と排他
+- `--clean-es`: ES の全 index を削除してから投入 (mapping が変わらない更新向け、bulk insert 中はダウンタイムあり)
 
-# 5. TSV 出力
-dump_dblink_files
-# 出力: {DBLINK_PATH}/*.tsv (18 files)
-
-# === Phase 2: JSONL 生成 ===
-
-# 6. 日付キャッシュ構築 + ステータスキャッシュ構築
-build_bp_bs_date_cache
-build_bp_bs_status_cache
-# 出力: {const_dir}/bp_bs_date.duckdb, {result_dir}/bp_bs_status.duckdb
-
-# 7. SRA/DRA Metadata tar 構築 (SRA JSONL 生成前に必須)
-sync_ncbi_tar
-sync_dra_tar
-# 出力: {result_dir}/sra_tar/NCBI_SRA_Metadata.tar, DRA_Metadata.tar, dra_file_index.duckdb
-
-# 8. JSONL 生成 (初回は --full)
-generate_bp_jsonl --full
-generate_bs_jsonl --full
-generate_sra_jsonl --full
-generate_jga_jsonl
-generate_gea_jsonl
-generate_metabobank_jsonl
-# 出力: {result_dir}/{type}/jsonl/{YYYYMMDD}/*.jsonl
-
-# === Phase 3: ES 投入 ===
-
-# 9. インデックス作成
-es_create_index --index bioproject
-es_create_index --index biosample
-es_create_index --index sra
-es_create_index --index jga
-es_create_index --index gea
-es_create_index --index metabobank
-
-# 10. データ投入
-es_bulk_insert --index bioproject
-es_bulk_insert --index biosample
-es_bulk_insert --index sra-submission
-es_bulk_insert --index sra-study
-es_bulk_insert --index sra-experiment
-es_bulk_insert --index sra-run
-es_bulk_insert --index sra-sample
-es_bulk_insert --index sra-analysis
-es_bulk_insert --index jga-study
-es_bulk_insert --index jga-dataset
-es_bulk_insert --index jga-dac
-es_bulk_insert --index jga-policy
-es_bulk_insert --index gea
-es_bulk_insert --index metabobank
-
-# 11. blacklist に含まれるドキュメントを削除
-es_delete_blacklist --force
-```
-
-## 差分更新（Incremental）
-
-初回実行後は、`--full` フラグなしで差分更新モードで実行する。
+### cron 設定例
 
 ```bash
-# JSONL 生成 (差分更新)
-generate_bp_jsonl
-generate_bs_jsonl
-generate_sra_jsonl
-generate_jga_jsonl
-# GEA / MetaboBank は差分更新非対応で常に全件走査
-generate_gea_jsonl
-generate_metabobank_jsonl
+# 毎日 AM 3:00 に差分更新
+0 3 * * * /path/to/scripts/run_pipeline.sh --date $(date +\%Y\%m\%d) >> /var/log/ddbj_search_converter.log 2>&1
 ```
+
+## 差分更新
 
 ### last_run.json
 
-差分更新の基準となるタイムスタンプを管理する。
+各 JSONL 生成コマンドが完了時に `{result_dir}/last_run.json` を更新する。`null` の場合は全件処理 (`--full` 相当)。
 
 ```json
 {
@@ -155,352 +63,50 @@ generate_metabobank_jsonl
 }
 ```
 
-- 各 JSONL 生成コマンドは、完了時に `last_run.json` を更新する
-- `null` の場合は全件処理（`--full` 相当）
-- ファイルパス: `{result_dir}/last_run.json`
-
 ### margin_days
 
-差分判定時に安全マージンを設ける。
+差分判定時に安全マージン (デフォルト 30 日) を設ける。`last_run.json` のタイムスタンプから `margin_days` を引いた日時以降のデータが処理対象になる。マージンを引いているのは、外部リソース側の更新が記録された時刻と converter が処理した時刻のずれを吸収するため。
 
-- デフォルト: 30 日
-- `last_run.json` のタイムスタンプから `margin_days` を引いた日時以降のデータを処理
-- 例: `last_run = 2026-01-30`, `margin_days = 30` だと `2025-12-31` 以降を処理
+例: `last_run = 2026-01-30`、`margin_days = 30` だと `2025-12-31` 以降を処理。
 
-### データタイプ別の差分判定
+### データタイプ別の差分判定基準
 
 | データタイプ | 差分判定方法 |
 |-------------|-------------|
 | BioProject | XML の `date_modified` フィールド |
 | BioSample | XML の `last_update` フィールド |
 | SRA | Accessions.tab の `Updated` カラム |
-| JGA | 常に全件処理（`null` 固定） |
-| GEA | 常に全件処理（IDF 全走査、`last_run.json` に含めない） |
-| MetaboBank | 常に全件処理（IDF 全走査、`last_run.json` に含めない） |
+| JGA | 常に全件処理 (`null` 固定) |
+| GEA | 常に全件処理 (IDF 全走査、`last_run.json` に含めない) |
+| MetaboBank | 常に全件処理 (IDF 全走査、`last_run.json` に含めない) |
 
-## 一括実行スクリプト
-
-`scripts/run_pipeline.sh` でパイプラインを一括実行する。依存関係を考慮し、可能な範囲で並列実行する。
-
-### 基本的な使い方
-
-```bash
-# 差分更新（デフォルト）
-./scripts/run_pipeline.sh
-
-# 全件再生成（初回実行時）
-./scripts/run_pipeline.sh --full
-
-# 日付を指定
-./scripts/run_pipeline.sh --date 20260201
-
-# dry-run で実行内容を確認
-./scripts/run_pipeline.sh --dry-run
-
-# ES インデックスをクリーンアップしてから投入（冪等性あり）
-./scripts/run_pipeline.sh --clean-es
-
-# Blue-Green でゼロダウンタイム更新（--clean-es と排他）
-./scripts/run_pipeline.sh --full --blue-green
-
-# 途中のステップから再開
-./scripts/run_pipeline.sh --from-step jsonl_sra
-
-# ステップ一覧を表示
-./scripts/run_pipeline.sh --list-steps
-
-# JSONL 生成の並列数を変更（デフォルト: 4）
-./scripts/run_pipeline.sh --parallel 32
-```
-
-### オプション一覧
-
-| オプション | 説明 |
-|-----------|------|
-| `--date YYYYMMDD` | 処理日付（デフォルト: 今日） |
-| `--full` | 全件モード: JSONL を全件再生成（デフォルト: 差分更新） |
-| `--from-step STEP` | 指定ステップから再開（`--list-steps` でステップ名を確認） |
-| `--list-steps` | 利用可能なステップ一覧を表示して終了 |
-| `--dry-run` | 実行内容を表示のみ（実際には実行しない） |
-| `--parallel N` | JSONL 生成の最大並列数（デフォルト: 4） |
-| `--clean-es` | ES bulk insert 前に全インデックスを削除（冪等性あり）。`--blue-green` と排他 |
-| `--blue-green` | Blue-Green Alias Swap でゼロダウンタイム更新。`--clean-es` と排他 |
-
-### ステップ一覧
-
-```plain
-=== PHASE 0: Pre-check ===
-  check_resources      Check external resources availability
-
-=== PHASE 1: DBLink Construction ===
-  prepare              Prepare XML files and build accessions DB
-  init_dblink          Initialize DBLink database
-  dblink_bp_bs         Create BioProject-BioSample relations
-  dblink_bp            Create BioProject relations
-  dblink_assembly      Create Assembly and Master relations
-  dblink_gea           Create GEA relations
-  dblink_metabobank    Create MetaboBank relations
-  dblink_jga           Create JGA relations
-  dblink_sra           Create SRA internal relations
-  dblink_insdc         Create INSDC sequence accession relations
-  finalize_dblink      Finalize DBLink database
-  dump_dblink          Dump DBLink files
-
-=== PHASE 2: JSONL Generation ===
-  sync_tar             Sync tar files, build date cache and status cache
-  jsonl_bp             Generate BioProject JSONL
-  jsonl_bs             Generate BioSample JSONL
-  jsonl_sra            Generate SRA JSONL
-  jsonl_jga            Generate JGA JSONL
-  jsonl_gea            Generate GEA JSONL
-  jsonl_metabobank     Generate MetaboBank JSONL
-
-=== PHASE 3: Elasticsearch ===
-  es_create            Create Elasticsearch indexes
-  es_bulk              Bulk insert to Elasticsearch
-  es_delete_blacklist  Delete blacklisted documents from Elasticsearch
-
-=== PHASE 3: Elasticsearch (--blue-green) ===
-  es_create_bg         Create dated Elasticsearch indexes (no alias)
-  es_bulk_bg           Bulk insert to dated indexes
-  es_blacklist_bg      Delete blacklisted docs from dated indexes
-  es_swap              Atomically swap aliases to new indexes
-  es_cleanup_old       Delete old dated indexes
-```
-
-### 実行フロー
-
-```plain
-PHASE 0: Pre-check
-check_external_resources
-    ↓
-PHASE 1: DBLink Construction
-├── [並列] prepare_bioproject_xml
-├── [並列] prepare_biosample_xml
-└── [並列] build_sra_and_dra_accessions_db
-    ↓
-init_dblink_db
-    ↓
-[順次] create_dblink_* (8 コマンド, DuckDB single-writer 制約)
-    ↓
-finalize_dblink_db → dump_dblink_files
-
-PHASE 2: JSONL Generation
-├── [並列] sync_ncbi_tar
-├── [並列] sync_dra_tar
-├── [並列] build_bp_bs_date_cache
-└── [並列] build_bp_bs_status_cache
-    ↓
-├── [逐次] generate_bp_jsonl [--full] [--parallel-num N]
-├── [逐次] generate_bs_jsonl [--full] [--parallel-num N]
-├── [逐次] generate_sra_jsonl [--full] [--parallel-num N]
-├── [逐次] generate_jga_jsonl
-├── [逐次] generate_gea_jsonl
-└── [逐次] generate_metabobank_jsonl
-# --parallel-num は各コマンド内部の並列度 (デフォルト: 4)
-# GEA / MetaboBank は IDF 全件走査なので常に全件処理 (差分更新非対応、
-# last_run.json の DataType Literal にも含めない)
-
-PHASE 3: Elasticsearch (--clean-es / デフォルト)
-[--clean-es 指定時] es_delete_index --index all --skip-missing --force
-    ↓
-es_create_index --index all --skip-existing
-    ↓
-[順次] es_bulk_insert (14 インデックス)
-    ↓
-es_delete_blacklist --force
-
-PHASE 3: Elasticsearch (--blue-green)
-es_create_index --index all --date-suffix ${DATE_STR}
-    ↓
-[順次] es_bulk_insert --target-index {name}-${DATE_STR} (14 インデックス)
-    ↓
-es_delete_blacklist --target-suffix ${DATE_STR} --force
-    ↓
-es_swap_aliases --date-suffix ${DATE_STR} --force
-    ↓
-es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force
-```
-
-### 環境変数
-
-| 環境変数 | 説明 |
-|---------|------|
-| `DDBJ_SEARCH_CONVERTER_RESULT_DIR` | 出力先ディレクトリ |
-| `DDBJ_SEARCH_CONVERTER_CONST_DIR` | const ディレクトリ |
-| `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL |
-| `DDBJ_SEARCH_CONVERTER_DATE` | 処理日付（`--date` オプションで上書き可） |
-
-### cron 設定例
-
-```bash
-# 毎日 AM 3:00 に日次バッチを実行（差分更新）
-0 3 * * * /path/to/scripts/run_pipeline.sh --date $(date +\%Y\%m\%d) >> /var/log/ddbj_search_converter.log 2>&1
-```
+JGA / GEA / MetaboBank は更新時刻フィールドがないため差分判定できない。
 
 ## Hotfix: regenerate_jsonl
 
-特定の accession の JSONL を再生成するための hotfix/debug 用コマンド。
+特定の accession の JSONL を再生成する。bulk insert 後の 1 件パッチ用。`--type` は `bioproject` / `biosample` / `sra` / `jga`、accession は `--accessions` または `--accession-file` で指定。
 
-### 基本的な使い方
-
-```bash
-# accession を直接指定
-regenerate_jsonl --type bioproject --accessions PRJDB12345 PRJDB67890
-
-# ファイルから指定 (1行1accession)
-regenerate_jsonl --type biosample --accession-file /path/to/accessions.txt
-
-# 両方を組み合わせ (union)
-regenerate_jsonl --type sra --accessions DRR000001 --accession-file /path/to/more.txt
-```
-
-### 出力
-
-- デフォルト出力先: `{result_dir}/regenerate/{date}/`
-- `--output-dir` で変更可能
+出力ファイル (デフォルト `{result_dir}/regenerate/{date}/`):
 
 | type | 出力ファイル |
 |------|-------------|
 | `bioproject` | `bioproject.jsonl` |
 | `biosample` | `biosample.jsonl` |
-| `sra` | `submission.jsonl`, `study.jsonl`, `experiment.jsonl`, `run.jsonl`, `sample.jsonl`, `analysis.jsonl` |
-| `jga` | `jga-study.jsonl`, `jga-dataset.jsonl`, `jga-dac.jsonl`, `jga-policy.jsonl` |
+| `sra` | type 別 6 ファイル (該当ありのみ生成) |
+| `jga` | type 別 4 ファイル (該当ありのみ生成) |
 
-SRA / JGA は該当エントリがある type のファイルのみ生成される。
+**重要**: `regenerate_jsonl` は `last_run.json` を更新しない。次回の差分更新で同じ accession が再度処理される可能性がある。
 
-### ES への投入
+ES への投入は `es_bulk_insert --index <name> --file <path>` で行う。SRA / JGA は entity type ごとに index が分かれるので、`--index sra-run` のように entity 別に投入する。
 
-```bash
-# BioProject
-es_bulk_insert --index bioproject \
-  --file ddbj_search_converter_results/regenerate/20260128/bioproject.jsonl
+## メンテナンス: 古い日付ディレクトリの削除
 
-# BioSample
-es_bulk_insert --index biosample \
-  --file ddbj_search_converter_results/regenerate/20260128/biosample.jsonl
+`cleanup_old_results` で古い日付ディレクトリを削除する (デフォルト最新 3 件保持、`--keep N` で変更)。対象の親ディレクトリは以下:
 
-# SRA (entity type ごとに index が異なる)
-es_bulk_insert --index sra-run \
-  --file ddbj_search_converter_results/regenerate/20260128/run.jsonl
+- `{result_dir}/logs/{YYYYMMDD}/`
+- `{result_dir}/{bioproject,biosample}/tmp_xml/{YYYYMMDD}/`
+- `{result_dir}/{bioproject,biosample,sra,jga}/jsonl/{YYYYMMDD}/`
+- `{result_dir}/regenerate/{YYYYMMDD}/`
+- `{result_dir}/dblink/tmp/{YYYYMMDD}/`
 
-# JGA (entity type ごとに index が異なる)
-es_bulk_insert --index jga-study \
-  --file ddbj_search_converter_results/regenerate/20260128/jga-study.jsonl
-```
-
-`_op_type: "index"` のため既存ドキュメントは上書き (upsert 相当) される。
-
-### オプション一覧
-
-| オプション | 必須 | 説明 |
-|-----------|------|------|
-| `--type` | Yes | `bioproject`, `biosample`, `sra`, `jga` |
-| `--accessions` | No* | accession をスペース区切りで指定 |
-| `--accession-file` | No* | 1行1accession のファイルパス |
-| `--output-dir` | No | 出力先ディレクトリ |
-
-(*) `--accessions` と `--accession-file` は少なくとも1つ必須。両方指定時は union。
-
-**重要**: `regenerate_jsonl` は `last_run.json` を更新しない。
-
-## CLI コマンドリファレンス
-
-全コマンドは環境変数から設定を読み込む。CLI オプションは処理内容の制御のみ。
-
-| 環境変数 | 説明 |
-|---------|------|
-| `DDBJ_SEARCH_CONVERTER_RESULT_DIR` | 出力先ディレクトリ |
-| `DDBJ_SEARCH_CONVERTER_CONST_DIR` | const ディレクトリ（blacklist, DB 等） |
-| `DDBJ_SEARCH_CONVERTER_DATE` | 処理日付 (YYYYMMDD) |
-| `DDBJ_SEARCH_CONVERTER_ES_URL` | Elasticsearch URL |
-| `DDBJ_SEARCH_BASE_URL` | DDBJ Search ベース URL |
-| `DDBJ_SEARCH_CONVERTER_XSM_POSTGRES_URL` | XSM PostgreSQL URL (BioProject/BioSample 日付取得) |
-| `DDBJ_SEARCH_CONVERTER_TRAD_POSTGRES_URL` | TRAD PostgreSQL URL (INSDC 配列 accession 取得) |
-
-### 外部リソース確認・前処理
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `check_external_resources` | - | 必要な外部リソースの存在確認 |
-| `prepare_bioproject_xml` | - | BioProject XML を batch 分割 |
-| `prepare_biosample_xml` | - | BioSample XML を展開・batch 分割 |
-
-### SRA/DRA
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `build_sra_and_dra_accessions_db` | - | SRA/DRA Accessions.tab を DuckDB にロード |
-| `sync_ncbi_tar` | `--force-full` | NCBI SRA Metadata tar を同期 |
-| `sync_dra_tar` | `--force-rebuild` | DRA Metadata tar を同期、ファイルインデックス構築 |
-
-### DBLink 構築
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `init_dblink_db` | - | DBLink DB と Umbrella DB を初期化 |
-| `create_dblink_bp_bs_relations` | - | BioProject-BioSample 関連を抽出 |
-| `create_dblink_bp_relations` | - | BioProject 内部関連 (humandbs) を DBLink DB に、umbrella 親子関連を Umbrella DB に抽出 |
-| `create_dblink_assembly_and_master_relations` | - | Assembly/INSDC Master 関連を抽出 |
-| `create_dblink_gea_relations` | - | GEA 関連を抽出 |
-| `create_dblink_metabobank_relations` | - | MetaboBank 関連を抽出 |
-| `create_dblink_jga_relations` | - | JGA 関連を抽出（humandbs は TSV から読み込み） |
-| `create_dblink_sra_internal_relations` | - | SRA 内部関連 + BioProject/BioSample ↔ SRA 関連を抽出 |
-| `create_dblink_insdc_relations` | - | TRAD PostgreSQL から INSDC 配列 accession 関連を抽出 |
-| `finalize_dblink_db` | - | `raw_edges` → `dbxref` 変換 (半辺化 + DISTINCT + ORDER BY)、index 作成、Umbrella DB 確定、atomic replace |
-| `dump_dblink_files` | - | DBLink DB から TSV ファイルを出力 |
-
-### JSONL 生成
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `build_bp_bs_date_cache` | - | BP/BS 日付情報を PostgreSQL から DuckDB キャッシュに構築 |
-| `build_bp_bs_status_cache` | - | BP/BS ステータス情報を Livelist ファイルから DuckDB キャッシュに構築 |
-| `generate_bp_jsonl` | `--full`, `--parallel-num`, `--resume`, `--include-dbxrefs` | BioProject JSONL 生成 |
-| `generate_bs_jsonl` | `--full`, `--parallel-num`, `--resume`, `--include-dbxrefs` | BioSample JSONL 生成 |
-| `generate_sra_jsonl` | `--full`, `--parallel-num`, `--include-dbxrefs` | SRA JSONL 生成 |
-| `generate_jga_jsonl` | `--include-dbxrefs` | JGA JSONL 生成（常に全件処理、blacklist 適用） |
-| `regenerate_jsonl` | `--type`, `--accessions`, `--accession-file`, `--output-dir`, `--include-dbxrefs` | 特定 accession の JSONL 再生成 |
-
-### Elasticsearch 操作
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `es_create_index` | `--index`, `--skip-existing`, `--date-suffix` | Elasticsearch インデックス作成 |
-| `es_delete_index` | `--index`, `--force`, `--skip-missing` | Elasticsearch インデックス削除 |
-| `es_bulk_insert` | `--index`, `--dir`, `--file`, `--pattern`, `--batch-size`, `--target-index` | JSONL を Elasticsearch に一括挿入 |
-| `es_delete_blacklist` | `--index`, `--force`, `--dry-run`, `--batch-size`, `--target-suffix` | blacklist に含まれるドキュメントを ES から削除 |
-| `es_swap_aliases` | `--date-suffix`, `--force`, `--dry-run` | 全 alias をアトミックに切り替え（Blue-Green） |
-| `es_delete_old_indexes` | `--date-suffix`, `--force` | 指定サフィックスの物理インデックスを削除 |
-| `es_migrate_to_blue_green` | `--date-suffix`, `--force` | 初回マイグレーション（固定名 → Blue-Green） |
-| `es_list_indexes` | - | 登録済みインデックス一覧 |
-| `es_health_check` | `-v` | クラスタヘルス確認 |
-| `es_snapshot` | サブコマンド形式 | スナップショット管理 |
-
-### ログ・デバッグ
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `show_log_summary` | `--date`, `--raw` | run_name ごとのサマリー |
-| `show_log` | `--date`, `--run-name`, `--level`, `--latest` | ログ詳細表示 |
-| `show_dblink_counts` | - | DBLink の無向 edge 数を type ペアごとに JSON 出力 (`dbxref` 半辺化行を canonical にまとめて COUNT/2) |
-
-### メンテナンス
-
-| コマンド | オプション | 説明 |
-|---------|----------|------|
-| `cleanup_old_results` | `--keep N`, `--dry-run` | 古い日付ディレクトリの削除（デフォルト: 最新 3 件を保持） |
-
-対象ディレクトリ（各親ディレクトリごとに独立して最新 N 件を保持）:
-
-| 親ディレクトリ | 用途 |
-|---------------|------|
-| `{result_dir}/logs/{YYYYMMDD}/` | ログファイル |
-| `{result_dir}/bioproject/tmp_xml/{YYYYMMDD}/` | BioProject 分割 XML |
-| `{result_dir}/biosample/tmp_xml/{YYYYMMDD}/` | BioSample 分割 XML |
-| `{result_dir}/bioproject/jsonl/{YYYYMMDD}/` | BioProject JSONL |
-| `{result_dir}/biosample/jsonl/{YYYYMMDD}/` | BioSample JSONL |
-| `{result_dir}/sra/jsonl/{YYYYMMDD}/` | SRA JSONL |
-| `{result_dir}/jga/jsonl/{YYYYMMDD}/` | JGA JSONL |
-| `{result_dir}/regenerate/{YYYYMMDD}/` | 再生成 JSONL |
-| `{result_dir}/dblink/tmp/{YYYYMMDD}/` | DBLink 一時ファイル |
+各親ディレクトリで独立して N 件保持される。

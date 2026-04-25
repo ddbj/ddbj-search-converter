@@ -1,136 +1,62 @@
 # テスト
 
-## テスト方針
+ddbj-search-converter のテスト方針と project 固有の注意点。
 
-- **TDD/PBT**: テストはバグを探すために書く。通るだけの場当たり的なテストは書かない
-- **Property-Based Testing**: [hypothesis](https://hypothesis.readthedocs.io/) を使い、ランダム入力で不変条件を検証する
-- **エッジケースの網羅**: 境界値、None、空文字列、異常系を必ずテストする
+実行方法 (`uv run pytest`) は `--help` か [`pyproject.toml`](../pyproject.toml) の `[tool.pytest.ini_options]` を参照する。結合シナリオは [integration-scenarios.md](integration-scenarios.md)、結合運用ノートは [integration-note.md](integration-note.md)。
+
+## 目的
+
+テストは **バグを見つけ、防ぐため** に書く。すべてのテストは「これが落ちたらどんなバグが検出されたことになるか」に答えられなければならない。通すために書くテスト、Happy path だけのテスト、アサーションのない smoke テストは書かない。
+
+## 原則
+
+- **TDD**: 仕様 ([docs/](../docs/) 配下) からテストを導出し、実装の前に書く。Red → Green → Refactor
+- **PBT (Property-Based Testing)**: [hypothesis](https://hypothesis.readthedocs.io/) で入力空間を広く探索する
+- **境界値・エッジケース・異常系を必ず書く**: 正常系だけでは脆い
+- **mock は外部境界だけ**: 実 ES / 実 PostgreSQL / HTTP fetch を境界として mock し、内部 (Pydantic、normalize、parser、tmp_path 隔離 DuckDB) は実物を通す
+- **テスト間の独立性**: 状態を共有しない、実行順序に依存しない
 - **既知バグの文書化**: 発見済みバグは `xfail` やコメントでテスト内に文書化する
 
-## テストの種類と使い分け
+## テスト分類
 
-| 種類 | 用途 | 例 |
-|------|------|-----|
-| `@pytest.mark.parametrize` | 具体的な入出力の検証 | valid/invalid なアクセッション ID |
-| `@given(...)` (hypothesis) | 不変条件の検証 | `normalize_edge(a,b) == normalize_edge(b,a)` |
-| 通常テスト | エッジケース、統合テスト | 空ファイル、None 入力 |
+2 バケツに分ける。基準は「実 ES / 実 PostgreSQL / 本番想定パスのリソースに接続するか」。
 
-## 実行方法
+- **Unit**: 実 ES / 実 PostgreSQL に接続しない。`tmp_path` で隔離した実 DuckDB は unit 扱い (DuckDB の振る舞いが SSOT のため、mock しない)。`pytest` のデフォルト実行対象
+- **Integration**: 実 ES、実 PostgreSQL (TRAD / XSM)、本番想定パスの fixture を使う。シナリオは [integration-scenarios.md](integration-scenarios.md)、運用は [integration-note.md](integration-note.md) を参照
 
-```bash
-# 依存インストール (uv)
-uv sync --extra tests
+新規追加する integration テストは別ディレクトリ (`tests/py_tests/integration/`) に分離して配置し、unit のみがデフォルト実行されるようにする (段階移行)。
 
-# テスト実行
-uv run pytest -v
+## Mock 戦略
 
-# カバレッジ付き (デフォルト設定)
-uv run pytest --cov-report=term-missing
+外部境界 (実 ES、実 PostgreSQL、HTTP fetch) のレスポンスを mock し、内部実装は実物を通す。
 
-# hypothesis 統計表示
-uv run pytest --hypothesis-show-statistics
+DuckDB のクエリ自体は mock しない。`finalize_dblink_db` の挙動 (UNION ALL で半辺化、DISTINCT、ORDER BY、index 構築) は DuckDB の振る舞いが SSOT なので、`tmp_path` に DB ファイルを作って実 SQL で検証する。
 
-# リント
-uv run ruff check ./ddbj_search_converter
-uv run mypy ./ddbj_search_converter
+CLI レベルのテストは subprocess で entrypoint を起動するのではなく、各 `main()` 関数を直接呼び出して内部状態を assert する。
 
-# フォーマットチェック
-uv run ruff format --check ./ddbj_search_converter
-```
+## レイヤー別観点
 
-## ディレクトリ構成
+テストを書くときの「どこに重点を置くか」の方針。具体的な Property や境界値はテストコード自身が SSOT なので、ここには書かない。
 
-```
-tests/
-    README.md                   # 本ファイル
-    fixtures/                   # テスト用小規模データセット
-    py_tests/
-        conftest.py             # 共有 fixture (test_config, clean_ctx)
-        strategies.py           # hypothesis カスタム strategies
-        test_id_patterns.py     # id_patterns モジュール
-        test_xml_utils.py       # xml_utils モジュール
-        dblink/
-            test_utils.py       # dblink.utils モジュール
-            test_db.py          # dblink.db モジュール
-            test_assembly_and_master.py
-            test_bp_bs.py
-        jsonl/
-            test_utils.py       # jsonl.utils モジュール
-            test_bp.py          # jsonl.bp モジュール
-            test_bs.py          # jsonl.bs モジュール
-            test_jga.py         # jsonl.jga モジュール
-            test_sra.py         # jsonl.sra モジュール
-            test_gea.py         # jsonl.gea モジュール
-            test_metabobank.py  # jsonl.metabobank モジュール
-            test_idf_common.py  # jsonl.idf_common モジュール (GEA/MetaboBank 共通 IDF parse)
-            test_regenerate.py  # jsonl.regenerate モジュール
-```
+- **id_patterns / xml_utils / schema**: PBT を最も活用する。正規表現の境界、Pydantic バリデーション、Enum 受入/拒否、デフォルト値
+- **dblink/**: 半辺化スキーマの不変条件 (`(A→B)` と `(B→A)` の両方存在)、UNIQUE 制約、ORDER BY、`raw_edges` の DROP、atomic replace
+- **jsonl/**: XML / IDF / SDRF → Pydantic モデル → JSONL の round-trip。blacklist / preserved 適用、`Attribute` 配列正規化、sameAs alias、`isPartOf` / `type` 値、distribution 生成
+- **es/**: index 作成・削除、bulk insert (mock ES)、alias 構成、Blue-Green の swap ロジック、blacklist 削除
+- **date_cache / status_cache**: 外部入力 (PostgreSQL / Livelist) を mock し、DuckDB への bulk insert を `tmp_path` で実検証
+- **postgres/**: 接続・クエリ結果整形。実 PostgreSQL は使わず、`psycopg` の戻り値を mock
+- **logging/**: run_id ライフサイクル、JSONL ログ出力、DuckDB への自動 insert、SUCCESS / FAILED 判定
 
-## archive ディレクトリ
+## バグ回帰テスト
 
-`tests/py_tests/archive/` には旧テストを保存している。`pyproject.toml` の `addopts` で `--ignore=tests/py_tests/archive` を指定しており、`pytest` 実行時には自動的に除外される。
+修正したバグは `TestBug<N><Description>` クラスで再発防止テストを書く。コミットや PR の URL を docstring に残し、なぜそのテストがあるかを後から辿れるようにする。
 
-## 開発環境 (Docker)
+## project 固有の注意点
 
-本番と同じパス構造で CLI コマンドをテストできる開発環境。
+- `pyproject.toml` の `addopts` で `-n auto` (pytest-xdist) がデフォルト有効。並列実行時に worker 間で競合する state (共有ファイル・グローバル変数・外部リソース) を作らない。`tmp_path` や `monkeypatch` でテストを隔離する
+- `pdb` や `print` デバッグで出力が混ざるときは `-n 0` で直列実行する
+- hypothesis の deadline は `tests/py_tests/conftest.py` の `default` プロファイルで無効化済み (並列化時の負荷で `DeadlineExceeded` が出るのを避けるため)
+- 境界値を大量データで検証したいときは、対象モジュールの定数 (例: `date_cache.db.CHUNK_SIZE`、`sra_accessions_tab.QUERY_BATCH_SIZE`) を `monkeypatch.setattr` で小さい値に置き換える。数万件を実 DuckDB に insert すると 1 テストで数十秒かかるので避ける
 
-```bash
-# 1. 本番サーバで fixture 取得 (遺伝研スパコン内で実行)
-./scripts/fetch_test_fixtures.sh
+## fixture データ
 
-# 2. dev 環境起動
-docker compose up -d --build
-
-# 3. CLI コマンド実行テスト
-docker compose exec app check_external_resources
-
-# 4. 終了
-docker compose down
-```
-
-## Fixture データ
-
-テスト用の小規模データセット (`tests/fixtures/`)。本番環境の volume 構造を再現。
-
-### 取得・更新方法
-
-本番サーバ (遺伝研スパコン内) で以下を実行:
-
-```bash
-./scripts/fetch_test_fixtures.sh
-```
-
-### ディレクトリ構造
-
-本番環境と同じパス構造を再現:
-
-```
-tests/fixtures/
-├── home/w3ddbjld/const/
-│   ├── bp/blacklist.txt
-│   ├── bs/blacklist.txt
-│   ├── sra/blacklist.txt
-│   ├── dblink/bp_bs_preserved.tsv
-│   └── metabobank/
-│       ├── mtb_id_bioproject_preserve.tsv
-│       └── mtb_id_biosample_preserve.tsv
-├── lustre9/open/database/ddbj-dbt/dra-private/
-│   ├── mirror/SRA_Accessions/YYYY/MM/
-│   │   └── SRA_Accessions.tab.YYYYMMDD
-│   └── tracesys/batch/logs/livelist/ReleaseData/public/
-│       └── YYYYMMDD.DRA_Accessions.tab
-└── usr/local/
-    ├── shared_data/
-    │   ├── dblink/
-    │   ├── jga/metadata-history/metadata/
-    │   │   ├── jga-study.xml, jga-dataset.xml, jga-dac.xml, jga-policy.xml
-    │   │   ├── study.date.csv, dataset.date.csv, dac.date.csv, policy.date.csv
-    │   │   └── (relation CSV files)
-    │   └── metabobank/study/
-    └── resources/
-        ├── bioproject/
-        ├── biosample/
-        ├── dra/fastq/
-        ├── trad/
-        └── gea/experiment/
-```
+`tests/fixtures/` は本番想定の volume 構造を再現した小規模データセット (git 管理済み)。本番のデータ構造が変わって新しいケースを再現できなくなったら、遺伝研スパコン上で `scripts/fetch_test_fixtures.sh` を実行して更新する。手元では取得できない。

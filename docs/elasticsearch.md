@@ -1,487 +1,138 @@
 # Elasticsearch
 
-DDBJ Search Converter の Elasticsearch 操作。
+DDBJ Search Converter の Elasticsearch 設定方針と運用 (snapshot / Blue-Green)。
 
-## 設定ファイル構成
+データ構造 (14 indexes / alias / blacklist ファイル) は [data-architecture.md](data-architecture.md) を、Blue-Green と `--clean-es` の選択基準は [deployment.md](deployment.md) を参照する。
 
-Elasticsearch の設定は **4 箇所** に分散している。
+## 設定の置き場所
+
+ES 関連の設定は 4 箇所に分散している。実値は各ファイルが SSOT で、docs には WHY だけ書く。
 
 | ファイル | 役割 |
 |---------|------|
-| `env.{dev,staging,production}` | 環境変数の定義。ES メモリ、接続先 URL |
-| `compose.yml` | Docker Compose 設定。環境変数を参照して ES コンテナを起動 |
-| `elasticsearch/config/elasticsearch.yml` | ES 本体の詳細設定 (bulk insert 最適化など) |
-| `ddbj_search_converter/es/settings.py` | Python 側の ES 操作設定 (batch size, timeout など) |
+| `env.{dev,staging,production}` | 環境差分 (メモリ上限、JVM heap、接続先 URL) |
+| `compose.yml` | ES コンテナ定義 (env を参照、named volume `es-data` / `es-backup`) |
+| `elasticsearch/config/elasticsearch.yml` | ES 本体の調整 (bulk insert 最適化のため `http.max_content_length` を ES 上限 (2GB-1byte) に拡張、`thread_pool.write.queue_size` を無制限、`indices.memory.index_buffer_size` を 30% に増やしている) |
+| `ddbj_search_converter/es/settings.py` | converter 側の bulk insert / index 操作の定数 (batch size、retries、refresh interval 切替) |
 
-### 1. 環境ファイル (env.*)
+### bulk insert 中の refresh 無効化
 
-環境ごとの設定値を定義する。`cp env.dev .env` などで使用する環境を選択。
+`BULK_INSERT_SETTINGS` で `refresh_interval` を `-1` に切り替え、bulk insert 完了後に `1s` に戻す。bulk insert 中の refresh は数百万件投入時に大きなオーバーヘッドになる (refresh 頻発でスループットが落ちる) ため。
 
-```bash
-# === Environment ===
-DDBJ_SEARCH_ENV=dev    # dev, staging, production
+### `bootstrap.memory_lock`
 
-# === Elasticsearch Settings ===
-DDBJ_SEARCH_ES_MEM_LIMIT=1g           # コンテナ全体のメモリ制限
-DDBJ_SEARCH_ES_JAVA_OPTS=-Xms512m -Xmx512m  # JVM ヒープ
-
-# === Application Settings (config.py) ===
-DDBJ_SEARCH_CONVERTER_ES_URL=http://elasticsearch:9200
-```
-
-`DDBJ_SEARCH_ENV` により、コンテナ名とネットワーク名が自動決定される:
-
-| リソース | 命名規則 |
-|---------|---------|
-| app コンテナ | `ddbj-search-converter-{env}` |
-| ES コンテナ | `ddbj-search-es-{env}` |
-| Docker network | `ddbj-search-network-{env}` |
-
-**環境別の設定値:**
-
-| 環境 | DDBJ_SEARCH_ES_MEM_LIMIT | DDBJ_SEARCH_ES_JAVA_OPTS |
-|------|--------------------------|--------------------------|
-| dev | 1g | `-Xms512m -Xmx512m` |
-| staging | 128g | `-Xms31g -Xmx31g` |
-| production | 128g | `-Xms64g -Xmx64g` |
-
-### 2. Docker Compose (compose.yml)
-
-環境変数を参照して ES コンテナを構成する。
-
-**前提**: Docker network を事前に作成しておく（`external: true` のため）。
-
-```bash
-# Docker の場合（初回のみ、既に存在していてもエラーにならない）
-docker network create ddbj-search-network-dev || true
-
-# Podman の場合
-podman network create ddbj-search-network-staging || true
-```
-
-```yaml
-elasticsearch:
-  image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
-  container_name: ddbj-search-es-${DDBJ_SEARCH_ENV}
-  environment:
-    TZ: ${TZ:-Asia/Tokyo}
-    discovery.type: "single-node"
-    xpack.security.enabled: "false"
-    bootstrap.memory_lock: "true"
-    ES_JAVA_OPTS: ${DDBJ_SEARCH_ES_JAVA_OPTS}
-    path.repo: "/usr/share/elasticsearch/backup"
-  volumes:
-    - es-data:/usr/share/elasticsearch/data
-    - es-backup:/usr/share/elasticsearch/backup
-```
-
-- **volumes**: Docker named volumes (`es-data`, `es-backup`) を使用。手動でディレクトリ作成は不要
-- **path.repo**: スナップショット用バックアップパス
-
-### 3. Elasticsearch 設定 (elasticsearch/config/elasticsearch.yml)
-
-大規模データの bulk insert に最適化した設定。compose.yml でコンテナにマウントされる。
-
-```yaml
-network.host: 0.0.0.0
-http.max_content_length: 2147483647b   # 最大値 (2GB-1byte, ES の上限)
-thread_pool.write.queue_size: -1       # 書き込みキュー無制限
-indices.memory.index_buffer_size: 30%  # インデックスバッファ増加
-path.repo: ["/usr/share/elasticsearch/backup"]
-```
-
-### 4. Python 側の ES 設定 (es/settings.py)
-
-bulk insert やインデックス作成時の設定値。
-
-```python
-# Bulk insert 設定
-BULK_INSERT_SETTINGS = {
-    "batch_size": 5000,                # 1回の bulk リクエストあたりのドキュメント数
-    "max_retries": 3,                  # リトライ回数
-    "request_timeout": 600,            # タイムアウト (秒)
-    "bulk_refresh_interval": "-1",     # bulk insert 中のリフレッシュ間隔 (無効化)
-    "normal_refresh_interval": "1s",   # bulk insert 後のリフレッシュ間隔 (復元)
-}
-
-# インデックス設定
-INDEX_SETTINGS = {
-    "refresh_interval": "1s",                  # リフレッシュ間隔
-    "mapping.nested_objects.limit": 100000,    # nested オブジェクト上限
-    "number_of_shards": 1,                     # シャード数 (single-node では 1)
-    "number_of_replicas": 0,                   # レプリカ数 (single-node では 0)
-}
-```
-
-ES 接続先 URL は `config.py` の `get_config().es_url` で取得 (環境変数 `DDBJ_SEARCH_CONVERTER_ES_URL` から読み込み)。
+ES のヒープを swap させないため、`compose.yml` で `bootstrap.memory_lock=true` と `ulimits.memlock=-1` をセットしている。コンテナ環境で memlock が効くようにするための組み合わせ。
 
 ## インデックス管理
 
-### インデックス作成
+`es_create_index --index <group>` で group alias 込みで一括作成する。`<group>` は `bioproject` / `biosample` / `sra` / `jga` / `gea` / `metabobank` / `all`。各 group が含む物理 index と alias 構成は [data-architecture.md § Elasticsearch インデックス構成](data-architecture.md) を参照。
 
-```bash
-# グループ単位で作成 (alias が自動設定される)
-es_create_index --index bioproject
-es_create_index --index biosample
-es_create_index --index sra    # sra-submission, sra-study, ... が一括作成
-es_create_index --index jga    # jga-study, jga-dataset, ... が一括作成
+- `--skip-existing` で既存 index をスキップ
+- `--date-suffix YYYYMMDD` で Blue-Green 用の dated index を作成 (alias なし)
 
-# 全インデックス作成
-es_create_index --index all
+`es_delete_index --index <group>` で削除。`--skip-missing` で不在エラーを無視。
 
-# 既存インデックスをスキップ
-es_create_index --index all --skip-existing
-```
+## bulk insert
 
-### インデックス一覧
+`es_bulk_insert --index <name>` で `{result_dir}/{type}/jsonl/{YYYYMMDD}/*.jsonl` を投入する。`_op_type: "index"` で投入するため、既存 doc は上書き (upsert 相当) になる。
 
-```bash
-es_list_indexes
-```
+落とし穴:
 
-### インデックス削除
+- 通常は alias 経由で投入される。Blue-Green の途中で `--target-index NAME-YYYYMMDD` を指定すると alias を経由せず物理 index に直接投入する
+- batch size のデフォルトは 5000 (`--batch-size` で調整可能)。メモリと速度のバランス
+- SRA は entity 別 (`sra-run` / `sra-study` 等) に分けて投入する。`--pattern '*_run_*.jsonl'` で entity 別 jsonl を絞り込める
 
-```bash
-# 確認プロンプトあり
-es_delete_index --index bioproject
+## blacklist 削除
 
-# 強制削除 (確認なし)
-es_delete_index --index sra --force
+`es_delete_blacklist` は blacklist ファイル (詳細は [data-architecture.md § Blacklist](data-architecture.md)) に含まれる accession を ES から削除する。
 
-# 存在しなくてもエラーにしない
-es_delete_index --index bioproject --skip-missing
-```
+落とし穴:
 
-### Alias 構成
-
-| Alias | 対象 Index |
-|-------|-----------|
-| `sra` | `sra-submission`, `sra-study`, `sra-experiment`, `sra-run`, `sra-sample`, `sra-analysis` |
-| `jga` | `jga-study`, `jga-dataset`, `jga-dac`, `jga-policy` |
-| `entries` | 全インデックス |
-
-## データ投入
-
-### bulk insert
-
-```bash
-# 通常のパイプライン (result_dir から自動検索)
-es_bulk_insert --index bioproject
-es_bulk_insert --index biosample
-es_bulk_insert --index sra-submission
-es_bulk_insert --index sra-study
-es_bulk_insert --index sra-experiment
-es_bulk_insert --index sra-run
-es_bulk_insert --index sra-sample
-es_bulk_insert --index sra-analysis
-es_bulk_insert --index jga-study
-es_bulk_insert --index jga-dataset
-es_bulk_insert --index jga-dac
-es_bulk_insert --index jga-policy
-
-# 特定ファイルを指定
-es_bulk_insert --index bioproject \
-  --file ddbj_search_converter_results/regenerate/20260128/bioproject.jsonl
-
-# バッチサイズを調整
-es_bulk_insert --index bioproject --batch-size 1000
-
-# パターンを指定（SRA の分割ファイル対応）
-es_bulk_insert --index sra-run --dir ${sra_dir} --pattern '*_run_*.jsonl'
-```
-
-- `_op_type: "index"` のため既存ドキュメントは上書き (upsert 相当)
-- デフォルトのバッチサイズは 5000
-
-### blacklist 削除
-
-blacklist ファイルに含まれる accession を Elasticsearch から削除する。
-
-```bash
-# dry-run で削除対象を確認
-es_delete_blacklist --dry-run
-
-# 特定のインデックスグループのみ
-es_delete_blacklist --index jga --dry-run
-
-# 実行 (確認なし)
-es_delete_blacklist --force
-
-# バッチサイズを調整
-es_delete_blacklist --force --batch-size 500
-```
-
-**オプション:**
-
-| オプション | 説明 |
-|-----------|------|
-| `--index` | インデックスグループ (`bioproject`, `biosample`, `sra`, `jga`, `all`)。デフォルト: `all` |
-| `--force` | 確認なしで削除 |
-| `--dry-run` | 削除せず対象を表示のみ |
-| `--batch-size` | bulk delete のバッチサイズ。デフォルト: 1000 |
-
-**挙動:**
-
-1. 全 blacklist ファイル (`bp/blacklist.txt`, `bs/blacklist.txt`, `sra/blacklist.txt`, `jga/blacklist.txt`) を読み込む
-2. 各 accession の ID パターンから対象インデックスを判定
-3. bulk delete API で一括削除
-4. 存在しないドキュメント (404) はエラーとせず `not_found` としてカウント
-
-**ユースケース:**
-
-- パイプライン実行後に blacklist に追加されたエントリを削除
-- 過去にインデックスされたが、現在は非公開にすべきデータの削除
+- 存在しないドキュメント (404) はエラーとせず `not_found` としてカウントする (過去にインデックスされたが現在は不在のものを許容)
+- accession の ID パターンから対象インデックスを判定するので、誤った blacklist ファイル (例: `bp/blacklist.txt` に SRA ID) に書いても効かない
 
 ## ヘルスチェック
 
-```bash
-# 基本 (クラスタステータスのみ)
-es_health_check
-
-# 詳細表示 (ノード・インデックス統計)
-es_health_check -v
-```
-
-監視項目:
-
-- クラスタステータス (green/yellow/red)
-- ノード数・データノード数
-- シャード数 (active/unassigned)
-- ディスク使用率・ヒープ使用率 (-v オプション)
+`es_health_check` (`-v` で詳細) でクラスタ状態 / シャード / ディスク使用率を確認する。Blue-Green Full 更新前のディスク残量チェックに使う (新旧 index 同居時に容量が 2 倍になるため)。
 
 ## スナップショット管理
 
-### ユースケース 1: 定期バックアップの設定
+`es_snapshot` でリポジトリ登録・作成・復元・削除を扱う。`compose.yml` の `path.repo` と `es_snapshot repo register --path` は一致させる必要がある (両者とも `/usr/share/elasticsearch/backup`)。
 
-本番環境で毎日バックアップを取る場合の手順。
+### 定期バックアップ
 
-**1. リポジトリを登録する**
-
-```bash
-# path は compose.yml の path.repo と一致させる
-es_snapshot repo register --name backup --path /usr/share/elasticsearch/backup
-```
-
-**2. 手動でスナップショットを作成 (動作確認)**
+`scripts/backup_es.sh` を cron で回す。スクリプトはヘルス確認 → スナップショット作成 → retention 超過分の削除を順に実行する。
 
 ```bash
-es_snapshot create --repo backup
-# -> ddbj_search_YYYYMMDD_HHMMSS という名前で作成される
-```
-
-**3. cron で定期実行を設定**
-
-```bash
-# 毎日 2:00 AM にバックアップ、7日間保持
+# 毎日 2:00 AM、7 日保持
 0 2 * * * /path/to/scripts/backup_es.sh --repo backup --retention 7 >> /var/log/es_backup.log 2>&1
 ```
 
-`scripts/backup_es.sh` は以下を自動実行:
+### 別ノード移行
 
-- ES クラスタのヘルス確認
-- スナップショット作成 (`bioproject,biosample,sra-*,jga-*` を対象)
-- 古いスナップショットの削除 (retention 日数を超えたもの)
+スナップショット作成 → `es-backup` volume を rsync/scp で別ノードに転送 → 転送先で `es_snapshot repo register` + `es_snapshot restore`。`docker volume inspect es-backup` でホスト側の実体パスを確認する。
 
-### ユースケース 2: 別ノードへのデータ移行
+### 障害復旧
 
-staging で構築したインデックスを production に移す手順。
+`es_snapshot list --repo backup -v` で利用可能なスナップショットを確認し、`es_snapshot restore --force` で復元する。
 
-**staging 側 (エクスポート):**
+## Blue-Green Alias Swap (ゼロダウンタイム更新)
 
-```bash
-# 1. スナップショットを作成
-es_snapshot create --repo backup --snapshot migration_20260201
+Full 更新では全 14 インデックスを再構築する。「インデックス削除 → 再作成 → bulk insert」の通常フローでは、bulk insert 完了までの数十分〜数時間ダウンタイムが発生する。
 
-# 2. 作成確認
-es_snapshot list --repo backup -v
-
-# 3. スナップショットファイルを production に転送
-#    (es-backup volume の実体を rsync/scp)
-docker volume inspect es-backup  # マウントポイント確認
-rsync -av /var/lib/docker/volumes/..._es-backup/_data/ user@production:/path/to/backup/
-```
-
-**production 側 (インポート):**
-
-```bash
-# 1. リポジトリを登録 (転送先パスを指定)
-es_snapshot repo register --name migration --path /usr/share/elasticsearch/backup
-
-# 2. スナップショット一覧を確認
-es_snapshot list --repo migration
-
-# 3. 既存インデックスを削除 (必要な場合)
-es_delete_index --index all --force
-
-# 4. スナップショットを復元
-es_snapshot restore --repo migration --snapshot migration_20260201
-
-# 5. 復元確認
-es_list_indexes
-```
-
-**特定インデックスのみ移行:**
-
-```bash
-# 復元時にインデックスを指定
-es_snapshot restore --repo migration --snapshot migration_20260201 \
-  --indexes bioproject,biosample
-```
-
-### ユースケース 3: 障害復旧
-
-クラスタ障害後に最新バックアップから復旧する手順。
-
-```bash
-# 1. バックアップ一覧を確認
-es_snapshot list --repo backup -v
-
-# 2. 最新のスナップショットを復元
-es_snapshot restore --repo backup --snapshot ddbj_search_20260131_020000 --force
-
-# 3. ヘルスチェック
-es_health_check -v
-```
-
-### スナップショットコマンド一覧
-
-| コマンド | 説明 |
-|---------|------|
-| `es_snapshot repo register --name NAME --path PATH` | リポジトリ登録 |
-| `es_snapshot repo list` | リポジトリ一覧 |
-| `es_snapshot repo delete --name NAME` | リポジトリ削除 |
-| `es_snapshot create --repo NAME` | スナップショット作成 |
-| `es_snapshot list --repo NAME [-v]` | スナップショット一覧 |
-| `es_snapshot restore --repo NAME --snapshot NAME` | 復元 |
-| `es_snapshot delete --repo NAME --snapshot NAME` | 削除 |
-| `es_snapshot export-settings [-o FILE]` | インデックス設定エクスポート |
-
-### 注意事項
-
-- **path.repo の一致**: compose.yml と `repo register` で指定するパスは一致させる
-- **復元前の確認**: 既存インデックスがある場合、`--force` なしでは確認プロンプトが出る
-- **クラスタ状態**: red 状態では作成・復元が不完全になる可能性がある
-
-## Blue-Green Alias Swap（ゼロダウンタイム更新）
-
-Full 更新時にインデックスを削除→再作成→データ投入すると、投入完了までダウンタイムが発生する。Blue-Green Alias Swap パターンでは、新インデックスへのデータ投入完了後に alias をアトミックに切り替えることで、ゼロダウンタイムを実現する。
+Blue-Green Alias Swap パターンでは、新インデックスを `{name}-{YYYYMMDD}` という別名で作成し、bulk insert 完了後に alias を atomic に切り替える。alias swap は `_aliases` API で 1 トランザクションで実行されるため、検索断はゼロ。トレードオフはディスク使用量で、Full 更新中は新旧が同居して一時的に約 2 倍になる。mapping が変わらない更新は `--clean-es` で十分で、ディスク使用量は増えないが bulk insert 完了までの間は検索が空になる。差分更新は alias 経由で既存 index に upsert するので Blue-Green の影響を受けない。
 
 > **NOTE**: `Publication.Reference` → `reference` / `Publication.DbType` → `dbType` の rename、`Publication.dbType` 値の小文字化 (`ePubmed` → `pubmed` 等) と `Publication.status` フィールド廃止 (2026-04-22)、GEA / MetaboBank の新 index (`gea` / `metabobank`) 追加により、既存 index との mapping 互換性が失われる。次回 deploy 時は必ず Blue-Green Alias Swap で新 index を別名で作成し、alias を一括 swap すること。既存の `--clean-es` フローは mapping が変わらない場合にのみ安全。
 
-### 概念
+### dated index と alias の関係
 
-```plain
-実インデックス名: {name}-{YYYYMMDD}
-  例: bioproject-20260413
-
-インデックス alias: {name}
-  例: bioproject → bioproject-20260413
-
-グループ alias: sra, jga, entries (従来通り)
-  例: entries → bioproject-20260413, biosample-20260413, ...
-```
-
-API 側は alias 経由でアクセスするため、変更不要。
-
-### Alias 構成（Blue-Green 適用後）
-
-| Alias | 対象 Index |
-|-------|-----------|
-| `bioproject` | `bioproject-{YYYYMMDD}` |
-| `biosample` | `biosample-{YYYYMMDD}` |
-| `sra-submission` | `sra-submission-{YYYYMMDD}` |
-| `sra-study` | `sra-study-{YYYYMMDD}` |
-| `sra-experiment` | `sra-experiment-{YYYYMMDD}` |
-| `sra-run` | `sra-run-{YYYYMMDD}` |
-| `sra-sample` | `sra-sample-{YYYYMMDD}` |
-| `sra-analysis` | `sra-analysis-{YYYYMMDD}` |
-| `jga-study` | `jga-study-{YYYYMMDD}` |
-| `jga-dataset` | `jga-dataset-{YYYYMMDD}` |
-| `jga-dac` | `jga-dac-{YYYYMMDD}` |
-| `jga-policy` | `jga-policy-{YYYYMMDD}` |
-| `gea` | `gea-{YYYYMMDD}` |
-| `metabobank` | `metabobank-{YYYYMMDD}` |
-| `sra` | 上記 SRA 6 インデックス |
-| `jga` | 上記 JGA 4 インデックス |
-| `entries` | 上記 14 インデックス全て |
+Blue-Green 適用後、物理 index は `{name}-{YYYYMMDD}` という日付サフィックス付き、alias は `{name}` (それ自体) と group alias (`sra` / `jga` / `entries`) の 2 段構成。API は alias 経由でアクセスするので、alias swap が透過的に効く。
 
 ### Full 更新フロー
 
 ```bash
-# 1. 日付サフィックス付きインデックスを作成（alias は付けない）
+# 1. dated index を作成 (alias なし)
 es_create_index --index all --date-suffix 20260413
 
-# 2. 新インデックスにデータ投入（旧インデックスが検索に使われ続ける）
+# 2. 新インデックスにデータ投入 (旧 index が検索に使われ続ける)
 es_bulk_insert --index bioproject --target-index bioproject-20260413 --dir ${bp_dir}
-es_bulk_insert --index biosample --target-index biosample-20260413 --dir ${bs_dir}
-# ... (14 インデックス分、gea / metabobank を含む)
+# ... 14 インデックス分
 
 # 3. 新インデックスから blacklist を削除
 es_delete_blacklist --target-suffix 20260413 --force
 
-# 4. alias をアトミックに切り替え（ダウンタイム 0）
-#    旧サフィックスが stdout に出力される
+# 4. alias を atomic に切り替え (ダウンタイム 0、旧サフィックスが stdout)
 OLD_SUFFIX=$(es_swap_aliases --date-suffix 20260413 --force)
 
-# 5. 旧インデックスを削除（ディスク解放）
+# 5. 旧インデックスを削除 (ディスク解放)
 es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force
 ```
 
-### 差分更新フロー（変更なし）
+`scripts/run_pipeline.sh --full --blue-green` で一括実行できる。
+
+### 差分更新フロー (変更なし)
 
 差分更新は alias 経由で既存インデックスに upsert する。ES が alias を透過的に解決するため、Blue-Green 導入前と全く同じ操作で動作する。
 
-```bash
-# 従来通り
-es_bulk_insert --index bioproject --dir ${bp_dir}
-```
-
-### Blue-Green コマンド
-
-| コマンド | 説明 |
-|---------|------|
-| `es_create_index --index all --date-suffix YYYYMMDD` | 日付サフィックス付きインデックスを作成（alias なし） |
-| `es_bulk_insert --index NAME --target-index NAME-YYYYMMDD` | 指定した物理インデックスにデータ投入 |
-| `es_delete_blacklist --target-suffix YYYYMMDD --force` | 指定サフィックスのインデックスから blacklist 削除 |
-| `es_swap_aliases --date-suffix YYYYMMDD [--force] [--dry-run]` | 全 alias をアトミックに切り替え |
-| `es_delete_old_indexes --date-suffix YYYYMMDD [--force]` | 指定サフィックスの物理インデックスを削除 |
-| `es_migrate_to_blue_green --date-suffix YYYYMMDD [--force]` | 初回マイグレーション（固定名 → Blue-Green） |
-
 ### 初回マイグレーション
 
-既存の固定名インデックスを Blue-Green 構成に移行する 1 回限りの操作。
-
-```bash
-es_migrate_to_blue_green --date-suffix $(date +%Y%m%d) --force
-```
+固定名インデックスを Blue-Green 構成に移行する 1 回限りの操作。`es_migrate_to_blue_green --date-suffix $(date +%Y%m%d) --force` で実行する。
 
 内部処理:
 
 1. 固定名インデックスを read-only に設定
-2. `_clone` API でハードリンクベースのコピー（10億件でも数秒）
+2. `_clone` API でハードリンクベースのコピー (10 億件でも数秒)
 3. クローン先の write block を解除
-4. 固定名インデックスを削除（**数秒のダウンタイム**）
+4. 固定名インデックスを削除 (**数秒のダウンタイム**)
 5. `_aliases` API で全 alias を一括作成
 
 初回マイグレーション時のみ Step 4-5 間に数秒のダウンタイムが発生する。以降の Full 更新はゼロダウンタイム。
 
 ### ロールバック
 
-**旧インデックスが未削除の場合:**
-
-```bash
-es_swap_aliases --date-suffix OLD_SUFFIX --force
-es_delete_old_indexes --date-suffix NEW_SUFFIX --force
-```
-
-**旧インデックスが削除済みの場合:**
-
-```bash
-es_snapshot restore --repo backup --snapshot SNAPSHOT_NAME --force
-# alias を再設定
-```
+- 旧インデックスが未削除の場合: `es_swap_aliases --date-suffix OLD_SUFFIX --force` で alias を戻し、`es_delete_old_indexes --date-suffix NEW_SUFFIX --force` で新 index を削除
+- 旧インデックスが削除済みの場合: `es_snapshot restore` で復元してから alias を再設定
 
 ### 注意事項
 
-- **ディスク使用量**: Full 更新中、新旧インデックスが同時に存在するため一時的にディスク使用量が 2 倍になる。事前に `es_health_check -v` でディスク残量を確認すること
-- **一括実行**: `run_pipeline.sh --blue-green` で Full 更新フローを一括実行できる（`--clean-es` と排他）
+Full 更新中は新旧 index が同時存在して一時的にディスク使用量が 2 倍になる。事前に `es_health_check -v` でディスク残量を確認すること。
