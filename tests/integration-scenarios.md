@@ -65,7 +65,6 @@ TRAD / XSM の接続性 + SQL の現スキーマ整合を staging で確認。
 |---|---|
 | IT-INVARIANT-01 | dblink DuckDB で半辺化 `dbxref` の対称性 (`count(A→B) == count(B→A)`) と、`accession` / `linked_accession` / `accession_type` / `linked_type` に NULL なし |
 | IT-INVARIANT-02 | ES の `entries` alias 経由 docs_count が **各 logical alias の docs_count の合計** と一致 + 各 logical は単一物理 index に解決 + `sra` alias は 6 物理、`jga` alias は 4 物理 |
-| IT-INVARIANT-03 | 各 logical の最新 dated JSONL 行数 <= ES `docs_count` (sameAs alias 増分 + blacklist 減分込みの包含関係) |
 
 ## 外部リソース疎通 (`IT-RESOURCE-*`)
 

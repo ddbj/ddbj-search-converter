@@ -48,6 +48,12 @@ api コンテナは起動中ずっと `dblink.duckdb` を read mode で握って
 
 通常の `finalize_dblink_db` は新しい DuckDB ファイルを atomic replace する設計なので本問題は発生しない。手動で既存ファイルを書き換える操作だけが該当する。
 
+## 本番 deploy 前の rehearsal
+
+本番 deploy 前に staging で integration test (`tests/py_tests/integration/`) を回せる。実行方法と env vars は [tests/README.md](../tests/README.md) を参照する。`IT-MAPPING-*` (現 mapping が ES に accept されるか)、`IT-PG-*` (TRAD / XSM 接続性 + SQL 整合)、`IT-INVARIANT-*` (dblink 半辺化対称性 + ES alias 整合) あたりが本番 deploy 直前のサニティとして有効。
+
+`IT-SWAP-*` (alias swap rehearsal) は本番運用 alias を一時剥がすので staging では実行しない設計 (`DDBJ_SEARCH_INTEGRATION_ALLOW_DESTRUCTIVE_ALIAS=1` を立てた dev ES だけで動く)。
+
 ## ロールバック
 
 ソースコードは bind mount (`.:/app:rw`) のため、`git checkout <previous-commit>` + `podman-compose restart app` だけで前バージョンに戻る。Dockerfile を変えていない限り rebuild 不要。

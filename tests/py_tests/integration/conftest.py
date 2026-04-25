@@ -137,15 +137,6 @@ def integration_dblink_db_path() -> Path:
 
 
 @pytest.fixture(scope="session")
-def integration_jsonl_dir() -> Path:
-    """Path to the converter result_dir that contains per-data-type JSONL output. Skip if absent."""
-    path = Path("/app/ddbj_search_converter_results")
-    if not (path / "bioproject" / "jsonl").exists():
-        pytest.skip(f"JSONL output not found under {path}; needs a converter pipeline run")
-    return path
-
-
-@pytest.fixture(scope="session")
 def integration_log_db_path() -> Path:
     """Path to a populated log.duckdb. Skip if absent."""
     path = Path("/app/ddbj_search_converter_results/log.duckdb")
