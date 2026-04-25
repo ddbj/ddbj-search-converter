@@ -44,6 +44,7 @@ def test_swap_aliases_moves_all_aliases_to_new_dated_indexes(
     rehearsal_date_suffix: str,
     rehearsal_old_date_suffix: str,
     cleanup_rehearsal_indexes: None,
+    allow_destructive_alias_tests: None,
 ) -> None:
     """IT-SWAP-01: swap_aliases で全 alias が旧 dated → 新 dated に移る。"""
     new_suffix = rehearsal_date_suffix
@@ -77,6 +78,7 @@ def test_entries_alias_resolution_is_never_empty_around_swap(
     rehearsal_date_suffix: str,
     rehearsal_old_date_suffix: str,
     cleanup_rehearsal_indexes: None,
+    allow_destructive_alias_tests: None,
 ) -> None:
     """IT-SWAP-02: swap 操作前後で entries alias が常に 14 個の物理 index に解決される。"""
     new_suffix = rehearsal_date_suffix
@@ -103,6 +105,7 @@ def test_alias_resolves_after_old_index_deletion(
     rehearsal_date_suffix: str,
     rehearsal_old_date_suffix: str,
     cleanup_rehearsal_indexes: None,
+    allow_destructive_alias_tests: None,
 ) -> None:
     """IT-SWAP-03: swap 後に旧 dated index を削除しても alias は新側で解決可能。"""
     new_suffix = rehearsal_date_suffix

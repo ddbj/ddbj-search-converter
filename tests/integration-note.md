@@ -6,7 +6,7 @@
 
 Integration テストは接続先を環境変数で切り替える。`DDBJ_SEARCH_INTEGRATION_*_URL` 系の env vars に値が無いリソースを必要とするテストは、session 開始時の疎通確認 fixture で `pytest.skip(allow_module_level=True)` で session 全体を skip する。CI でも開発時でも、リソースが立っていなければ自動的に飛ばされる。
 
-具体的な env vars 名は `tests/py_tests/integration/conftest.py` を SSOT とする。現状は ES / TRAD PostgreSQL / XSM PostgreSQL の 3 系統が必要。
+具体的な env vars 名は `tests/py_tests/integration/conftest.py` を SSOT とする。現状は ES / TRAD PostgreSQL / XSM PostgreSQL の 3 系統 + alias swap 用の destructive gate (`DDBJ_SEARCH_INTEGRATION_ALLOW_DESTRUCTIVE_ALIAS=1`、本番 alias を持たない dev ES でのみ立てる)。
 
 ## ES の用意
 

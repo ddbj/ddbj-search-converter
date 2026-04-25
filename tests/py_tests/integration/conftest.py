@@ -9,6 +9,7 @@ See ``tests/integration-note.md`` for the integration testing strategy and
 
 import os
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 
@@ -21,6 +22,7 @@ from elasticsearch import Elasticsearch
 INTEGRATION_ENV_VAR_ES_URL = "DDBJ_SEARCH_INTEGRATION_ES_URL"
 INTEGRATION_ENV_VAR_TRAD_POSTGRES_URL = "DDBJ_SEARCH_INTEGRATION_TRAD_POSTGRES_URL"
 INTEGRATION_ENV_VAR_XSM_POSTGRES_URL = "DDBJ_SEARCH_INTEGRATION_XSM_POSTGRES_URL"
+INTEGRATION_ENV_VAR_ALLOW_DESTRUCTIVE_ALIAS = "DDBJ_SEARCH_INTEGRATION_ALLOW_DESTRUCTIVE_ALIAS"
 
 
 # === Date suffixes for staging-isolated dated physical indexes ===
@@ -116,6 +118,55 @@ def integration_trad_postgres_url() -> str:
             "point it at staging TRAD PostgreSQL to run the connectivity smoke"
         )
     return url
+
+
+# === Staging seed data fixtures ===
+#
+# Tests below depend on a populated converter pipeline output (dblink.duckdb,
+# ES with the 14 logical indexes filled). Against an empty dev ES / missing
+# DuckDB they have no meaning, so skip cleanly.
+
+
+@pytest.fixture(scope="session")
+def integration_dblink_db_path() -> Path:
+    """Path to a populated dblink.duckdb on the integration host. Skip if absent."""
+    path = Path("/home/w3ddbjld/const/dblink/dblink.duckdb")
+    if not path.exists():
+        pytest.skip(f"dblink.duckdb not found at {path}; needs a converter pipeline run")
+    return path
+
+
+@pytest.fixture(scope="session")
+def staging_es_has_seed_data(integration_es_client: Elasticsearch) -> None:
+    """Skip if the integration ES does not have seed data (entries alias missing or empty)."""
+    try:
+        if not integration_es_client.indices.exists_alias(name="entries"):
+            pytest.skip("integration ES has no `entries` alias; needs an ES with seed data")
+        count = integration_es_client.count(index="entries").body["count"]
+        if count == 0:
+            pytest.skip("integration ES `entries` alias resolves to 0 docs")
+    except Exception as exc:
+        pytest.skip(f"integration ES seed check failed: {exc}")
+
+
+@pytest.fixture(scope="session")
+def allow_destructive_alias_tests() -> None:
+    """Gate that skips tests which would put_alias on production-shared names.
+
+    The alias swap rehearsal uses ``entries`` / ``sra`` / ``jga`` / per-index
+    alias names that are also the production runtime aliases. Running such a
+    test against an ES that already has production data attached to those
+    aliases would briefly disrupt search. Set
+    ``DDBJ_SEARCH_INTEGRATION_ALLOW_DESTRUCTIVE_ALIAS=1`` only against an ES
+    that has no production aliases attached (e.g. local compose dev ES).
+    """
+    if os.environ.get(INTEGRATION_ENV_VAR_ALLOW_DESTRUCTIVE_ALIAS) != "1":
+        pytest.skip(
+            f"{INTEGRATION_ENV_VAR_ALLOW_DESTRUCTIVE_ALIAS}=1 is required; "
+            "this test put_alias on production-shared names "
+            "(entries / sra / jga / per-index) and would briefly disrupt "
+            "search on staging or production"
+        )
 
 
 @pytest.fixture
