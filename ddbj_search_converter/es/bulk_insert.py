@@ -11,35 +11,23 @@ from elastic_transport import ConnectionTimeout
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.es._error_utils import sanitize_error_info as _sanitize_error_info
+from ddbj_search_converter.es._error_utils import sanitize_value as _sanitize_value
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, refresh_index, set_refresh_interval
 from ddbj_search_converter.es.index import IndexName
 from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
 from ddbj_search_converter.logging.logger import log_warn
 from elasticsearch import helpers
 
-
-def _sanitize_value(value: Any) -> Any:
-    """Recursively convert non-serializable values to strings."""
-    if value is None or isinstance(value, (str, int, float, bool)):
-        return value
-    if isinstance(value, dict):
-        return {k: _sanitize_value(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_sanitize_value(item) for item in value]
-    return str(value)
-
-
-def _sanitize_error_info(info: Any) -> dict[str, Any]:
-    """Convert bulk error info to a JSON-serializable dict.
-
-    ``helpers.parallel_bulk`` with ``raise_on_exception=False`` may yield
-    ``ApiError`` objects instead of plain dicts on transport-level failures.
-    The dict values may also contain nested non-serializable objects.
-    Recursively convert everything to JSON-safe types.
-    """
-    if isinstance(info, dict):
-        return {k: _sanitize_value(v) for k, v in info.items()}
-    return {"error_type": type(info).__name__, "error_message": str(info)}
+__all__ = [
+    "BulkInsertResult",
+    "_extract_prefix",
+    "_sanitize_error_info",
+    "_sanitize_value",
+    "bulk_insert_from_dir",
+    "bulk_insert_jsonl",
+    "generate_bulk_actions",
+]
 
 
 class BulkInsertResult(BaseModel):

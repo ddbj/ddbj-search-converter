@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.es._error_utils import sanitize_error_info
 from ddbj_search_converter.es.client import get_es_client
 from ddbj_search_converter.logging.logger import log_info
 from elasticsearch import helpers
@@ -89,11 +90,19 @@ def bulk_delete_by_ids(
 
     if isinstance(failed, list):
         for err in failed:
-            delete_info = err.get("delete", {})
-            if delete_info.get("status") == 404:
+            # err は通常 dict だが、raise_on_exception=False では ApiError 等の
+            # オブジェクトが直接入る場合がある。まず raw form で 404 判定し、
+            # それ以外は sanitize して errors に積む (Pydantic 再シリアライズ可能性を保証)。
+            is_404 = False
+            if isinstance(err, dict):
+                delete_info = err.get("delete", {})
+                if isinstance(delete_info, dict) and delete_info.get("status") == 404:
+                    is_404 = True
+
+            if is_404:
                 not_found_count += 1
             else:
-                errors.append(err)
+                errors.append(sanitize_error_info(err))
 
     return BulkDeleteResult(
         index=index,
