@@ -20,7 +20,7 @@ TRAD と XSM はいずれも読み取り専用 (`SELECT` のみ) で staging / p
 
 ## fixture 戦略
 
-特定の不変条件を assert するためにいくつか「代表 accession」が必要。例: status filter のテストには `public` / `suppressed` / `withdrawn` の 3 値の代表 ID。3 案を比較する。
+特定の不変条件を assert するためにいくつか「代表 accession」が必要。例: status filter のテストには `public` / `private` / `suppressed` / `withdrawn` の 4 値 (`schema.py::Status` Literal、`8308148` で `live` / `unpublished` から rename) の代表 ID。3 案を比較する。
 
 | 案 | 内容 | メリット | デメリット |
 |----|------|---------|-----------|
