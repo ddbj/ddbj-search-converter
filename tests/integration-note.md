@@ -6,13 +6,15 @@
 
 Integration テストは接続先を環境変数で切り替える。`DDBJ_SEARCH_INTEGRATION_*_URL` 系の env vars に値が無いリソースを必要とするテストは、session 開始時の疎通確認 fixture で `pytest.skip(allow_module_level=True)` で session 全体を skip する。CI でも開発時でも、リソースが立っていなければ自動的に飛ばされる。
 
-具体的な env vars 名は `tests/py_tests/integration/conftest.py` (将来追加) を SSOT とする。現状は ES / TRAD PostgreSQL / XSM PostgreSQL の 3 系統が必要。
+具体的な env vars 名は `tests/py_tests/integration/conftest.py` を SSOT とする。現状は ES / TRAD PostgreSQL / XSM PostgreSQL の 3 系統が必要。
 
 ## ES の用意
 
-本リポジトリの compose で起動する ES (`ddbj-search-es-{env}`) を使うのが基本。staging の ES に向けたい場合は env var で接続先を切り替える。
+本リポジトリの compose で起動する ES (`ddbj-search-es-{env}`) を使うのが基本。staging の ES に向けたい場合は env var (`DDBJ_SEARCH_INTEGRATION_ES_URL`) で接続先を切り替える。
 
-ローカル用の固定 fixture (専用 mini インデックス) は今は持たない。テストで投入する場合は session 開始時に `es_create_index` + `es_bulk_insert` でセットアップし、終了時に `es_delete_index` で teardown する。**共有 ES (staging / production) を汚さないため、teardown は確実に行う**。
+固定名 index (`bioproject` / `biosample` / ...) は staging の運用 alias が指している物理 index と衝突するため、テスト中は **ありえない日付 suffix `99991231`** を付けた dated 物理 index (`bioproject-99991231` 等) で隔離する。staging の Blue-Green 物理 index (実日付 suffix) と被らないので、staging に向けて実行しても運用を壊さない。
+
+ローカル用の固定 fixture (専用 mini インデックス) は今は持たない。テストで投入する場合は session 開始時に `create_index_with_suffix` + `bulk_insert_jsonl(..., target_index=...)` でセットアップし、終了時に `delete_physical_indexes` で teardown する。**共有 ES (staging / production) を汚さないため、teardown は確実に行う**。
 
 ## PostgreSQL の用意
 
@@ -72,7 +74,7 @@ monkeypatch で各モジュールの定数 (`date_cache.db.CHUNK_SIZE`、`sra_ac
 
 ## CI 戦略
 
-unit テストは `pytest` のデフォルト実行で通る。integration は手動で `tests/py_tests/integration/` を指定して実行する想定。
+unit テストは `pytest` のデフォルト実行で通る (`pyproject.toml` の `addopts = ["-n", "auto"]` で並列)。integration は固定的な dated index (`*-99991231`) を共有 ES に作るため worker 間で競合するので、`pytest tests/py_tests/integration -n 0` で **直列実行** する (`-n 0` は xdist を有効に保ったまま worker 数 0 にする指定。`-p no:xdist` だと addopts の `-n` が unknown arg になる)。
 
 GitHub Actions で integration を回すなら以下が必要。Future work。
 
