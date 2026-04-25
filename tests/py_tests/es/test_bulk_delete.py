@@ -109,9 +109,10 @@ class TestBulkDeleteByIdsHelpersBulkArgs:
         assert kwargs["stats_only"] is False
         assert kwargs["raise_on_error"] is False
         assert kwargs["max_retries"] == 3
-        assert kwargs["request_timeout"] == 600
-        # 第一引数は ES client
-        assert mock_bulk.call_args.args[0] is es
+        # request_timeout は es_client.options(request_timeout=...) 経由で適用される
+        es.options.assert_called_once_with(request_timeout=600)
+        # 第一引数は options() で派生した client
+        assert mock_bulk.call_args.args[0] is es.options.return_value
 
     def test_custom_batch_size_propagates_to_chunk_size(self, mocker: MockerFixture, tmp_path: Any) -> None:
         _stub_es_client(mocker, index_exists=True)

@@ -78,14 +78,14 @@ def bulk_delete_by_ids(
 
     # helpers.bulk で一括削除
     # raise_on_error=False で 404 を許容
+    es_client_with_timeout = es_client.options(request_timeout=600)
     success, failed = helpers.bulk(
-        es_client,
+        es_client_with_timeout,
         actions,
         chunk_size=batch_size,
         stats_only=False,
         raise_on_error=False,
         max_retries=3,
-        request_timeout=600,
     )
 
     if isinstance(failed, list):

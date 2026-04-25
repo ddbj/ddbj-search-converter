@@ -23,12 +23,14 @@ INTEGRATION_ENV_VAR_TRAD_POSTGRES_URL = "DDBJ_SEARCH_INTEGRATION_TRAD_POSTGRES_U
 INTEGRATION_ENV_VAR_XSM_POSTGRES_URL = "DDBJ_SEARCH_INTEGRATION_XSM_POSTGRES_URL"
 
 
-# === Date suffix for staging-isolated dated physical indexes ===
+# === Date suffixes for staging-isolated dated physical indexes ===
 #
-# 末来日付 ``99991231`` を使うことで、staging の Blue-Green 物理 index
-# (実日付 suffix) と物理 index 名が衝突しない。teardown 失敗で残骸が出ても
-# 人間がすぐに気づける。
+# 未来日付 ``99991231`` / ``99991230`` を使うことで、staging の Blue-Green 物理 index
+# (実日付 suffix) と衝突しない。teardown 失敗で残骸が出ても人間がすぐに気づける。
+#
+# OLD は alias swap rehearsal (Phase 2) で旧 dated index を表現するために使う。
 REHEARSAL_DATE_SUFFIX = "99991231"
+REHEARSAL_OLD_DATE_SUFFIX = "99991230"
 
 
 # === Representative accessions for invariant assertions ===
@@ -83,6 +85,39 @@ def rehearsal_date_suffix() -> str:
     return REHEARSAL_DATE_SUFFIX
 
 
+@pytest.fixture(scope="session")
+def rehearsal_old_date_suffix() -> str:
+    """Older date suffix used to represent the previous Blue-Green generation in swap tests."""
+    return REHEARSAL_OLD_DATE_SUFFIX
+
+
+# === PostgreSQL fixtures ===
+
+
+@pytest.fixture(scope="session")
+def integration_xsm_postgres_url() -> str:
+    """Return the XSM PostgreSQL URL, or skip if unset."""
+    url = os.environ.get(INTEGRATION_ENV_VAR_XSM_POSTGRES_URL)
+    if not url:
+        pytest.skip(
+            f"{INTEGRATION_ENV_VAR_XSM_POSTGRES_URL} is not set; "
+            "point it at staging XSM PostgreSQL to run the connectivity smoke"
+        )
+    return url
+
+
+@pytest.fixture(scope="session")
+def integration_trad_postgres_url() -> str:
+    """Return the TRAD PostgreSQL URL, or skip if unset."""
+    url = os.environ.get(INTEGRATION_ENV_VAR_TRAD_POSTGRES_URL)
+    if not url:
+        pytest.skip(
+            f"{INTEGRATION_ENV_VAR_TRAD_POSTGRES_URL} is not set; "
+            "point it at staging TRAD PostgreSQL to run the connectivity smoke"
+        )
+    return url
+
+
 @pytest.fixture
 def cleanup_rehearsal_indexes(integration_config: Config) -> Iterator[None]:
     """Cleanup of ``*-99991231`` rehearsal indexes around each test.
@@ -99,5 +134,9 @@ def cleanup_rehearsal_indexes(integration_config: Config) -> Iterator[None]:
 
 
 def _delete_rehearsal_indexes(config: Config) -> None:
-    names = [make_physical_index_name(idx, REHEARSAL_DATE_SUFFIX) for idx in ALL_INDEXES]
+    names = [
+        make_physical_index_name(idx, suffix)
+        for suffix in (REHEARSAL_DATE_SUFFIX, REHEARSAL_OLD_DATE_SUFFIX)
+        for idx in ALL_INDEXES
+    ]
     delete_physical_indexes(config, names)

@@ -158,19 +158,20 @@ def bulk_insert_jsonl(
     # Disable refresh during bulk insert for better performance
     set_refresh_interval(es_client, write_index, BULK_INSERT_SETTINGS["bulk_refresh_interval"])
 
+    es_client_with_timeout = es_client.options(request_timeout=BULK_INSERT_SETTINGS["request_timeout"])
+
     try:
         for jsonl_file in jsonl_files:
             logical = index if target_index else None
             actions = generate_bulk_actions(jsonl_file, write_index, logical_index=logical)
 
             for ok, info in helpers.parallel_bulk(
-                es_client,
+                es_client_with_timeout,
                 actions,
                 thread_count=BULK_INSERT_SETTINGS["thread_count"],
                 chunk_size=batch_size,
                 raise_on_error=False,
                 raise_on_exception=False,
-                request_timeout=BULK_INSERT_SETTINGS["request_timeout"],
             ):
                 if ok:
                     success_count += 1
