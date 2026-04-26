@@ -23,8 +23,8 @@ class Distribution(BaseModel):
 
 
 class Organism(BaseModel):
-    identifier: str | None
-    name: str | None
+    identifier: str | None = None
+    name: str | None = None
 
 
 OrganizationType = Literal["institute", "center", "consortium", "lab"]
@@ -54,7 +54,7 @@ class Publication(BaseModel):
 
 class Grant(BaseModel):
     id_: str | None = Field(default=None, alias="id")
-    title: str | None
+    title: str | None = None
     agency: list[Organization]
 
 

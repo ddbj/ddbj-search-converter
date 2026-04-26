@@ -15,6 +15,7 @@ from ddbj_search_converter.schema import (
     BioSample,
     BioSamplePackage,
     Distribution,
+    Grant,
     MetaboBank,
     Organism,
     Organization,
@@ -83,6 +84,26 @@ class TestOrganism:
 
         assert org.identifier is None
         assert org.name is None
+
+    def test_organism_kwargs_omitted_defaults_to_none(self) -> None:
+        """default が `= None` なので kwarg 省略でも構築できる。
+
+        identifier / name どちらか一方しか分からない場合に
+        `Organism(identifier="9606")` のように片方省略で書けることを担保する。
+        default が外れると converter / api 両側で `name=None` を kwarg 明示し
+        続けるアンチパターンに戻ってしまう。
+        """
+        org = Organism()
+        assert org.identifier is None
+        assert org.name is None
+
+        org_id_only = Organism(identifier="9606")
+        assert org_id_only.identifier == "9606"
+        assert org_id_only.name is None
+
+        org_name_only = Organism(name="Homo sapiens")
+        assert org_name_only.identifier is None
+        assert org_name_only.name == "Homo sapiens"
 
 
 class TestXref:
@@ -564,6 +585,39 @@ class TestPublication:
         pub = Publication()
         assert "status" not in Publication.model_fields
         assert not hasattr(pub, "status")
+
+
+class TestGrant:
+    """Grant の default 契約。
+
+    `id_` は `Field(default=None, alias="id")` で kwarg 省略可、
+    `title` は `str | None = None` で kwarg 省略可 (id_ と整合)、
+    `agency` は default なしの list で kwarg 必須。converter / api 両側で
+    `title=None` を kwarg 明示し続けるアンチパターンに戻らないことを保証する。
+    """
+
+    def test_kwargs_omitted_defaults_to_none(self) -> None:
+        grant = Grant(agency=[])
+        assert grant.id_ is None
+        assert grant.title is None
+        assert grant.agency == []
+
+    def test_id_alias_in_input_and_output(self) -> None:
+        """id (alias) で入力でき、by_alias dump で id として出る。"""
+        grant = Grant(id="GRANT001", title="Test grant", agency=[])
+        assert grant.id_ == "GRANT001"
+        dumped = grant.model_dump(by_alias=True)
+        assert dumped["id"] == "GRANT001"
+        assert "id_" not in dumped
+
+    def test_agency_is_required(self) -> None:
+        """agency は default なしの list。kwarg 省略で ValidationError."""
+        with pytest.raises(ValidationError):
+            Grant()  # type: ignore[call-arg]
+
+    def test_agency_accepts_list_of_organization(self) -> None:
+        grant = Grant(agency=[Organization(name="JST")])
+        assert grant.agency[0].name == "JST"
 
 
 class TestBioSamplePackage:
