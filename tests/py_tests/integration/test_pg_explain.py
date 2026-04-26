@@ -12,11 +12,11 @@ from typing import Any
 
 from ddbj_search_converter.postgres.bp_date import (
     BP_ACCESSIONS_MODIFIED_SINCE_QUERY,
-    BP_DATES_BULK_QUERY_TEMPLATE,
+    BP_DATES_BULK_QUERY,
 )
 from ddbj_search_converter.postgres.bs_date import (
     BS_ACCESSIONS_MODIFIED_SINCE_QUERY,
-    BS_DATES_BULK_QUERY_TEMPLATE,
+    BS_DATES_BULK_QUERY,
 )
 from ddbj_search_converter.postgres.utils import postgres_connection
 
@@ -30,7 +30,7 @@ def _explain(url: str, dbname: str, query: str) -> list[Any]:
 
 def test_bp_dates_bulk_query_plans_against_xsm_bioproject(integration_xsm_postgres_url: str) -> None:
     """IT-PG-03-bp-bulk: BP バルク取得 SQL が staging XSM (`bioproject`) で EXPLAIN 通る。"""
-    query = BP_DATES_BULK_QUERY_TEMPLATE.format(placeholders="'PRJDB1'")
+    query = BP_DATES_BULK_QUERY.replace("%s", "ARRAY['PRJDB1']::text[]")
     plan = _explain(integration_xsm_postgres_url, "bioproject", query)
     assert plan, "EXPLAIN returned empty plan"
 
@@ -46,7 +46,7 @@ def test_bp_accessions_modified_since_query_plans_against_xsm_bioproject(
 
 def test_bs_dates_bulk_query_plans_against_xsm_biosample(integration_xsm_postgres_url: str) -> None:
     """IT-PG-03-bs-bulk: BS バルク取得 SQL が staging XSM (`biosample`) で EXPLAIN 通る。"""
-    query = BS_DATES_BULK_QUERY_TEMPLATE.format(placeholders="'SAMD00000001'")
+    query = BS_DATES_BULK_QUERY.replace("%s", "ARRAY['SAMD00000001']::text[]")
     plan = _explain(integration_xsm_postgres_url, "biosample", query)
     assert plan
 

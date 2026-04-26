@@ -78,9 +78,19 @@ def _element_to_dict(
     return result
 
 
+# XXE / billion laughs / 外部 DTD fetch を構造的に塞ぐパーサ設定。NCBI / DDBJ
+# の入力は信頼できる前提だが、無料の保険として明示する。``resolve_entities=False``
+# は ``&entity;`` 参照の展開を抑止し、``no_network=True`` は外部 DTD / entity の
+# fetch を遮断する。
+_SAFE_PARSER = etree.XMLParser(
+    no_network=True,
+    resolve_entities=False,
+)
+
+
 def parse_xml(xml_bytes: bytes) -> dict[str, Any]:
     """XML bytes を dict にパースする。lxml ベースで高速化。"""
-    root = etree.fromstring(xml_bytes)
+    root = etree.fromstring(xml_bytes, parser=_SAFE_PARSER)
     root_tag: str = str(root.tag)
     if "}" in root_tag:
         root_tag = root_tag.split("}")[1]

@@ -300,8 +300,11 @@ class TestBuildDateCacheOrder:
         mock_fetch_bp.assert_called_once_with("postgresql://u:p@h:5432")
         mock_fetch_bs.assert_called_once_with("postgresql://u:p@h:5432")
 
-    def test_insert_receives_collected_rows(self, mocker: MockerFixture, tmp_path: Path) -> None:
-        """fetch の結果が list 化されて insert に渡される。"""
+    def test_insert_receives_streaming_iterator(self, mocker: MockerFixture, tmp_path: Path) -> None:
+        """fetch の結果が generator のまま insert に渡され、消費して中身が一致する。
+
+        list() で全件メモリロードしないことを担保するため、insert_bp_dates の
+        第二引数は ``Iterator`` (list ではない) として渡る設計。"""
         config = Config(
             result_dir=tmp_path,
             xsm_postgres_url="postgresql://u:p@h:5432",
@@ -335,10 +338,12 @@ class TestBuildDateCacheOrder:
 
         build_date_cache(config)
 
-        # 第二引数に bp_rows がそのまま渡される (list 化済)
         bp_call = mock_insert_bp.call_args
         assert bp_call.args[0] is config
-        assert bp_call.args[1] == bp_rows
+        # list で固定化されていない (generator/iter のまま渡る) ことを担保
+        assert not isinstance(bp_call.args[1], list)
+        assert list(bp_call.args[1]) == bp_rows
         bs_call = mock_insert_bs.call_args
         assert bs_call.args[0] is config
-        assert bs_call.args[1] == bs_rows
+        assert not isinstance(bs_call.args[1], list)
+        assert list(bs_call.args[1]) == bs_rows

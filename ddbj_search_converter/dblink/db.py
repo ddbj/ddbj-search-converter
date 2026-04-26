@@ -109,14 +109,31 @@ def init_dblink_db(config: Config) -> None:
 
 
 def finalize_dblink_db(config: Config) -> None:
-    """``raw_edges`` から ``dbxref`` を構築し、index を張り、tmp → final に replace。"""
-    build_dbxref_table(config)
-    create_dbxref_indexes(config)
+    """``raw_edges`` から ``dbxref`` を構築し、index を張り、tmp → final に replace。
+
+    各段階 (build_dbxref_table / create_dbxref_indexes / atomic replace) で
+    失敗した場合は ``RuntimeError`` でラップし、段階ラベル + 関連 path を
+    メッセージに含める (元 traceback は ``__cause__`` 経由で保持)。replace は
+    atomic だが、その前段の build / create_indexes で失敗すると tmp DB が残る
+    ため、メッセージから debug の起点が辿れる。"""
+    try:
+        build_dbxref_table(config)
+    except Exception as e:
+        raise RuntimeError("finalize_dblink_db: failed at build_dbxref_table") from e
+    try:
+        create_dbxref_indexes(config)
+    except Exception as e:
+        raise RuntimeError("finalize_dblink_db: failed at create_dbxref_indexes") from e
 
     tmp_path = _tmp_db_path(config)
     final_path = _final_db_path(config)
 
-    tmp_path.replace(final_path)
+    try:
+        tmp_path.replace(final_path)
+    except Exception as e:
+        raise RuntimeError(
+            f"finalize_dblink_db: failed at atomic replace {tmp_path} -> {final_path}",
+        ) from e
 
 
 # === Write operations ===
@@ -145,24 +162,29 @@ def write_edges_to_tsv(
 
 
 def load_edges_from_tsv(config: Config, tsv_path: Path) -> None:
-    """Canonical TSV を ``raw_edges`` テーブルに bulk COPY する。"""
+    """Canonical TSV を ``raw_edges`` テーブルに bulk COPY する。
+
+    ``read_csv`` の第一引数は DuckDB の prepared parameter (``?``) で bind して
+    渡す。文字列直埋めの SQL injection 経路を構造的に封じる。"""
     db_path = _tmp_db_path(config)
     with duckdb.connect(str(db_path)) as conn:
-        safe_path = str(tsv_path).replace("'", "''")
-        conn.execute(f"""
+        conn.execute(
+            """
             INSERT INTO raw_edges
             SELECT * FROM read_csv(
-                '{safe_path}',
+                ?,
                 header=false,
-                columns={{
+                columns={
                     'src_type': 'TEXT',
                     'src_accession': 'TEXT',
                     'dst_type': 'TEXT',
                     'dst_accession': 'TEXT'
-                }},
+                },
                 delim='\t'
             )
-        """)
+            """,
+            (str(tsv_path),),
+        )
 
 
 def load_to_db(

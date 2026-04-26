@@ -168,9 +168,13 @@ DEFAULT_MARGIN_DAYS = 30
 
 
 def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
-    """since から margin_days を引いた ISO8601 日時文字列を返す。"""
+    """since から margin_days を引いた UTC ISO8601 (``Z`` 終端) 文字列を返す。
+
+    入力の tz offset が UTC 以外 (例: ``+09:00``) でも、内部時刻を UTC に変換
+    してから整形するため、見かけの ``Z`` と実 tz のずれが発生しない。
+    """
     dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
-    margin_dt = dt - timedelta(days=margin_days)
+    margin_dt = (dt - timedelta(days=margin_days)).astimezone(ZoneInfo("UTC"))
     return margin_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

@@ -12,7 +12,7 @@ from ddbj_search_converter.postgres.utils import format_date, postgres_connectio
 
 POSTGRES_DB_NAME = "biosample"
 
-BS_DATES_BULK_QUERY_TEMPLATE = """
+BS_DATES_BULK_QUERY = """
 SELECT
     s.accession_id,
     p.create_date,
@@ -25,7 +25,7 @@ INNER JOIN (
     FROM mass.sample
     ORDER BY submission_id
 ) p ON s.submission_id = p.submission_id
-WHERE s.accession_id IN ({placeholders})
+WHERE s.accession_id = ANY(%s)
 """
 
 BS_ACCESSIONS_MODIFIED_SINCE_QUERY = """
@@ -59,9 +59,7 @@ def fetch_bs_dates_bulk(
 
     try:
         with postgres_connection(config.xsm_postgres_url, POSTGRES_DB_NAME) as conn, conn.cursor() as cur:
-            placeholders = ",".join(["%s"] * len(accession_list))
-            query = BS_DATES_BULK_QUERY_TEMPLATE.format(placeholders=placeholders)
-            cur.execute(query, accession_list)
+            cur.execute(BS_DATES_BULK_QUERY, (accession_list,))
             rows = cur.fetchall()
 
             for row in rows:

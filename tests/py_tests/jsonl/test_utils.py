@@ -102,6 +102,22 @@ class TestBug7InvalidTypeHint:
             to_xref("test", type_hint="nonexistent")  # type: ignore[arg-type]
 
 
+class TestGeaUrlPathConsistency:
+    """type_hint="gea" と pattern match 経路の GEA URL が一致する。
+
+    旧実装は GEA URL 生成を 2 箇所に重複させていて、type_hint 経路だけが ``int()``
+    失敗を catch していたという非対称があった。``_build_url`` に集約後の回帰検出。
+    """
+
+    @pytest.mark.parametrize("gea_id", ["E-GEAD-1", "E-GEAD-999", "E-GEAD-1000", "E-GEAD-12345"])
+    def test_paths_agree_for_valid_gea_id(self, gea_id: str) -> None:
+        with_hint = to_xref(gea_id, type_hint="gea")
+        without_hint = to_xref(gea_id)
+        assert without_hint.type_ == "gea"
+        assert with_hint.type_ == "gea"
+        assert with_hint.url == without_hint.url
+
+
 class TestPBT:
     """Property-based tests for to_xref."""
 

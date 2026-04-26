@@ -55,6 +55,26 @@ URL_TEMPLATE: dict[XrefType, str] = {
 }
 
 
+def _build_url(db_type: XrefType, id_: str) -> str:
+    """``URL_TEMPLATE`` から URL を生成する。GEA は prefix 切り出しが必要なため特例。
+
+    GEA URL は ``{base}/experiment/E-GEAD-{NNN}/E-GEAD-{full}/`` 形式で、
+    prefix の ``E-GEAD-{NNN}`` は accession の数値部を 1000 単位で切り捨てた
+    グループ (FTP 側のディレクトリ構造と一致)。``E-GEAD-`` で始まらない、
+    あるいは末尾が数字でない id でも crash しないよう、parse 失敗時は 0 に
+    fallback する。type_hint 経由 / pattern match 経由のどちらから来ても
+    同じ挙動になるよう 1 箇所に集約する。"""
+    template = URL_TEMPLATE[db_type]
+    if db_type == "gea":
+        try:
+            gea_id_num = int(id_.removeprefix("E-GEAD-"))
+        except ValueError:
+            gea_id_num = 0
+        prefix = f"E-GEAD-{(gea_id_num // 1000) * 1000:03d}"
+        return template.format(prefix=prefix, id=id_)
+    return template.format(id=id_)
+
+
 def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     """
     ID パターンから Xref を自動生成する。
@@ -66,17 +86,7 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     if type_hint is not None:
         if type_hint not in URL_TEMPLATE:
             raise ValueError(f"Unknown type_hint: {type_hint}")
-        url_template = URL_TEMPLATE[type_hint]
-        if type_hint == "gea":
-            try:
-                gea_id_num = int(id_.removeprefix("E-GEAD-"))
-            except ValueError:
-                gea_id_num = 0
-            prefix = f"E-GEAD-{(gea_id_num // 1000) * 1000:03d}"
-            url = url_template.format(prefix=prefix, id=id_)
-        else:
-            url = url_template.format(id=id_)
-        return Xref(identifier=id_, type=type_hint, url=url)
+        return Xref(identifier=id_, type=type_hint, url=_build_url(type_hint, id_))
 
     # pubmed と taxonomy は数字のみなので最後にチェックする
     # insdc は ID_PATTERN_MAP にパターンがないため含めない（type_hint 経由でのみ使用）
@@ -104,17 +114,10 @@ def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:
     for db_type in priority_types:
         pattern = ID_PATTERN_MAP[db_type]
         if pattern.match(id_):
-            url_template = URL_TEMPLATE[db_type]
-            if db_type == "gea":
-                gea_id_num = int(id_.removeprefix("E-GEAD-"))
-                prefix = f"E-GEAD-{(gea_id_num // 1000) * 1000:03d}"
-                url = url_template.format(prefix=prefix, id=id_)
-            else:
-                url = url_template.format(id=id_)
-            return Xref(identifier=id_, type=db_type, url=url)
+            return Xref(identifier=id_, type=db_type, url=_build_url(db_type, id_))
 
     # default は taxonomy を返す
-    return Xref(identifier=id_, type="taxonomy", url=URL_TEMPLATE["taxonomy"].format(id=id_))
+    return Xref(identifier=id_, type="taxonomy", url=_build_url("taxonomy", id_))
 
 
 def ensure_attribute_list(

@@ -775,13 +775,17 @@ def _process_xml_file_worker(
     # ステータスをキャッシュから取得して上書き
     _fetch_statuses(config, docs)
 
-    # NCBI 差分更新: since 以降に更新されたもののみ残す
+    # NCBI 差分更新: since 以降に更新されたもののみ残す。
+    # dateModified is None のエントリ (XML から日付抽出できなかった) も除外側に倒す。
+    # 比較不能なので残す/落とすの判断ができず、次回以降の差分で再評価される前提。
+    # 文字列比較で動かしているのは ISO 8601 ``YYYY-MM-DDTHH:MM:SSZ`` (UTC 固定、
+    # ``apply_margin`` の出力形式) と一致するため辞書順 = 時刻順になる。
     if not is_ddbj and since is not None:
         original_count = len(docs)
         docs = {acc: doc for acc, doc in docs.items() if doc.dateModified is not None and doc.dateModified >= since}
         ncbi_filtered = original_count - len(docs)
         if ncbi_filtered > 0:
-            log_info(f"filtered {ncbi_filtered} ncbi entries (dateModified < {since})")
+            log_info(f"filtered {ncbi_filtered} ncbi entries (dateModified < {since} or None)")
 
     write_jsonl(output_path, list(docs.values()))
     log_info(f"wrote {len(docs)} entries to {output_path}")

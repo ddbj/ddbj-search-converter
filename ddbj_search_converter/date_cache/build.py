@@ -108,16 +108,14 @@ def build_date_cache(config: Config) -> None:
     log_info("initializing date cache db")
     init_date_cache_db(config)
 
-    log_info("fetching all bp dates from postgresql")
-    bp_rows = list(_fetch_all_bp_dates(config.xsm_postgres_url))
-    log_info(f"fetched {len(bp_rows)} bp dates from postgresql")
-    bp_count = insert_bp_dates(config, bp_rows)
+    # generator のまま insert に渡し、PostgreSQL の server-side cursor から
+    # DuckDB の chunk insert へ row をストリームする (全件メモリ載せを避ける)。
+    log_info("fetching and inserting bp dates from postgresql")
+    bp_count = insert_bp_dates(config, _fetch_all_bp_dates(config.xsm_postgres_url))
     log_info(f"inserted {bp_count} bp_date rows")
 
-    log_info("fetching all bs dates from postgresql")
-    bs_rows = list(_fetch_all_bs_dates(config.xsm_postgres_url))
-    log_info(f"fetched {len(bs_rows)} bs dates from postgresql")
-    bs_count = insert_bs_dates(config, bs_rows)
+    log_info("fetching and inserting bs dates from postgresql")
+    bs_count = insert_bs_dates(config, _fetch_all_bs_dates(config.xsm_postgres_url))
     log_info(f"inserted {bs_count} bs_date rows")
 
     log_info("finalizing date cache db")

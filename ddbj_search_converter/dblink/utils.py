@@ -1,5 +1,6 @@
 """DBLink 処理用のユーティリティ関数。"""
 
+from pathlib import Path
 from typing import Literal
 
 from ddbj_search_converter.config import (
@@ -15,34 +16,32 @@ from ddbj_search_converter.logging.logger import log_debug, log_info
 from ddbj_search_converter.logging.schema import DebugCategory
 
 
+def _read_blacklist_file(path: Path, label: str) -> set[str]:
+    """単一の blacklist ファイルを読み込んで accession の集合を返す。
+
+    - 空行と ``#`` 始まりの行は無視
+    - 各行は strip して accession のみ取り出す
+    - ファイルが存在しないときは空集合を返し info ログを出す (CLI 直叩きや
+      blacklist を持たない fixture でも落ちないようにするため)
+    """
+    if not path.exists():
+        log_info(f"{label} blacklist not found, skipping: {path}", file=str(path))
+        return set()
+
+    accessions: set[str] = set()
+    with path.open("r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if line and not line.startswith("#"):
+                accessions.add(line)
+    log_info(f"loaded {len(accessions)} {label} blacklist entries", file=str(path))
+    return accessions
+
+
 def load_blacklist(config: Config) -> tuple[set[str], set[str]]:
     """BioProject/BioSample の blacklist ファイルを読み込む。"""
-    bp_blacklist_path = config.const_dir.joinpath(BP_BLACKLIST_REL_PATH)
-    bs_blacklist_path = config.const_dir.joinpath(BS_BLACKLIST_REL_PATH)
-
-    bp_blacklist: set[str] = set()
-    bs_blacklist: set[str] = set()
-
-    if bp_blacklist_path.exists():
-        with bp_blacklist_path.open("r", encoding="utf-8") as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if line and not line.startswith("#"):
-                    bp_blacklist.add(line)
-        log_info(f"loaded {len(bp_blacklist)} BioProject blacklist entries", file=str(bp_blacklist_path))
-    else:
-        log_info(f"bioproject blacklist not found, skipping: {bp_blacklist_path}", file=str(bp_blacklist_path))
-
-    if bs_blacklist_path.exists():
-        with bs_blacklist_path.open("r", encoding="utf-8") as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if line and not line.startswith("#"):
-                    bs_blacklist.add(line)
-        log_info(f"loaded {len(bs_blacklist)} BioSample blacklist entries", file=str(bs_blacklist_path))
-    else:
-        log_info(f"biosample blacklist not found, skipping: {bs_blacklist_path}", file=str(bs_blacklist_path))
-
+    bp_blacklist = _read_blacklist_file(config.const_dir.joinpath(BP_BLACKLIST_REL_PATH), "BioProject")
+    bs_blacklist = _read_blacklist_file(config.const_dir.joinpath(BS_BLACKLIST_REL_PATH), "BioSample")
     return bp_blacklist, bs_blacklist
 
 
@@ -52,21 +51,7 @@ def load_sra_blacklist(config: Config) -> set[str]:
     SRA blacklist には Study, Experiment, Run, Sample の accession が含まれる。
     コメント行 (#) は無視する。
     """
-    sra_blacklist_path = config.const_dir.joinpath(SRA_BLACKLIST_REL_PATH)
-
-    sra_blacklist: set[str] = set()
-
-    if sra_blacklist_path.exists():
-        with sra_blacklist_path.open("r", encoding="utf-8") as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if line and not line.startswith("#"):
-                    sra_blacklist.add(line)
-        log_info(f"loaded {len(sra_blacklist)} SRA blacklist entries", file=str(sra_blacklist_path))
-    else:
-        log_info(f"sra blacklist not found, skipping: {sra_blacklist_path}", file=str(sra_blacklist_path))
-
-    return sra_blacklist
+    return _read_blacklist_file(config.const_dir.joinpath(SRA_BLACKLIST_REL_PATH), "SRA")
 
 
 def filter_by_blacklist(
@@ -140,21 +125,7 @@ def load_jga_blacklist(config: Config) -> set[str]:
     JGA blacklist には Study, Dataset, DAC, Policy の accession が含まれる。
     コメント行 (#) は無視する。
     """
-    jga_blacklist_path = config.const_dir.joinpath(JGA_BLACKLIST_REL_PATH)
-
-    jga_blacklist: set[str] = set()
-
-    if jga_blacklist_path.exists():
-        with jga_blacklist_path.open("r", encoding="utf-8") as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if line and not line.startswith("#"):
-                    jga_blacklist.add(line)
-        log_info(f"loaded {len(jga_blacklist)} JGA blacklist entries", file=str(jga_blacklist_path))
-    else:
-        log_info(f"jga blacklist not found, skipping: {jga_blacklist_path}", file=str(jga_blacklist_path))
-
-    return jga_blacklist
+    return _read_blacklist_file(config.const_dir.joinpath(JGA_BLACKLIST_REL_PATH), "JGA")
 
 
 # Type alias (re-exported for convenience)

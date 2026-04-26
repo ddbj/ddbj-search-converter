@@ -83,6 +83,26 @@ class TestParseXml:
         result = parse_xml(xml_bytes)
         assert result["Root"] is None
 
+    def test_external_entity_is_not_expanded(self) -> None:
+        """``resolve_entities=False`` により external SYSTEM entity が展開されない。
+
+        XXE 攻撃 (``file:///etc/passwd`` 経由でローカルファイル exfil) を防御
+        しているリグレッションテスト。entity 未定義として例外で reject されるか、
+        参照リテラルがそのまま残るか、いずれにしてもファイル内容が文字列として
+        混入してはいけない。
+        """
+        xml_bytes = (
+            b'<?xml version="1.0"?>'
+            b'<!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
+            b"<root>&xxe;</root>"
+        )
+        try:
+            result = parse_xml(xml_bytes)
+        except Exception:
+            return  # 例外で reject も安全側
+        # entity 展開されないので /etc/passwd の典型行が結果に含まれてはいけない
+        assert "root:x:0:0" not in str(result)
+
 
 class TestGetTmpXmlDir:
     """Tests for get_tmp_xml_dir function."""

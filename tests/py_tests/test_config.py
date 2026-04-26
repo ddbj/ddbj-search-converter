@@ -134,3 +134,24 @@ class TestApplyMargin:
         """時刻部分が保持される。"""
         result = apply_margin("2026-02-15T15:30:45Z")
         assert result == "2026-01-16T15:30:45Z"
+
+    def test_jst_input_is_normalized_to_utc(self) -> None:
+        """JST (+09:00) 入力でも UTC ``Z`` 終端で返る (見かけと内部時刻が一致)."""
+        # 2026-01-15T09:00:00+09:00 == 2026-01-15T00:00:00Z
+        result = apply_margin("2026-01-15T09:00:00+09:00", margin_days=1)
+        assert result == "2026-01-14T00:00:00Z"
+
+    def test_negative_offset_input_is_normalized_to_utc(self) -> None:
+        """負の tz offset (-05:00) 入力でも UTC ``Z`` 終端で返る。"""
+        # 2026-01-15T20:00:00-05:00 == 2026-01-16T01:00:00Z
+        result = apply_margin("2026-01-15T20:00:00-05:00", margin_days=0)
+        assert result == "2026-01-16T01:00:00Z"
+
+    def test_non_utc_input_does_not_drift_after_subtraction(self) -> None:
+        """tz 付き入力で margin 減算後も ``Z`` 表記の値が UTC として正しい。
+
+        修正前の実装は ``strftime("...Z")`` で tz 情報を捨てていたため、
+        JST 入力だと見かけの ``Z`` が実際は JST 相当値になっていた。"""
+        # 2026-02-15T00:00:00+09:00 == 2026-02-14T15:00:00Z
+        result = apply_margin("2026-02-15T00:00:00+09:00", margin_days=30)
+        assert result == "2026-01-15T15:00:00Z"

@@ -194,6 +194,29 @@ class TestLoadEdgesFromTsv:
             rows = conn.execute("SELECT * FROM raw_edges ORDER BY src_accession").fetchall()
             assert len(rows) == 2
 
+    def test_path_with_quote_is_safely_bound(self, test_config: Config, tmp_path: Path) -> None:
+        """tsv path に ``'`` (シングルクォート) を含んでも parameter bind 経由で動く。
+
+        旧実装は ``str(tsv_path).replace("'", "''")`` で SQL に直埋めしていたが、
+        injection 経路を構造的に封じるため ``read_csv(?)`` の prepared parameter
+        に切り替えた。回帰検出として control character 入りの path で読めること
+        を担保する。"""
+        init_dblink_db(test_config)
+        weird_dir = tmp_path / "with'quote;and--comment"
+        weird_dir.mkdir()
+        tsv_path = weird_dir / "edges.tsv"
+        tsv_path.write_text(
+            "bioproject\tPRJDB1\tbiosample\tSAMD1\n",
+            encoding="utf-8",
+        )
+        load_edges_from_tsv(test_config, tsv_path)
+
+        db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute("SELECT COUNT(*) FROM raw_edges").fetchone()
+            assert rows is not None
+            assert rows[0] == 1
+
 
 class TestBuildDbxrefTable:
     """Tests for build_dbxref_table function.
