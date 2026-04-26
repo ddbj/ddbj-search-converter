@@ -588,11 +588,7 @@ def _make_minimal_bs_kwargs() -> dict:
         "distribution": [],
         "isPartOf": "biosample",
         "type": "biosample",
-        "name": None,
         "url": "https://example.com",
-        "organism": None,
-        "title": None,
-        "description": None,
         "derivedFrom": [],
         "organization": [],
         "model": [],
@@ -601,9 +597,6 @@ def _make_minimal_bs_kwargs() -> dict:
         "sameAs": [],
         "status": "public",
         "accessibility": "public-access",
-        "dateCreated": None,
-        "dateModified": None,
-        "datePublished": None,
     }
 
 
@@ -657,11 +650,7 @@ def _make_minimal_sra_kwargs() -> dict:
         "distribution": [],
         "isPartOf": "sra",
         "type": "sra-experiment",
-        "name": None,
         "url": "https://example.com",
-        "organism": None,
-        "title": None,
-        "description": None,
         "organization": [],
         "publication": [],
         "libraryStrategy": [],
@@ -676,9 +665,6 @@ def _make_minimal_sra_kwargs() -> dict:
         "sameAs": [],
         "status": "public",
         "accessibility": "public-access",
-        "dateCreated": None,
-        "dateModified": None,
-        "datePublished": None,
     }
 
 
@@ -830,11 +816,7 @@ def _make_minimal_bp_kwargs() -> dict:
         "isPartOf": "bioproject",
         "type": "bioproject",
         "objectType": "BioProject",
-        "name": None,
         "url": "https://example.com",
-        "organism": None,
-        "title": None,
-        "description": None,
         "projectType": [],
         "relevance": [],
         "organization": [],
@@ -847,9 +829,6 @@ def _make_minimal_bp_kwargs() -> dict:
         "sameAs": [],
         "status": "public",
         "accessibility": "public-access",
-        "dateCreated": None,
-        "dateModified": None,
-        "datePublished": None,
     }
 
 
@@ -860,11 +839,7 @@ def _make_minimal_jga_kwargs() -> dict:
         "distribution": [],
         "isPartOf": "jga",
         "type": "jga-study",
-        "name": None,
         "url": "https://example.com",
-        "organism": None,
-        "title": None,
-        "description": None,
         "organization": [],
         "publication": [],
         "grant": [],
@@ -876,9 +851,6 @@ def _make_minimal_jga_kwargs() -> dict:
         "sameAs": [],
         "status": "public",
         "accessibility": "controlled-access",
-        "dateCreated": None,
-        "dateModified": None,
-        "datePublished": None,
     }
 
 
@@ -992,6 +964,105 @@ class TestRequiredListFieldsValidation:
         del kwargs[field]
         with pytest.raises(ValidationError):
             model_cls(**kwargs)
+
+
+# 入力データ (XML / IDF / TSV) のタグ不在や cache miss で欠落しうる scalar は、
+# schema.py 側で `field: T | None = None` (optional) として全 AccessionType で
+# 統一する SSOT 契約。default が外れると jsonl 構築側で `name=None` 等を
+# kwarg 明示し続けるアンチパターンに戻ってしまう。
+_OPTIONAL_SCALAR_FIELDS: dict[type, list[str]] = {
+    BioProject: [
+        "name",
+        "organism",
+        "title",
+        "description",
+        "dateCreated",
+        "dateModified",
+        "datePublished",
+    ],
+    BioSample: [
+        "name",
+        "organism",
+        "title",
+        "description",
+        "dateCreated",
+        "dateModified",
+        "datePublished",
+    ],
+    SRA: [
+        "name",
+        "organism",
+        "title",
+        "description",
+        "dateCreated",
+        "dateModified",
+        "datePublished",
+    ],
+    JGA: [
+        "name",
+        "organism",
+        "title",
+        "description",
+        "dateCreated",
+        "dateModified",
+        "datePublished",
+    ],
+    GEA: [
+        "name",
+        "organism",
+        "title",
+        "description",
+        "dateCreated",
+        "dateModified",
+        "datePublished",
+    ],
+    MetaboBank: [
+        "name",
+        "organism",
+        "title",
+        "description",
+        "dateCreated",
+        "dateModified",
+        "datePublished",
+    ],
+}
+
+
+class TestOptionalScalarFieldsContract:
+    """対象 scalar を kwarg から省略しても ValidationError が発生しないことを保証する。
+
+    schema.py で `field: T | None = None` (optional) と宣言しているため、kwarg
+    省略で None が補完されるはず。default が外れると省略時に ValidationError に
+    なってこのテストが落ちるので、リグレッションを早期に検出できる。
+    """
+
+    @pytest.mark.parametrize(
+        ("model_cls", "field"),
+        [(cls, field) for cls, fields in _OPTIONAL_SCALAR_FIELDS.items() for field in fields],
+    )
+    def test_missing_optional_does_not_raise(self, model_cls: type, field: str) -> None:
+        kwargs = _MAKE_KWARGS[model_cls]()
+        kwargs.pop(field, None)
+        instance = model_cls(**kwargs)
+        assert getattr(instance, field) is None
+
+
+class TestOptionalScalarFieldsKeyContract:
+    """null 値でも JSON key として必ず出力されることを保証する。
+
+    Pydantic の dump 動作変更 (exclude_none / exclude_defaults / exclude_unset の
+    追加など) で key が消えると、ddbj-search-api 側が継承する OpenAPI スキーマ上
+    の `nullable: true` 契約と整合しなくなる。配列の「空 list でも key 残留」契約と
+    対称な「null でも key 残留」契約を担保する。
+    """
+
+    @pytest.mark.parametrize("model_cls", list(_OPTIONAL_SCALAR_FIELDS.keys()))
+    def test_null_scalar_keys_persist_in_json(self, model_cls: type) -> None:
+        instance = model_cls(**_MAKE_KWARGS[model_cls]())
+        dumped = json.loads(instance.model_dump_json(by_alias=True))
+        for field in _OPTIONAL_SCALAR_FIELDS[model_cls]:
+            assert field in dumped, f"{model_cls.__name__}.{field} key が JSON 出力から消えている"
+            assert dumped[field] is None, f"{model_cls.__name__}.{field} は null として出力されるべき"
 
 
 class TestBioProjectArrayFieldKeyPersistencePBT:

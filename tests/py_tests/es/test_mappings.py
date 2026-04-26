@@ -34,7 +34,10 @@ def _assert_text_only(props: dict[str, Any], field_name: str) -> None:
 class TestCommonMapping:
     def test_common_mapping_has_required_fields(self) -> None:
         mapping = get_common_mapping()
-        required_fields = [
+        # ES mapping に properties として存在すべきフィールドリスト。
+        # Pydantic schema 上の required と直接の対応はなく (scalar の name/title/
+        # description/date* は optional)、mapping 側はあくまで「定義の有無」を見る。
+        expected_field_names = [
             "identifier",
             "properties",
             "distribution",
@@ -53,7 +56,7 @@ class TestCommonMapping:
             "dateModified",
             "datePublished",
         ]
-        for field in required_fields:
+        for field in expected_field_names:
             assert field in mapping, f"Missing field: {field}"
 
     def test_dbxref_is_disabled(self) -> None:

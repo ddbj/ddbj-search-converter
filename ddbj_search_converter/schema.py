@@ -101,11 +101,11 @@ class BioProject(BaseModel):
     isPartOf: Literal["bioproject"]
     type_: Literal["bioproject"] = Field(alias="type")
     objectType: Literal["UmbrellaBioProject", "BioProject"]
-    name: str | None
+    name: str | None = None
     url: str
-    organism: Organism | None
-    title: str | None
-    description: str | None
+    organism: Organism | None = None
+    title: str | None = None
+    description: str | None = None
     projectType: list[str]
     relevance: list[str]
     organization: list[Organization]
@@ -118,9 +118,9 @@ class BioProject(BaseModel):
     sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
-    dateCreated: str | None
-    dateModified: str | None
-    datePublished: str | None
+    dateCreated: str | None = None
+    dateModified: str | None = None
+    datePublished: str | None = None
 
 
 # === BioSample ===
@@ -137,11 +137,11 @@ class BioSample(BaseModel):
     distribution: list[Distribution]
     isPartOf: Literal["biosample"]
     type_: Literal["biosample"] = Field(alias="type")
-    name: str | None
+    name: str | None = None
     url: str
-    organism: Organism | None
-    title: str | None
-    description: str | None
+    organism: Organism | None = None
+    title: str | None = None
+    description: str | None = None
     derivedFrom: list[Xref]
     geoLocName: str | None = None
     collectionDate: str | None = None
@@ -155,9 +155,9 @@ class BioSample(BaseModel):
     sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
-    dateCreated: str | None
-    dateModified: str | None
-    datePublished: str | None
+    dateCreated: str | None = None
+    dateModified: str | None = None
+    datePublished: str | None = None
 
 
 # === SRA ===
@@ -171,11 +171,11 @@ class SRA(BaseModel):
     type_: Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"] = Field(
         alias="type"
     )
-    name: str | None
+    name: str | None = None
     url: str
-    organism: Organism | None
-    title: str | None
-    description: str | None
+    organism: Organism | None = None
+    title: str | None = None
+    description: str | None = None
     organization: list[Organization]
     publication: list[Publication]
     libraryStrategy: list[str]
@@ -194,9 +194,9 @@ class SRA(BaseModel):
     sameAs: list[Xref]
     status: Status
     accessibility: Accessibility
-    dateCreated: str | None
-    dateModified: str | None
-    datePublished: str | None
+    dateCreated: str | None = None
+    dateModified: str | None = None
+    datePublished: str | None = None
 
 
 # === JGA ===
@@ -208,11 +208,11 @@ class JGA(BaseModel):
     distribution: list[Distribution]
     isPartOf: Literal["jga"]
     type_: Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"] = Field(alias="type")
-    name: str | None
+    name: str | None = None
     url: str
-    organism: Organism | None
-    title: str | None
-    description: str | None
+    organism: Organism | None = None
+    title: str | None = None
+    description: str | None = None
     organization: list[Organization]
     publication: list[Publication]
     grant: list[Grant]
@@ -224,9 +224,9 @@ class JGA(BaseModel):
     sameAs: list[Xref]
     status: Literal["public"]
     accessibility: Literal["controlled-access"]
-    dateCreated: str | None
-    dateModified: str | None
-    datePublished: str | None
+    dateCreated: str | None = None
+    dateModified: str | None = None
+    datePublished: str | None = None
 
 
 # === GEA ===
