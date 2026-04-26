@@ -235,7 +235,8 @@ class TestParseOrganization:
         assert orgs[0].name == "DDBJ Center"
 
     def test_same_name_owner_and_participant_kept_separate(self) -> None:
-        """同名機関が owner と participant 両方で登場したら、dedup key (name, role, orgType) が異なるので両方保持する。"""
+        """同名機関が owner と participant 両方で登場したら、
+        dedup key (name, role, orgType) が異なるので両方保持する。"""
         project = _make_project()
         project["Submission"]["Description"]["Organization"] = [
             {"Name": "NCBI", "type": "institute", "role": "owner"},
@@ -394,8 +395,8 @@ class TestParsePublication:
         project["Project"]["ProjectDescr"]["Publication"] = {"DbType": "eNotAvailable"}
         assert parse_publication(project) == []
 
-    def test_publication_eNotAvailable_with_title_kept(self) -> None:
-        """eNotAvailable でも title が残っていれば Publication として保持する。"""
+    def test_publication_e_not_available_with_title_kept(self) -> None:
+        """``eNotAvailable`` でも title が残っていれば Publication として保持する。"""
         project = _make_project()
         project["Project"]["ProjectDescr"]["Publication"] = {
             "DbType": "eNotAvailable",
@@ -407,8 +408,8 @@ class TestParsePublication:
         assert pubs[0].dbType is None
         assert pubs[0].url is None
 
-    def test_publication_eNotAvailable_with_reference_kept(self) -> None:
-        """eNotAvailable でも reference が残っていれば Publication として保持する。"""
+    def test_publication_e_not_available_with_reference_kept(self) -> None:
+        """``eNotAvailable`` でも reference が残っていれば Publication として保持する。"""
         project = _make_project()
         project["Project"]["ProjectDescr"]["Publication"] = {
             "DbType": "eNotAvailable",
