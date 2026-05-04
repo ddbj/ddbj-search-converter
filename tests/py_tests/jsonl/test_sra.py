@@ -217,6 +217,7 @@ class TestProcessSubmissionXml:
             blacklist=set(),
             accession_info=accession_info,
             xml_cache=xml_cache,
+            is_dra=True,
         )
 
         # submission の dateCreated が Accessions.tab の Received であること
@@ -247,6 +248,7 @@ class TestProcessSubmissionXml:
             blacklist=set(),
             accession_info=accession_info,
             xml_cache=xml_cache,
+            is_dra=True,
         )
 
         assert len(results["submission"]) == 1
@@ -254,6 +256,130 @@ class TestProcessSubmissionXml:
 
         assert len(results["study"]) == 1
         assert results["study"][0].dateCreated is None
+
+
+class TestProcessSubmissionXmlNcbiSkipsDdbj:
+    """NCBI バッチ (is_dra=False) で DDBJ origin accession を skip する仕様の regression。"""
+
+    _DRA_SUBMISSION_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION accession="DRA000001" submission_date="2020-01-01">
+  <TITLE>Test DRA Submission</TITLE>
+</SUBMISSION>
+"""
+
+    _DRA_RUN_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET>
+  <RUN accession="DRR000001">
+    <EXPERIMENT_REF accession="DRX000001"/>
+  </RUN>
+</RUN_SET>
+"""
+
+    _SRA_SUBMISSION_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION accession="SRA000001" submission_date="2020-01-01">
+  <TITLE>Test NCBI Submission</TITLE>
+</SUBMISSION>
+"""
+
+    _MIXED_RUN_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET>
+  <RUN accession="SRR000001">
+    <EXPERIMENT_REF accession="SRX000001"/>
+  </RUN>
+  <RUN accession="DRR000001">
+    <EXPERIMENT_REF accession="DRX000001"/>
+  </RUN>
+  <RUN accession="ERR000001">
+    <EXPERIMENT_REF accession="ERX000001"/>
+  </RUN>
+</RUN_SET>
+"""
+
+    @staticmethod
+    def _accession_info(accs: list[str], type_label: str) -> dict[str, tuple[str, str, str | None, str | None, str | None, str]]:
+        return {acc: ("live", "public", None, None, None, type_label) for acc in accs}
+
+    def test_ncbi_batch_skips_dra_submission(self) -> None:
+        """NCBI バッチで DRA##### submission が skip されること。"""
+        xml_cache: dict[SraXmlType, bytes | None] = dict.fromkeys(XML_TYPES, None)
+        xml_cache["submission"] = self._DRA_SUBMISSION_XML
+
+        results = process_submission_xml(
+            submission="DRA000001",
+            blacklist=set(),
+            accession_info=self._accession_info(["DRA000001"], "submission"),
+            xml_cache=xml_cache,
+            is_dra=False,
+        )
+
+        assert results["submission"] == []
+
+    def test_ncbi_batch_skips_drr_run(self) -> None:
+        """NCBI バッチで DRR##### run が skip されること。"""
+        xml_cache: dict[SraXmlType, bytes | None] = dict.fromkeys(XML_TYPES, None)
+        xml_cache["run"] = self._DRA_RUN_XML
+
+        results = process_submission_xml(
+            submission="DRA000001",
+            blacklist=set(),
+            accession_info=self._accession_info(["DRR000001"], "run"),
+            xml_cache=xml_cache,
+            is_dra=False,
+        )
+
+        assert results["run"] == []
+
+    def test_dra_batch_keeps_dra_accession(self) -> None:
+        """DRA バッチでは DDBJ accession が残ること (regression)。"""
+        xml_cache: dict[SraXmlType, bytes | None] = dict.fromkeys(XML_TYPES, None)
+        xml_cache["submission"] = self._DRA_SUBMISSION_XML
+        xml_cache["run"] = self._DRA_RUN_XML
+
+        results = process_submission_xml(
+            submission="DRA000001",
+            blacklist=set(),
+            accession_info=self._accession_info(["DRA000001", "DRR000001"], "submission"),
+            xml_cache=xml_cache,
+            is_dra=True,
+        )
+
+        assert [e.identifier for e in results["submission"]] == ["DRA000001"]
+        assert [e.identifier for e in results["run"]] == ["DRR000001"]
+
+    def test_ncbi_batch_keeps_sra_accession(self) -> None:
+        """NCBI バッチで NCBI origin (SRA#####) は skip されないこと (false positive 検知)。"""
+        xml_cache: dict[SraXmlType, bytes | None] = dict.fromkeys(XML_TYPES, None)
+        xml_cache["submission"] = self._SRA_SUBMISSION_XML
+
+        results = process_submission_xml(
+            submission="SRA000001",
+            blacklist=set(),
+            accession_info=self._accession_info(["SRA000001"], "submission"),
+            xml_cache=xml_cache,
+            is_dra=False,
+        )
+
+        assert [e.identifier for e in results["submission"]] == ["SRA000001"]
+
+    def test_ncbi_batch_filters_only_ddbj_in_mixed_run(self) -> None:
+        """同じ XML に DDBJ / NCBI / EBI accession が混在する場合、DDBJ のみ skip される。"""
+        xml_cache: dict[SraXmlType, bytes | None] = dict.fromkeys(XML_TYPES, None)
+        xml_cache["run"] = self._MIXED_RUN_XML
+
+        results = process_submission_xml(
+            submission="SRA000001",
+            blacklist=set(),
+            accession_info=self._accession_info(["SRR000001", "DRR000001", "ERR000001"], "run"),
+            xml_cache=xml_cache,
+            is_dra=False,
+        )
+
+        kept = sorted(e.identifier for e in results["run"])
+        assert kept == ["ERR000001", "SRR000001"]
 
 
 def _make_sra_entry(identifier: str, sra_type: SraXmlType = "study") -> SRA:

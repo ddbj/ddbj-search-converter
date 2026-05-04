@@ -31,6 +31,7 @@ from ddbj_search_converter.config import (
     write_last_run,
 )
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
+from ddbj_search_converter.id_patterns import is_ddbj_sra_accession
 from ddbj_search_converter.jsonl.distribution import make_sra_distribution
 from ddbj_search_converter.jsonl.utils import (
     deduplicate_organizations,
@@ -760,6 +761,9 @@ def process_submission_xml(
         for entry in parsed_list:
             acc = entry.get("accession")
             if not acc or acc in blacklist:
+                continue
+            # NCBI バッチで DDBJ origin を skip しないと、後段 ES bulk_insert の _id 上書きで DRA バッチ版が消える
+            if not is_dra and is_ddbj_sra_accession(acc):
                 continue
             info = accession_info.get(acc, ("public", "public", None, None, None, ""))
             status = _normalize_status(info[0])

@@ -35,3 +35,16 @@ def is_valid_accession(accession_id: str, acc_type: AccessionType) -> bool:
     if pattern is None:
         return False
     return bool(pattern.match(accession_id))
+
+
+_DDBJ_SRA_PREFIXES = ("DRA", "DRR", "DRX", "DRZ", "DRS", "DRP")
+
+
+def is_ddbj_sra_accession(accession: str) -> bool:
+    """DDBJ origin の SRA accession (DRA/DRR/DRX/DRZ/DRS/DRP) かを判定する。
+
+    NCBI SRA Metadata には DDBJ 由来の SRA accession も含まれているため、
+    NCBI バッチ (source="sra") で DDBJ origin の不完全 doc を生成しないよう
+    skip するときに使う。
+    """
+    return accession.startswith(_DDBJ_SRA_PREFIXES)

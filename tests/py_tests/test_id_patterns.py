@@ -5,7 +5,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.dblink.db import AccessionType
-from ddbj_search_converter.id_patterns import ID_PATTERN_MAP, is_valid_accession
+from ddbj_search_converter.id_patterns import ID_PATTERN_MAP, is_ddbj_sra_accession, is_valid_accession
 
 from .strategies import ALL_ACCESSION_TYPES
 
@@ -328,3 +328,66 @@ class TestEdgeCases:
             assert result is False  # only digits match
         else:
             assert result is False
+
+
+class TestIsDdbjSraAccession:
+    """Tests for is_ddbj_sra_accession function."""
+
+    DDBJ_PREFIXES = ("DRA", "DRR", "DRX", "DRZ", "DRS", "DRP")
+    NON_DDBJ_SRA_PREFIXES = (
+        "SRA", "SRR", "SRX", "SRZ", "SRS", "SRP",
+        "ERA", "ERR", "ERX", "ERZ", "ERS", "ERP",
+    )
+
+    @pytest.mark.parametrize("prefix", DDBJ_PREFIXES)
+    def test_ddbj_prefix_with_digits_is_true(self, prefix: str) -> None:
+        assert is_ddbj_sra_accession(f"{prefix}123456") is True
+
+    @pytest.mark.parametrize("prefix", NON_DDBJ_SRA_PREFIXES)
+    def test_non_ddbj_prefix_with_digits_is_false(self, prefix: str) -> None:
+        assert is_ddbj_sra_accession(f"{prefix}123456") is False
+
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "",
+            "DR",
+            "D",
+            "ABC",
+            "PRJDB12345",
+            "SAMD00000001",
+            "JGAS000001",
+            "dra000001",
+            "drr000001",
+        ],
+    )
+    def test_invalid_or_unrelated_strings_are_false(self, acc: str) -> None:
+        assert is_ddbj_sra_accession(acc) is False
+
+    @given(
+        prefix=st.sampled_from(list(DDBJ_PREFIXES)),
+        digits=st.integers(min_value=0, max_value=10**12).map(str),
+    )
+    def test_pbt_ddbj_prefix_always_true(self, prefix: str, digits: str) -> None:
+        """DDBJ prefix + 任意桁の数字は True。"""
+        assert is_ddbj_sra_accession(prefix + digits) is True
+
+    @given(
+        prefix=st.sampled_from(list(NON_DDBJ_SRA_PREFIXES)),
+        digits=st.integers(min_value=0, max_value=10**12).map(str),
+    )
+    def test_pbt_non_ddbj_prefix_always_false(self, prefix: str, digits: str) -> None:
+        """SRA / ERA 系 prefix + 任意桁の数字は False。"""
+        assert is_ddbj_sra_accession(prefix + digits) is False
+
+    @given(
+        # DDBJ prefix と全く重ならない頭文字に絞った任意文字列
+        text=st.text(
+            alphabet=st.characters(whitelist_categories=("Lu", "Nd"), whitelist_characters="-_"),
+            min_size=1,
+            max_size=20,
+        ).filter(lambda s: not s.startswith(("DRA", "DRR", "DRX", "DRZ", "DRS", "DRP"))),
+    )
+    def test_pbt_random_non_ddbj_text_is_false(self, text: str) -> None:
+        """DDBJ prefix で始まらない任意文字列は False。"""
+        assert is_ddbj_sra_accession(text) is False

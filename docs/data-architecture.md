@@ -248,6 +248,8 @@ SSD 上の `{result_dir}/sra_tar/` に配置してランダムアクセスを高
 | `{result_dir}/sra_tar/DRA_Metadata.tar` | DRA (sync_dra_tar で作成) |
 | `{result_dir}/sra_tar/*.tar.index.pkl` | tar インデックスキャッシュ (並列読み込み高速化) |
 
+NCBI SRA Metadata には DDBJ origin の SRA accession (DRA / DRR / DRX / DRZ / DRS / DRP) も含まれている。これらは DRA バッチ (`source="dra"`) 側が DDBJ 公開ストレージへの XML / FASTQ / SRA distribution link を含む完全な doc を生成するため、NCBI バッチ (`source="sra"`) の JSONL では除外する (`ddbj_search_converter/jsonl/sra.py::process_submission_xml` で skip)。両バッチが同じ identifier を JSONL に出すと `es_bulk_insert` が `_id` で上書きするため (順序により後勝ち)、NCBI 版の不完全 doc が ES に残る原因になる。
+
 ### DBLink DB
 
 accession 間の関連を格納する DuckDB。
