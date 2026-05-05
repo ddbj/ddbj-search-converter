@@ -214,9 +214,18 @@ def build_dbxref_table(config: Config) -> None:
     canonical 形 (A -> B, A <= B) の edge を 2 つの半辺 (A -> B と B -> A) に
     展開し、DISTINCT + ORDER BY で sort 済みの最終テーブルを作る。完了後、
     ``raw_edges`` は DROP する。
+
+    共有計算機で他プロセスのメモリを巻き込まないよう ``memory_limit`` を明示し、
+    超過分の disk spill 先を ``result_dir`` 配下 (容量に余裕のある data volume)
+    に向ける。
     """
     db_path = _tmp_db_path(config)
+    spill_dir = config.result_dir.joinpath("dblink", "duckdb_tmp", TODAY_STR)
+    spill_dir.mkdir(parents=True, exist_ok=True)
+
     with duckdb.connect(str(db_path)) as conn:
+        conn.execute("SET memory_limit='256GB'")
+        conn.execute(f"SET temp_directory='{spill_dir}'")
         conn.execute("""
             CREATE TABLE dbxref AS
             SELECT DISTINCT
