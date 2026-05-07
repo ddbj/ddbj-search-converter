@@ -532,12 +532,19 @@ def main_delete_blacklist() -> None:
 # === Swap Aliases (Blue-Green) ===
 
 
-def parse_swap_aliases_args(args: list[str]) -> tuple[Config, str, bool, bool]:
-    parser = argparse.ArgumentParser(description="Atomically swap all aliases to new dated indexes (Blue-Green).")
+def parse_swap_aliases_args(args: list[str]) -> tuple[Config, str, str, bool, bool]:
+    parser = argparse.ArgumentParser(
+        description="Atomically swap aliases for an index group to new dated indexes (Blue-Green).",
+    )
     parser.add_argument(
         "--date-suffix",
         required=True,
         help="Date suffix of the new indexes (YYYYMMDD)",
+    )
+    parser.add_argument(
+        "--index",
+        default="all",
+        help="Index group to swap (bioproject, biosample, sra, jga, gea, metabobank, all). Default: all",
     )
     parser.add_argument(
         "--force",
@@ -551,18 +558,18 @@ def parse_swap_aliases_args(args: list[str]) -> tuple[Config, str, bool, bool]:
     )
     parsed = parser.parse_args(args)
     config = get_config()
-    return config, parsed.date_suffix, parsed.force, parsed.dry_run
+    return config, parsed.date_suffix, parsed.index, parsed.force, parsed.dry_run
 
 
 def main_swap_aliases() -> None:
-    config, date_suffix, force, dry_run = parse_swap_aliases_args(sys.argv[1:])
+    config, date_suffix, index_group, force, dry_run = parse_swap_aliases_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info("swapping aliases", date_suffix=date_suffix)
+        log_info("swapping aliases", date_suffix=date_suffix, index_group=index_group)
 
         try:
-            # Show plan
-            new_names = [make_physical_index_name(idx, date_suffix) for idx in ALL_INDEXES]
+            target_indexes = get_indexes_for_group(index_group)  # type: ignore[arg-type]
+            new_names = [make_physical_index_name(idx, date_suffix) for idx in target_indexes]
             log_info("new indexes", indexes=new_names)
 
             if dry_run:
@@ -570,12 +577,12 @@ def main_swap_aliases() -> None:
                 return
 
             if not force:
-                confirm = input(f"Swap all aliases to *-{date_suffix} indexes? [y/N]: ")
+                confirm = input(f"Swap {index_group} aliases to *-{date_suffix} indexes? [y/N]: ")
                 if confirm.lower() != "y":
                     log_info("operation cancelled")
                     return
 
-            old_indexes = swap_aliases(config, date_suffix)
+            old_indexes = swap_aliases(config, date_suffix, index_group)  # type: ignore[arg-type]
 
             if old_indexes:
                 # Extract unique old suffix from old index names
@@ -608,12 +615,19 @@ def main_swap_aliases() -> None:
 # === Delete Old Indexes (Blue-Green) ===
 
 
-def parse_delete_old_indexes_args(args: list[str]) -> tuple[Config, str, bool]:
-    parser = argparse.ArgumentParser(description="Delete old dated physical indexes (Blue-Green cleanup).")
+def parse_delete_old_indexes_args(args: list[str]) -> tuple[Config, str, str, bool]:
+    parser = argparse.ArgumentParser(
+        description="Delete old dated physical indexes for an index group (Blue-Green cleanup).",
+    )
     parser.add_argument(
         "--date-suffix",
         required=True,
         help="Date suffix of the indexes to delete (YYYYMMDD)",
+    )
+    parser.add_argument(
+        "--index",
+        default="all",
+        help="Index group to delete (bioproject, biosample, sra, jga, gea, metabobank, all). Default: all",
     )
     parser.add_argument(
         "--force",
@@ -622,19 +636,22 @@ def parse_delete_old_indexes_args(args: list[str]) -> tuple[Config, str, bool]:
     )
     parsed = parser.parse_args(args)
     config = get_config()
-    return config, parsed.date_suffix, parsed.force
+    return config, parsed.date_suffix, parsed.index, parsed.force
 
 
 def main_delete_old_indexes() -> None:
-    config, date_suffix, force = parse_delete_old_indexes_args(sys.argv[1:])
+    config, date_suffix, index_group, force = parse_delete_old_indexes_args(sys.argv[1:])
     with run_logger(config=config):
         log_debug("config loaded", config=config.model_dump())
 
-        index_names = [make_physical_index_name(idx, date_suffix) for idx in ALL_INDEXES]
-        log_info("indexes to delete", indexes=index_names)
+        target_indexes = get_indexes_for_group(index_group)  # type: ignore[arg-type]
+        index_names = [make_physical_index_name(idx, date_suffix) for idx in target_indexes]
+        log_info("indexes to delete", indexes=index_names, index_group=index_group)
 
         if not force:
-            confirm = input(f"Delete {len(index_names)} old indexes (*-{date_suffix})? [y/N]: ")
+            confirm = input(
+                f"Delete {len(index_names)} old indexes ({index_group} *-{date_suffix})? [y/N]: ",
+            )
             if confirm.lower() != "y":
                 log_info("operation cancelled")
                 return

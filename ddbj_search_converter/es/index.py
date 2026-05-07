@@ -273,29 +273,35 @@ def create_index_with_suffix(
 def swap_aliases(
     config: Config,
     date_suffix: str,
+    index_group: IndexGroup = "all",
 ) -> dict[str, str]:
-    """Atomically swap all aliases to new dated indexes.
+    """Atomically swap aliases for the specified group to new dated indexes.
 
     Builds a single ``_aliases`` API request that removes aliases from old
-    indexes and adds them to new dated indexes.
+    indexes and adds them to new dated indexes for the indexes in
+    ``index_group``. Indexes outside the group are untouched, so the
+    ``entries`` group alias temporarily points to a mix of new and old
+    physical indexes — this is intentional for partial Blue-Green updates.
 
     Args:
         config: Configuration object
         date_suffix: Date suffix of the new indexes (YYYYMMDD)
+        index_group: Group of indexes to swap. Default ``"all"`` preserves
+            the original behaviour of swapping every index.
 
     Returns:
         Mapping of logical index name to old physical index name (for cleanup).
         Empty dict if no old indexes were found (first-time setup).
 
     Raises:
-        Exception: If a new physical index does not exist
+        Exception: If a new physical index in the target group does not exist
     """
     es_client = get_es_client(config)
 
     actions: list[dict[str, Any]] = []
     old_indexes: dict[str, str] = {}
 
-    for idx in ALL_INDEXES:
+    for idx in get_indexes_for_group(index_group):
         new_physical = make_physical_index_name(idx, date_suffix)
         if not check_index_exists(es_client, new_physical):
             raise Exception(f"New index '{new_physical}' does not exist. Create it first.")

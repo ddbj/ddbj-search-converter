@@ -17,6 +17,7 @@ from ddbj_search_converter.es.index import (
     ALL_INDEXES,
     create_index_with_suffix,
     delete_physical_indexes,
+    get_indexes_for_group,
     make_physical_index_name,
     swap_aliases,
 )
@@ -126,3 +127,101 @@ def test_alias_resolves_after_old_index_deletion(
     targets = resolve_alias_to_indexes(integration_es_client, "entries")
     assert len(targets) == len(ALL_INDEXES)
     assert set(targets) == {make_physical_index_name(idx, new_suffix) for idx in ALL_INDEXES}
+
+
+def test_swap_aliases_sra_only_preserves_other_groups(
+    integration_config: Config,
+    integration_es_client: Elasticsearch,
+    rehearsal_date_suffix: str,
+    rehearsal_old_date_suffix: str,
+    cleanup_rehearsal_indexes: None,
+    allow_destructive_alias_tests: None,
+) -> None:
+    """IT-SWAP-04: index_group='sra' で SRA だけ swap し、他 group の alias は old のまま残る。"""
+    new_suffix = rehearsal_date_suffix
+    old_suffix = rehearsal_old_date_suffix
+
+    create_index_with_suffix(integration_config, "all", old_suffix)
+    _attach_blue_green_aliases(integration_es_client, old_suffix)
+    # SRA group の new dated index だけ作成
+    create_index_with_suffix(integration_config, "sra", new_suffix)
+
+    old_indexes = swap_aliases(integration_config, new_suffix, "sra")
+
+    sra_indexes = get_indexes_for_group("sra")
+    for idx in sra_indexes:
+        new_physical = make_physical_index_name(idx, new_suffix)
+        assert resolve_alias_to_indexes(integration_es_client, idx) == [new_physical]
+
+    untouched = [idx for idx in ALL_INDEXES if idx not in sra_indexes]
+    for idx in untouched:
+        old_physical = make_physical_index_name(idx, old_suffix)
+        assert resolve_alias_to_indexes(integration_es_client, idx) == [old_physical]
+
+    assert set(old_indexes.keys()) == set(sra_indexes)
+
+
+def test_swap_aliases_sra_only_keeps_entries_alias_spanning_old_and_new(
+    integration_config: Config,
+    integration_es_client: Elasticsearch,
+    rehearsal_date_suffix: str,
+    rehearsal_old_date_suffix: str,
+    cleanup_rehearsal_indexes: None,
+    allow_destructive_alias_tests: None,
+) -> None:
+    """IT-SWAP-05: SRA だけ swap した後、entries alias は SRA-new + 他 5 group の old を指す。
+
+    部分 Blue-Green 中も entries alias の解決対象数 (= 14) は不変で、検索断が起きないことを確認。
+    """
+    new_suffix = rehearsal_date_suffix
+    old_suffix = rehearsal_old_date_suffix
+
+    create_index_with_suffix(integration_config, "all", old_suffix)
+    _attach_blue_green_aliases(integration_es_client, old_suffix)
+    create_index_with_suffix(integration_config, "sra", new_suffix)
+
+    swap_aliases(integration_config, new_suffix, "sra")
+
+    targets = resolve_alias_to_indexes(integration_es_client, "entries")
+    assert len(targets) == len(ALL_INDEXES)
+
+    sra_indexes = set(get_indexes_for_group("sra"))
+    expected_new_sra = {make_physical_index_name(idx, new_suffix) for idx in sra_indexes}
+    expected_old_others = {
+        make_physical_index_name(idx, old_suffix)
+        for idx in ALL_INDEXES
+        if idx not in sra_indexes
+    }
+    assert set(targets) == expected_new_sra | expected_old_others
+
+
+def test_delete_old_indexes_for_sra_group_only_removes_sra_indexes(
+    integration_config: Config,
+    integration_es_client: Elasticsearch,
+    rehearsal_date_suffix: str,
+    rehearsal_old_date_suffix: str,
+    cleanup_rehearsal_indexes: None,
+    allow_destructive_alias_tests: None,
+) -> None:
+    """IT-SWAP-06: SRA group だけ delete_old_indexes しても他 group の old index は残る。"""
+    new_suffix = rehearsal_date_suffix
+    old_suffix = rehearsal_old_date_suffix
+
+    create_index_with_suffix(integration_config, "all", old_suffix)
+    _attach_blue_green_aliases(integration_es_client, old_suffix)
+    create_index_with_suffix(integration_config, "sra", new_suffix)
+    swap_aliases(integration_config, new_suffix, "sra")
+
+    sra_indexes = get_indexes_for_group("sra")
+    sra_old_names = [make_physical_index_name(idx, old_suffix) for idx in sra_indexes]
+    delete_physical_indexes(integration_config, sra_old_names)
+
+    # SRA の old は消えている
+    for name in sra_old_names:
+        assert not integration_es_client.indices.exists(index=name)
+
+    # 他 group の old は残っている
+    untouched = [idx for idx in ALL_INDEXES if idx not in sra_indexes]
+    for idx in untouched:
+        old_physical = make_physical_index_name(idx, old_suffix)
+        assert integration_es_client.indices.exists(index=old_physical)

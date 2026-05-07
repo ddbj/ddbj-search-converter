@@ -110,6 +110,27 @@ es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force
 
 `scripts/run_pipeline.sh --full --blue-green` で一括実行できる。
 
+### Group 単位の Blue-Green (部分更新)
+
+特定の group (`sra` / `jga` / `bioproject` / `biosample` / `gea` / `metabobank`) だけ mapping や生成ロジックが変わった場合、その group のみを Blue-Green で更新できる。`es_create_index` / `es_delete_blacklist` / `es_swap_aliases` / `es_delete_old_indexes` の全てが `--index <group>` を受ける (デフォルト `all`)。
+
+```bash
+# 例: SRA group だけ Blue-Green で更新
+es_create_index --index sra --date-suffix 20260507
+
+# SRA 6 entity に dated index で投入
+sra_dir=/data1/ddbj-search/result/sra/jsonl/20260507
+for t in submission study experiment run sample analysis; do
+  es_bulk_insert --index sra-$t --target-index sra-$t-20260507 --dir $sra_dir --pattern "*_${t}_*.jsonl"
+done
+
+es_delete_blacklist --index sra --target-suffix 20260507 --force
+OLD_SUFFIX=$(es_swap_aliases --index sra --date-suffix 20260507 --force)
+es_delete_old_indexes --index sra --date-suffix ${OLD_SUFFIX} --force
+```
+
+部分 swap の間は `entries` group alias が SRA-new + 他 5 group の old を指す状態になるが、解決数は 14 (= ALL_INDEXES) に保たれるため検索断は発生しない。
+
 ### 差分更新フロー (変更なし)
 
 差分更新は alias 経由で既存インデックスに upsert する。ES が alias を透過的に解決するため、Blue-Green 導入前と全く同じ操作で動作する。
