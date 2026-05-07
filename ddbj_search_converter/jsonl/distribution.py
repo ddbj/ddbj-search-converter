@@ -70,11 +70,23 @@ def make_metabobank_distribution(accession: str) -> list[Distribution]:
     ]
 
 
+def _mirrored_sra_url(experiment: str, run: str) -> str:
+    """他極 (NCBI/EBI) origin の run accession に対する DDBJ ミラー上の .sra URL を組み立てる。
+
+    パス内に `sralite/litesra` が入るが実体は `.sra` ファイル。NCBI (`SRX*`) と EBI
+    (`ERX*`) で path 構造は同一で、experiment の最初 3 文字を第 3 階層に使う。
+    """
+    return (
+        f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/"
+        f"{experiment[:3]}/{experiment[:6]}/{experiment}/{run}/{run}.sra"
+    )
+
+
 def make_sra_distribution(
     entry_type: str,
     identifier: str,
     *,
-    is_dra: bool,
+    is_ddbj_origin: bool,
     sra_type: str,
     submission: str,
     experiment: str | None = None,
@@ -86,22 +98,19 @@ def make_sra_distribution(
     Args:
         entry_type: SRA entry type (e.g. "sra-run")
         identifier: accession
-        is_dra: DRA かどうか
+        is_ddbj_origin: DDBJ-origin (DRA/DRR/DRX/DRZ/DRS/DRP) かどうか
         sra_type: XML type (e.g. "run")
         submission: submission accession
         experiment: experiment accession (run の場合のみ)
-        fastq_dirs: FASTQ ディレクトリが存在する experiment の集合
-        sra_file_runs: .sra ファイルが存在する run の集合
+        fastq_dirs: FASTQ ディレクトリが存在する experiment の集合 (DRA-origin only)
+        sra_file_runs: .sra ファイルが存在する run の集合 (DRA-origin only)
     """
     dists: list[Distribution] = [
         _json_dist(entry_type, identifier),
         _jsonld_dist(entry_type, identifier),
     ]
 
-    if not is_dra:
-        return dists
-
-    # DRA: XML を追加
+    # XML は全 origin で共通: tar 由来の entry なら NIG ミラーにも同じ submission 配下の XML がある
     sub_prefix = submission[:6]
     dists.append(
         Distribution(
@@ -111,8 +120,12 @@ def make_sra_distribution(
         )
     )
 
-    # DRA run: FASTQ と SRA を追加
-    if sra_type == "run" and experiment is not None:
+    # FASTQ / SRA は run のみ
+    if sra_type != "run" or experiment is None:
+        return dists
+
+    if is_ddbj_origin:
+        # DRA: file index で実在チェックしたものだけリンク化
         if fastq_dirs is not None and experiment in fastq_dirs:
             dists.append(
                 Distribution(
@@ -134,5 +147,14 @@ def make_sra_distribution(
                     ),
                 )
             )
+    else:
+        # NCBI/EBI: ミラー側にあるか不明なため URL を機械生成 (404 容認)
+        dists.append(
+            Distribution(
+                type="DataDownload",
+                encodingFormat="SRA",
+                contentUrl=_mirrored_sra_url(experiment, identifier),
+            )
+        )
 
     return dists

@@ -642,7 +642,7 @@ def create_sra_entry(
     date_modified: str | None,
     date_published: str | None,
     *,
-    is_dra: bool = False,
+    is_ddbj_origin: bool = False,
     submission: str = "",
     fastq_dirs: set[str] | None = None,
     sra_file_runs: set[str] | None = None,
@@ -659,7 +659,7 @@ def create_sra_entry(
     distribution = make_sra_distribution(
         entry_type,
         identifier,
-        is_dra=is_dra,
+        is_ddbj_origin=is_ddbj_origin,
         sra_type=sra_type,
         submission=submission,
         experiment=experiment,
@@ -724,7 +724,7 @@ def process_submission_xml(
     accession_info: dict[str, tuple[str, str, str | None, str | None, str | None, str]],
     xml_cache: dict[SraXmlType, bytes | None],
     *,
-    is_dra: bool = False,
+    is_ddbj_origin: bool = False,
     fastq_dirs: set[str] | None = None,
     sra_file_runs: set[str] | None = None,
 ) -> dict[SraXmlType, list[Any]]:
@@ -736,7 +736,7 @@ def process_submission_xml(
         blacklist: blacklist
         accession_info: {accession: (status, accessibility, received, updated, published, type)}
         xml_cache: 事前に読み込んだ XML データのキャッシュ
-        is_dra: DRA かどうか
+        is_ddbj_origin: DDBJ-origin (DRA/DRR/DRX/DRZ/DRS/DRP) かどうか
         fastq_dirs: FASTQ ディレクトリが存在する experiment の集合
         sra_file_runs: .sra ファイルが存在する run の集合
 
@@ -763,7 +763,7 @@ def process_submission_xml(
             if not acc or acc in blacklist:
                 continue
             # NCBI バッチで DDBJ origin を skip しないと、後段 ES bulk_insert の _id 上書きで DRA バッチ版が消える
-            if not is_dra and is_ddbj_sra_accession(acc):
+            if not is_ddbj_origin and is_ddbj_sra_accession(acc):
                 continue
             info = accession_info.get(acc, ("public", "public", None, None, None, ""))
             status = _normalize_status(info[0])
@@ -781,7 +781,7 @@ def process_submission_xml(
                 date_created,
                 date_modified,
                 date_published,
-                is_dra=is_dra,
+                is_ddbj_origin=is_ddbj_origin,
                 submission=submission,
                 fastq_dirs=fastq_dirs,
                 sra_file_runs=sra_file_runs,
@@ -856,7 +856,7 @@ def _process_batch_worker(
     xml_data: dict[str, dict[SraXmlType, bytes | None]],
     blacklist: set[str],
     output_dir: Path,
-    is_dra: bool,
+    is_ddbj_origin: bool,
     include_dbxrefs: bool = False,
 ) -> dict[str, int]:
     """
@@ -871,13 +871,13 @@ def _process_batch_worker(
         xml_data: {submission: {xml_type: xml_bytes}}
         blacklist: blacklist
         output_dir: 出力ディレクトリ
-        is_dra: DRA かどうか
+        is_ddbj_origin: DDBJ-origin (DRA/DRR/DRX/DRZ/DRS/DRP) かどうか
         include_dbxrefs: True の場合は dbXrefs を含める
 
     Returns:
         {xml_type: count}
     """
-    prefix = "dra" if is_dra else "ncbi"
+    prefix = "dra" if is_ddbj_origin else "ncbi"
 
     # Step 1: accession 収集
     all_accessions: list[str] = []
@@ -897,7 +897,7 @@ def _process_batch_worker(
     # Step 2.5: DRA ファイルインデックスクエリ
     fastq_dirs_map: dict[str, set[str]] = {}
     sra_file_runs: set[str] = set()
-    if is_dra:
+    if is_ddbj_origin:
         from ddbj_search_converter.sra.dra_file_index import (
             dra_file_index_exists,
             query_fastq_dirs_bulk,
@@ -923,7 +923,7 @@ def _process_batch_worker(
             blacklist=blacklist,
             accession_info=accession_info,
             xml_cache=xml_data[sub],
-            is_dra=is_dra,
+            is_ddbj_origin=is_ddbj_origin,
             fastq_dirs=fastq_dirs_map.get(sub, set()),
             sra_file_runs=sra_file_runs,
         )
@@ -986,12 +986,12 @@ def process_source(
     Returns:
         {xml_type: count}
     """
-    is_dra = source == "dra"
+    is_ddbj_origin = source == "dra"
 
     log_info(f"processing {source.upper()}...")
 
     # tar パスを取得
-    if is_dra:
+    if is_ddbj_origin:
         tar_path = get_dra_tar_path(config)
     else:
         tar_path = get_ncbi_tar_path(config)
@@ -1063,7 +1063,7 @@ def process_source(
                     xml_data,
                     blacklist,
                     output_dir,
-                    is_dra,
+                    is_ddbj_origin,
                     include_dbxrefs,
                 )
                 pending.add(future)

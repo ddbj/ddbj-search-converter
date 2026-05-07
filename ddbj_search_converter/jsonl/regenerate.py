@@ -297,7 +297,7 @@ def regenerate_sra_jsonl(
         if not accs:
             continue
 
-        is_dra = source_kind == "dra"
+        is_ddbj_origin = source_kind == "dra"
         log_info(f"processing {source_kind.upper()}: {len(accs)} accession(s)")
 
         # accession → submission を逆引き
@@ -317,7 +317,7 @@ def regenerate_sra_jsonl(
         log_info(f"resolved to {len(submissions)} unique submission(s)")
 
         # tar reader を取得
-        if is_dra:
+        if is_ddbj_origin:
             tar_reader = get_dra_tar_reader(config)
         else:
             tar_reader = get_ncbi_tar_reader(config)
@@ -325,7 +325,7 @@ def regenerate_sra_jsonl(
         # DRA の場合はファイルインデックスをクエリ
         fastq_dirs_map: dict[str, set[str]] = {}
         sra_file_runs: set[str] = set()
-        if is_dra:
+        if is_ddbj_origin:
             from ddbj_search_converter.sra.dra_file_index import (
                 dra_file_index_exists,
                 query_fastq_dirs_bulk,
@@ -391,7 +391,7 @@ def regenerate_sra_jsonl(
                 blacklist=blacklist,
                 accession_info=accession_info,
                 xml_cache=xml_cache,
-                is_dra=is_dra,
+                is_ddbj_origin=is_ddbj_origin,
                 fastq_dirs=fastq_dirs_map.get(sub, set()),
                 sra_file_runs=sra_file_runs,
             )

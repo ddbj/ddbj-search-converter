@@ -217,7 +217,7 @@ class TestProcessSubmissionXml:
             blacklist=set(),
             accession_info=accession_info,
             xml_cache=xml_cache,
-            is_dra=True,
+            is_ddbj_origin=True,
         )
 
         # submission の dateCreated が Accessions.tab の Received であること
@@ -248,7 +248,7 @@ class TestProcessSubmissionXml:
             blacklist=set(),
             accession_info=accession_info,
             xml_cache=xml_cache,
-            is_dra=True,
+            is_ddbj_origin=True,
         )
 
         assert len(results["submission"]) == 1
@@ -259,7 +259,7 @@ class TestProcessSubmissionXml:
 
 
 class TestProcessSubmissionXmlNcbiSkipsDdbj:
-    """NCBI バッチ (is_dra=False) で DDBJ origin accession を skip する仕様の regression。"""
+    """NCBI バッチ (is_ddbj_origin=False) で DDBJ origin accession を skip する仕様の regression。"""
 
     _DRA_SUBMISSION_XML = b"""\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -315,7 +315,7 @@ class TestProcessSubmissionXmlNcbiSkipsDdbj:
             blacklist=set(),
             accession_info=self._accession_info(["DRA000001"], "submission"),
             xml_cache=xml_cache,
-            is_dra=False,
+            is_ddbj_origin=False,
         )
 
         assert results["submission"] == []
@@ -330,7 +330,7 @@ class TestProcessSubmissionXmlNcbiSkipsDdbj:
             blacklist=set(),
             accession_info=self._accession_info(["DRR000001"], "run"),
             xml_cache=xml_cache,
-            is_dra=False,
+            is_ddbj_origin=False,
         )
 
         assert results["run"] == []
@@ -346,7 +346,7 @@ class TestProcessSubmissionXmlNcbiSkipsDdbj:
             blacklist=set(),
             accession_info=self._accession_info(["DRA000001", "DRR000001"], "submission"),
             xml_cache=xml_cache,
-            is_dra=True,
+            is_ddbj_origin=True,
         )
 
         assert [e.identifier for e in results["submission"]] == ["DRA000001"]
@@ -362,7 +362,7 @@ class TestProcessSubmissionXmlNcbiSkipsDdbj:
             blacklist=set(),
             accession_info=self._accession_info(["SRA000001"], "submission"),
             xml_cache=xml_cache,
-            is_dra=False,
+            is_ddbj_origin=False,
         )
 
         assert [e.identifier for e in results["submission"]] == ["SRA000001"]
@@ -377,7 +377,7 @@ class TestProcessSubmissionXmlNcbiSkipsDdbj:
             blacklist=set(),
             accession_info=self._accession_info(["SRR000001", "DRR000001", "ERR000001"], "run"),
             xml_cache=xml_cache,
-            is_dra=False,
+            is_ddbj_origin=False,
         )
 
         kept = sorted(e.identifier for e in results["run"])
