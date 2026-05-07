@@ -300,8 +300,10 @@ class TestProcessSubmissionXmlNcbiSkipsDdbj:
 """
 
     @staticmethod
-    def _accession_info(accs: list[str], type_label: str) -> dict[str, tuple[str, str, str | None, str | None, str | None, str]]:
-        return {acc: ("live", "public", None, None, None, type_label) for acc in accs}
+    def _accession_info(
+        accs: list[str], type_label: str
+    ) -> dict[str, tuple[str, str, str | None, str | None, str | None, str]]:
+        return dict.fromkeys(accs, ("live", "public", None, None, None, type_label))
 
     def test_ncbi_batch_skips_dra_submission(self) -> None:
         """NCBI バッチで DRA##### submission が skip されること。"""
