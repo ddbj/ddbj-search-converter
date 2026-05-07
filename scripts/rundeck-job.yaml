@@ -1,11 +1,11 @@
 - defaultTab: nodes
   description: |-
-    - DDBJ-Search の日次差分更新ジョブ（2603 版）
+    - DDBJ-Search の日次差分更新ジョブ
     - run_pipeline.sh で全パイプライン（DBLink 構築 → JSONL 生成 → ES 投入）を実行
   executionEnabled: true
   id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
   loglevel: INFO
-  name: Update DDBJ-Search 2603
+  name: Update DDBJ-Search
   nodeFilterEditable: false
   nodefilters:
     dispatch:
