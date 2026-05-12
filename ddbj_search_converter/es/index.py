@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, resolve_alias_to_indexes
-
-if TYPE_CHECKING:
-    from elasticsearch import Elasticsearch
 from ddbj_search_converter.es.mappings.bioproject import get_bioproject_mapping
 from ddbj_search_converter.es.mappings.biosample import get_biosample_mapping
 from ddbj_search_converter.es.mappings.gea import get_gea_mapping
 from ddbj_search_converter.es.mappings.jga import JGA_INDEXES, JgaIndexType, get_jga_mapping
 from ddbj_search_converter.es.mappings.metabobank import get_metabobank_mapping
 from ddbj_search_converter.es.mappings.sra import SRA_INDEXES, SraIndexType, get_sra_mapping
+
+if TYPE_CHECKING:
+    from elasticsearch import Elasticsearch
 
 IndexName = Literal[
     "bioproject",
@@ -363,7 +363,7 @@ def _verify_swap_aliases(
     for idx, expected_physical in expected.items():
         try:
             response = es_client.indices.get_alias(name=idx)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             mismatches.append(f"{idx}: failed to fetch alias ({e})")
             continue
         actual_targets = set(response.body.keys()) if hasattr(response, "body") else set(response.keys())
@@ -373,9 +373,7 @@ def _verify_swap_aliases(
             )
 
     if mismatches:
-        raise RuntimeError(
-            "swap_aliases post-verification failed:\n  " + "\n  ".join(mismatches)
-        )
+        raise RuntimeError("swap_aliases post-verification failed:\n  " + "\n  ".join(mismatches))
 
 
 def delete_physical_indexes(

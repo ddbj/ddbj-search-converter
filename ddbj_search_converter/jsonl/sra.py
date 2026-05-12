@@ -672,7 +672,7 @@ def create_sra_entry(
         properties=props,
         distribution=distribution,
         isPartOf="sra",
-        type=entry_type,
+        type_=entry_type,
         name=_get_name_from_alias(identifier, parsed.get("alias")),
         url=_make_url(entry_type, identifier),
         organism=parsed.get("organism"),

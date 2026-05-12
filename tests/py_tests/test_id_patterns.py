@@ -459,8 +459,18 @@ class TestIsDdbjSraAccession:
 
     DDBJ_PREFIXES = ("DRA", "DRR", "DRX", "DRZ", "DRS", "DRP")
     NON_DDBJ_SRA_PREFIXES = (
-        "SRA", "SRR", "SRX", "SRZ", "SRS", "SRP",
-        "ERA", "ERR", "ERX", "ERZ", "ERS", "ERP",
+        "SRA",
+        "SRR",
+        "SRX",
+        "SRZ",
+        "SRS",
+        "SRP",
+        "ERA",
+        "ERR",
+        "ERX",
+        "ERZ",
+        "ERS",
+        "ERP",
     )
 
     @pytest.mark.parametrize("prefix", DDBJ_PREFIXES)

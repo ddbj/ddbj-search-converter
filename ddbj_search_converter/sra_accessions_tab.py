@@ -219,10 +219,17 @@ SourceKind = Literal["sra", "dra"]
 
 # `_iter_relation` で使う安全な column 名集合。f-string で SQL に埋め込むため、
 # allowlist で SQL injection を防ぐ (DuckDB は SELECT 列名を `?` で bind できない)。
-_ALLOWED_COLUMNS: frozenset[str] = frozenset({
-    "Accession", "Submission", "BioSample", "BioProject",
-    "Study", "Experiment", "Sample",
-})
+_ALLOWED_COLUMNS: frozenset[str] = frozenset(
+    {
+        "Accession",
+        "Submission",
+        "BioSample",
+        "BioProject",
+        "Study",
+        "Experiment",
+        "Sample",
+    }
+)
 
 
 def _iter_relation(
@@ -250,10 +257,7 @@ def _iter_relation(
         where_clauses.insert(0, "Type = ?")
         params.append(type_filter)
 
-    query = (
-        f"SELECT DISTINCT {col_a}, {col_b} FROM accessions "
-        f"WHERE {' AND '.join(where_clauses)}"
-    )
+    query = f"SELECT DISTINCT {col_a}, {col_b} FROM accessions WHERE {' AND '.join(where_clauses)}"
 
     with duckdb.connect(db_path) as conn:
         rows = conn.execute(query, params).fetchall()

@@ -77,10 +77,7 @@ def _mirrored_sra_url(experiment: str, run: str) -> str:
     パス内に `sralite/litesra` が入るが実体は `.sra` ファイル。NCBI (`SRX*`) と EBI
     (`ERX*`) で path 構造は同一で、experiment の最初 3 文字を第 3 階層に使う。
     """
-    return (
-        f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/"
-        f"{experiment[:3]}/{experiment[:6]}/{experiment}/{run}/{run}.sra"
-    )
+    return f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/{experiment[:3]}/{experiment[:6]}/{experiment}/{run}/{run}.sra"
 
 
 def make_sra_distribution(

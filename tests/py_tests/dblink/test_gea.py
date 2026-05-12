@@ -5,7 +5,6 @@ from pathlib import Path
 from ddbj_search_converter.dblink.gea import iterate_gea_dirs
 from ddbj_search_converter.dblink.idf_sdrf import process_idf_sdrf_dir
 
-
 # Repository root → tests/fixtures path.  Three parents: file → dblink → py_tests → tests.
 # Computing once at module load means a rename of the directory layout shows up here.
 TESTS_DIR = Path(__file__).resolve().parents[2]
@@ -106,9 +105,7 @@ class TestGeaSdrfSraHarvest:
 
     def test_real_fixture_e_gead_1096_has_sra_values(self) -> None:
         """実 fixture E-GEAD-1096 で SRA_RUN / SRA_EXPERIMENT を抽出できる (E2E)。"""
-        fixture_dir = _fixture_path(
-            "usr/local/resources/gea/experiment/E-GEAD-1000/E-GEAD-1096"
-        )
+        fixture_dir = _fixture_path("usr/local/resources/gea/experiment/E-GEAD-1000/E-GEAD-1096")
         assert fixture_dir.exists(), f"fixture missing: {fixture_dir}"
 
         result = process_idf_sdrf_dir(fixture_dir)

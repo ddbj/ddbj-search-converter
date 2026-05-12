@@ -179,9 +179,7 @@ def main() -> None:
     config, keep, dry_run, include_spill = parse_args(sys.argv[1:])
     with run_logger(run_name="cleanup_old_results", config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info(
-            f"cleanup_old_results: keep={keep}, dry_run={dry_run}, include_spill={include_spill}"
-        )
+        log_info(f"cleanup_old_results: keep={keep}, dry_run={dry_run}, include_spill={include_spill}")
 
         removed, failed = cleanup(config, keep, dry_run)
 

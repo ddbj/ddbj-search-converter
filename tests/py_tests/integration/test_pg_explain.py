@@ -41,9 +41,7 @@ def _assert_plan_has_node(rows: list[Any], expected_any: list[str]) -> None:
     Seq Scan 1 つだけにフォールバックしているケースを catch する想定。
     """
     text = _plan_text(rows)
-    assert any(token in text for token in expected_any), (
-        f"plan missing expected node ({expected_any}): {text!r}"
-    )
+    assert any(token in text for token in expected_any), f"plan missing expected node ({expected_any}): {text!r}"
 
 
 def test_bp_dates_bulk_query_plans_against_xsm_bioproject(integration_xsm_postgres_url: str) -> None:

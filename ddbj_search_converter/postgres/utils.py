@@ -47,7 +47,10 @@ def connect_with_retry(
             if attempt < max_retries - 1:
                 _LOGGER.warning(
                     "psycopg2.connect failed (attempt %d/%d): %s; retrying in %.1fs",
-                    attempt + 1, max_retries, e, backoff_seconds,
+                    attempt + 1,
+                    max_retries,
+                    e,
+                    backoff_seconds,
                 )
                 time.sleep(backoff_seconds)
     assert last_err is not None
@@ -98,8 +101,7 @@ def parse_postgres_url(postgres_url: str) -> tuple[str, int, str, str]:
     parsed = urlparse(postgres_url)
     if parsed.scheme not in ALLOWED_POSTGRES_SCHEMES:
         raise ValueError(
-            f"unsupported PostgreSQL URL scheme: {parsed.scheme!r}. "
-            f"Allowed schemes: {sorted(ALLOWED_POSTGRES_SCHEMES)}"
+            f"unsupported PostgreSQL URL scheme: {parsed.scheme!r}. Allowed schemes: {sorted(ALLOWED_POSTGRES_SCHEMES)}"
         )
     host = parsed.hostname or "localhost"
     port = parsed.port or 5432

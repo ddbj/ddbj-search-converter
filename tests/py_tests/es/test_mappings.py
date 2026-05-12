@@ -117,13 +117,9 @@ class TestCommonMapping:
         """
         from ddbj_search_converter.schema import BioProject
 
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in BioProject.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in BioProject.model_fields.items()}
         missing = set(_COMMON_MAPPING_EXPECTED_FIELDS) - pydantic_field_aliases
-        assert not missing, (
-            f"common mapping が想定する field が BioProject schema に存在しない: {missing}"
-        )
+        assert not missing, f"common mapping が想定する field が BioProject schema に存在しない: {missing}"
 
 
 class TestBioProjectMapping:
@@ -216,13 +212,9 @@ class TestBioProjectMapping:
         from ddbj_search_converter.schema import BioProject
 
         mapping_props = get_bioproject_mapping()["mappings"]["properties"]
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in BioProject.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in BioProject.model_fields.items()}
         missing = pydantic_field_aliases - set(mapping_props.keys())
-        assert not missing, (
-            f"BioProject Pydantic schema field が ES mapping に存在しない: {missing}"
-        )
+        assert not missing, f"BioProject Pydantic schema field が ES mapping に存在しない: {missing}"
 
 
 class TestBioSampleMapping:
@@ -318,13 +310,9 @@ class TestBioSampleMapping:
         from ddbj_search_converter.schema import BioSample
 
         mapping_props = get_biosample_mapping()["mappings"]["properties"]
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in BioSample.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in BioSample.model_fields.items()}
         missing = pydantic_field_aliases - set(mapping_props.keys())
-        assert not missing, (
-            f"BioSample Pydantic schema field が ES mapping に存在しない: {missing}"
-        )
+        assert not missing, f"BioSample Pydantic schema field が ES mapping に存在しない: {missing}"
 
 
 class TestSraMapping:
@@ -474,13 +462,9 @@ class TestSraMapping:
         union_props: set[str] = set()
         for sra_type in SRA_INDEXES:
             union_props.update(get_sra_mapping(sra_type)["mappings"]["properties"].keys())
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in SRA.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in SRA.model_fields.items()}
         missing = pydantic_field_aliases - union_props
-        assert not missing, (
-            f"SRA Pydantic schema field がどの sub-type mapping にも存在しない: {missing}"
-        )
+        assert not missing, f"SRA Pydantic schema field がどの sub-type mapping にも存在しない: {missing}"
 
 
 class TestJgaMapping:
@@ -561,13 +545,9 @@ class TestJgaMapping:
         union_props: set[str] = set()
         for jga_type in JGA_INDEXES:
             union_props.update(get_jga_mapping(jga_type)["mappings"]["properties"].keys())
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in JGA.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in JGA.model_fields.items()}
         missing = pydantic_field_aliases - union_props
-        assert not missing, (
-            f"JGA Pydantic schema field がどの sub-type mapping にも存在しない: {missing}"
-        )
+        assert not missing, f"JGA Pydantic schema field がどの sub-type mapping にも存在しない: {missing}"
 
 
 class TestGeaMapping:
@@ -611,13 +591,9 @@ class TestGeaMapping:
         from ddbj_search_converter.schema import GEA
 
         mapping_props = get_gea_mapping()["mappings"]["properties"]
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in GEA.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in GEA.model_fields.items()}
         missing = pydantic_field_aliases - set(mapping_props.keys())
-        assert not missing, (
-            f"GEA Pydantic schema field が ES mapping に存在しない: {missing}"
-        )
+        assert not missing, f"GEA Pydantic schema field が ES mapping に存在しない: {missing}"
 
 
 class TestMetabobankMapping:
@@ -656,13 +632,9 @@ class TestMetabobankMapping:
         from ddbj_search_converter.schema import MetaboBank
 
         mapping_props = get_metabobank_mapping()["mappings"]["properties"]
-        pydantic_field_aliases = {
-            (f.alias or name) for name, f in MetaboBank.model_fields.items()
-        }
+        pydantic_field_aliases = {(f.alias or name) for name, f in MetaboBank.model_fields.items()}
         missing = pydantic_field_aliases - set(mapping_props.keys())
-        assert not missing, (
-            f"MetaboBank Pydantic schema field が ES mapping に存在しない: {missing}"
-        )
+        assert not missing, f"MetaboBank Pydantic schema field が ES mapping に存在しない: {missing}"
 
 
 class TestIndexSettings:
@@ -713,10 +685,7 @@ class TestBulkInsertSettings:
         """通常時の refresh_interval は INDEX_SETTINGS の値と一致する。"""
         from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
 
-        assert (
-            BULK_INSERT_SETTINGS["normal_refresh_interval"]
-            == INDEX_SETTINGS["index"]["refresh_interval"]
-        )
+        assert BULK_INSERT_SETTINGS["normal_refresh_interval"] == INDEX_SETTINGS["index"]["refresh_interval"]
 
     def test_thread_count_positive(self) -> None:
         from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS

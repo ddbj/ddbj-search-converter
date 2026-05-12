@@ -56,13 +56,14 @@ class BulkInsertResult(BaseModel):
         return self
 
 
-def _extract_status_from_info(info: dict[str, Any]) -> int | None:
+def _extract_status_from_info(info: object) -> int | None:
     """Extract HTTP status from a parallel_bulk error item.
 
-    ``helpers.parallel_bulk`` yields ``(ok, info)`` where ``info`` is a dict
-    like ``{"index": {"_id": "...", "status": 409, "error": ...}}`` (the
-    outer key is the op_type).  Some failure modes deliver an exception
-    object instead of a dict — in that case there is no usable status code.
+    ``helpers.parallel_bulk`` yields ``(ok, info)`` where ``info`` is usually a
+    dict like ``{"index": {"_id": "...", "status": 409, "error": ...}}`` (the
+    outer key is the op_type). Some failure modes deliver an exception object
+    instead of a dict — in that case there is no usable status code. 引数型を
+    ``object`` にして mypy が `isinstance` チェックを reachable と認識できるようにする。
     """
     if not isinstance(info, dict):
         return None

@@ -84,9 +84,7 @@ def _all_rows(db_path: Path) -> list[tuple[Any, ...]]:
 def _indexes(db_path: Path) -> set[str]:
     con = duckdb.connect(str(db_path), read_only=True)
     try:
-        rows = con.execute(
-            "SELECT index_name FROM duckdb_indexes() WHERE table_name = 'log_records'"
-        ).fetchall()
+        rows = con.execute("SELECT index_name FROM duckdb_indexes() WHERE table_name = 'log_records'").fetchall()
         return {r[0] for r in rows}
     finally:
         con.close()

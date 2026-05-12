@@ -332,7 +332,7 @@ class TestLoadTsvToTmpDb:
         assert count == 3
 
     @given(ts=st_timestamp_str())
-    @settings(deadline=2000, max_examples=20)
+    @settings(max_examples=20)
     def test_pbt_timestamp_roundtrip(self, ts: str) -> None:
         """任意の TIMESTAMP 文字列が CAST ラウンドトリップで保持される。"""
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -358,7 +358,7 @@ class TestLoadTsvToTmpDb:
         acc=st_accession_like_text(min_size=1, max_size=20),
         sra_type=st_sra_type(),
     )
-    @settings(deadline=2000, max_examples=20)
+    @settings(max_examples=20)
     def test_pbt_text_roundtrip(self, acc: str, sra_type: str) -> None:
         """任意の Accession と Type テキストが TSV → DB ラウンドトリップで保持される。"""
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -696,7 +696,7 @@ class TestGetAccessionInfoBulk:
         minute=st.integers(min_value=0, max_value=59),
         second=st.integers(min_value=0, max_value=59),
     )
-    @settings(deadline=2000, max_examples=20)
+    @settings(max_examples=20)
     def test_arbitrary_timestamps_are_iso8601(
         self,
         year: int,
@@ -967,17 +967,26 @@ class TestGetAccessionInfoBulk:
             tmp_path = tmp_path_factory.mktemp("pbt_batch")
             rows = [
                 (
-                    f"SRR{i:06d}", f"SRA{i:06d}", None, None, None, None, None,
-                    "RUN", "live", "public", None, None, None,
+                    f"SRR{i:06d}",
+                    f"SRA{i:06d}",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
                 )
                 for i in range(n_rows)
             ]
             config = _make_config_with_db(tmp_path, "sra", rows)
             accessions = [f"SRR{i:06d}" for i in range(n_rows)]
             result = get_accession_info_bulk(config, "sra", accessions)
-            assert len(result) == n_rows, (
-                f"batch_size={batch_size} n_rows={n_rows} got {len(result)}"
-            )
+            assert len(result) == n_rows, f"batch_size={batch_size} n_rows={n_rows} got {len(result)}"
         finally:
             sra_accessions_tab.QUERY_BATCH_SIZE = original
 
@@ -991,12 +1000,34 @@ class TestGetAccessionInfoBulk:
             "sra",
             [
                 (
-                    "SRR000001", "SRA000001", None, None, None, None, None, "RUN",
-                    "suppressed", "public", None, None, None,
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "suppressed",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
                 (
-                    "SRR000001", "SRA000001", None, None, None, None, None, "RUN",
-                    "live", "public", None, None, None,
+                    "SRR000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
             ],
         )
@@ -1011,12 +1042,34 @@ class TestGetAccessionInfoBulk:
             "sra",
             [
                 (
-                    "SRR000002", "SRA000001", None, None, None, None, None, "RUN",
-                    "live", "public", None, None, None,
+                    "SRR000002",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
                 (
-                    "SRR000002", "SRA000001", None, None, None, None, None, "RUN",
-                    "withdrawn", "public", None, None, None,
+                    "SRR000002",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "withdrawn",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
             ],
         )
@@ -1030,12 +1083,34 @@ class TestGetAccessionInfoBulk:
             "sra",
             [
                 (
-                    "SRR000003", "SRA000001", None, None, None, None, None, "RUN",
-                    "suppressed", "public", None, None, None,
+                    "SRR000003",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "suppressed",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
                 (
-                    "SRR000003", "SRA000001", None, None, None, None, None, "RUN",
-                    "public", "public", None, None, None,
+                    "SRR000003",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "public",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
             ],
         )
@@ -1049,12 +1124,34 @@ class TestGetAccessionInfoBulk:
             "sra",
             [
                 (
-                    "SRR000004", "SRA000001", None, None, None, None, None, "RUN",
-                    "withdrawn", "public", None, None, None,
+                    "SRR000004",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "withdrawn",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
                 (
-                    "SRR000004", "SRA000001", None, None, None, None, None, "RUN",
-                    "suppressed", "public", None, None, None,
+                    "SRR000004",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "suppressed",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
             ],
         )
@@ -1070,12 +1167,34 @@ class TestGetAccessionInfoBulk:
             "sra",
             [
                 (
-                    "SRR000005", "SRA000001", None, None, None, None, None, "RUN",
-                    "live", "public", None, None, None,
+                    "SRR000005",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "live",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
                 (
-                    "SRR000005", "SRA000001", None, None, None, None, None, "RUN",
-                    "future_status_xyz", "public", None, None, None,
+                    "SRR000005",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "future_status_xyz",
+                    "public",
+                    None,
+                    None,
+                    None,
                 ),
             ],
         )
@@ -1086,6 +1205,7 @@ class TestGetAccessionInfoBulk:
     def test_status_priority_constant(self) -> None:
         """STATUS_PRIORITY は docs/data-architecture.md の SSOT と一致する。"""
         from ddbj_search_converter.sra_accessions_tab import STATUS_PRIORITY
+
         assert STATUS_PRIORITY == {
             "live": 0,
             "public": 1,

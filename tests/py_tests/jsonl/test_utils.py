@@ -22,8 +22,7 @@ from ddbj_search_converter.jsonl.utils import (
     to_xref,
 )
 from ddbj_search_converter.schema import Organization, XrefType
-
-from ..strategies import (
+from py_tests.strategies import (
     st_bioproject_id,
     st_biosample_id,
     st_gea_id,

@@ -57,10 +57,9 @@ def assert_dbxref_symmetric(
             )
             """
         ).fetchone()
-        assert total is not None and distinct is not None
-        assert total[0] == distinct[0], (
-            f"dbxref に重複行: total={total[0]} distinct={distinct[0]}"
-        )
+        assert total is not None
+        assert distinct is not None
+        assert total[0] == distinct[0], f"dbxref に重複行: total={total[0]} distinct={distinct[0]}"
 
         # (2) self-loop 検査
         self_loops = con.execute(
@@ -78,9 +77,7 @@ def assert_dbxref_symmetric(
                 LIMIT 5
                 """
             ).fetchall()
-            raise AssertionError(
-                f"self-loop が {self_loops[0]} 件存在 (allow_self_loops=False): {samples}"
-            )
+            raise AssertionError(f"self-loop が {self_loops[0]} 件存在 (allow_self_loops=False): {samples}")
 
         # (3) 対称性: 任意 row (a→b) に対し (b→a) が存在 (self-loop を除く)
         missing_reverse = con.execute(
@@ -97,20 +94,14 @@ def assert_dbxref_symmetric(
             LIMIT 5
             """
         ).fetchall()
-        assert not missing_reverse, (
-            f"対称性違反: 逆方向行が欠落しているサンプル {missing_reverse}"
-        )
+        assert not missing_reverse, f"対称性違反: 逆方向行が欠落しているサンプル {missing_reverse}"
 
         # (4) 半辺化件数: 非 self-loop は 2 行ペア。canonical edge 数 = (total - self_loops) / 2 + self_loops
         non_self = total[0] - self_loops[0]
-        assert non_self % 2 == 0, (
-            f"半辺化スキーマ違反: 非 self-loop 行数 {non_self} が偶数でない"
-        )
+        assert non_self % 2 == 0, f"半辺化スキーマ違反: 非 self-loop 行数 {non_self} が偶数でない"
 
         # (5) index が張られているか
-        idx_rows = con.execute(
-            "SELECT index_name FROM duckdb_indexes() WHERE table_name = 'dbxref'"
-        ).fetchall()
+        idx_rows = con.execute("SELECT index_name FROM duckdb_indexes() WHERE table_name = 'dbxref'").fetchall()
         names = {r[0] for r in idx_rows}
         assert "idx_dbxref_accession" in names, f"idx_dbxref_accession 不在: {names}"
         assert "idx_dbxref_unique" in names, f"idx_dbxref_unique 不在: {names}"

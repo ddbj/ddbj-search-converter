@@ -38,16 +38,14 @@ def test_current_mappings_are_accepted_by_es(
     # 各 index に「必ず存在すべき共通フィールド」のうち代表 2 つを期待値とする。
     # 14 index で共通する identifier / type / dbXrefs のいずれかが消えれば
     # converter→ES の整合性が崩れるサイン。
-    REQUIRED_FIELDS = {"identifier", "type", "dbXrefs"}
+    required_fields = {"identifier", "type", "dbXrefs"}
 
     for physical in expected:
-        assert check_index_exists(integration_es_client, physical), (
-            f"index {physical} was not created in ES"
-        )
+        assert check_index_exists(integration_es_client, physical), f"index {physical} was not created in ES"
         mapping = integration_es_client.indices.get_mapping(index=physical)
         properties = mapping.body[physical]["mappings"].get("properties", {})
         assert properties, f"index {physical} has empty properties (mapping not stored)"
-        missing = REQUIRED_FIELDS - set(properties.keys())
+        missing = required_fields - set(properties.keys())
         assert not missing, (
             f"index {physical} mapping missing required fields: {missing} "
             f"(actual properties: {sorted(properties.keys())})"

@@ -626,7 +626,7 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
         properties={"Project": project},
         distribution=make_bp_distribution(accession),
         isPartOf="bioproject",
-        type="bioproject",
+        type_="bioproject",
         objectType=parse_object_type(project),
         name=parse_name(project, accession),
         url=build_search_entry_self_url("bioproject", accession),

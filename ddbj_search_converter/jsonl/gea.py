@@ -91,7 +91,7 @@ def create_gea_entry(
         properties=idf,
         distribution=make_gea_distribution(accession),
         isPartOf="gea",
-        type="gea",
+        type_="gea",
         name=None,
         url=build_search_entry_self_url("gea", accession),
         organism=None,

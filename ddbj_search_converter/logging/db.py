@@ -1,5 +1,6 @@
 """DuckDB operations for logging."""
 
+import contextlib
 import json
 from datetime import date
 from pathlib import Path
@@ -49,21 +50,16 @@ def init_log_db(config: Config) -> None:
         """)
         # Migration for DBs created before the lifecycle column existed.
         # DuckDB の ALTER TABLE ADD COLUMN IF NOT EXISTS は v0.9 以降サポート。
-        try:
+        # 古い DuckDB では IF NOT EXISTS が無く CatalogException を投げるので無視する。
+        with contextlib.suppress(duckdb.CatalogException):
             con.execute("ALTER TABLE log_records ADD COLUMN IF NOT EXISTS lifecycle TEXT")
-        except duckdb.CatalogException:
-            # Column already exists on older DuckDB without IF NOT EXISTS support
-            pass
         con.execute("CREATE INDEX IF NOT EXISTS idx_run_name ON log_records(run_name)")
         con.execute("CREATE INDEX IF NOT EXISTS idx_run_date ON log_records(run_date)")
         con.execute("CREATE INDEX IF NOT EXISTS idx_log_level ON log_records(log_level)")
         # (run_id, lifecycle) UNIQUE for non-NULL lifecycle rows.
         # CREATE UNIQUE INDEX fails if pre-existing rows violate the constraint,
         # so migrate_unique_run_id.py must clean up duplicates first.
-        con.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_run_lifecycle_unique "
-            "ON log_records(run_id, lifecycle)"
-        )
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_run_lifecycle_unique ON log_records(run_id, lifecycle)")
     finally:
         con.close()
 

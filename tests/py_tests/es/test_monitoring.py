@@ -31,16 +31,12 @@ from ddbj_search_converter.es.monitoring import (
 @pytest.fixture
 def patched_get_es():  # type: ignore[no-untyped-def]
     mock_es = MagicMock()
-    with patch(
-        "ddbj_search_converter.es.monitoring.get_es_client", return_value=mock_es
-    ):
+    with patch("ddbj_search_converter.es.monitoring.get_es_client", return_value=mock_es):
         yield mock_es
 
 
 class TestGetClusterHealth:
-    def test_returns_cluster_health_model(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_returns_cluster_health_model(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cluster.health.return_value = {
             "status": "green",
             "cluster_name": "ddbj-search",
@@ -58,22 +54,23 @@ class TestGetClusterHealth:
         assert result.status == "green"
         assert result.active_primary_shards == 14
 
-    def test_yellow_status_passed_through(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_yellow_status_passed_through(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cluster.health.return_value = {
-            "status": "yellow", "cluster_name": "c", "number_of_nodes": 1,
-            "number_of_data_nodes": 1, "active_primary_shards": 0,
-            "active_shards": 0, "relocating_shards": 0,
-            "initializing_shards": 0, "unassigned_shards": 1,
+            "status": "yellow",
+            "cluster_name": "c",
+            "number_of_nodes": 1,
+            "number_of_data_nodes": 1,
+            "active_primary_shards": 0,
+            "active_shards": 0,
+            "relocating_shards": 0,
+            "initializing_shards": 0,
+            "unassigned_shards": 1,
         }
         assert get_cluster_health(test_config).status == "yellow"
 
 
 class TestGetNodeStats:
-    def test_extracts_fs_and_jvm_metrics(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_extracts_fs_and_jvm_metrics(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.nodes.stats.return_value = {
             "nodes": {
                 "node1": {
@@ -94,14 +91,13 @@ class TestGetNodeStats:
         assert n.disk_used_percent == 60.0
         assert n.heap_used_percent == 50
 
-    def test_zero_total_disk_avoids_division_by_zero(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_zero_total_disk_avoids_division_by_zero(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         """0 byte の fs を返す ES からは disk_used_percent=0 を返す (ZeroDivisionError 回避)。"""
         patched_get_es.nodes.stats.return_value = {
             "nodes": {
                 "node1": {
-                    "name": "n1", "host": "h",
+                    "name": "n1",
+                    "host": "h",
                     "fs": {"total": {"total_in_bytes": 0, "free_in_bytes": 0}},
                     "jvm": {"mem": {"heap_used_in_bytes": 0, "heap_max_in_bytes": 0, "heap_used_percent": 0}},
                 },
@@ -110,9 +106,7 @@ class TestGetNodeStats:
         result = get_node_stats(test_config)
         assert result[0].disk_used_percent == 0.0
 
-    def test_missing_node_metadata_falls_back_to_id(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_missing_node_metadata_falls_back_to_id(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.nodes.stats.return_value = {
             "nodes": {
                 "abc-node-id": {
@@ -168,16 +162,12 @@ class TestBugParseSizeSuffixOrder:
             ("1Gb", 1024**3),
         ],
     )
-    def test_multi_letter_suffix_takes_precedence_over_b(
-        self, input_str: str, expected: int
-    ) -> None:
+    def test_multi_letter_suffix_takes_precedence_over_b(self, input_str: str, expected: int) -> None:
         assert _parse_size(input_str) == expected
 
 
 class TestGetIndexStats:
-    def test_returns_list_of_index_stats(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_returns_list_of_index_stats(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cat.indices.return_value = [
             {
                 "index": "bioproject",
@@ -201,15 +191,11 @@ class TestGetIndexStats:
         for s in result:
             assert isinstance(s, IndexStats)
 
-    def test_returns_empty_on_error(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_returns_empty_on_error(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cat.indices.side_effect = RuntimeError("ES down")
         assert get_index_stats(test_config) == []
 
-    def test_empty_response(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_empty_response(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cat.indices.return_value = []
         assert get_index_stats(test_config) == []
 
@@ -218,20 +204,23 @@ class TestCheckHealth:
     """check_health は cluster_health / node_stats / 警告閾値を集約して
     HealthStatus list を返す。"""
 
-    def test_returns_list_of_health_status(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_returns_list_of_health_status(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cluster.health.return_value = {
-            "status": "green", "cluster_name": "c",
-            "number_of_nodes": 1, "number_of_data_nodes": 1,
-            "active_primary_shards": 14, "active_shards": 14,
-            "relocating_shards": 0, "initializing_shards": 0,
+            "status": "green",
+            "cluster_name": "c",
+            "number_of_nodes": 1,
+            "number_of_data_nodes": 1,
+            "active_primary_shards": 14,
+            "active_shards": 14,
+            "relocating_shards": 0,
+            "initializing_shards": 0,
             "unassigned_shards": 0,
         }
         patched_get_es.nodes.stats.return_value = {
             "nodes": {
                 "n1": {
-                    "name": "n1", "host": "h",
+                    "name": "n1",
+                    "host": "h",
                     "fs": {"total": {"total_in_bytes": 100, "free_in_bytes": 80}},  # 20% used
                     "jvm": {"mem": {"heap_used_in_bytes": 100, "heap_max_in_bytes": 1000, "heap_used_percent": 10}},
                 }
@@ -243,20 +232,23 @@ class TestCheckHealth:
             assert isinstance(item, HealthStatus)
             assert item.level in {"ok", "warning", "critical"}
 
-    def test_critical_status_when_cluster_red(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_critical_status_when_cluster_red(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.cluster.health.return_value = {
-            "status": "red", "cluster_name": "c",
-            "number_of_nodes": 1, "number_of_data_nodes": 1,
-            "active_primary_shards": 0, "active_shards": 0,
-            "relocating_shards": 0, "initializing_shards": 0,
+            "status": "red",
+            "cluster_name": "c",
+            "number_of_nodes": 1,
+            "number_of_data_nodes": 1,
+            "active_primary_shards": 0,
+            "active_shards": 0,
+            "relocating_shards": 0,
+            "initializing_shards": 0,
             "unassigned_shards": 14,
         }
         patched_get_es.nodes.stats.return_value = {
             "nodes": {
                 "n1": {
-                    "name": "n1", "host": "h",
+                    "name": "n1",
+                    "host": "h",
                     "fs": {"total": {"total_in_bytes": 100, "free_in_bytes": 80}},
                     "jvm": {"mem": {"heap_used_in_bytes": 0, "heap_max_in_bytes": 1000, "heap_used_percent": 0}},
                 }

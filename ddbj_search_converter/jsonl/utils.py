@@ -9,7 +9,6 @@ from ddbj_search_converter.dblink.db import AccessionType, get_linked_entities_b
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Organization, PublicationDbType, Xref, XrefType
 
-
 SearchEntryExt = Literal["json", "jsonld", "xml"]
 
 
@@ -31,6 +30,7 @@ def build_search_entry_self_url(entry_type: str, accession: str) -> str:
     `URL_TEMPLATE` 経由の `_build_url` とは別経路。
     """
     return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}"
+
 
 _EXTERNAL_URL_RE = re.compile(r"^https?://[^\s/][^\s]*$")
 

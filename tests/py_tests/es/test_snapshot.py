@@ -46,19 +46,13 @@ def mock_es_client() -> MagicMock:
 @pytest.fixture
 def patched_get_es(mock_es_client: MagicMock):  # type: ignore[no-untyped-def]
     """``get_es_client`` を mock_es_client に固定する patcher を yield する。"""
-    with patch(
-        "ddbj_search_converter.es.snapshot.get_es_client", return_value=mock_es_client
-    ):
+    with patch("ddbj_search_converter.es.snapshot.get_es_client", return_value=mock_es_client):
         yield mock_es_client
 
 
 class TestRegisterRepository:
-    def test_calls_create_repository_with_fs_body(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
-        patched_get_es.snapshot.create_repository.return_value = _make_mock_response(
-            {"acknowledged": True}
-        )
+    def test_calls_create_repository_with_fs_body(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
+        patched_get_es.snapshot.create_repository.return_value = _make_mock_response({"acknowledged": True})
 
         result = register_repository(test_config, "backup", "/var/backups", compress=True)
 
@@ -74,9 +68,7 @@ class TestRegisterRepository:
             },
         )
 
-    def test_compress_false_propagates(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_compress_false_propagates(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.create_repository.return_value = _make_mock_response({})
         register_repository(test_config, "r", "/x", compress=False)
         body = patched_get_es.snapshot.create_repository.call_args.kwargs["body"]
@@ -84,9 +76,7 @@ class TestRegisterRepository:
 
 
 class TestListRepositories:
-    def test_flattens_response_into_list_of_dicts(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_flattens_response_into_list_of_dicts(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.get_repository.return_value = _make_mock_response(
             {
                 "backup": {"type": "fs", "settings": {"location": "/x"}},
@@ -107,21 +97,15 @@ class TestListRepositories:
 
 
 class TestDeleteRepository:
-    def test_calls_delete_repository(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
-        patched_get_es.snapshot.delete_repository.return_value = _make_mock_response(
-            {"acknowledged": True}
-        )
+    def test_calls_delete_repository(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
+        patched_get_es.snapshot.delete_repository.return_value = _make_mock_response({"acknowledged": True})
         result = delete_repository(test_config, "backup")
         assert result == {"acknowledged": True}
         patched_get_es.snapshot.delete_repository.assert_called_once_with(name="backup")
 
 
 class TestCreateSnapshot:
-    def test_default_indexes_are_all_indexes(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_default_indexes_are_all_indexes(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         from ddbj_search_converter.es.index import ALL_INDEXES
 
         patched_get_es.snapshot.create.return_value = _make_mock_response({"accepted": True})
@@ -131,45 +115,36 @@ class TestCreateSnapshot:
         for idx in ALL_INDEXES:
             assert idx in body["indices"]
 
-    def test_explicit_indexes_only(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_explicit_indexes_only(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.create.return_value = _make_mock_response({})
-        create_snapshot(
-            test_config, "repo", snapshot_name="s", indexes=["bioproject", "biosample"]
-        )
+        create_snapshot(test_config, "repo", snapshot_name="s", indexes=["bioproject", "biosample"])
         body = patched_get_es.snapshot.create.call_args.kwargs["body"]
         assert body["indices"] == "bioproject,biosample"
 
-    def test_metadata_attached_when_provided(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_metadata_attached_when_provided(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.create.return_value = _make_mock_response({})
         create_snapshot(
-            test_config, "repo", snapshot_name="s",
-            indexes=["bioproject"], metadata={"k": "v"},
+            test_config,
+            "repo",
+            snapshot_name="s",
+            indexes=["bioproject"],
+            metadata={"k": "v"},
         )
         body = patched_get_es.snapshot.create.call_args.kwargs["body"]
         assert body["metadata"] == {"k": "v"}
 
-    def test_metadata_omitted_by_default(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_metadata_omitted_by_default(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.create.return_value = _make_mock_response({})
         create_snapshot(test_config, "repo", snapshot_name="s", indexes=["bioproject"])
         body = patched_get_es.snapshot.create.call_args.kwargs["body"]
         assert "metadata" not in body
 
-    def test_wait_for_completion_default_true(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_wait_for_completion_default_true(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.create.return_value = _make_mock_response({})
         create_snapshot(test_config, "repo", snapshot_name="s", indexes=["bioproject"])
         assert patched_get_es.snapshot.create.call_args.kwargs["wait_for_completion"] is True
 
-    def test_auto_generated_snapshot_name_prefix(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_auto_generated_snapshot_name_prefix(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         from ddbj_search_converter.es.settings import SNAPSHOT_SETTINGS
 
         patched_get_es.snapshot.create.return_value = _make_mock_response({})
@@ -179,9 +154,7 @@ class TestCreateSnapshot:
 
 
 class TestListSnapshots:
-    def test_extracts_relevant_fields(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_extracts_relevant_fields(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.get.return_value = _make_mock_response(
             {
                 "snapshots": [
@@ -203,26 +176,20 @@ class TestListSnapshots:
         assert result[0]["snapshot"] == "s1"
         assert result[0]["state"] == "SUCCESS"
 
-    def test_empty_repository(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_empty_repository(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.get.return_value = _make_mock_response({"snapshots": []})
         assert list_snapshots(test_config, "repo") == []
 
 
 class TestGetSnapshot:
-    def test_returns_first_snapshot(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_returns_first_snapshot(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.get.return_value = _make_mock_response(
             {"snapshots": [{"snapshot": "s1", "state": "SUCCESS"}]}
         )
         result = get_snapshot(test_config, "repo", "s1")
         assert result["snapshot"] == "s1"
 
-    def test_raises_when_not_found(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_raises_when_not_found(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.get.return_value = _make_mock_response({"snapshots": []})
         with pytest.raises(ValueError, match="not found"):
             get_snapshot(test_config, "repo", "s1")
@@ -236,30 +203,27 @@ class TestDeleteSnapshot:
 
 
 class TestRestoreSnapshot:
-    def test_body_includes_indices_when_given(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_body_includes_indices_when_given(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.restore.return_value = _make_mock_response({})
         restore_snapshot(test_config, "repo", "s1", indexes=["bioproject"])
         body = patched_get_es.snapshot.restore.call_args.kwargs["body"]
         assert body["indices"] == "bioproject"
         assert body["include_global_state"] is False
 
-    def test_rename_pattern_only_when_both_provided(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_rename_pattern_only_when_both_provided(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.restore.return_value = _make_mock_response({})
         restore_snapshot(
-            test_config, "repo", "s1",
-            rename_pattern="bioproject", rename_replacement="bioproject-restored",
+            test_config,
+            "repo",
+            "s1",
+            rename_pattern="bioproject",
+            rename_replacement="bioproject-restored",
         )
         body = patched_get_es.snapshot.restore.call_args.kwargs["body"]
         assert body["rename_pattern"] == "bioproject"
         assert body["rename_replacement"] == "bioproject-restored"
 
-    def test_rename_pattern_alone_is_ignored(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_rename_pattern_alone_is_ignored(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         """rename_pattern だけで rename_replacement が無い場合は body に乗らない (ES が
         rejection を返す前に防御する)。"""
         patched_get_es.snapshot.restore.return_value = _make_mock_response({})
@@ -278,12 +242,12 @@ class TestRestoreSnapshotLiveIndexGuard:
     (このとき log_warn が呼ばれるので ``with_logger_isolated`` で context を確保)。
     """
 
-    def test_raises_when_target_is_live_alias_target(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
-        patched_get_es.indices.get_alias.return_value = _make_mock_response({
-            "bioproject-20260512": {"aliases": {"bioproject": {}}},
-        })
+    def test_raises_when_target_is_live_alias_target(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
+        patched_get_es.indices.get_alias.return_value = _make_mock_response(
+            {
+                "bioproject-20260512": {"aliases": {"bioproject": {}}},
+            }
+        )
 
         with pytest.raises(RuntimeError, match="refusing to overwrite"):
             restore_snapshot(test_config, "repo", "s1", indexes=["bioproject-20260512"])
@@ -291,48 +255,53 @@ class TestRestoreSnapshotLiveIndexGuard:
         # guard で raise されたので snapshot.restore は呼ばれていない
         patched_get_es.snapshot.restore.assert_not_called()
 
-    def test_force_true_allows_overwriting_live_target(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
-        patched_get_es.indices.get_alias.return_value = _make_mock_response({
-            "bioproject-20260512": {"aliases": {"bioproject": {}}},
-        })
+    def test_force_true_allows_overwriting_live_target(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
+        patched_get_es.indices.get_alias.return_value = _make_mock_response(
+            {
+                "bioproject-20260512": {"aliases": {"bioproject": {}}},
+            }
+        )
         patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
 
         # force=True を指定すれば guard を通過して restore に到達する
         result = restore_snapshot(
-            test_config, "repo", "s1",
-            indexes=["bioproject-20260512"], force=True,
+            test_config,
+            "repo",
+            "s1",
+            indexes=["bioproject-20260512"],
+            force=True,
         )
 
         assert result == {"accepted": True}
         patched_get_es.snapshot.restore.assert_called_once()
 
-    def test_no_conflict_with_non_live_target(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_no_conflict_with_non_live_target(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         # live aliases に "bioproject-20260512" だけが含まれるが、復元対象は
         # "bioproject-old" なので衝突なし → guard を通過
-        patched_get_es.indices.get_alias.return_value = _make_mock_response({
-            "bioproject-20260512": {"aliases": {"bioproject": {}}},
-        })
+        patched_get_es.indices.get_alias.return_value = _make_mock_response(
+            {
+                "bioproject-20260512": {"aliases": {"bioproject": {}}},
+            }
+        )
         patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
 
         restore_snapshot(test_config, "repo", "s1", indexes=["bioproject-old"])
 
         patched_get_es.snapshot.restore.assert_called_once()
 
-    def test_rename_pattern_skips_guard(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_rename_pattern_skips_guard(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         # rename_pattern が指定されると、復元先名は元と異なるため guard は不要
-        patched_get_es.indices.get_alias.return_value = _make_mock_response({
-            "bioproject-20260512": {"aliases": {"bioproject": {}}},
-        })
+        patched_get_es.indices.get_alias.return_value = _make_mock_response(
+            {
+                "bioproject-20260512": {"aliases": {"bioproject": {}}},
+            }
+        )
         patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
 
         restore_snapshot(
-            test_config, "repo", "s1",
+            test_config,
+            "repo",
+            "s1",
             indexes=["bioproject-20260512"],
             rename_pattern="bioproject-(.+)",
             rename_replacement="restored-$1",
@@ -341,9 +310,7 @@ class TestRestoreSnapshotLiveIndexGuard:
         # guard は呼ばれず、restore に到達
         patched_get_es.snapshot.restore.assert_called_once()
 
-    def test_alias_fetch_failure_falls_through_guard(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_alias_fetch_failure_falls_through_guard(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         """``indices.get_alias`` が失敗しても guard は通過する (restore 自体の失敗にしない)。"""
         patched_get_es.indices.get_alias.side_effect = Exception("alias api failed")
         patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
@@ -355,9 +322,7 @@ class TestRestoreSnapshotLiveIndexGuard:
 
 
 class TestExportIndexSettings:
-    def test_collects_settings_and_mappings_per_index(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_collects_settings_and_mappings_per_index(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.indices.get_settings.return_value = _make_mock_response(
             {"bioproject": {"settings": {"index": {"number_of_shards": "1"}}}}
         )
@@ -370,9 +335,7 @@ class TestExportIndexSettings:
         assert "mappings" in result["bioproject"]
         assert result["bioproject"]["settings"]["index"]["number_of_shards"] == "1"
 
-    def test_records_error_for_missing_index(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_records_error_for_missing_index(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.indices.get_settings.side_effect = RuntimeError("boom")
 
         result = export_index_settings(test_config, indexes=["nonexistent"])
@@ -380,16 +343,12 @@ class TestExportIndexSettings:
 
 
 class TestGetSnapshotStatus:
-    def test_with_specific_snapshot(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_with_specific_snapshot(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.status.return_value = _make_mock_response({"snapshots": []})
         get_snapshot_status(test_config, "repo", "s1")
         patched_get_es.snapshot.status.assert_called_once_with(repository="repo", snapshot="s1")
 
-    def test_without_snapshot_uses_repo_level(
-        self, patched_get_es: MagicMock, test_config: MagicMock
-    ) -> None:
+    def test_without_snapshot_uses_repo_level(self, patched_get_es: MagicMock, test_config: MagicMock) -> None:
         patched_get_es.snapshot.status.return_value = _make_mock_response({"snapshots": []})
         get_snapshot_status(test_config, "repo", None)
         patched_get_es.snapshot.status.assert_called_once_with(repository="repo")

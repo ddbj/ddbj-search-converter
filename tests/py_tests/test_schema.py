@@ -1198,7 +1198,7 @@ class TestSchemaDescriptions:
 
     @pytest.mark.parametrize(
         ("model_cls", "field_name"),
-        [(cls, fname) for cls in SCHEMA_CLASSES for fname in cls.model_fields.keys()],
+        [(cls, fname) for cls in SCHEMA_CLASSES for fname in cls.model_fields],
     )
     def test_field_description_present(self, model_cls: type, field_name: str) -> None:
         """各 field に非空 description が存在する。"""
@@ -1219,13 +1219,10 @@ class TestSchemaDescriptions:
         for field_name, field_info in model_cls.model_fields.items():
             alias_or_name = field_info.alias or field_name
             prop = schema["properties"].get(alias_or_name)
-            assert prop is not None, (
-                f"{model_cls.__name__}.{alias_or_name} が model_json_schema 出力に存在しない"
-            )
+            assert prop is not None, f"{model_cls.__name__}.{alias_or_name} が model_json_schema 出力に存在しない"
             desc = (prop.get("description") or "").strip()
             assert desc, (
-                f"{model_cls.__name__}.{alias_or_name} の description が "
-                f"model_json_schema 出力に伝播していない"
+                f"{model_cls.__name__}.{alias_or_name} の description が model_json_schema 出力に伝播していない"
             )
 
     @pytest.mark.parametrize(

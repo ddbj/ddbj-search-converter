@@ -202,18 +202,18 @@ class TestSwapAliasesVerification:
     """
 
     @patch("ddbj_search_converter.es.index.get_es_client")
-    def test_succeeds_when_aliases_match_expected(
-        self, mock_get_client: MagicMock, tmp_path: Any
-    ) -> None:
+    def test_succeeds_when_aliases_match_expected(self, mock_get_client: MagicMock, tmp_path: Any) -> None:
         mock_client = MagicMock()
         mock_get_client.return_value = mock_client
         # bioproject group のみ swap する (1 index): new = bioproject-20260512
         exists_resp = MagicMock()
         exists_resp.meta.status = 200
         mock_client.indices.exists.return_value = exists_resp
-        mock_client.indices.get_alias.return_value = _make_mock_response({
-            "bioproject-20260512": {"aliases": {"bioproject": {}}},
-        })
+        mock_client.indices.get_alias.return_value = _make_mock_response(
+            {
+                "bioproject-20260512": {"aliases": {"bioproject": {}}},
+            }
+        )
 
         config = Config(result_dir=tmp_path)
         swap_aliases(config, "20260512", "bioproject")
@@ -222,27 +222,25 @@ class TestSwapAliasesVerification:
         mock_client.indices.update_aliases.assert_called_once()
 
     @patch("ddbj_search_converter.es.index.get_es_client")
-    def test_raises_when_alias_target_mismatches(
-        self, mock_get_client: MagicMock, tmp_path: Any
-    ) -> None:
+    def test_raises_when_alias_target_mismatches(self, mock_get_client: MagicMock, tmp_path: Any) -> None:
         mock_client = MagicMock()
         mock_get_client.return_value = mock_client
         exists_resp = MagicMock()
         exists_resp.meta.status = 200
         mock_client.indices.exists.return_value = exists_resp
         # get_alias の戻り値が期待 dated index と一致しない (古い index を指したまま)
-        mock_client.indices.get_alias.return_value = _make_mock_response({
-            "bioproject-20260101": {"aliases": {"bioproject": {}}},
-        })
+        mock_client.indices.get_alias.return_value = _make_mock_response(
+            {
+                "bioproject-20260101": {"aliases": {"bioproject": {}}},
+            }
+        )
 
         config = Config(result_dir=tmp_path)
         with pytest.raises(RuntimeError, match="post-verification failed"):
             swap_aliases(config, "20260512", "bioproject")
 
     @patch("ddbj_search_converter.es.index.get_es_client")
-    def test_raises_when_alias_fetch_fails(
-        self, mock_get_client: MagicMock, tmp_path: Any
-    ) -> None:
+    def test_raises_when_alias_fetch_fails(self, mock_get_client: MagicMock, tmp_path: Any) -> None:
         mock_client = MagicMock()
         mock_get_client.return_value = mock_client
         exists_resp = MagicMock()

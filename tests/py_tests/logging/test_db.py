@@ -366,9 +366,24 @@ class TestGetLastSuccessfulRunDate:
         self._populate(
             config,
             [
-                _record(run_id="20260401_my_run_a001", run_name="my_run", run_date="2026-04-01", extra={"lifecycle": "end"}),
-                _record(run_id="20260415_my_run_b002", run_name="my_run", run_date="2026-04-15", extra={"lifecycle": "end"}),
-                _record(run_id="20260410_my_run_c003", run_name="my_run", run_date="2026-04-10", extra={"lifecycle": "end"}),
+                _record(
+                    run_id="20260401_my_run_a001",
+                    run_name="my_run",
+                    run_date="2026-04-01",
+                    extra={"lifecycle": "end"},
+                ),
+                _record(
+                    run_id="20260415_my_run_b002",
+                    run_name="my_run",
+                    run_date="2026-04-15",
+                    extra={"lifecycle": "end"},
+                ),
+                _record(
+                    run_id="20260410_my_run_c003",
+                    run_name="my_run",
+                    run_date="2026-04-10",
+                    extra={"lifecycle": "end"},
+                ),
             ],
         )
 
@@ -435,10 +450,20 @@ class TestRoundTrip:
         self._populate(
             config,
             [
-                _record(run_id=run_id, run_name="test_run", run_date="2026-05-12",
-                        timestamp="2026-05-12T10:00:00+09:00", extra={"lifecycle": "start"}),
-                _record(run_id=run_id, run_name="test_run", run_date="2026-05-12",
-                        timestamp="2026-05-12T12:00:00+09:00", extra={"lifecycle": "end"}),
+                _record(
+                    run_id=run_id,
+                    run_name="test_run",
+                    run_date="2026-05-12",
+                    timestamp="2026-05-12T10:00:00+09:00",
+                    extra={"lifecycle": "start"},
+                ),
+                _record(
+                    run_id=run_id,
+                    run_name="test_run",
+                    run_date="2026-05-12",
+                    timestamp="2026-05-12T12:00:00+09:00",
+                    extra={"lifecycle": "end"},
+                ),
             ],
         )
         result = get_last_successful_run_date(config, "test_run")
@@ -464,10 +489,14 @@ class TestRoundTrip:
         self._populate(
             config,
             [
-                _record(run_id="20260401_r_failA", run_name="r", run_date="2026-04-01",
-                        log_level="CRITICAL", extra={"lifecycle": "failed"}),
-                _record(run_id="20260415_r_endB", run_name="r", run_date="2026-04-15",
-                        extra={"lifecycle": "end"}),
+                _record(
+                    run_id="20260401_r_failA",
+                    run_name="r",
+                    run_date="2026-04-01",
+                    log_level="CRITICAL",
+                    extra={"lifecycle": "failed"},
+                ),
+                _record(run_id="20260415_r_endB", run_name="r", run_date="2026-04-15", extra={"lifecycle": "end"}),
             ],
         )
         result = get_last_successful_run_date(config, "r")
@@ -479,8 +508,13 @@ class TestRoundTrip:
         self._populate(
             config,
             [
-                _record(run_id="20260401_r_fail", run_name="r", run_date="2026-04-01",
-                        log_level="CRITICAL", extra={"lifecycle": "failed"}),
+                _record(
+                    run_id="20260401_r_fail",
+                    run_name="r",
+                    run_date="2026-04-01",
+                    log_level="CRITICAL",
+                    extra={"lifecycle": "failed"},
+                ),
             ],
         )
         result = get_last_successful_run_date(config, "r")
@@ -492,20 +526,30 @@ class TestRoundTrip:
         self._populate(
             config,
             [
-                _record(run_id="20260512_r_x001", run_name="r", run_date="2026-05-12",
-                        timestamp="2026-05-12T10:00:00+09:00",
-                        extra={"lifecycle": "start"}),
-                _record(run_id="20260512_r_x001", run_name="r", run_date="2026-05-12",
-                        timestamp="2026-05-12T12:00:00+09:00",
-                        extra={"lifecycle": "end"}),
-                _record(run_id="20260512_r_x001", run_name="r", run_date="2026-05-12",
-                        timestamp="2026-05-12T11:00:00+09:00",
-                        extra=None),  # 通常 INFO ログ
+                _record(
+                    run_id="20260512_r_x001",
+                    run_name="r",
+                    run_date="2026-05-12",
+                    timestamp="2026-05-12T10:00:00+09:00",
+                    extra={"lifecycle": "start"},
+                ),
+                _record(
+                    run_id="20260512_r_x001",
+                    run_name="r",
+                    run_date="2026-05-12",
+                    timestamp="2026-05-12T12:00:00+09:00",
+                    extra={"lifecycle": "end"},
+                ),
+                _record(
+                    run_id="20260512_r_x001",
+                    run_name="r",
+                    run_date="2026-05-12",
+                    timestamp="2026-05-12T11:00:00+09:00",
+                    extra=None,
+                ),  # 通常 INFO ログ
             ],
         )
         with duckdb.connect(str(tmp_path / LOG_DB_FILE_NAME), read_only=True) as conn:
-            rows = conn.execute(
-                "SELECT lifecycle FROM log_records ORDER BY timestamp"
-            ).fetchall()
+            rows = conn.execute("SELECT lifecycle FROM log_records ORDER BY timestamp").fetchall()
         lifecycles = [r[0] for r in rows]
         assert lifecycles == ["start", None, "end"]

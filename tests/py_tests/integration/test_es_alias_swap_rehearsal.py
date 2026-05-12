@@ -191,11 +191,7 @@ def test_swap_aliases_sra_only_keeps_entries_alias_spanning_old_and_new(
 
     sra_indexes = set(get_indexes_for_group("sra"))
     expected_new_sra = {make_physical_index_name(idx, new_suffix) for idx in sra_indexes}
-    expected_old_others = {
-        make_physical_index_name(idx, old_suffix)
-        for idx in ALL_INDEXES
-        if idx not in sra_indexes
-    }
+    expected_old_others = {make_physical_index_name(idx, old_suffix) for idx in ALL_INDEXES if idx not in sra_indexes}
     assert set(targets) == expected_new_sra | expected_old_others
     # SRA 6 + 他 8 = 14 の内訳も pin する (group 構成変更時の検出ポイント)。
     assert len(expected_new_sra) == 6

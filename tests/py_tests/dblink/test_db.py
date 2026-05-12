@@ -5,7 +5,7 @@ from pathlib import Path
 
 import duckdb
 import pytest
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
@@ -299,7 +299,6 @@ class TestBuildDbxrefTable:
             ("sra-run", "DRR999", "biosample", "SAMD1"),
         ]
 
-    @settings(deadline=1000)
     @given(
         rows=st.lists(
             st.tuples(

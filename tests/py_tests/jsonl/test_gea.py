@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.jsonl.gea import (
     create_gea_entry,
     extract_dates,
@@ -193,7 +193,7 @@ class TestCreateGeaEntry:
         assert gea.description is not None
         assert gea.status == "public"
         assert gea.accessibility == "public-access"
-        assert gea.url == "https://ddbj.nig.ac.jp/search/entry/gea/E-GEAD-1005"
+        assert gea.url == f"{SEARCH_BASE_URL}/search/entry/gea/E-GEAD-1005"
         assert gea.dateCreated is None
         assert gea.dateModified == "2025-01-31"
         assert gea.datePublished == "2025-01-31"

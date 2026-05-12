@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.jsonl.idf_common import first_value, parse_idf
 from ddbj_search_converter.jsonl.metabobank import (
     _non_empty_list,
@@ -308,7 +308,7 @@ class TestCreateMetabobankEntry:
         assert mtb.description is not None
         assert mtb.status == "public"
         assert mtb.accessibility == "public-access"
-        assert mtb.url == "https://ddbj.nig.ac.jp/search/entry/metabobank/MTBKS102"
+        assert mtb.url == f"{SEARCH_BASE_URL}/search/entry/metabobank/MTBKS102"
         assert mtb.dateCreated == "2022-05-22"
 
         assert [o.name for o in mtb.organization] == ["Kazusa DNA Research Institute"]

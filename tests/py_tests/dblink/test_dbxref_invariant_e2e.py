@@ -38,7 +38,7 @@ def dblink_config(tmp_path: Path) -> Config:
 
 
 @pytest.fixture(autouse=True)
-def _setup_logger(dblink_config: Config) -> "Iterator[None]":
+def _setup_logger(dblink_config: Config) -> Iterator[None]:
     init_logger(run_name="test_dbxref_invariant_e2e", config=dblink_config)
     yield
     _ctx.set(None)

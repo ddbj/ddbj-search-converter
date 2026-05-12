@@ -448,7 +448,7 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
         properties=entry,
         distribution=make_jga_distribution(index_name, accession),
         isPartOf="jga",
-        type=index_name,
+        type_=index_name,
         name=None,
         url=build_search_entry_self_url(index_name, accession),
         organism=organism,

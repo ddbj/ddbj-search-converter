@@ -467,7 +467,7 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
         properties={"BioSample": sample},
         distribution=make_bs_distribution(accession),
         isPartOf="biosample",
-        type="biosample",
+        type_="biosample",
         name=parse_name(sample, accession),
         url=build_search_entry_self_url("biosample", accession),
         organism=parse_organism(sample, is_ddbj, accession),

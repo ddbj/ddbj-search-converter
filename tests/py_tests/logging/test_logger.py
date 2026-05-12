@@ -42,11 +42,7 @@ def _make_config(result_dir: Path) -> Config:
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
-    return [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def _make_log_record(
@@ -516,9 +512,7 @@ class TestInferRunName:
         assert _infer_run_name() == "my_tool"
 
     @pytest.mark.parametrize("blocked", ["pytest", "python", "python3", "__main__", ""])
-    def test_skips_blocked_argv_names(
-        self, monkeypatch: pytest.MonkeyPatch, blocked: str
-    ) -> None:
+    def test_skips_blocked_argv_names(self, monkeypatch: pytest.MonkeyPatch, blocked: str) -> None:
         """sys.argv[0] が block list なら branch 1 を skip し、別経路の値を返す。"""
         monkeypatch.setattr("sys.argv", [blocked])
 
@@ -529,9 +523,7 @@ class TestInferRunName:
         # かつ空ではない (branch 2 か branch 3 の値)
         assert result
 
-    def test_falls_back_to_adhoc(
-        self, monkeypatch: pytest.MonkeyPatch, mocker: MockerFixture
-    ) -> None:
+    def test_falls_back_to_adhoc(self, monkeypatch: pytest.MonkeyPatch, mocker: MockerFixture) -> None:
         """sys.argv が pytest かつ inspect.currentframe が None を返す場合 "adhoc"。"""
         monkeypatch.setattr("sys.argv", ["pytest"])
         mocker.patch(
@@ -553,9 +545,7 @@ class TestRunIdProperty:
         )
     )
     @settings(max_examples=20, deadline=None)
-    def test_run_id_format_for_any_run_name(
-        self, tmp_path_factory: pytest.TempPathFactory, run_name: str
-    ) -> None:
+    def test_run_id_format_for_any_run_name(self, tmp_path_factory: pytest.TempPathFactory, run_name: str) -> None:
         tmp_path = tmp_path_factory.mktemp("pbt_run_id")
         config = _make_config(tmp_path)
         try:

@@ -5,7 +5,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
@@ -185,7 +185,6 @@ class TestLoadSraBlacklist:
 class TestPBT:
     """Property-based tests for filter functions."""
 
-    @settings(deadline=2000)
     @given(
         pairs=st.frozensets(st.tuples(st.text(min_size=1, max_size=10), st.text(min_size=1, max_size=10)), max_size=20),
         blacklist=st.frozensets(st.text(min_size=1, max_size=10), max_size=5),

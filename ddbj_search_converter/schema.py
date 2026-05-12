@@ -82,9 +82,7 @@ class Organism(_Base):
 OrganizationType = Annotated[
     Literal["institute", "center", "consortium", "lab"],
     Field(
-        description=(
-            "Category describing the scale or nature of an organization (INSDC vocabulary)."
-        ),
+        description=("Category describing the scale or nature of an organization (INSDC vocabulary)."),
     ),
 ]
 OrganizationRole = Annotated[
@@ -107,9 +105,7 @@ class Organization(_Base):
     name: str | None = Field(default=None, description="Official organization name.")
     abbreviation: str | None = Field(default=None, description="Abbreviated organization name.")
     role: OrganizationRole | None = Field(default=None, description="Role in the project.")
-    organizationType: OrganizationType | None = Field(
-        default=None, description="Organization category."
-    )
+    organizationType: OrganizationType | None = Field(default=None, description="Organization category.")
     department: str | None = Field(
         default=None,
         description="Department or laboratory name (e.g. SRA `lab_name`).",
@@ -204,8 +200,7 @@ XrefType = Annotated[
     ],
     Field(
         description=(
-            "Accession type of an entry in the dblink graph (21 values). "
-            "The DB family of the referenced peer record."
+            "Accession type of an entry in the dblink graph (21 values). The DB family of the referenced peer record."
         ),
     ),
 ]
@@ -240,7 +235,7 @@ class BioProject(_Base):
         Literal["bioproject"],
         Field(
             description=(
-                'Coarse-grained index category (used by the front-end DB facet). '
+                "Coarse-grained index category (used by the front-end DB facet). "
                 'Always "bioproject" for BioProject entries.'
             ),
         ),
@@ -304,19 +299,14 @@ class BioProject(_Base):
         ),
     )
     parentBioProjects: list[Xref] = Field(
-        description=(
-            "Parent BioProjects in the umbrella DAG. Key is always emitted, even when empty."
-        ),
+        description=("Parent BioProjects in the umbrella DAG. Key is always emitted, even when empty."),
     )
     childBioProjects: list[Xref] = Field(
-        description=(
-            "Child BioProjects in the umbrella DAG. Key is always emitted, even when empty."
-        ),
+        description=("Child BioProjects in the umbrella DAG. Key is always emitted, even when empty."),
     )
     sameAs: list[Xref] = Field(
         description=(
-            "Alias accessions of this entry (e.g. GEO cross-references). "
-            "Key is always emitted, even when empty."
+            "Alias accessions of this entry (e.g. GEO cross-references). Key is always emitted, even when empty."
         ),
     )
     status: Status
@@ -367,7 +357,7 @@ class BioSample(_Base):
         Literal["biosample"],
         Field(
             description=(
-                'Coarse-grained index category (used by the front-end DB facet). '
+                "Coarse-grained index category (used by the front-end DB facet). "
                 'Always "biosample" for BioSample entries.'
             ),
         ),
@@ -387,14 +377,9 @@ class BioSample(_Base):
     title: str | None = Field(default=None, description="Long human-readable title.")
     description: str | None = Field(default=None, description="Sample description text.")
     derivedFrom: list[Xref] = Field(
-        description=(
-            "Parent entities (e.g. parent BioSample) as Xref edges. "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Parent entities (e.g. parent BioSample) as Xref edges. Key is always emitted, even when empty."),
     )
-    geoLocName: str | None = Field(
-        default=None, description="Geographic collection location (from sample attributes)."
-    )
+    geoLocName: str | None = Field(default=None, description="Geographic collection location (from sample attributes).")
     collectionDate: str | None = Field(
         default=None,
         description="Sample collection date as a free-form string (format varies by source).",
@@ -431,15 +416,9 @@ class BioSample(_Base):
     )
     status: Status
     accessibility: Accessibility
-    dateCreated: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) creation date."
-    )
-    dateModified: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date."
-    )
-    datePublished: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) publication date."
-    )
+    dateCreated: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) creation date.")
+    dateModified: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date.")
+    datePublished: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) publication date.")
 
 
 # === SRA ===
@@ -449,10 +428,7 @@ class SRA(_Base):
     """An SRA / DRA entry — one document of any of the six Elasticsearch `sra-*` indexes."""
 
     identifier: str = Field(
-        description=(
-            'Primary accession (e.g. "DRR000001", "SRP000001"). '
-            "The specific subtype is encoded in `type`."
-        ),
+        description=('Primary accession (e.g. "DRR000001", "SRP000001"). The specific subtype is encoded in `type`.'),
     )
     properties: Any = Field(
         description=(
@@ -464,14 +440,15 @@ class SRA(_Base):
     distribution: list[Distribution] = Field(
         description=(
             "Distributions (XML / FASTQ / SRA). Key is always emitted, even when empty. "
-            "DRA-origin runs may include FASTQ / SRA; for NCBI/EBI-origin runs the SRA mirror URL is generated mechanically."
+            "DRA-origin runs may include FASTQ / SRA; for NCBI/EBI-origin runs the SRA mirror URL "
+            "is generated mechanically."
         ),
     )
     isPartOf: Annotated[
         Literal["sra"],
         Field(
             description=(
-                'Coarse-grained index category (used by the front-end DB facet). '
+                "Coarse-grained index category (used by the front-end DB facet). "
                 'Always "sra" for SRA entries — the fine subtype is in `type`.'
             ),
         ),
@@ -480,10 +457,7 @@ class SRA(_Base):
         Literal["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample", "sra-analysis"],
         Field(
             alias="type",
-            description=(
-                "Fine-grained SRA entry type "
-                "(submission / study / experiment / run / sample / analysis)."
-            ),
+            description=("Fine-grained SRA entry type (submission / study / experiment / run / sample / analysis)."),
         ),
     ]
     name: str | None = Field(default=None, description="Short name.")
@@ -499,20 +473,17 @@ class SRA(_Base):
     )
     libraryStrategy: list[str] = Field(
         description=(
-            "INSDC SRA library-strategy values (controlled vocabulary). "
-            "Key is always emitted, even when empty."
+            "INSDC SRA library-strategy values (controlled vocabulary). Key is always emitted, even when empty."
         ),
     )
     librarySource: list[str] = Field(
         description=(
-            "INSDC SRA library-source values (controlled vocabulary). "
-            "Key is always emitted, even when empty."
+            "INSDC SRA library-source values (controlled vocabulary). Key is always emitted, even when empty."
         ),
     )
     librarySelection: list[str] = Field(
         description=(
-            "INSDC SRA library-selection values (controlled vocabulary). "
-            "Key is always emitted, even when empty."
+            "INSDC SRA library-selection values (controlled vocabulary). Key is always emitted, even when empty."
         ),
     )
     libraryLayout: str | None = Field(
@@ -529,8 +500,7 @@ class SRA(_Base):
     )
     instrumentModel: list[str] = Field(
         description=(
-            "INSDC SRA instrument-model values (controlled vocabulary). "
-            "Key is always emitted, even when empty."
+            "INSDC SRA instrument-model values (controlled vocabulary). Key is always emitted, even when empty."
         ),
     )
     libraryName: str | None = Field(default=None, description="Library name (free-form string).")
@@ -547,9 +517,7 @@ class SRA(_Base):
         default=None,
         description="Sample collection date as a free-form string (format varies by source).",
     )
-    geoLocName: str | None = Field(
-        default=None, description="Geographic collection location."
-    )
+    geoLocName: str | None = Field(default=None, description="Geographic collection location.")
     derivedFrom: list[Xref] = Field(
         description=(
             "Parent entities (e.g. an sra-sample referencing its BioSample) as Xref edges. "
@@ -567,15 +535,9 @@ class SRA(_Base):
     )
     status: Status
     accessibility: Accessibility
-    dateCreated: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) creation date."
-    )
-    dateModified: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date."
-    )
-    datePublished: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) publication date."
-    )
+    dateCreated: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) creation date.")
+    dateModified: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date.")
+    datePublished: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) publication date.")
 
 
 # === JGA ===
@@ -595,17 +557,13 @@ class JGA(_Base):
         json_schema_extra={"additionalProperties": True},
     )
     distribution: list[Distribution] = Field(
-        description=(
-            "Distributions (JSON / JSON-LD only for JGA). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Distributions (JSON / JSON-LD only for JGA). Key is always emitted, even when empty."),
     )
     isPartOf: Annotated[
         Literal["jga"],
         Field(
             description=(
-                'Coarse-grained index category (used by the front-end DB facet). '
-                'Always "jga" for JGA entries.'
+                'Coarse-grained index category (used by the front-end DB facet). Always "jga" for JGA entries.'
             ),
         ),
     ]
@@ -634,15 +592,11 @@ class JGA(_Base):
         description="External UI links. Key is always emitted, even when empty.",
     )
     studyType: list[str] = Field(
-        description=(
-            "JGA study-type values (vocabulary is source-dependent). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("JGA study-type values (vocabulary is source-dependent). Key is always emitted, even when empty."),
     )
     datasetType: list[str] = Field(
         description=(
-            "JGA dataset-type values (vocabulary is source-dependent). "
-            "Key is always emitted, even when empty."
+            "JGA dataset-type values (vocabulary is source-dependent). Key is always emitted, even when empty."
         ),
     )
     vendor: list[str] = Field(
@@ -655,16 +609,13 @@ class JGA(_Base):
         ),
     )
     sameAs: list[Xref] = Field(
-        description=(
-            "Alias accessions (e.g. JGA Secondary IDs). Key is always emitted, even when empty."
-        ),
+        description=("Alias accessions (e.g. JGA Secondary IDs). Key is always emitted, even when empty."),
     )
     status: Annotated[
         Literal["public"],
         Field(
             description=(
-                'JGA is always "public" — meaningful access control is handled by '
-                "`accessibility` (controlled-access)."
+                'JGA is always "public" — meaningful access control is handled by `accessibility` (controlled-access).'
             ),
         ),
     ]
@@ -672,15 +623,9 @@ class JGA(_Base):
         Literal["controlled-access"],
         Field(description='JGA is always "controlled-access".'),
     ]
-    dateCreated: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) creation date."
-    )
-    dateModified: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date."
-    )
-    datePublished: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) publication date."
-    )
+    dateCreated: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) creation date.")
+    dateModified: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date.")
+    datePublished: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) publication date.")
 
 
 # === GEA ===
@@ -691,24 +636,17 @@ class GEA(_Base):
 
     identifier: str = Field(description='Primary accession (e.g. "E-GEAD-1").')
     properties: Any = Field(
-        description=(
-            "Raw element tree carried over from the source IDF. "
-            "Schema-free; top-level values are list[str]."
-        ),
+        description=("Raw element tree carried over from the source IDF. Schema-free; top-level values are list[str]."),
         json_schema_extra={"additionalProperties": True},
     )
     distribution: list[Distribution] = Field(
-        description=(
-            "Distributions (JSON / JSON-LD only for GEA). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Distributions (JSON / JSON-LD only for GEA). Key is always emitted, even when empty."),
     )
     isPartOf: Annotated[
         Literal["gea"],
         Field(
             description=(
-                'Coarse-grained index category (used by the front-end DB facet). '
-                'Always "gea" for GEA entries.'
+                'Coarse-grained index category (used by the front-end DB facet). Always "gea" for GEA entries.'
             ),
         ),
     ]
@@ -753,15 +691,9 @@ class GEA(_Base):
         Literal["public-access"],
         Field(description='GEA is always "public-access".'),
     ]
-    dateCreated: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) creation date."
-    )
-    dateModified: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date."
-    )
-    datePublished: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) publication date."
-    )
+    dateCreated: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) creation date.")
+    dateModified: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date.")
+    datePublished: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) publication date.")
 
 
 # === MetaboBank ===
@@ -772,23 +704,17 @@ class MetaboBank(_Base):
 
     identifier: str = Field(description='Primary accession (e.g. "MTBKS1").')
     properties: Any = Field(
-        description=(
-            "Raw element tree carried over from the source IDF. "
-            "Schema-free; top-level values are list[str]."
-        ),
+        description=("Raw element tree carried over from the source IDF. Schema-free; top-level values are list[str]."),
         json_schema_extra={"additionalProperties": True},
     )
     distribution: list[Distribution] = Field(
-        description=(
-            "Distributions (JSON / JSON-LD only for MetaboBank). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Distributions (JSON / JSON-LD only for MetaboBank). Key is always emitted, even when empty."),
     )
     isPartOf: Annotated[
         Literal["metabobank"],
         Field(
             description=(
-                'Coarse-grained index category (used by the front-end DB facet). '
+                "Coarse-grained index category (used by the front-end DB facet). "
                 'Always "metabobank" for MetaboBank entries.'
             ),
         ),
@@ -812,22 +738,13 @@ class MetaboBank(_Base):
         description="Associated publications. Key is always emitted, even when empty.",
     )
     studyType: list[str] = Field(
-        description=(
-            "Study-type values (free-form text per source). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Study-type values (free-form text per source). Key is always emitted, even when empty."),
     )
     experimentType: list[str] = Field(
-        description=(
-            "Experiment-type values (free-form text per source). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Experiment-type values (free-form text per source). Key is always emitted, even when empty."),
     )
     submissionType: list[str] = Field(
-        description=(
-            "Submission-type values (free-form text per source). "
-            "Key is always emitted, even when empty."
-        ),
+        description=("Submission-type values (free-form text per source). Key is always emitted, even when empty."),
     )
     dbXrefs: list[Xref] = Field(
         description=(
@@ -846,12 +763,6 @@ class MetaboBank(_Base):
         Literal["public-access"],
         Field(description='MetaboBank is always "public-access".'),
     ]
-    dateCreated: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) creation date."
-    )
-    dateModified: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date."
-    )
-    datePublished: str | None = Field(
-        default=None, description="ISO 8601 (YYYY-MM-DD) publication date."
-    )
+    dateCreated: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) creation date.")
+    dateModified: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) last-modified date.")
+    datePublished: str | None = Field(default=None, description="ISO 8601 (YYYY-MM-DD) publication date.")

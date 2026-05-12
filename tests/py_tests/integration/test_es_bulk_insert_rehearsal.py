@@ -77,9 +77,7 @@ def _run_rehearsal(
     result = bulk_insert_jsonl(config, [jsonl_path], index=logical_index, target_index=physical)
 
     assert result.error_count == 0, f"[{logical_index}] unexpected errors: {result.errors}"
-    assert result.not_found_count == 0, (
-        f"[{logical_index}] unexpected 409 conflicts: {result.errors}"
-    )
+    assert result.not_found_count == 0, f"[{logical_index}] unexpected 409 conflicts: {result.errors}"
     assert result.success_count == len(docs)
     assert result.total_docs == len(docs)
     assert result.index == physical

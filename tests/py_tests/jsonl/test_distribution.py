@@ -266,9 +266,7 @@ class TestMakeSraDistribution:
         assert formats == ["JSON", "JSON-LD", "XML", "SRA"]
 
         sra_dist = next(d for d in dists if d.encodingFormat == "SRA")
-        expected = (
-            f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/SRX/SRX004/SRX004004/SRR015417/SRR015417.sra"
-        )
+        expected = f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/SRX/SRX004/SRX004004/SRR015417/SRR015417.sra"
         assert sra_dist.contentUrl == expected
 
     def test_ebi_run_returns_sra_with_mirror_path(self) -> None:
@@ -283,9 +281,7 @@ class TestMakeSraDistribution:
         )
         sra_dist = next(d for d in dists if d.encodingFormat == "SRA")
 
-        expected = (
-            f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/ERX/ERX000/ERX000001/ERR000001/ERR000001.sra"
-        )
+        expected = f"{DRA_PUBLIC_BASE_URL}/sralite/ByExp/litesra/ERX/ERX000/ERX000001/ERR000001/ERR000001.sra"
         assert sra_dist.contentUrl == expected
 
     def test_ncbi_run_no_fastq_even_when_fastq_dirs_provided(self) -> None:
@@ -385,9 +381,7 @@ class TestDistributionPBT:
         submission=st.from_regex(r"DRA[0-9]{6}", fullmatch=True),
     )
     @settings(max_examples=50)
-    def test_dra_run_with_all_files_has_five_items(
-        self, accession: str, experiment: str, submission: str
-    ) -> None:
+    def test_dra_run_with_all_files_has_five_items(self, accession: str, experiment: str, submission: str) -> None:
         dists = make_sra_distribution(
             "sra-run",
             accession,
@@ -428,9 +422,7 @@ class TestDistributionPBT:
         submission=st.from_regex(r"[SE]RA[0-9]{6}", fullmatch=True),
     )
     @settings(max_examples=50)
-    def test_other_origin_run_has_four_items(
-        self, accession: str, experiment: str, submission: str
-    ) -> None:
+    def test_other_origin_run_has_four_items(self, accession: str, experiment: str, submission: str) -> None:
         """他極 run + experiment は常に [JSON, JSON-LD, XML, SRA] の 4 件。"""
         dists = make_sra_distribution(
             "sra-run",
@@ -451,9 +443,7 @@ class TestDistributionPBT:
         submission=st.from_regex(r"[SE]RA[0-9]{6}", fullmatch=True),
     )
     @settings(max_examples=50)
-    def test_mirrored_sra_url_contains_path_components(
-        self, accession: str, experiment: str, submission: str
-    ) -> None:
+    def test_mirrored_sra_url_contains_path_components(self, accession: str, experiment: str, submission: str) -> None:
         """他極 SRA URL は path に experiment[:3], experiment[:6], experiment, run accession を含む。"""
         dists = make_sra_distribution(
             "sra-run",

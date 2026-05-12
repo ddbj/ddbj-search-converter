@@ -92,9 +92,7 @@ class TestParseXml:
         混入してはいけない。
         """
         xml_bytes = (
-            b'<?xml version="1.0"?>'
-            b'<!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
-            b"<root>&xxe;</root>"
+            b'<?xml version="1.0"?><!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><root>&xxe;</root>'
         )
         try:
             result = parse_xml(xml_bytes)

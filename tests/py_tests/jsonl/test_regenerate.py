@@ -5,18 +5,16 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.jsonl.regenerate import (
     load_accessions_from_file,
     validate_accessions,
 )
 from ddbj_search_converter.logging.logger import _ctx, run_logger
-
-from ..strategies import (
+from py_tests.strategies import (
     st_bioproject_id,
     st_biosample_id,
     st_invalid_accession_text,
@@ -127,7 +125,6 @@ class TestValidateAccessionsPBT:
     強く pin する。
     """
 
-    @settings(deadline=2000)
     @given(accessions=st.frozensets(st.text(min_size=1, max_size=20), max_size=20))
     def test_result_is_subset(self, accessions: frozenset) -> None:  # type: ignore[type-arg]
         """validate_accessions の結果は常に入力の部分集合。"""
@@ -139,7 +136,6 @@ class TestValidateAccessionsPBT:
                     result = validate_accessions(data_type, set(accessions))
                     assert result.issubset(accessions)
 
-    @settings(deadline=2000)
     @given(
         valid=st.frozensets(st_bioproject_id(), min_size=0, max_size=10),
         invalid_text=st.frozensets(st_invalid_accession_text("bioproject"), min_size=0, max_size=10),
@@ -155,11 +151,8 @@ class TestValidateAccessionsPBT:
             with run_logger(config=config):
                 result = validate_accessions("bioproject", set(valid) | set(invalid_text))
                 # invalid_text は必ず regex に match しないことを strategy が保証
-                assert result == set(valid), (
-                    f"valid={valid} invalid={invalid_text} result={result}"
-                )
+                assert result == set(valid), f"valid={valid} invalid={invalid_text} result={result}"
 
-    @settings(deadline=2000)
     @given(
         valid=st.frozensets(st_biosample_id(), min_size=0, max_size=10),
         invalid_text=st.frozensets(st_invalid_accession_text("biosample"), min_size=0, max_size=10),
@@ -172,14 +165,18 @@ class TestValidateAccessionsPBT:
                 result = validate_accessions("biosample", set(valid) | set(invalid_text))
                 assert result == set(valid)
 
-    @settings(deadline=2000)
     @given(
         sra_ids=st.frozensets(
             st.one_of(
-                st_sra_submission(), st_sra_study(), st_sra_experiment(),
-                st_sra_run(), st_sra_sample(), st_sra_analysis(),
+                st_sra_submission(),
+                st_sra_study(),
+                st_sra_experiment(),
+                st_sra_run(),
+                st_sra_sample(),
+                st_sra_analysis(),
             ),
-            min_size=0, max_size=10,
+            min_size=0,
+            max_size=10,
         ),
     )
     def test_sra_accepts_all_six_subtypes(self, sra_ids: frozenset) -> None:  # type: ignore[type-arg]
@@ -191,11 +188,11 @@ class TestValidateAccessionsPBT:
                 result = validate_accessions("sra", set(sra_ids))
                 assert result == set(sra_ids)
 
-    @settings(deadline=2000)
     @given(
         jga_ids=st.frozensets(
             st.one_of(st_jga_study(), st_jga_dataset(), st_jga_dac(), st_jga_policy()),
-            min_size=0, max_size=10,
+            min_size=0,
+            max_size=10,
         ),
     )
     def test_jga_accepts_all_four_subtypes(self, jga_ids: frozenset) -> None:  # type: ignore[type-arg]

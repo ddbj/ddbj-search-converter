@@ -15,6 +15,7 @@ Usage:
 """
 
 import argparse
+import contextlib
 import sys
 from pathlib import Path
 
@@ -25,10 +26,8 @@ KEEP_CHOICES = ("latest", "earliest")
 
 def _ensure_lifecycle_column(con: duckdb.DuckDBPyConnection) -> None:
     """旧 schema (lifecycle 物理 column 無し) に column を足し、JSON 値を埋める。"""
-    try:
+    with contextlib.suppress(duckdb.CatalogException):
         con.execute("ALTER TABLE log_records ADD COLUMN IF NOT EXISTS lifecycle TEXT")
-    except duckdb.CatalogException:
-        pass
     # JSON から物理 column へ転記 (既に lifecycle が入っている行は触らない)
     con.execute(
         """
@@ -87,10 +86,7 @@ def _delete_duplicates(con: duckdb.DuckDBPyConnection, keep: str) -> int:
 
 
 def _create_unique_index(con: duckdb.DuckDBPyConnection) -> None:
-    con.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_run_lifecycle_unique "
-        "ON log_records(run_id, lifecycle)"
-    )
+    con.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_run_lifecycle_unique ON log_records(run_id, lifecycle)")
 
 
 def migrate(db_path: Path, keep: str, dry_run: bool) -> int:

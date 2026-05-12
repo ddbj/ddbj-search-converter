@@ -106,7 +106,7 @@ def create_metabobank_entry(
         properties=idf,
         distribution=make_metabobank_distribution(accession),
         isPartOf="metabobank",
-        type="metabobank",
+        type_="metabobank",
         name=None,
         url=build_search_entry_self_url("metabobank", accession),
         organism=None,

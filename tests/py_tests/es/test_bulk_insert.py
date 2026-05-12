@@ -599,14 +599,13 @@ class TestNotFoundClassification:
         retry_on_timeout) が渡る。``helpers.parallel_bulk`` 自体は retry kwargs を
         受け取らないため transport 層で吸収する設計。
         """
-        from elasticsearch import Elasticsearch
-
         from ddbj_search_converter.config import Config
         from ddbj_search_converter.es.client import _clients, get_es_client
         from ddbj_search_converter.es.settings import (
             BULK_MAX_RETRIES,
             BULK_RETRY_ON_STATUS,
         )
+        from elasticsearch import Elasticsearch
 
         # 既存 cache を消して新規 client 生成を観測する
         _clients.clear()
@@ -629,36 +628,56 @@ class TestBulkInsertResultInvariant:
 
     def test_valid_construction(self) -> None:
         r = BulkInsertResult(
-            index="x", total_docs=5, success_count=3, not_found_count=1,
-            error_count=1, errors=[],
+            index="x",
+            total_docs=5,
+            success_count=3,
+            not_found_count=1,
+            error_count=1,
+            errors=[],
         )
         assert r.total_docs == 5
 
     def test_default_not_found_zero(self) -> None:
         # Backwards-compatible default for callers that haven't migrated.
         r = BulkInsertResult(
-            index="x", total_docs=3, success_count=2, error_count=1, errors=[],
+            index="x",
+            total_docs=3,
+            success_count=2,
+            error_count=1,
+            errors=[],
         )
         assert r.not_found_count == 0
 
     def test_sum_less_than_total_raises(self) -> None:
         with pytest.raises(ValueError, match="invariant"):
             BulkInsertResult(
-                index="x", total_docs=10, success_count=3, not_found_count=2,
-                error_count=1, errors=[],
+                index="x",
+                total_docs=10,
+                success_count=3,
+                not_found_count=2,
+                error_count=1,
+                errors=[],
             )
 
     def test_sum_greater_than_total_raises(self) -> None:
         with pytest.raises(ValueError, match="invariant"):
             BulkInsertResult(
-                index="x", total_docs=5, success_count=3, not_found_count=2,
-                error_count=2, errors=[],
+                index="x",
+                total_docs=5,
+                success_count=3,
+                not_found_count=2,
+                error_count=2,
+                errors=[],
             )
 
     def test_zero_docs(self) -> None:
         r = BulkInsertResult(
-            index="x", total_docs=0, success_count=0, not_found_count=0,
-            error_count=0, errors=[],
+            index="x",
+            total_docs=0,
+            success_count=0,
+            not_found_count=0,
+            error_count=0,
+            errors=[],
         )
         assert r.total_docs == 0
         # 不変条件が空集合で成立

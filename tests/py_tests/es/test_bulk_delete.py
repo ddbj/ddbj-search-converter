@@ -214,9 +214,7 @@ class TestBulkDeleteByIdsAggregation:
         assert result.error_count == 101
         assert len(result.errors) == 100
 
-    def test_unexpected_failed_type_treated_as_no_errors(
-        self, mocker: MockerFixture, tmp_path: Any
-    ) -> None:
+    def test_unexpected_failed_type_treated_as_no_errors(self, mocker: MockerFixture, tmp_path: Any) -> None:
         """failed が list でないとき (stats_only モード等の予期しない戻り値) は errors 空。
 
         防御的分岐の挙動を固定する。
@@ -234,9 +232,7 @@ class TestBulkDeleteByIdsAggregation:
         assert result.error_count == 0
         assert result.errors == []
 
-    def test_failed_without_delete_key_collected_as_error(
-        self, mocker: MockerFixture, tmp_path: Any
-    ) -> None:
+    def test_failed_without_delete_key_collected_as_error(self, mocker: MockerFixture, tmp_path: Any) -> None:
         """failed の各要素が `delete` キーを持たない場合も errors に入る (404 でないため)。
 
         防御的分岐 `err.get("delete", {})` の挙動を固定する。
@@ -265,9 +261,7 @@ class TestBugBulkDeleteSerializability:
     `ApiError` を含めて返したケースで Pydantic シリアライズが死ぬ。
     """
 
-    def test_errors_with_exception_value_serializable(
-        self, mocker: MockerFixture, tmp_path: Any
-    ) -> None:
+    def test_errors_with_exception_value_serializable(self, mocker: MockerFixture, tmp_path: Any) -> None:
         """failed の dict 値に Exception が混じっても model_dump_json() で落ちない。"""
         _stub_es_client(mocker, index_exists=True)
 
@@ -290,9 +284,7 @@ class TestBugBulkDeleteSerializability:
         # ここが fail していたバグの本丸: Pydantic で再シリアライズ可能でなくてはならない
         result.model_dump_json()
 
-    def test_errors_with_top_level_exception_serializable(
-        self, mocker: MockerFixture, tmp_path: Any
-    ) -> None:
+    def test_errors_with_top_level_exception_serializable(self, mocker: MockerFixture, tmp_path: Any) -> None:
         """failed 自体が Exception を含む (dict 全体が non-dict) ケースも serializable。"""
         _stub_es_client(mocker, index_exists=True)
 

@@ -81,9 +81,7 @@ class TestParsePostgresUrlSchemeValidation:
         ["postgresql", "postgresql+psycopg", "postgres"],
     )
     def test_allowed_schemes_pass(self, scheme: str) -> None:
-        host, port, user, password = parse_postgres_url(
-            f"{scheme}://user:pass@db.example.com:5432/dbname"
-        )
+        host, port, user, password = parse_postgres_url(f"{scheme}://user:pass@db.example.com:5432/dbname")
         assert host == "db.example.com"
         assert port == 5432
         assert user == "user"
@@ -115,9 +113,7 @@ class TestParsePostgresUrlSchemeValidation:
 
     def test_allowed_schemes_constant_shape(self) -> None:
         # SSOT pin: docs/data-architecture.md と一致させる。
-        assert ALLOWED_POSTGRES_SCHEMES == frozenset(
-            {"postgresql", "postgresql+psycopg", "postgres"}
-        )
+        assert frozenset({"postgresql", "postgresql+psycopg", "postgres"}) == ALLOWED_POSTGRES_SCHEMES
 
 
 class TestPostgresConnection:
@@ -160,9 +156,7 @@ class TestConnectWithRetry:
 
     @patch("ddbj_search_converter.postgres.utils.time.sleep")
     @patch("ddbj_search_converter.postgres.utils.psycopg2.connect")
-    def test_succeeds_after_two_transient_failures(
-        self, mock_connect: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_succeeds_after_two_transient_failures(self, mock_connect: MagicMock, mock_sleep: MagicMock) -> None:
         mock_conn = MagicMock()
         mock_connect.side_effect = [
             psycopg2.OperationalError("temporary failure 1"),
@@ -171,8 +165,13 @@ class TestConnectWithRetry:
         ]
 
         result = connect_with_retry(
-            host="h", port=1, user="u", password="p", dbname="d",
-            max_retries=3, backoff_seconds=0,
+            host="h",
+            port=1,
+            user="u",
+            password="p",
+            dbname="d",
+            max_retries=3,
+            backoff_seconds=0,
         )
 
         assert result is mock_conn
@@ -181,15 +180,18 @@ class TestConnectWithRetry:
 
     @patch("ddbj_search_converter.postgres.utils.time.sleep")
     @patch("ddbj_search_converter.postgres.utils.psycopg2.connect")
-    def test_gives_up_after_max_retries(
-        self, mock_connect: MagicMock, mock_sleep: MagicMock
-    ) -> None:
+    def test_gives_up_after_max_retries(self, mock_connect: MagicMock, mock_sleep: MagicMock) -> None:
         mock_connect.side_effect = psycopg2.OperationalError("permanent failure")
 
         with pytest.raises(psycopg2.OperationalError, match="permanent failure"):
             connect_with_retry(
-                host="h", port=1, user="u", password="p", dbname="d",
-                max_retries=3, backoff_seconds=0,
+                host="h",
+                port=1,
+                user="u",
+                password="p",
+                dbname="d",
+                max_retries=3,
+                backoff_seconds=0,
             )
 
         assert mock_connect.call_count == 3
@@ -204,8 +206,13 @@ class TestConnectWithRetry:
 
         with pytest.raises(psycopg2.ProgrammingError, match="bad auth"):
             connect_with_retry(
-                host="h", port=1, user="u", password="p", dbname="d",
-                max_retries=3, backoff_seconds=0,
+                host="h",
+                port=1,
+                user="u",
+                password="p",
+                dbname="d",
+                max_retries=3,
+                backoff_seconds=0,
             )
 
         assert mock_connect.call_count == 1
@@ -215,12 +222,22 @@ class TestConnectWithRetry:
         mock_connect.return_value = MagicMock()
 
         connect_with_retry(
-            host="h", port=1, user="u", password="p", dbname="d",
-            keepalives=1, keepalives_idle=60,
+            host="h",
+            port=1,
+            user="u",
+            password="p",
+            dbname="d",
+            keepalives=1,
+            keepalives_idle=60,
         )
 
         mock_connect.assert_called_once_with(
             connect_timeout=DEFAULT_CONNECT_TIMEOUT,
-            host="h", port=1, user="u", password="p", dbname="d",
-            keepalives=1, keepalives_idle=60,
+            host="h",
+            port=1,
+            user="u",
+            password="p",
+            dbname="d",
+            keepalives=1,
+            keepalives_idle=60,
         )
