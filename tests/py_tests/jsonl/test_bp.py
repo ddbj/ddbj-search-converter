@@ -479,6 +479,20 @@ class TestParsePublication:
         assert len(pubs) == 1
         assert pubs[0].reference is None
 
+    def test_publication_edoi_with_http_id_avoids_double_wrap(self) -> None:
+        """eDOI の id が `http(s)://` で始まる場合は `https://doi.org/` で二重 wrap せず、
+        生 URL を返す (build_doi_url の安全ネット効果を pin する)。
+        """
+        project = _make_project()
+        project["Project"]["ProjectDescr"]["Publication"] = {
+            "id": "https://ssrn.com/abstract=12345",
+            "DbType": "eDOI",
+        }
+        pubs = parse_publication(project)
+        assert len(pubs) == 1
+        assert pubs[0].dbType == "doi"
+        assert pubs[0].url == "https://ssrn.com/abstract=12345"
+
 
 class TestParseGrant:
     """Tests for parse_grant function."""

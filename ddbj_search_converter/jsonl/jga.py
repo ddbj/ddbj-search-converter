@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from ddbj_search_converter.config import (
+    ISO8601_UTC_FORMAT,
     JGA_BASE_DIR_NAME,
     JGA_BASE_PATH,
     JSONL_DIR_NAME,
@@ -21,10 +22,12 @@ from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
 from ddbj_search_converter.jsonl.utils import (
+    build_pubmed_url,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
     is_valid_external_url,
+    normalize_publication_dbtype,
     write_jsonl,
 )
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
@@ -39,18 +42,6 @@ from ddbj_search_converter.schema import (
     Xref,
 )
 from ddbj_search_converter.xml_utils import parse_xml
-
-# JGA XML の DB_TYPE は .lower() 後に lookup される。
-# 実データ上は "pubmed" のみだが、BP と揃えて e-prefix / doi / pmc も受け入れる。
-# URL 生成は pubmed のみで、doi/pmc は id のみ保持 (将来上流が出し始めたら URL 生成を追加)。
-_PUB_DB_TYPE_MAP: dict[str, PublicationDbType] = {
-    "pubmed": "pubmed",
-    "epubmed": "pubmed",
-    "doi": "doi",
-    "edoi": "doi",
-    "pmc": "pmc",
-    "epmc": "pmc",
-}
 
 IndexName = Literal["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
 INDEX_NAMES: list[IndexName] = ["jga-study", "jga-dataset", "jga-dac", "jga-policy"]
@@ -89,10 +80,10 @@ def format_date(value: str | datetime | None) -> str | None:
         return None
     try:
         if isinstance(value, datetime):
-            return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            return value.astimezone(timezone.utc).strftime(ISO8601_UTC_FORMAT)
         if isinstance(value, str):
             dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-            return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            return dt.astimezone(timezone.utc).strftime(ISO8601_UTC_FORMAT)
     except Exception:
         pass
     return None
@@ -269,11 +260,11 @@ def parse_publications(entry: dict[str, Any], accession: str = "") -> list[Publi
             raw_db = item.get("DB_TYPE")
             db_type: PublicationDbType | None = None
             if isinstance(raw_db, str):
-                db_type = _PUB_DB_TYPE_MAP.get(raw_db.strip().lower())
+                db_type = normalize_publication_dbtype(raw_db)
 
             url: str | None = None
             if db_type == "pubmed" and pub_id:
-                url = f"https://pubmed.ncbi.nlm.nih.gov/{pub_id}/"
+                url = build_pubmed_url(pub_id)
 
             publications.append(
                 Publication(

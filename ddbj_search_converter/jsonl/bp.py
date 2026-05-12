@@ -22,9 +22,12 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bp_distribution
 from ddbj_search_converter.jsonl.utils import (
+    build_doi_url,
+    build_pubmed_url,
     deduplicate_organizations,
     get_dbxref_map,
     is_valid_external_url,
+    normalize_publication_dbtype,
     write_jsonl,
 )
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
@@ -51,13 +54,6 @@ DEFAULT_PARALLEL_NUM = 64
 # Literal safeguard: 想定外値は None fallback として扱う
 _VALID_ORG_TYPES: frozenset[str] = frozenset(get_args(OrganizationType))
 _VALID_ORG_ROLES: frozenset[str] = frozenset(get_args(OrganizationRole))
-
-_DBTYPE_NORMALIZE: dict[str, PublicationDbType | None] = {
-    "ePubmed": "pubmed",
-    "eDOI": "doi",
-    "ePMC": "pmc",
-    "eNotAvailable": None,
-}
 
 _RELEVANCE_KEYS: tuple[str, ...] = (
     "Agricultural",
@@ -297,14 +293,13 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
             raw_dbtype = item.get("DbType")
             normalized: PublicationDbType | None = None
             publication_url: str | None = None
-            if isinstance(raw_dbtype, str) and raw_dbtype in _DBTYPE_NORMALIZE:
-                normalized = _DBTYPE_NORMALIZE[raw_dbtype]
-                if normalized == "doi":
-                    if id_ is not None:
-                        publication_url = f"https://doi.org/{id_}"
-                elif normalized == "pubmed":
-                    if id_ is not None:
-                        publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+            if isinstance(raw_dbtype, str):
+                raw_stripped = raw_dbtype.strip()
+                normalized = normalize_publication_dbtype(raw_stripped)
+                if normalized == "doi" and id_ is not None:
+                    publication_url = build_doi_url(id_)
+                elif normalized == "pubmed" and id_ is not None:
+                    publication_url = build_pubmed_url(id_)
                 elif normalized == "pmc":
                     if id_ is not None and id_.startswith("PMC"):
                         publication_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{id_}/"
@@ -314,11 +309,12 @@ def parse_publication(project: dict[str, Any], accession: str = "") -> list[Publ
                         # ePMC 誤登録で id が DOI 形式のときは dbType も doi に倒し、
                         # dbType/url の整合を保つ
                         normalized = "doi"
-                        publication_url = f"https://doi.org/{id_}"
-            elif isinstance(raw_dbtype, str) and raw_dbtype.isdigit():
-                normalized = "pubmed"
-                if id_ is not None:
-                    publication_url = f"https://pubmed.ncbi.nlm.nih.gov/{id_}/"
+                        publication_url = build_doi_url(id_)
+                elif normalized is None and raw_stripped.isdigit():
+                    # NCBI BioProject の DbType に PubMed ID 自体が直書きされるケースの fallback。
+                    normalized = "pubmed"
+                    if id_ is not None:
+                        publication_url = build_pubmed_url(id_)
             citation = item.get("StructuredCitation")
             title_val = citation.get("Title") if isinstance(citation, dict) else None
             pub_title: str | None = title_val if isinstance(title_val, str) else None

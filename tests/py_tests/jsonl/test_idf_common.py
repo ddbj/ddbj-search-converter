@@ -148,11 +148,12 @@ class TestParseIdf:
             / "MTBKS264.idf.txt"
         )
         result = parse_idf(idf_path)
-        # quote 内改行 bleed で本来 value が key になっていたのが消える
+        # Interested individuals / Stool samples は Protocol Description value 内のラベル文字列で、
+        # IDF tag ではないため key として現れない。
         assert not any(k.startswith("Interested individuals") for k in result)
         assert not any(k.startswith("Stool samples") for k in result)
-        # bleed 解消前は 58 keys、解消後は 33 keys (正当な IDF tag のみ)。
-        # 今後 fixture が差し替わっても「bleed が再発すれば key 数が跳ね上がる」ことを検知する上限。
+        # 上限 40 は正当な IDF tag の最大値 (実 fixture は 33 keys)。
+        # value が key として混入する parser バグが入ると key 数が跳ね上がるため、回帰検出として上限を pin する。
         assert len(result) <= 40
 
     def test_metabobank_fixture_mtbks264_protocol_description_multi_value(self) -> None:

@@ -7,6 +7,8 @@ from urllib.parse import urlparse
 
 import psycopg2
 
+from ddbj_search_converter.config import ISO8601_UTC_FORMAT
+
 
 @contextmanager
 def postgres_connection(
@@ -32,7 +34,7 @@ def format_date(dt: datetime | None) -> str | None:
     """datetime を ISO 8601 形式の文字列に変換する。"""
     if dt is None:
         return None
-    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return dt.astimezone(timezone.utc).strftime(ISO8601_UTC_FORMAT)
 
 
 ALLOWED_POSTGRES_SCHEMES = frozenset({"postgresql", "postgresql+psycopg", "postgres"})

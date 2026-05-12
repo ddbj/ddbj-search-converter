@@ -2,6 +2,7 @@
 
 import re
 from re import Pattern
+from typing import Final
 
 from ddbj_search_converter.dblink.db import AccessionType
 
@@ -27,6 +28,10 @@ ID_PATTERN_MAP: dict[AccessionType, Pattern[str]] = {
     "pubmed": re.compile(r"^\d+\Z"),  # pubmed は数字のみ (to_xref では最後にフォールバック)
     "taxonomy": re.compile(r"^\d+\Z"),
 }
+
+# BioSample accession を自由文 / カンマ区切り文字列から findall するための anchorless pattern。
+# ID_PATTERN_MAP["biosample"] は文字列全体の validation 用 (anchor + `\w?` 付き) で用途が異なる。
+BIOSAMPLE_ID_FINDALL_RE: Final[Pattern[str]] = re.compile(r"SAM[NDE]\d+")
 
 
 def is_valid_accession(accession_id: str, acc_type: AccessionType) -> bool:

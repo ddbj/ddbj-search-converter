@@ -5,7 +5,12 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.dblink.db import AccessionType
-from ddbj_search_converter.id_patterns import ID_PATTERN_MAP, is_ddbj_sra_accession, is_valid_accession
+from ddbj_search_converter.id_patterns import (
+    BIOSAMPLE_ID_FINDALL_RE,
+    ID_PATTERN_MAP,
+    is_ddbj_sra_accession,
+    is_valid_accession,
+)
 
 from .strategies import (
     ALL_ACCESSION_TYPES,
@@ -510,3 +515,27 @@ class TestIsDdbjSraAccession:
     def test_pbt_random_non_ddbj_text_is_false(self, text: str) -> None:
         """DDBJ prefix で始まらない任意文字列は False。"""
         assert is_ddbj_sra_accession(text) is False
+
+
+class TestBiosampleIdFindallRe:
+    """BIOSAMPLE_ID_FINDALL_RE の findall 動作。"""
+
+    def test_extracts_multiple_ids_from_free_text(self) -> None:
+        """NCBI 自由文に embed された複数 BioSample ID を抽出する。"""
+        text = "Derived from SAMN12345 and SAMD67890, also SAME11111"
+        assert BIOSAMPLE_ID_FINDALL_RE.findall(text) == ["SAMN12345", "SAMD67890", "SAME11111"]
+
+    def test_extracts_from_comma_separated(self) -> None:
+        """DDBJ カンマ区切り ID リストから抽出する。"""
+        assert BIOSAMPLE_ID_FINDALL_RE.findall("SAMD00134975, SAMD00134978") == [
+            "SAMD00134975",
+            "SAMD00134978",
+        ]
+
+    def test_ignores_non_matching_text(self) -> None:
+        """BioSample 以外の prefix は抽出しない。"""
+        assert BIOSAMPLE_ID_FINDALL_RE.findall("PRJDB12345 and JGAS001 nothing here") == []
+
+    def test_does_not_match_invalid_prefix_letter(self) -> None:
+        """SAM[NDE] 以外の 4 文字目 (例: SAMA, SAMZ) は抽出しない。"""
+        assert BIOSAMPLE_ID_FINDALL_RE.findall("SAMA00000001 SAMZ00000002") == []

@@ -16,6 +16,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.jsonl.distribution import make_metabobank_distribution
 from ddbj_search_converter.jsonl.idf_common import (
+    first_value,
     parse_idf,
     parse_pubmed_doi_publications,
     parse_submitter_affiliations,
@@ -49,15 +50,6 @@ def iterate_metabobank_idf_files(base_path: Path) -> Iterator[tuple[str, Path]]:
         yield accession, idf_path
 
 
-def _first_value(idf: dict[str, list[str]], tag: str) -> str | None:
-    """IDF から tag の最初の非空値を返す。空白のみは None 扱い。"""
-    for value in idf.get(tag, []):
-        stripped = value.strip() if isinstance(value, str) else ""
-        if stripped:
-            return stripped
-    return None
-
-
 def _non_empty_list(idf: dict[str, list[str]], tag: str) -> list[str]:
     """IDF から tag の全値を非空 + strip して list 化する。"""
     return [v.strip() for v in idf.get(tag, []) if isinstance(v, str) and v.strip()]
@@ -65,12 +57,12 @@ def _non_empty_list(idf: dict[str, list[str]], tag: str) -> list[str]:
 
 def extract_title(idf: dict[str, list[str]]) -> str | None:
     """MetaboBank IDF からタイトルを抽出する (Study Title 最初値)。"""
-    return _first_value(idf, "Study Title")
+    return first_value(idf, "Study Title")
 
 
 def extract_description(idf: dict[str, list[str]]) -> str | None:
     """MetaboBank IDF から description を抽出する (Study Description 最初値)。"""
-    return _first_value(idf, "Study Description")
+    return first_value(idf, "Study Description")
 
 
 def extract_study_type(idf: dict[str, list[str]]) -> list[str]:
@@ -97,9 +89,9 @@ def extract_dates(idf: dict[str, list[str]]) -> tuple[str | None, str | None, st
     IDF の日付は "YYYY-MM-DD" 形式で、ES の date field がそのまま解釈する。
     """
     return (
-        _first_value(idf, "Comment[Submission Date]"),
-        _first_value(idf, "Comment[Last Update Date]"),
-        _first_value(idf, "Public Release Date"),
+        first_value(idf, "Comment[Submission Date]"),
+        first_value(idf, "Comment[Last Update Date]"),
+        first_value(idf, "Public Release Date"),
     )
 
 

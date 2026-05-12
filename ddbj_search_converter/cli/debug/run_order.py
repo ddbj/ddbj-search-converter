@@ -5,7 +5,7 @@ sequence. Run names not listed here are sorted alphabetically at the end.
 """
 
 PIPELINE_ORDER: list[str] = [
-    # Phase 0: Pre-check
+    # Pre-check
     "check_external_resources",
     # Phase 1: DBLink Construction — prepare
     "prepare_bioproject_xml",

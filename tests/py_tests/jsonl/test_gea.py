@@ -8,7 +8,6 @@ import pytest
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.jsonl.gea import (
-    _first_value,
     create_gea_entry,
     extract_dates,
     extract_description,
@@ -17,7 +16,7 @@ from ddbj_search_converter.jsonl.gea import (
     generate_gea_jsonl,
     iterate_gea_idf_files,
 )
-from ddbj_search_converter.jsonl.idf_common import parse_idf
+from ddbj_search_converter.jsonl.idf_common import first_value, parse_idf
 from ddbj_search_converter.logging.logger import run_logger
 
 
@@ -81,22 +80,22 @@ class TestFirstValue:
     """_first_value: tag の最初の非空値を返す。"""
 
     def test_single_value(self) -> None:
-        assert _first_value({"T": ["foo"]}, "T") == "foo"
+        assert first_value({"T": ["foo"]}, "T") == "foo"
 
     def test_strips_whitespace(self) -> None:
-        assert _first_value({"T": ["  bar  "]}, "T") == "bar"
+        assert first_value({"T": ["  bar  "]}, "T") == "bar"
 
     def test_skips_empty_head(self) -> None:
-        assert _first_value({"T": ["", "  ", "third"]}, "T") == "third"
+        assert first_value({"T": ["", "  ", "third"]}, "T") == "third"
 
     def test_missing_tag_returns_none(self) -> None:
-        assert _first_value({}, "T") is None
+        assert first_value({}, "T") is None
 
     def test_all_empty_returns_none(self) -> None:
-        assert _first_value({"T": ["", "   "]}, "T") is None
+        assert first_value({"T": ["", "   "]}, "T") is None
 
     def test_non_str_values_skipped(self) -> None:
-        assert _first_value({"T": [None, "ok"]}, "T") == "ok"  # type: ignore[list-item]
+        assert first_value({"T": [None, "ok"]}, "T") == "ok"  # type: ignore[list-item]
 
 
 class TestExtractTitle:

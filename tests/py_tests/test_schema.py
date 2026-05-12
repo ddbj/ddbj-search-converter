@@ -580,8 +580,8 @@ class TestPublication:
         assert "Reference" not in dumped
         assert "DbType" not in dumped
 
-    def test_status_field_removed(self) -> None:
-        """status フィールドは廃止済 (model に status 属性が定義されていない)."""
+    def test_publication_has_no_status_field(self) -> None:
+        """Publication does not define a status attribute."""
         pub = Publication()
         assert "status" not in Publication.model_fields
         assert not hasattr(pub, "status")

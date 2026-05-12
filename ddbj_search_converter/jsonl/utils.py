@@ -7,7 +7,7 @@ from typing import Any, TypeGuard
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import AccessionType, get_linked_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
-from ddbj_search_converter.schema import Organization, Xref, XrefType
+from ddbj_search_converter.schema import Organization, PublicationDbType, Xref, XrefType
 
 _EXTERNAL_URL_RE = re.compile(r"^https?://[^\s/][^\s]*$")
 
@@ -53,6 +53,54 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "pubmed": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
     "taxonomy": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={id}",
 }
+
+
+def build_pubmed_url(pmid: str) -> str:
+    """PubMed ID から `Publication.url` / `Xref.url` を構築する。
+
+    `Xref` 用の URL_TEMPLATE["pubmed"] と同じ文字列を返す。`Publication` 構築側は
+    Xref を経由せずに URL 文字列だけ欲しいケース (idf_common / bp / jga / sra の
+    publication parser) でこの helper を直接呼ぶ。
+    """
+    return URL_TEMPLATE["pubmed"].format(id=pmid)
+
+
+def build_doi_url(doi_id: str) -> str:
+    """DOI id から `Publication.url` を構築する。
+
+    - `http://` / `https://` で始まる値 (SSRN URL 等 DOI 以外の URL が DOI 列に
+      誤入力されているケース) は URL 自体を返し、`https://doi.org/` で二重 wrap
+      しない。
+    - それ以外 (DOI `10.xxx/...` 形式や判定不能な生文字列) は
+      `https://doi.org/{doi_id}` を返す。
+    """
+    if doi_id.startswith(("http://", "https://")):
+        return doi_id
+    return f"https://doi.org/{doi_id}"
+
+
+_PUBLICATION_DBTYPE_MAP: dict[str, PublicationDbType | None] = {
+    "pubmed": "pubmed",
+    "epubmed": "pubmed",
+    "doi": "doi",
+    "edoi": "doi",
+    "pmc": "pmc",
+    "epmc": "pmc",
+    "enotavailable": None,
+}
+
+
+def normalize_publication_dbtype(raw: str | None) -> PublicationDbType | None:
+    """Publication の dbType 文字列を正規化する。
+
+    `.strip().lower()` してから lookup するため、`ePubmed` / `pubmed` / `PUBMED`
+    は同一視される。`eNotAvailable` (NCBI BioProject) は None を返す。未知値も
+    None。BP の数字 DbType → pubmed fallback はこの関数の責務外で、呼び出し側
+    で別経路として扱う。
+    """
+    if raw is None:
+        return None
+    return _PUBLICATION_DBTYPE_MAP.get(raw.strip().lower())
 
 
 def _build_url(db_type: XrefType, id_: str) -> str:

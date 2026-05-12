@@ -31,32 +31,34 @@ def _assert_text_only(props: dict[str, Any], field_name: str) -> None:
     assert props[field_name] == {"type": "text"}, f"{field_name} should be text only"
 
 
+# common mapping (BioProject の共通フィールド由来) に存在すべき field 名。
+# Pydantic schema 上の required と直接の対応はなく (scalar の name/title/
+# description/date* は optional)、mapping 側はあくまで「定義の有無」を見る。
+_COMMON_MAPPING_EXPECTED_FIELDS: list[str] = [
+    "identifier",
+    "properties",
+    "distribution",
+    "isPartOf",
+    "type",
+    "name",
+    "url",
+    "organism",
+    "title",
+    "description",
+    "dbXrefs",
+    "sameAs",
+    "status",
+    "accessibility",
+    "dateCreated",
+    "dateModified",
+    "datePublished",
+]
+
+
 class TestCommonMapping:
     def test_common_mapping_has_required_fields(self) -> None:
         mapping = get_common_mapping()
-        # ES mapping に properties として存在すべきフィールドリスト。
-        # Pydantic schema 上の required と直接の対応はなく (scalar の name/title/
-        # description/date* は optional)、mapping 側はあくまで「定義の有無」を見る。
-        expected_field_names = [
-            "identifier",
-            "properties",
-            "distribution",
-            "isPartOf",
-            "type",
-            "name",
-            "url",
-            "organism",
-            "title",
-            "description",
-            "dbXrefs",
-            "sameAs",
-            "status",
-            "accessibility",
-            "dateCreated",
-            "dateModified",
-            "datePublished",
-        ]
-        for field in expected_field_names:
+        for field in _COMMON_MAPPING_EXPECTED_FIELDS:
             assert field in mapping, f"Missing field: {field}"
 
     def test_dbxref_is_disabled(self) -> None:
@@ -106,6 +108,22 @@ class TestCommonMapping:
         mapping = get_common_mapping()
         _assert_text_only(mapping, "title")
         _assert_text_only(mapping, "description")
+
+    def test_common_mapping_expected_fields_present_in_bioproject_schema(self) -> None:
+        """common mapping の expected fields がすべて BioProject Pydantic schema にも存在する。
+
+        BioProject schema 側で共通 field をリネーム or 削除すると、common mapping の
+        expected list 側との不整合がここで検出される。
+        """
+        from ddbj_search_converter.schema import BioProject
+
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in BioProject.model_fields.items()
+        }
+        missing = set(_COMMON_MAPPING_EXPECTED_FIELDS) - pydantic_field_aliases
+        assert not missing, (
+            f"common mapping が想定する field が BioProject schema に存在しない: {missing}"
+        )
 
 
 class TestBioProjectMapping:
@@ -189,6 +207,22 @@ class TestBioProjectMapping:
         mapping = get_bioproject_mapping()
         props = mapping["mappings"]["properties"]
         assert props["relevance"] == {"type": "keyword"}
+
+    def test_pydantic_fields_present_in_mapping(self) -> None:
+        """BioProject Pydantic schema の全 field が ES mapping に存在する。
+
+        schema に field を追加したが mapping への反映が漏れている場合の検出 meta-test。
+        """
+        from ddbj_search_converter.schema import BioProject
+
+        mapping_props = get_bioproject_mapping()["mappings"]["properties"]
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in BioProject.model_fields.items()
+        }
+        missing = pydantic_field_aliases - set(mapping_props.keys())
+        assert not missing, (
+            f"BioProject Pydantic schema field が ES mapping に存在しない: {missing}"
+        )
 
 
 class TestBioSampleMapping:
@@ -278,6 +312,19 @@ class TestBioSampleMapping:
         assert df["properties"]["type"] == {"type": "keyword"}
         assert df["properties"]["url"]["type"] == "keyword"
         assert df["properties"]["url"]["index"] is False
+
+    def test_pydantic_fields_present_in_mapping(self) -> None:
+        """BioSample Pydantic schema の全 field が ES mapping に存在する。"""
+        from ddbj_search_converter.schema import BioSample
+
+        mapping_props = get_biosample_mapping()["mappings"]["properties"]
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in BioSample.model_fields.items()
+        }
+        missing = pydantic_field_aliases - set(mapping_props.keys())
+        assert not missing, (
+            f"BioSample Pydantic schema field が ES mapping に存在しない: {missing}"
+        )
 
 
 class TestSraMapping:
@@ -416,6 +463,25 @@ class TestSraMapping:
             props = get_sra_mapping(sra_type)["mappings"]["properties"]
             assert props["organization"]["properties"]["department"] == {"type": "text"}
 
+    def test_pydantic_fields_covered_by_any_index(self) -> None:
+        """SRA Pydantic schema の全 field が SRA_INDEXES のいずれかの mapping に存在する。
+
+        sub-type 間で field が分散しているため (library 系は experiment のみ等)、
+        union で「どこにも入っていない field」を検出する。
+        """
+        from ddbj_search_converter.schema import SRA
+
+        union_props: set[str] = set()
+        for sra_type in SRA_INDEXES:
+            union_props.update(get_sra_mapping(sra_type)["mappings"]["properties"].keys())
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in SRA.model_fields.items()
+        }
+        missing = pydantic_field_aliases - union_props
+        assert not missing, (
+            f"SRA Pydantic schema field がどの sub-type mapping にも存在しない: {missing}"
+        )
+
 
 class TestJgaMapping:
     def test_all_jga_indexes_defined(self) -> None:
@@ -485,6 +551,24 @@ class TestJgaMapping:
             props = get_jga_mapping(jga_type)["mappings"]["properties"]
             assert "datasetType" not in props
 
+    def test_pydantic_fields_covered_by_any_index(self) -> None:
+        """JGA Pydantic schema の全 field が JGA_INDEXES のいずれかの mapping に存在する。
+
+        sub-type 間で field が分散しているため、union で整合をチェックする。
+        """
+        from ddbj_search_converter.schema import JGA
+
+        union_props: set[str] = set()
+        for jga_type in JGA_INDEXES:
+            union_props.update(get_jga_mapping(jga_type)["mappings"]["properties"].keys())
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in JGA.model_fields.items()
+        }
+        missing = pydantic_field_aliases - union_props
+        assert not missing, (
+            f"JGA Pydantic schema field がどの sub-type mapping にも存在しない: {missing}"
+        )
+
 
 class TestGeaMapping:
     def test_has_common_properties(self) -> None:
@@ -522,6 +606,19 @@ class TestGeaMapping:
         mapping = get_gea_mapping()
         assert mapping["settings"] == INDEX_SETTINGS
 
+    def test_pydantic_fields_present_in_mapping(self) -> None:
+        """GEA Pydantic schema の全 field が ES mapping に存在する。"""
+        from ddbj_search_converter.schema import GEA
+
+        mapping_props = get_gea_mapping()["mappings"]["properties"]
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in GEA.model_fields.items()
+        }
+        missing = pydantic_field_aliases - set(mapping_props.keys())
+        assert not missing, (
+            f"GEA Pydantic schema field が ES mapping に存在しない: {missing}"
+        )
+
 
 class TestMetabobankMapping:
     def test_has_common_properties(self) -> None:
@@ -553,6 +650,19 @@ class TestMetabobankMapping:
     def test_settings_applied(self) -> None:
         mapping = get_metabobank_mapping()
         assert mapping["settings"] == INDEX_SETTINGS
+
+    def test_pydantic_fields_present_in_mapping(self) -> None:
+        """MetaboBank Pydantic schema の全 field が ES mapping に存在する。"""
+        from ddbj_search_converter.schema import MetaboBank
+
+        mapping_props = get_metabobank_mapping()["mappings"]["properties"]
+        pydantic_field_aliases = {
+            (f.alias or name) for name, f in MetaboBank.model_fields.items()
+        }
+        missing = pydantic_field_aliases - set(mapping_props.keys())
+        assert not missing, (
+            f"MetaboBank Pydantic schema field が ES mapping に存在しない: {missing}"
+        )
 
 
 class TestIndexSettings:

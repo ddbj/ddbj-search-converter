@@ -7,9 +7,8 @@ from pathlib import Path
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.jsonl.idf_common import parse_idf
+from ddbj_search_converter.jsonl.idf_common import first_value, parse_idf
 from ddbj_search_converter.jsonl.metabobank import (
-    _first_value,
     _non_empty_list,
     create_metabobank_entry,
     extract_dates,
@@ -83,16 +82,16 @@ class TestIterateMetabobankIdfFiles:
 
 class TestFirstValue:
     def test_single_value(self) -> None:
-        assert _first_value({"T": ["foo"]}, "T") == "foo"
+        assert first_value({"T": ["foo"]}, "T") == "foo"
 
     def test_strips_whitespace(self) -> None:
-        assert _first_value({"T": ["  bar  "]}, "T") == "bar"
+        assert first_value({"T": ["  bar  "]}, "T") == "bar"
 
     def test_skips_empty_head(self) -> None:
-        assert _first_value({"T": ["", "  ", "third"]}, "T") == "third"
+        assert first_value({"T": ["", "  ", "third"]}, "T") == "third"
 
     def test_missing_tag_returns_none(self) -> None:
-        assert _first_value({}, "T") is None
+        assert first_value({}, "T") is None
 
 
 class TestNonEmptyList:
@@ -362,10 +361,12 @@ class TestCreateMetabobankEntry:
         idf = parse_idf(MTBKS264_IDF)
         mtb = create_metabobank_entry("MTBKS264", idf)
 
-        # bleed があると本来 value である Protocol Description の改行以降が key として混入
+        # Interested individuals / Stool samples は Protocol Description value 内のラベル文字列で、
+        # IDF tag ではないため properties に key として混入しない。
         assert not any(k.startswith("Interested individuals") for k in mtb.properties)
         assert not any(k.startswith("Stool samples") for k in mtb.properties)
-        # bleed 解消前は 58 keys、解消後は 33 keys (正当な IDF tag のみ)
+        # 上限 40 は正当な IDF tag の最大値 (実 fixture は 33 keys)。
+        # value が key として混入する parser バグの回帰検出。
         assert len(mtb.properties) <= 40
 
         # Protocol Description は quote で囲まれた複数行 value の list (要素 ≥ 6)

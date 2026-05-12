@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Literal
+from typing import Final, Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
@@ -166,6 +166,8 @@ LAST_RUN_FILE_NAME = "last_run.json"
 
 DEFAULT_MARGIN_DAYS = 30
 
+ISO8601_UTC_FORMAT: Final[str] = "%Y-%m-%dT%H:%M:%SZ"
+
 
 def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
     """since から margin_days を引いた UTC ISO8601 (``Z`` 終端) 文字列を返す。
@@ -175,7 +177,7 @@ def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
     """
     dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
     margin_dt = (dt - timedelta(days=margin_days)).astimezone(ZoneInfo("UTC"))
-    return margin_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    return margin_dt.strftime(ISO8601_UTC_FORMAT)
 
 
 DataType = Literal["bioproject", "biosample", "sra", "jga"]
@@ -226,7 +228,7 @@ def write_last_run(config: Config, data_type: DataType, timestamp: str | None = 
         timestamp: ISO8601 形式のタイムスタンプ。None の場合は現在時刻を使用。
     """
     if timestamp is None:
-        timestamp = datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+        timestamp = datetime.now(ZoneInfo("UTC")).strftime(ISO8601_UTC_FORMAT)
 
     last_run = read_last_run(config)
     last_run[data_type] = timestamp

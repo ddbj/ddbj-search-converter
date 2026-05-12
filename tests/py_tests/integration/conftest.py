@@ -34,10 +34,9 @@ _DEFAULT_LOG_DB_PATH = "/app/ddbj_search_converter_results/log.duckdb"
 
 # === Date suffixes for staging-isolated dated physical indexes ===
 #
-# 未来日付 ``99991231`` / ``99991230`` を使うことで、staging の Blue-Green 物理 index
-# (実日付 suffix) と衝突しない。teardown 失敗で残骸が出ても人間がすぐに気づける。
-#
-# OLD は alias swap rehearsal (Phase 2) で旧 dated index を表現するために使う。
+# 本番運用の dated physical index と衝突させない suffix を 2 種類用意する。
+# NEW (REHEARSAL_DATE_SUFFIX) と OLD (REHEARSAL_OLD_DATE_SUFFIX) の 2 世代を
+# 区別することで、alias swap (新世代 attach + 旧世代 detach) のテストが書ける。
 REHEARSAL_DATE_SUFFIX = "99991231"
 REHEARSAL_OLD_DATE_SUFFIX = "99991230"
 

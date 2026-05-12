@@ -12,10 +12,13 @@ from ddbj_search_converter.config import Config
 from ddbj_search_converter.dblink.db import finalize_dblink_db, init_dblink_db
 from ddbj_search_converter.jsonl.utils import (
     URL_TEMPLATE,
+    build_doi_url,
+    build_pubmed_url,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
     is_valid_external_url,
+    normalize_publication_dbtype,
     to_xref,
 )
 from ddbj_search_converter.schema import Organization, XrefType
@@ -572,3 +575,69 @@ class TestIsValidExternalUrl:
         assert len(result) == 1
         assert result[0].abbreviation == "DDBJ"
         assert result[0].role == "owner"
+
+
+class TestBuildPubmedUrl:
+    """build_pubmed_url helper の単体テスト。"""
+
+    def test_simple_pmid(self) -> None:
+        assert build_pubmed_url("12345") == "https://pubmed.ncbi.nlm.nih.gov/12345/"
+
+    def test_leading_zero_preserved(self) -> None:
+        """leading zero は preserve される (URL は文字列接続のみ)。"""
+        assert build_pubmed_url("00012345") == "https://pubmed.ncbi.nlm.nih.gov/00012345/"
+
+    def test_matches_url_template(self) -> None:
+        """build_pubmed_url の出力は URL_TEMPLATE['pubmed'] と整合する (SSOT 保証)。"""
+        assert build_pubmed_url("99") == URL_TEMPLATE["pubmed"].format(id="99")
+
+
+class TestBuildDoiUrl:
+    """build_doi_url helper の単体テスト。"""
+
+    def test_doi_format_wrapped(self) -> None:
+        assert build_doi_url("10.1271/bbb.60419") == "https://doi.org/10.1271/bbb.60419"
+
+    def test_http_id_returned_as_is(self) -> None:
+        """`http://` で始まる id は `https://doi.org/` で二重 wrap せず生 URL を返す。"""
+        assert build_doi_url("http://ssrn.com/abstract=12345") == "http://ssrn.com/abstract=12345"
+
+    def test_https_id_returned_as_is(self) -> None:
+        """`https://` で始まる id も二重 wrap しない。"""
+        url = "https://ssrn.com/abstract=12345"
+        assert build_doi_url(url) == url
+
+
+class TestNormalizePublicationDbtype:
+    """normalize_publication_dbtype helper の単体テスト。"""
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [
+            ("pubmed", "pubmed"),
+            ("ePubmed", "pubmed"),
+            ("PUBMED", "pubmed"),
+            ("  pubmed  ", "pubmed"),
+            ("doi", "doi"),
+            ("eDOI", "doi"),
+            ("pmc", "pmc"),
+            ("ePMC", "pmc"),
+            ("epmc", "pmc"),
+            ("eNotAvailable", None),
+            ("enotavailable", None),
+        ],
+    )
+    def test_known_values_normalized(self, raw: str, expected: str | None) -> None:
+        assert normalize_publication_dbtype(raw) == expected
+
+    def test_none_input_returns_none(self) -> None:
+        assert normalize_publication_dbtype(None) is None
+
+    def test_unknown_value_returns_none(self) -> None:
+        assert normalize_publication_dbtype("MyDbType") is None
+        assert normalize_publication_dbtype("") is None
+        assert normalize_publication_dbtype("   ") is None
+
+    def test_numeric_dbtype_returns_none(self) -> None:
+        """数字 DbType は map にないので None を返す (BP 側の fallback で別途 pubmed に倒す)。"""
+        assert normalize_publication_dbtype("42") is None

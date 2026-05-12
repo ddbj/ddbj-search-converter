@@ -16,6 +16,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.jsonl.distribution import make_gea_distribution
 from ddbj_search_converter.jsonl.idf_common import (
+    first_value,
     parse_idf,
     parse_pubmed_doi_publications,
     parse_submitter_affiliations,
@@ -49,23 +50,14 @@ def iterate_gea_idf_files(base_path: Path) -> Iterator[tuple[str, Path]]:
             yield accession, idf_path
 
 
-def _first_value(idf: dict[str, list[str]], tag: str) -> str | None:
-    """IDF から tag の最初の非空値を返す。空白のみは None 扱い。"""
-    for value in idf.get(tag, []):
-        stripped = value.strip() if isinstance(value, str) else ""
-        if stripped:
-            return stripped
-    return None
-
-
 def extract_title(idf: dict[str, list[str]]) -> str | None:
     """GEA IDF からタイトルを抽出する (Investigation Title 最初値)。"""
-    return _first_value(idf, "Investigation Title")
+    return first_value(idf, "Investigation Title")
 
 
 def extract_description(idf: dict[str, list[str]]) -> str | None:
     """GEA IDF から description を抽出する (Experiment Description 最初値)。"""
-    return _first_value(idf, "Experiment Description")
+    return first_value(idf, "Experiment Description")
 
 
 def extract_experiment_type(idf: dict[str, list[str]]) -> list[str]:
@@ -83,8 +75,8 @@ def extract_dates(idf: dict[str, list[str]]) -> tuple[None, str | None, str | No
     """
     return (
         None,
-        _first_value(idf, "Comment[Last Update Date]"),
-        _first_value(idf, "Public Release Date"),
+        first_value(idf, "Comment[Last Update Date]"),
+        first_value(idf, "Public Release Date"),
     )
 
 

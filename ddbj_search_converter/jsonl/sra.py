@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import argparse
 import gc
-import re
 import sys
 from collections.abc import Callable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
@@ -31,9 +30,10 @@ from ddbj_search_converter.config import (
     write_last_run,
 )
 from ddbj_search_converter.dblink.utils import load_sra_blacklist
-from ddbj_search_converter.id_patterns import is_ddbj_sra_accession
+from ddbj_search_converter.id_patterns import BIOSAMPLE_ID_FINDALL_RE, is_ddbj_sra_accession
 from ddbj_search_converter.jsonl.distribution import make_sra_distribution
 from ddbj_search_converter.jsonl.utils import (
+    build_pubmed_url,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
@@ -95,10 +95,6 @@ SRA_ATTRIBUTE_PATHS: dict[SraXmlType, list[list[str]]] = {
     "sample": [["SAMPLE_SET", "SAMPLE", "SAMPLE_ATTRIBUTES", "SAMPLE_ATTRIBUTE"]],
     "analysis": [["ANALYSIS_SET", "ANALYSIS", "ANALYSIS_ATTRIBUTES", "ANALYSIS_ATTRIBUTE"]],
 }
-
-# SAMPLE_ATTRIBUTE.VALUE から BioSample 形式の ID を抽出する regex (bs.py と同 pattern)。
-_SAMPLE_DERIVED_FROM_ID_RE = re.compile(r"SAM[NDE]\d+")
-
 
 # === Parse functions ===
 
@@ -347,7 +343,7 @@ def _parse_sample_derived_from(sample: Any) -> list[Xref]:
         return []
     xrefs: list[Xref] = []
     seen: set[str] = set()
-    for id_ in _SAMPLE_DERIVED_FROM_ID_RE.findall(content):
+    for id_ in BIOSAMPLE_ID_FINDALL_RE.findall(content):
         if id_ in seen:
             continue
         seen.add(id_)
@@ -511,7 +507,7 @@ def _parse_publications(
             Publication(
                 id=pub_id_norm,
                 dbType="pubmed",
-                url=f"https://pubmed.ncbi.nlm.nih.gov/{pub_id_norm}/",
+                url=build_pubmed_url(pub_id_norm),
             )
         )
     return publications

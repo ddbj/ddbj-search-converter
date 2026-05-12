@@ -29,6 +29,7 @@ from ddbj_search_converter.config import (
     DEFAULT_MARGIN_DAYS,
     DRA_ACCESSIONS_BASE_PATH,
     DRA_DB_FILE_NAME,
+    ISO8601_UTC_FORMAT,
     SRA_ACCESSIONS_BASE_PATH,
     SRA_DB_FILE_NAME,
     TMP_DRA_DB_FILE_NAME,
@@ -790,9 +791,9 @@ def get_accession_info_bulk(
                     Accession,
                     Status,
                     Visibility,
-                    strftime(Received, '%Y-%m-%dT%H:%M:%SZ'),
-                    strftime(Updated, '%Y-%m-%dT%H:%M:%SZ'),
-                    strftime(Published, '%Y-%m-%dT%H:%M:%SZ'),
+                    strftime(Received, '{ISO8601_UTC_FORMAT}'),
+                    strftime(Updated, '{ISO8601_UTC_FORMAT}'),
+                    strftime(Published, '{ISO8601_UTC_FORMAT}'),
                     Type
                 FROM accessions
                 WHERE Accession IN ({placeholders})

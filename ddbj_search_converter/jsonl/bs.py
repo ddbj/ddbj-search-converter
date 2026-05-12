@@ -1,7 +1,6 @@
 """BioSample JSONL 生成モジュール。"""
 
 import argparse
-import re
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -21,6 +20,7 @@ from ddbj_search_converter.config import (
     write_last_run,
 )
 from ddbj_search_converter.dblink.utils import load_blacklist
+from ddbj_search_converter.id_patterns import BIOSAMPLE_ID_FINDALL_RE
 from ddbj_search_converter.jsonl.distribution import make_bs_distribution
 from ddbj_search_converter.jsonl.utils import (
     deduplicate_organizations,
@@ -45,11 +45,6 @@ DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
 
 BS_ATTRIBUTE_PATHS: list[list[str]] = [["Attributes", "Attribute"]]
-
-# NCBI / DDBJ BioSample で `SAM[NDE]{accession_number}` 形式の ID を抽出する regex。
-# 両方の format (NCBI 自由文 embed / DDBJ カンマ区切り) を単一 regex でカバー。
-_DERIVED_FROM_ID_RE = re.compile(r"SAM[NDE]\d+")
-
 
 # === Parse functions ===
 
@@ -322,7 +317,7 @@ def parse_derived_from(sample: dict[str, Any], accession: str = "") -> list[Xref
         if content is None:
             return []
         seen: set[str] = set()
-        for id_ in _DERIVED_FROM_ID_RE.findall(content):
+        for id_ in BIOSAMPLE_ID_FINDALL_RE.findall(content):
             if id_ in seen:
                 continue
             seen.add(id_)

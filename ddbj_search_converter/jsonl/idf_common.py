@@ -11,7 +11,7 @@ import csv
 import re
 from pathlib import Path
 
-from ddbj_search_converter.jsonl.utils import deduplicate_organizations
+from ddbj_search_converter.jsonl.utils import build_doi_url, build_pubmed_url, deduplicate_organizations
 from ddbj_search_converter.schema import Organization, Publication, PublicationDbType
 
 _DOI_PREFIX_RE = re.compile(
@@ -35,18 +35,13 @@ def _normalize_doi_value(raw: str) -> str:
     return _DOI_PREFIX_RE.sub("", raw).strip()
 
 
-def _build_doi_url(doi_id: str) -> str:
-    """DOI id から `Publication.url` を構築する。
-
-    - `http://` / `https://` で始まる値 (SSRN URL 等 DOI 以外の URL が
-      `Publication DOI` 列に誤入力されているケース) は URL 自体を返し、
-      `https://doi.org/` で二重 wrap しない。
-    - それ以外 (DOI `10.xxx/...` 形式や判定不能な生文字列) は
-      `https://doi.org/{doi_id}` を返す。
-    """
-    if doi_id.startswith(("http://", "https://")):
-        return doi_id
-    return f"https://doi.org/{doi_id}"
+def first_value(idf: dict[str, list[str]], tag: str) -> str | None:
+    """IDF から tag の最初の非空値を返す。空白のみは None 扱い。"""
+    for value in idf.get(tag, []):
+        stripped = value.strip() if isinstance(value, str) else ""
+        if stripped:
+            return stripped
+    return None
 
 
 def parse_idf(path: Path) -> dict[str, list[str]]:
@@ -107,7 +102,7 @@ def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication
             Publication(
                 id=pmid_value,
                 dbType="pubmed",
-                url=f"https://pubmed.ncbi.nlm.nih.gov/{pmid_value}/",
+                url=build_pubmed_url(pmid_value),
             )
         )
     for doi in idf.get("Publication DOI", []):
@@ -121,7 +116,7 @@ def parse_pubmed_doi_publications(idf: dict[str, list[str]]) -> list[Publication
             Publication(
                 id=doi_value,
                 dbType=dbtype,
-                url=_build_doi_url(doi_value),
+                url=build_doi_url(doi_value),
             )
         )
     return publications
