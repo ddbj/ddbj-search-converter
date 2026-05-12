@@ -6,9 +6,11 @@ DDBJ Search Converter のログ確認とデバッグ方法。
 
 | 出力先 | 説明 |
 |-------|------|
-| **JSONL ファイル** | `{result_dir}/logs/{run_id}.log.jsonl` (全ログ) |
+| **JSONL ファイル** | `{result_dir}/logs/{YYYYMMDD}/{run_name}_{hex_token}.log.jsonl` (全ログ) |
 | **DuckDB** | `{result_dir}/log.duckdb` (集計用、JSONL から自動挿入) |
 | **stderr** | INFO 以上のログのみ出力 (DEBUG は出力しない) |
+
+`run_id` は `{YYYYMMDD}_{run_name}_{hex_token}` 形式の文字列で生成する (`hex_token` は `secrets.token_hex(2)` 由来の 4 桁 hex)。JSONL ファイル名は日付ディレクトリ配下に `run_name` と `hex_token` を結合した形で配置する。
 
 ## DuckDB スキーマと run_id lifecycle
 
@@ -16,17 +18,21 @@ DDBJ Search Converter のログ確認とデバッグ方法。
 
 ```sql
 CREATE TABLE log_records (
-    run_id UUID NOT NULL,
-    run_name TEXT NOT NULL,
-    run_date DATE NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    log_level TEXT NOT NULL,         -- DEBUG / INFO / WARNING / ERROR / CRITICAL
-    lifecycle TEXT,                   -- 'start' / 'end' / 'failed' (else NULL)
+    timestamp TIMESTAMP,
+    run_date DATE,
+    run_id TEXT,                      -- {YYYYMMDD}_{run_name}_{hex_token}
+    run_name TEXT,
+    source TEXT,                      -- "ncbi" / "ddbj" / "sra" / "dra" 等
+    log_level TEXT,                   -- DEBUG / INFO / WARNING / ERROR / CRITICAL
     message TEXT,
-    extra JSON,                       -- accession, file, debug_category, error 等
+    error JSON,                       -- ERROR 行の例外情報 (独立 column)
+    extra JSON,                       -- accession, file, debug_category 等
+    lifecycle TEXT                    -- 'start' / 'end' / 'failed' (else NULL)
 );
--- UNIQUE (run_id, lifecycle) WHERE lifecycle IS NOT NULL
+CREATE UNIQUE INDEX idx_run_lifecycle_unique ON log_records(run_id, lifecycle);
 ```
+
+DuckDB は partial unique index (`WHERE lifecycle IS NOT NULL`) をサポートしないため UNIQUE INDEX は全行に張る。標準 SQL の「複数 NULL は collide しない」性質と application 層の `run_logger` (1 つの run につき start 1 回 + (end | failed) 1 回しか emit しない) の組み合わせで、実質的に partial unique を実現している。`error` は `extra` とは別 column で、ERROR 行の例外情報を保持する。
 
 `lifecycle` フィールドは 1 つの run の境界マーカーで、通常 INFO/DEBUG/WARNING/ERROR ログでは NULL。`run_logger` context manager が以下のルールで自動付与する:
 
@@ -36,12 +42,12 @@ CREATE TABLE log_records (
 | `end` | run が例外なく終了したとき | INFO |
 | `failed` | run が例外で終了したとき | CRITICAL |
 
-**UNIQUE (run_id, lifecycle) WHERE lifecycle IS NOT NULL** の partial unique 制約により、各 run_id について:
+この擬似 partial unique 制約により、各 run_id について:
 
 - `start` は最大 1 行
 - (`end` または `failed`) は最大 1 行 (= 1 つの run は成功 or 失敗のどちらか 1 度だけ完了する)
 
-通常の INFO/DEBUG ログ (lifecycle が NULL) は UNIQUE 制約の対象外で、同一 run_id について何度でも追加できる。
+通常の INFO/DEBUG ログ (lifecycle が NULL) は標準 SQL の NULL 比較規則で UNIQUE 制約に collide しないため、同一 run_id について何度でも追加できる。
 
 この制約は `get_last_successful_run_date` (`logging/db.py`) が「INFO + lifecycle='end'」フィルタで run の終了時刻を取り出す経路の前提条件 (同一 run_id について end が複数あれば最新を取らされ、意味の取れない値になるため)。
 

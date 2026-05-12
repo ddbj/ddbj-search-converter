@@ -57,6 +57,8 @@ External Resources (既存マウント)
     └── (同上)
 ```
 
+chunk ファイル (`chunk_NNNN.{ttl,jsonld,nt}`) の命名規則 (桁数・prefix・開始番号) と `manifest.json` / `progress.json` / `errors.log` の生成可否・スキーマは `insdc-rdf` バイナリの出力仕様に従う。Dockerfile の `ghcr.io/inutano/insdc-rdf:X.Y.Z` を bump する際は、出力構造が変わっていないか上流 README で確認する。
+
 ## パイプラインスクリプト
 
 `scripts/run_rdf_pipeline.sh` で実行する。`run_dblink_pipeline.sh` と同じ構造で、ステップは `convert` (4 source を並列変換) → `validate` (出力 RDF の逐次検証) の 2 段。オプション・環境変数の一覧はスクリプトの `--help` (もしくは `--list-steps`) を参照する。

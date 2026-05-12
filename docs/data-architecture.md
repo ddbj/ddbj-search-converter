@@ -14,6 +14,12 @@ DDBJ Search Converter のデータフローと構造。
                                       |
                                       v
 +-----------------------------------------------------------------------------+
+| Phase 0: Pre-check                                                          |
+|   check_external_resources  -- 外部マウントの存在確認、欠落で以降を abort   |
++-----------------------------------------------------------------------------+
+                                      |
+                                      v
++-----------------------------------------------------------------------------+
 | Phase 1: DBLink Build                                                       |
 |                                                                             |
 |   prepare_bioproject_xml     -- XML batch split --> {result}/tmp_xml/bp/    |
@@ -365,6 +371,25 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `geo` | GSE12345 |
 | `taxonomy` | 9606 |
 
+## Publication フィールド
+
+各 entry の `publication[].dbType` は以下の 4 値および `None` のいずれかを取る。スキーマ定義は [`schema.py`](../ddbj_search_converter/schema.py) の `PublicationDbType`。
+
+| dbType | URL テンプレート | 主な出現元 |
+|---|---|---|
+| `pubmed` | `https://pubmed.ncbi.nlm.nih.gov/{id}/` | BioProject XML, JGA XML, SRA, IDF (GEA / MetaboBank) |
+| `doi` | `https://doi.org/{doi}` (id が `http(s)://...` で始まるときはそのまま) | BioProject XML, JGA XML, IDF |
+| `pmc` | `https://www.ncbi.nlm.nih.gov/pmc/articles/{PMC...}/` (id が `PMC` 始まりのときのみ URL 生成) | BioProject XML |
+| `other` | URL 生成なし | 上記いずれにも当てはまらないが id だけは保持するケース |
+| `None` | URL 生成なし | dbType 不明 (`eNotAvailable` や未知文字列) |
+
+上流 (BioProject XML / JGA XML / IDF) の `DbType` 表記揺れは [`jsonl/utils.py`](../ddbj_search_converter/jsonl/utils.py) の `normalize_publication_dbtype` で吸収する。`.strip().lower()` 後に lookup するため `pubmed` / `ePubmed` / `PUBMED` は同一視され、`eDOI` → `doi`, `ePMC` → `pmc`, `eNotAvailable` → `None` に正規化される。URL 生成は `build_pubmed_url` / `build_doi_url` を共通 helper として使う。
+
+BioProject XML 固有の挙動として以下 2 種類の fallback がある:
+
+- `DbType` フィールドに数字 PMID が直書きされるケース (例: `DbType="12345678"`) は `pubmed` にフォールバックし URL を構築する
+- `DbType="ePMC"` だが id が `10.xxx/...` の DOI 形式のときは `dbType` を `doi` に倒して URL も DOI 側で生成する (id/dbType/url の整合維持)
+
 ## DBLink TSV 出力（18 種類）
 
 `{DBLINK_PATH}/` 以下に出力される。relation を表す 2 カラムの TSV。
@@ -438,6 +463,8 @@ BioProject エントリーは umbrella 階層構造に対応しており、`pare
 BioProject の `relevance` は元 XML が 7 子要素 (Agricultural / Medical / Industrial / Environmental / Evolution / ModelOrganism / Other) で構成され、各タグの `"yes"` / `"no"` 値ではなく **`"yes"` だったタグ名の配列** として格納する。フロント側でファセット値として使いやすくするためのスキーマ整形で、生 XML の構造とは異なる。
 
 BioSample の `derivedFrom` は NCBI の自由文埋め込みと DDBJ のカンマ区切りの両表記から BioSample ID を統一抽出する。一方 `isolate` は `strain` と意味的に区別される個別分離株識別子で、両者を別フィールドとして並べて持つ。詳細は [schema.py](../ddbj_search_converter/schema.py) を参照。
+
+抽出に使う regex は [`id_patterns.py`](../ddbj_search_converter/id_patterns.py) で用途別に 2 種類を分けている。`ID_PATTERN_MAP["biosample"]` (`^SAM[NED](\w)?\d+\Z`) は文字列全体の validation 用で NCBI BioSample の拡張 char (`SAMD0...` 等の 1 文字 prefix) を `\w?` で許容する。`BIOSAMPLE_ID_FINDALL_RE` (`SAM[NDE]\d+`) は anchorless で、`derivedFrom` の自由文/カンマ区切りから ID 部分のみを `findall` で抽出する。後者は拡張 char を意図的に含めないことで、NCBI 由来の自由文中に紛れる類似文字列を誤抽出しない設計。
 
 ### SRA
 
