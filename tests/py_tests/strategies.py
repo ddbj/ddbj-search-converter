@@ -236,6 +236,20 @@ def st_sra_type() -> st.SearchStrategy[str]:
     return st.sampled_from(["SUBMISSION", "STUDY", "EXPERIMENT", "RUN", "SAMPLE", "ANALYSIS"])
 
 
+def st_accession_like_text(*, min_size: int = 1, max_size: int = 20) -> st.SearchStrategy[str]:
+    """Accession ID として通り得る文字 (Unicode Letter + Number カテゴリ) の文字列。
+
+    `id_patterns.py` の regex に必ずしも match しない、より広めの空間。``\\W``
+    で TSV を割らないだけの最低限の保証を持ち、TSV → DuckDB の roundtrip 系テスト
+    に向く。pattern.match 検証用には別途 ``st_<type>_id()`` を使う。
+    """
+    return st.text(
+        alphabet=st.characters(categories=["L", "N"]),
+        min_size=min_size,
+        max_size=max_size,
+    )
+
+
 def st_timestamp_str() -> st.SearchStrategy[str]:
     """ISO 8601 timestamp string suitable for SRA Accessions TSV."""
     return st.datetimes(

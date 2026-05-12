@@ -9,7 +9,6 @@ from ddbj_search_converter.config import (
     GEA_BASE_DIR_NAME,
     GEA_BASE_PATH,
     JSONL_DIR_NAME,
-    SEARCH_BASE_URL,
     TODAY_STR,
     Config,
     get_config,
@@ -21,7 +20,7 @@ from ddbj_search_converter.jsonl.idf_common import (
     parse_pubmed_doi_publications,
     parse_submitter_affiliations,
 )
-from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
+from ddbj_search_converter.jsonl.utils import build_search_entry_self_url, get_dbxref_map, write_jsonl
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.schema import GEA, Xref
 
@@ -94,7 +93,7 @@ def create_gea_entry(
         isPartOf="gea",
         type="gea",
         name=None,
-        url=f"{SEARCH_BASE_URL}/search/entry/gea/{accession}",
+        url=build_search_entry_self_url("gea", accession),
         organism=None,
         title=extract_title(idf),
         description=extract_description(idf),

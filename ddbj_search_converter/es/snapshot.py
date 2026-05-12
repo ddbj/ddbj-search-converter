@@ -1,12 +1,16 @@
 """Elasticsearch snapshot management."""
 
 from datetime import datetime
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from ddbj_search_converter.config import LOCAL_TZ, Config
 from ddbj_search_converter.es.client import get_es_client
 from ddbj_search_converter.es.index import ALL_INDEXES
 from ddbj_search_converter.es.settings import SNAPSHOT_SETTINGS
+from ddbj_search_converter.logging.logger import log_warn
+
+if TYPE_CHECKING:
+    from elasticsearch import Elasticsearch
 
 
 def register_repository(
@@ -210,6 +214,7 @@ def restore_snapshot(
     rename_replacement: str | None = None,
     include_global_state: bool = False,
     wait_for_completion: bool = True,
+    force: bool = False,
 ) -> dict[str, Any]:
     """Restore a snapshot.
 
@@ -222,9 +227,15 @@ def restore_snapshot(
         rename_replacement: Replacement string for renaming
         include_global_state: Whether to restore cluster state
         wait_for_completion: Whether to wait for restore to complete
+        force: 復元対象 index が現在 live alias の target になっていても上書きを許可する。
+            デフォルト False のときは ``RuntimeError`` を raise してダウンタイムを未然に防ぐ。
 
     Returns:
         Restore info
+
+    Raises:
+        RuntimeError: ``force=False`` で復元対象 index が live alias の target に
+            含まれている場合。
     """
     es_client = get_es_client(config)
 
@@ -239,6 +250,25 @@ def restore_snapshot(
         body["rename_pattern"] = rename_pattern
         body["rename_replacement"] = rename_replacement
 
+    # === live index 上書き guard ===
+    # rename_pattern が指定されていれば復元先名は元と異なるため衝突しない (guard 不要)。
+    # それ以外で、復元対象 index が live alias の target になっていれば、明示的な
+    # オプトインなしには上書きさせない。alias を見ない理由は「alias が指している = live」
+    # を最も信頼できるシグナルにするため。
+    if indexes and not rename_pattern:
+        live_targets = _collect_live_alias_targets(es_client)
+        conflicts = sorted(set(indexes) & live_targets)
+        if conflicts:
+            if not force:
+                raise RuntimeError(
+                    "restore_snapshot: refusing to overwrite live index targets "
+                    f"{conflicts!r}. Pass force=True (CLI: --force) if this is intentional."
+                )
+            log_warn(
+                "restore_snapshot: overwriting live index targets due to force=True",
+                live_index_targets=conflicts,
+            )
+
     response = es_client.snapshot.restore(
         repository=repo_name,
         snapshot=snapshot_name,
@@ -247,6 +277,28 @@ def restore_snapshot(
     )
 
     return cast("dict[str, Any]", response.body)
+
+
+def _collect_live_alias_targets(es_client: "Elasticsearch") -> set[str]:
+    """現在の cluster で alias が指している全 index 名を集める。
+
+    `indices.get_alias()` の戻り値は `{index: {"aliases": {alias_name: {...}, ...}}}` 構造。
+    alias を持たない物理 index も含まれるので、aliases フィールドが空でない index だけを
+    抽出する。
+    """
+    try:
+        response = es_client.indices.get_alias()
+    except Exception:
+        # alias 情報取得失敗時は guard をかけない (snapshot restore 単独の失敗にしない)
+        return set()
+    raw = response.body if hasattr(response, "body") else response
+
+    live: set[str] = set()
+    for index_name, info in raw.items():
+        aliases = info.get("aliases") if isinstance(info, dict) else None
+        if aliases:
+            live.add(index_name)
+    return live
 
 
 def export_index_settings(

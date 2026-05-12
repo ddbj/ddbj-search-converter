@@ -21,7 +21,6 @@ from typing import Any, Literal
 
 from ddbj_search_converter.config import (
     JSONL_DIR_NAME,
-    SEARCH_BASE_URL,
     SRA_BASE_DIR_NAME,
     TODAY_STR,
     Config,
@@ -33,7 +32,9 @@ from ddbj_search_converter.dblink.utils import load_sra_blacklist
 from ddbj_search_converter.id_patterns import BIOSAMPLE_ID_FINDALL_RE, is_ddbj_sra_accession
 from ddbj_search_converter.jsonl.distribution import make_sra_distribution
 from ddbj_search_converter.jsonl.utils import (
+    _build_url,
     build_pubmed_url,
+    build_search_entry_self_url,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
@@ -351,7 +352,7 @@ def _parse_sample_derived_from(sample: Any) -> list[Xref]:
             Xref(
                 identifier=id_,
                 type="biosample",
-                url=f"{SEARCH_BASE_URL}/search/entry/biosample/{id_}",
+                url=_build_url("biosample", id_),
             )
         )
     return xrefs
@@ -603,7 +604,7 @@ def _parse_submission_description(submission: Any) -> str | None:
 
 def _make_url(entry_type: str, identifier: str) -> str:
     """URL を作成する。"""
-    return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{identifier}"
+    return build_search_entry_self_url(entry_type, identifier)
 
 
 def _get_name_from_alias(accession: str, alias: str | None) -> str | None:

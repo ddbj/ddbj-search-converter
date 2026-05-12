@@ -9,7 +9,6 @@ JSONL 生成時にローカル読み取りを行う。
     - 最終 DB: {result_dir}/bp_bs_date.duckdb
 """
 
-import shutil
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -117,7 +116,7 @@ def finalize_date_cache_db(config: Config) -> None:
     if final_path.exists():
         final_path.unlink()
 
-    shutil.move(str(db_path), str(final_path))
+    db_path.replace(final_path)
     log_info(f"date cache finalized: {final_path}")
 
 

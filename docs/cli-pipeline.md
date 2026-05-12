@@ -114,3 +114,7 @@ ES への投入は `es_bulk_insert --index <name> --file <path>` で行う。SRA
 - `{result_dir}/dblink/tmp/{YYYYMMDD}/`
 
 各親ディレクトリで独立して N 件保持される。
+
+### DuckDB の spill ディレクトリ削除
+
+`--include-spill` で `{result_dir}/dblink/duckdb_tmp/{YYYYMMDD}/` 配下を **`--keep` を無視して全件削除** する (DuckDB の一時的な spill 用ディレクトリ、保持しても意味がないため)。デフォルトでは触らない。pipeline 実行中は当日分の spill を作っているので、`run_pipeline.sh` の合間に呼ぶか、明らかにアイドル状態のときだけ実行する。

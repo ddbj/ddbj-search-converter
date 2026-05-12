@@ -41,7 +41,7 @@ from ddbj_search_converter.sra_accessions_tab import (
     load_tsv_to_tmp_db,
     lookup_submissions_for_accessions,
 )
-from tests.py_tests.strategies import st_sra_type, st_timestamp_str
+from tests.py_tests.strategies import st_accession_like_text, st_sra_type, st_timestamp_str
 
 ISO8601_PATTERN = re.compile(r"\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
 
@@ -355,11 +355,7 @@ class TestLoadTsvToTmpDb:
             assert row[0] is not None  # type: ignore[index]
 
     @given(
-        acc=st.text(
-            alphabet=st.characters(categories=["L", "N"]),
-            min_size=1,
-            max_size=20,
-        ),
+        acc=st_accession_like_text(min_size=1, max_size=20),
         sra_type=st_sra_type(),
     )
     @settings(deadline=2000, max_examples=20)

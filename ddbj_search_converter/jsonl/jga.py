@@ -13,7 +13,6 @@ from ddbj_search_converter.config import (
     JGA_BASE_DIR_NAME,
     JGA_BASE_PATH,
     JSONL_DIR_NAME,
-    SEARCH_BASE_URL,
     TODAY_STR,
     Config,
     get_config,
@@ -23,6 +22,7 @@ from ddbj_search_converter.dblink.utils import load_jga_blacklist
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
 from ddbj_search_converter.jsonl.utils import (
     build_pubmed_url,
+    build_search_entry_self_url,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
@@ -181,7 +181,7 @@ def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str =
                 Xref(
                     identifier=sid,
                     type=index_name,
-                    url=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{sid}",
+                    url=build_search_entry_self_url(index_name, sid),
                 )
             )
     except Exception as e:
@@ -450,7 +450,7 @@ def jga_entry_to_jga_instance(entry: dict[str, Any], index_name: IndexName) -> J
         isPartOf="jga",
         type=index_name,
         name=None,
-        url=f"{SEARCH_BASE_URL}/search/entry/{index_name}/{accession}",
+        url=build_search_entry_self_url(index_name, accession),
         organism=organism,
         title=extract_title(entry, index_name),
         description=extract_description(entry, index_name),

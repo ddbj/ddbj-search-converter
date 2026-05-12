@@ -5,8 +5,6 @@ DuckDB キャッシュを構築するモジュール。
 
 from collections.abc import Iterator
 
-import psycopg2
-
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.date_cache.db import (
     finalize_date_cache_db,
@@ -15,7 +13,7 @@ from ddbj_search_converter.date_cache.db import (
     insert_bs_dates,
 )
 from ddbj_search_converter.logging.logger import log_info
-from ddbj_search_converter.postgres.utils import format_date, parse_postgres_url
+from ddbj_search_converter.postgres.utils import connect_with_retry, format_date, parse_postgres_url
 
 CURSOR_ITERSIZE = 50000
 
@@ -46,7 +44,7 @@ def _fetch_all_bp_dates(
     postgres_url: str,
 ) -> Iterator[tuple[str, str | None, str | None, str | None]]:
     host, port, user, password = parse_postgres_url(postgres_url)
-    conn = psycopg2.connect(
+    conn = connect_with_retry(
         host=host,
         port=port,
         user=user,
@@ -77,7 +75,7 @@ def _fetch_all_bs_dates(
     postgres_url: str,
 ) -> Iterator[tuple[str, str | None, str | None, str | None]]:
     host, port, user, password = parse_postgres_url(postgres_url)
-    conn = psycopg2.connect(
+    conn = connect_with_retry(
         host=host,
         port=port,
         user=user,

@@ -52,6 +52,16 @@ BULK_INSERT_SETTINGS: dict[str, Any] = {
     "normal_refresh_interval": "1s",
 }
 
+# === Bulk retry settings ===
+# bulk_insert / bulk_delete に共通の retry 設定。SSOT は docs/elasticsearch.md
+# §bulk insert / bulk delete のリトライ。
+# 429 / 502 / 503 / 504 のみ retry (一過性 / GW 系)。400 等の永続的エラーはそのまま fail。
+
+BULK_MAX_RETRIES = 3
+BULK_INITIAL_BACKOFF = 2  # seconds
+BULK_MAX_BACKOFF = 60  # seconds
+BULK_RETRY_ON_STATUS: tuple[int, ...] = (429, 502, 503, 504)
+
 
 # === Snapshot Settings ===
 # Default settings for snapshot operations.

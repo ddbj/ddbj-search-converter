@@ -1,10 +1,13 @@
 """Elasticsearch index creation and deletion."""
 
 import contextlib
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, resolve_alias_to_indexes
+
+if TYPE_CHECKING:
+    from elasticsearch import Elasticsearch
 from ddbj_search_converter.es.mappings.bioproject import get_bioproject_mapping
 from ddbj_search_converter.es.mappings.biosample import get_biosample_mapping
 from ddbj_search_converter.es.mappings.gea import get_gea_mapping
@@ -328,7 +331,51 @@ def swap_aliases(
     if actions:
         es_client.indices.update_aliases(body={"actions": actions})
 
+    _verify_swap_aliases(es_client, date_suffix, index_group)
+
     return old_indexes
+
+
+def _verify_swap_aliases(
+    es_client: "Elasticsearch",
+    date_suffix: str,
+    index_group: IndexGroup,
+) -> None:
+    """``update_aliases`` 完了後に alias target を読み直し、期待 dated index と一致するか検証する。
+
+    一致しない場合は ``RuntimeError`` を raise する。alias swap 自体は atomic だが、後段で
+    cleanup や CLI 出力が失敗するケースがあり、「実際に swap が反映されたか」を確認する
+    防御層として機能する。実装としては:
+
+    - 対象 group の各 logical index について `indices.get_alias` を呼び、target が
+      ``{idx}-{date_suffix}`` であることを assert する
+    - 不一致を見つけたら expected と actual を含む RuntimeError を raise
+
+    冗長なコールに見えるが、`update_aliases` が成功を返すことと alias 状態が一致することは
+    厳密には別 (ES のキャッシュ・他 client の介入)。本番の swap 直後にこのチェックを通す
+    のは正しい挙動を pin する効果がある。
+    """
+    expected: dict[IndexName, str] = {}
+    for idx in get_indexes_for_group(index_group):
+        expected[idx] = make_physical_index_name(idx, date_suffix)
+
+    mismatches: list[str] = []
+    for idx, expected_physical in expected.items():
+        try:
+            response = es_client.indices.get_alias(name=idx)
+        except Exception as e:  # noqa: BLE001
+            mismatches.append(f"{idx}: failed to fetch alias ({e})")
+            continue
+        actual_targets = set(response.body.keys()) if hasattr(response, "body") else set(response.keys())
+        if expected_physical not in actual_targets:
+            mismatches.append(
+                f"{idx}: alias should point to {expected_physical!r}, actual targets {sorted(actual_targets)!r}"
+            )
+
+    if mismatches:
+        raise RuntimeError(
+            "swap_aliases post-verification failed:\n  " + "\n  ".join(mismatches)
+        )
 
 
 def delete_physical_indexes(

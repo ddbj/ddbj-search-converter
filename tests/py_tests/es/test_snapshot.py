@@ -269,6 +269,91 @@ class TestRestoreSnapshot:
         assert "rename_replacement" not in body
 
 
+@pytest.mark.usefixtures("with_logger_isolated")
+class TestRestoreSnapshotLiveIndexGuard:
+    """``restore_snapshot`` の live index 上書き防止 guard の検証。
+
+    live alias の target に該当する index を `force=False` で復元しようとすると
+    ``RuntimeError`` を raise する。意図的上書きは ``force=True`` で許可される
+    (このとき log_warn が呼ばれるので ``with_logger_isolated`` で context を確保)。
+    """
+
+    def test_raises_when_target_is_live_alias_target(
+        self, patched_get_es: MagicMock, test_config: MagicMock
+    ) -> None:
+        patched_get_es.indices.get_alias.return_value = _make_mock_response({
+            "bioproject-20260512": {"aliases": {"bioproject": {}}},
+        })
+
+        with pytest.raises(RuntimeError, match="refusing to overwrite"):
+            restore_snapshot(test_config, "repo", "s1", indexes=["bioproject-20260512"])
+
+        # guard で raise されたので snapshot.restore は呼ばれていない
+        patched_get_es.snapshot.restore.assert_not_called()
+
+    def test_force_true_allows_overwriting_live_target(
+        self, patched_get_es: MagicMock, test_config: MagicMock
+    ) -> None:
+        patched_get_es.indices.get_alias.return_value = _make_mock_response({
+            "bioproject-20260512": {"aliases": {"bioproject": {}}},
+        })
+        patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
+
+        # force=True を指定すれば guard を通過して restore に到達する
+        result = restore_snapshot(
+            test_config, "repo", "s1",
+            indexes=["bioproject-20260512"], force=True,
+        )
+
+        assert result == {"accepted": True}
+        patched_get_es.snapshot.restore.assert_called_once()
+
+    def test_no_conflict_with_non_live_target(
+        self, patched_get_es: MagicMock, test_config: MagicMock
+    ) -> None:
+        # live aliases に "bioproject-20260512" だけが含まれるが、復元対象は
+        # "bioproject-old" なので衝突なし → guard を通過
+        patched_get_es.indices.get_alias.return_value = _make_mock_response({
+            "bioproject-20260512": {"aliases": {"bioproject": {}}},
+        })
+        patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
+
+        restore_snapshot(test_config, "repo", "s1", indexes=["bioproject-old"])
+
+        patched_get_es.snapshot.restore.assert_called_once()
+
+    def test_rename_pattern_skips_guard(
+        self, patched_get_es: MagicMock, test_config: MagicMock
+    ) -> None:
+        # rename_pattern が指定されると、復元先名は元と異なるため guard は不要
+        patched_get_es.indices.get_alias.return_value = _make_mock_response({
+            "bioproject-20260512": {"aliases": {"bioproject": {}}},
+        })
+        patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
+
+        restore_snapshot(
+            test_config, "repo", "s1",
+            indexes=["bioproject-20260512"],
+            rename_pattern="bioproject-(.+)",
+            rename_replacement="restored-$1",
+        )
+
+        # guard は呼ばれず、restore に到達
+        patched_get_es.snapshot.restore.assert_called_once()
+
+    def test_alias_fetch_failure_falls_through_guard(
+        self, patched_get_es: MagicMock, test_config: MagicMock
+    ) -> None:
+        """``indices.get_alias`` が失敗しても guard は通過する (restore 自体の失敗にしない)。"""
+        patched_get_es.indices.get_alias.side_effect = Exception("alias api failed")
+        patched_get_es.snapshot.restore.return_value = _make_mock_response({"accepted": True})
+
+        # 例外を escalate せず、restore は実行される
+        restore_snapshot(test_config, "repo", "s1", indexes=["bioproject-20260512"])
+
+        patched_get_es.snapshot.restore.assert_called_once()
+
+
 class TestExportIndexSettings:
     def test_collects_settings_and_mappings_per_index(
         self, patched_get_es: MagicMock, test_config: MagicMock

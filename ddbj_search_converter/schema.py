@@ -2,7 +2,15 @@
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class _Base(BaseModel):
+    # `populate_by_name=True` で alias 名 (`type` / `id`) と attribute 名 (`type_` / `id_`)
+    # の両方で構築できるようにする。JSONL builder では alias 名で渡す慣習だが、テスト
+    # や直接構築では attribute 名でも通るので、どちらの表記揺れも壊れない。
+    model_config = ConfigDict(populate_by_name=True)
+
 
 # Status (INSDC standard)
 Status = Annotated[
@@ -45,7 +53,7 @@ EncodingFormat = Annotated[
 # === Shared types ===
 
 
-class Distribution(BaseModel):
+class Distribution(_Base):
     """Schema.org-compatible DataDownload entry describing a single distribution of a record."""
 
     type_: str = Field(
@@ -58,7 +66,7 @@ class Distribution(BaseModel):
     )
 
 
-class Organism(BaseModel):
+class Organism(_Base):
     """Organism information sourced from INSDC / NCBI Taxonomy."""
 
     identifier: str | None = Field(
@@ -93,7 +101,7 @@ OrganizationRole = Annotated[
 ]
 
 
-class Organization(BaseModel):
+class Organization(_Base):
     """Organization linked to an entry (e.g. submitter, participating institution)."""
 
     name: str | None = Field(default=None, description="Official organization name.")
@@ -123,7 +131,7 @@ PublicationDbType = Annotated[
 ]
 
 
-class Publication(BaseModel):
+class Publication(_Base):
     """A single publication or reference associated with an entry."""
 
     id_: str | None = Field(
@@ -150,17 +158,20 @@ class Publication(BaseModel):
     )
 
 
-class Grant(BaseModel):
+class Grant(_Base):
     """A single grant associated with an entry."""
 
     id_: str | None = Field(default=None, alias="id", description="Grant identifier.")
     title: str | None = Field(default=None, description="Grant title.")
     agency: list[Organization] = Field(
-        description="Funding organizations (at least one).",
+        description=(
+            "Funding organizations (zero or more). Empty when the source XML has no "
+            "`Agency` element or all entries failed to parse."
+        ),
     )
 
 
-class ExternalLink(BaseModel):
+class ExternalLink(_Base):
     """External link attached to a BioProject or JGA entry for UI display."""
 
     url: str = Field(description="External URL.")
@@ -200,7 +211,7 @@ XrefType = Annotated[
 ]
 
 
-class Xref(BaseModel):
+class Xref(_Base):
     """A single reference edge in the dblink graph (pointer to a peer accession)."""
 
     identifier: str = Field(description="Accession ID of the referenced peer record.")
@@ -208,7 +219,7 @@ class Xref(BaseModel):
     url: str = Field(description="Canonical URL of the referenced peer record.")
 
 
-class BioProject(BaseModel):
+class BioProject(_Base):
     """A BioProject entry — one document of the Elasticsearch `bioproject` index."""
 
     identifier: str = Field(
@@ -327,7 +338,7 @@ class BioProject(BaseModel):
 # === BioSample ===
 
 
-class BioSamplePackage(BaseModel):
+class BioSamplePackage(_Base):
     """BioSample package metadata (INSDC controlled-vocabulary package name)."""
 
     name: str = Field(
@@ -336,7 +347,7 @@ class BioSamplePackage(BaseModel):
     displayName: str | None = Field(default=None, description="Human-readable package name for UI display.")
 
 
-class BioSample(BaseModel):
+class BioSample(_Base):
     """A BioSample entry — one document of the Elasticsearch `biosample` index."""
 
     identifier: str = Field(
@@ -434,7 +445,7 @@ class BioSample(BaseModel):
 # === SRA ===
 
 
-class SRA(BaseModel):
+class SRA(_Base):
     """An SRA / DRA entry — one document of any of the six Elasticsearch `sra-*` indexes."""
 
     identifier: str = Field(
@@ -570,7 +581,7 @@ class SRA(BaseModel):
 # === JGA ===
 
 
-class JGA(BaseModel):
+class JGA(_Base):
     """A JGA entry — one document of any of the four `jga-*` indexes (controlled-access)."""
 
     identifier: str = Field(
@@ -675,7 +686,7 @@ class JGA(BaseModel):
 # === GEA ===
 
 
-class GEA(BaseModel):
+class GEA(_Base):
     """A GEA entry — one document of the Elasticsearch `gea` index (IDF/SDRF-derived)."""
 
     identifier: str = Field(description='Primary accession (e.g. "E-GEAD-1").')
@@ -756,7 +767,7 @@ class GEA(BaseModel):
 # === MetaboBank ===
 
 
-class MetaboBank(BaseModel):
+class MetaboBank(_Base):
     """A MetaboBank entry — one document of the Elasticsearch `metabobank` index (IDF/SDRF-derived)."""
 
     identifier: str = Field(description='Primary accession (e.g. "MTBKS1").')

@@ -3,7 +3,8 @@
 各エントリータイプの distribution リスト生成ロジックを 1 箇所に集約する。
 """
 
-from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, SEARCH_BASE_URL
+from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL
+from ddbj_search_converter.jsonl.utils import build_search_entry_url
 from ddbj_search_converter.schema import Distribution
 
 
@@ -12,7 +13,7 @@ def _json_dist(entry_type: str, accession: str) -> Distribution:
     return Distribution(
         type="DataDownload",
         encodingFormat="JSON",
-        contentUrl=f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}.json",
+        contentUrl=build_search_entry_url(entry_type, accession, "json"),
     )
 
 
@@ -21,7 +22,7 @@ def _jsonld_dist(entry_type: str, accession: str) -> Distribution:
     return Distribution(
         type="DataDownload",
         encodingFormat="JSON-LD",
-        contentUrl=f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}.jsonld",
+        contentUrl=build_search_entry_url(entry_type, accession, "jsonld"),
     )
 
 

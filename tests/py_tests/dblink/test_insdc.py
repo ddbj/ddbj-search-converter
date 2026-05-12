@@ -81,7 +81,7 @@ class TestWriteInsdcRelations:
         ]
 
         mock_connect = _make_mock_connect({"g-actual": sample_data})
-        with patch("ddbj_search_converter.dblink.insdc.psycopg2.connect", side_effect=mock_connect):
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
 
         db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
@@ -103,7 +103,7 @@ class TestWriteInsdcRelations:
         ]
 
         mock_connect = _make_mock_connect({"g-actual": sample_data})
-        with patch("ddbj_search_converter.dblink.insdc.psycopg2.connect", side_effect=mock_connect):
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "biosample", INSDC_TO_BS_QUERY, set())
 
         db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
@@ -127,7 +127,7 @@ class TestWriteInsdcRelations:
 
         blacklist = {"PRJDB99999"}
         mock_connect = _make_mock_connect({"g-actual": sample_data})
-        with patch("ddbj_search_converter.dblink.insdc.psycopg2.connect", side_effect=mock_connect):
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, blacklist)
 
         db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
@@ -143,7 +143,7 @@ class TestWriteInsdcRelations:
 
         mock_connect = _make_mock_connect()
         with patch(
-            "ddbj_search_converter.dblink.insdc.psycopg2.connect",
+            "ddbj_search_converter.dblink.insdc.connect_with_retry",
             side_effect=mock_connect,
         ) as patched:
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
@@ -158,7 +158,7 @@ class TestWriteInsdcRelations:
         init_dblink_db(insdc_config)
 
         mock_connect = _make_mock_connect({"g-actual": [("AB000001", "PRJDB12345")]})
-        with patch("ddbj_search_converter.dblink.insdc.psycopg2.connect", side_effect=mock_connect):
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
 
         # TSV ファイルの内容を確認 (g-actual のみデータあり)

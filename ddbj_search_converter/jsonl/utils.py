@@ -2,12 +2,35 @@
 
 import re
 from pathlib import Path
-from typing import Any, TypeGuard
+from typing import Any, Literal, TypeGuard
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import AccessionType, get_linked_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.schema import Organization, PublicationDbType, Xref, XrefType
+
+
+SearchEntryExt = Literal["json", "jsonld", "xml"]
+
+
+def build_search_entry_url(entry_type: str, accession: str, ext: SearchEntryExt) -> str:
+    """`{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}.{ext}` を組み立てる。
+
+    distribution の `.json` / `.jsonld` / `.xml` metadata URL を SSOT 化するためのヘルパ。
+    Xref の URL とは別経路 (Xref は `URL_TEMPLATE` 経由で `?` クエリや GEA の prefix
+    分割など type 固有ロジックを含むため、共通化しない)。
+    """
+    return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}.{ext}"
+
+
+def build_search_entry_self_url(entry_type: str, accession: str) -> str:
+    """`{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}` を組み立てる。
+
+    各エントリの検索 UI 上の self URL (`{entry}.url` field) を SSOT 化する。GEA / MetaboBank
+    のような Xref URL とは別構造 (Xref は外部リソース URL、self URL は検索 UI URL) のため、
+    `URL_TEMPLATE` 経由の `_build_url` とは別経路。
+    """
+    return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}"
 
 _EXTERNAL_URL_RE = re.compile(r"^https?://[^\s/][^\s]*$")
 

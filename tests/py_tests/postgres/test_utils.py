@@ -3,9 +3,17 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
+import psycopg2
 import pytest
 
-from ddbj_search_converter.postgres.utils import ALLOWED_POSTGRES_SCHEMES, format_date, parse_postgres_url, postgres_connection
+from ddbj_search_converter.postgres.utils import (
+    ALLOWED_POSTGRES_SCHEMES,
+    DEFAULT_CONNECT_TIMEOUT,
+    connect_with_retry,
+    format_date,
+    parse_postgres_url,
+    postgres_connection,
+)
 
 
 class TestFormatDate:
@@ -124,6 +132,7 @@ class TestPostgresConnection:
             assert conn is mock_conn
 
         mock_connect.assert_called_once_with(
+            connect_timeout=DEFAULT_CONNECT_TIMEOUT,
             host="localhost",
             port=5432,
             user="user",
@@ -141,3 +150,77 @@ class TestPostgresConnection:
             raise ValueError("test error")
 
         mock_conn.close.assert_called_once()
+
+
+class TestConnectWithRetry:
+    """connect_with_retry が OperationalError を retry し、それ以外は即 raise することの確認。
+
+    `time.sleep` を mock して実行を即時化し、retry 回数のみを検証する。
+    """
+
+    @patch("ddbj_search_converter.postgres.utils.time.sleep")
+    @patch("ddbj_search_converter.postgres.utils.psycopg2.connect")
+    def test_succeeds_after_two_transient_failures(
+        self, mock_connect: MagicMock, mock_sleep: MagicMock
+    ) -> None:
+        mock_conn = MagicMock()
+        mock_connect.side_effect = [
+            psycopg2.OperationalError("temporary failure 1"),
+            psycopg2.OperationalError("temporary failure 2"),
+            mock_conn,
+        ]
+
+        result = connect_with_retry(
+            host="h", port=1, user="u", password="p", dbname="d",
+            max_retries=3, backoff_seconds=0,
+        )
+
+        assert result is mock_conn
+        assert mock_connect.call_count == 3
+        assert mock_sleep.call_count == 2
+
+    @patch("ddbj_search_converter.postgres.utils.time.sleep")
+    @patch("ddbj_search_converter.postgres.utils.psycopg2.connect")
+    def test_gives_up_after_max_retries(
+        self, mock_connect: MagicMock, mock_sleep: MagicMock
+    ) -> None:
+        mock_connect.side_effect = psycopg2.OperationalError("permanent failure")
+
+        with pytest.raises(psycopg2.OperationalError, match="permanent failure"):
+            connect_with_retry(
+                host="h", port=1, user="u", password="p", dbname="d",
+                max_retries=3, backoff_seconds=0,
+            )
+
+        assert mock_connect.call_count == 3
+        # 最後の試行のあとは sleep しない (max_retries - 1 回が backoff の回数)
+        assert mock_sleep.call_count == 2
+
+    @patch("ddbj_search_converter.postgres.utils.psycopg2.connect")
+    def test_non_operational_error_is_not_retried(self, mock_connect: MagicMock) -> None:
+        # ProgrammingError (e.g. malformed SQL, bad credentials) は retry しても無駄なので
+        # 即 raise されるべき。InterfaceError 系も同様の扱い。
+        mock_connect.side_effect = psycopg2.ProgrammingError("bad auth")
+
+        with pytest.raises(psycopg2.ProgrammingError, match="bad auth"):
+            connect_with_retry(
+                host="h", port=1, user="u", password="p", dbname="d",
+                max_retries=3, backoff_seconds=0,
+            )
+
+        assert mock_connect.call_count == 1
+
+    @patch("ddbj_search_converter.postgres.utils.psycopg2.connect")
+    def test_passes_connect_timeout_and_kwargs(self, mock_connect: MagicMock) -> None:
+        mock_connect.return_value = MagicMock()
+
+        connect_with_retry(
+            host="h", port=1, user="u", password="p", dbname="d",
+            keepalives=1, keepalives_idle=60,
+        )
+
+        mock_connect.assert_called_once_with(
+            connect_timeout=DEFAULT_CONNECT_TIMEOUT,
+            host="h", port=1, user="u", password="p", dbname="d",
+            keepalives=1, keepalives_idle=60,
+        )

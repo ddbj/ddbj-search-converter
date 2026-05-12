@@ -5,12 +5,13 @@ BioProject/BioSample の大規模 XML を効率的に処理するための関数
 import gzip
 import shutil
 from collections.abc import Generator
+from datetime import date
 from pathlib import Path
 from typing import Any, Literal
 
 from lxml import etree
 
-from ddbj_search_converter.config import TODAY_STR, Config
+from ddbj_search_converter.config import DATE_FORMAT, TODAY, Config
 
 
 def _element_to_dict(
@@ -97,8 +98,18 @@ def parse_xml(xml_bytes: bytes) -> dict[str, Any]:
     return {root_tag: _element_to_dict(root)}
 
 
-def get_tmp_xml_dir(config: Config, subdir: Literal["bioproject", "biosample"]) -> Path:
-    tmp_dir = config.result_dir.joinpath(subdir, "tmp_xml", TODAY_STR)
+def get_tmp_xml_dir(
+    config: Config,
+    subdir: Literal["bioproject", "biosample"],
+    *,
+    today: date | None = None,
+) -> Path:
+    """``{result_dir}/{subdir}/tmp_xml/{today}/`` を作成して返す。
+
+    ``today=None`` のときは ``config.TODAY`` を使う。テストで日付を固定したいときに渡す。
+    """
+    today_str = (today or TODAY).strftime(DATE_FORMAT)
+    tmp_dir = config.result_dir.joinpath(subdir, "tmp_xml", today_str)
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     return tmp_dir

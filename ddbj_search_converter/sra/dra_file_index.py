@@ -5,7 +5,6 @@ DRA ファイルシステムをスキャンして FASTQ ディレクトリと SR
 JSONL 生成時にファイルシステムを直接叩かず、このインデックスを参照する。
 """
 
-import shutil
 from pathlib import Path
 
 import duckdb
@@ -101,7 +100,7 @@ def build_dra_file_index(config: Config) -> None:
     # tmp -> final
     if final_path.exists():
         final_path.unlink()
-    shutil.move(str(tmp_path), str(final_path))
+    tmp_path.replace(final_path)
 
     log_info(f"dra file index built: {fastq_count} fastq dirs, {sra_count} sra files")
 

@@ -1,12 +1,25 @@
 """Tests for ES index operations."""
 
+from typing import Any
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from ddbj_search_converter.config import Config
 from ddbj_search_converter.es.index import (
     ALIASES,
     ALL_INDEXES,
     get_indexes_for_group,
     get_mapping_for_index,
     make_physical_index_name,
+    swap_aliases,
 )
+
+
+def _make_mock_response(body: Any) -> MagicMock:
+    resp = MagicMock()
+    resp.body = body
+    return resp
 
 
 class TestAllIndexes:
@@ -177,3 +190,66 @@ class TestMakePhysicalIndexName:
             assert name == f"{idx}-20260413"
             assert name.startswith(idx)
             assert name.endswith("-20260413")
+
+
+@pytest.mark.usefixtures("with_logger_isolated")
+class TestSwapAliasesVerification:
+    """``swap_aliases`` の post-swap verification の挙動を mock client で検証する。
+
+    `update_aliases` 自体は atomic に成功するが、その後 `indices.get_alias` で読み直して
+    期待する dated index と一致するかを assert する。一致しない場合は ``RuntimeError``
+    を raise する設計。
+    """
+
+    @patch("ddbj_search_converter.es.index.get_es_client")
+    def test_succeeds_when_aliases_match_expected(
+        self, mock_get_client: MagicMock, tmp_path: Any
+    ) -> None:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        # bioproject group のみ swap する (1 index): new = bioproject-20260512
+        exists_resp = MagicMock()
+        exists_resp.meta.status = 200
+        mock_client.indices.exists.return_value = exists_resp
+        mock_client.indices.get_alias.return_value = _make_mock_response({
+            "bioproject-20260512": {"aliases": {"bioproject": {}}},
+        })
+
+        config = Config(result_dir=tmp_path)
+        swap_aliases(config, "20260512", "bioproject")
+
+        # update_aliases は呼ばれた
+        mock_client.indices.update_aliases.assert_called_once()
+
+    @patch("ddbj_search_converter.es.index.get_es_client")
+    def test_raises_when_alias_target_mismatches(
+        self, mock_get_client: MagicMock, tmp_path: Any
+    ) -> None:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        exists_resp = MagicMock()
+        exists_resp.meta.status = 200
+        mock_client.indices.exists.return_value = exists_resp
+        # get_alias の戻り値が期待 dated index と一致しない (古い index を指したまま)
+        mock_client.indices.get_alias.return_value = _make_mock_response({
+            "bioproject-20260101": {"aliases": {"bioproject": {}}},
+        })
+
+        config = Config(result_dir=tmp_path)
+        with pytest.raises(RuntimeError, match="post-verification failed"):
+            swap_aliases(config, "20260512", "bioproject")
+
+    @patch("ddbj_search_converter.es.index.get_es_client")
+    def test_raises_when_alias_fetch_fails(
+        self, mock_get_client: MagicMock, tmp_path: Any
+    ) -> None:
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+        exists_resp = MagicMock()
+        exists_resp.meta.status = 200
+        mock_client.indices.exists.return_value = exists_resp
+        mock_client.indices.get_alias.side_effect = Exception("alias api error")
+
+        config = Config(result_dir=tmp_path)
+        with pytest.raises(RuntimeError, match="post-verification failed"):
+            swap_aliases(config, "20260512", "bioproject")

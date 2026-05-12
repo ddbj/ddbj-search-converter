@@ -26,6 +26,7 @@ from ddbj_search_converter.jsonl.sra import (
     create_sra_entry,
     parse_analysis,
     parse_experiment,
+    parse_run,
     parse_sample,
     parse_study,
     parse_submission,
@@ -1258,3 +1259,68 @@ class TestCreateSraEntryAttributeFields:
         assert sra_entry.derivedFrom == []
         assert sra_entry.libraryName is None
         assert sra_entry.libraryConstructionProtocol is None
+
+
+@pytest.mark.usefixtures("with_logger_isolated")
+class TestParseMalformedSraXml:
+    """parse_submission / parse_study / parse_experiment / parse_run 等が malformed XML
+    入力に対して None / [] / 空 list の妥当な fallback を返すことの確認。
+
+    SRA tar 内には NCBI mirror 由来の breaks があるので、parser が壊れると 1 件で
+    pipeline 全体が止まる。`with_logger_isolated` で log_warn の context を確保する。
+    """
+
+    def test_parse_submission_returns_none_for_empty_xml(self) -> None:
+        # SUBMISSION 要素が無い XML → None
+        assert parse_submission(b"<root/>", "DRA000001") is None
+
+    def test_parse_submission_returns_none_for_invalid_xml(self) -> None:
+        # 完全に壊れた XML → None
+        assert parse_submission(b"<<<not xml>>>", "DRA000001") is None
+
+    def test_parse_study_returns_empty_for_no_study(self) -> None:
+        # STUDY_SET 自体が無い → 空 list
+        result = parse_study(b"<root/>", "DRP000001")
+        assert result == []
+
+    def test_parse_study_returns_empty_for_invalid_xml(self) -> None:
+        result = parse_study(b"not xml", "DRP000001")
+        assert result == []
+
+    def test_parse_experiment_returns_empty_for_empty_set(self) -> None:
+        result = parse_experiment(b"<root/>", "DRX000001")
+        assert result == []
+
+    def test_parse_run_returns_empty_for_empty_set(self) -> None:
+        result = parse_run(b"<root/>", "DRR000001")
+        assert result == []
+
+    def test_parse_sample_returns_empty_for_empty_set(self) -> None:
+        result = parse_sample(b"<root/>", "DRS000001")
+        assert result == []
+
+    def test_parse_analysis_returns_empty_for_empty_set(self) -> None:
+        result = parse_analysis(b"<root/>", "DRZ000001")
+        assert result == []
+
+    def test_normalize_status_unknown_falls_back_to_public(self) -> None:
+        # 想定外 status 文字列 → public (default)
+        assert _normalize_status("nonsensestatus") == "public"
+
+    def test_normalize_accessibility_unknown_falls_back_to_public_access(self) -> None:
+        assert _normalize_accessibility("weirdvalue") == "public-access"
+
+    def test_get_text_handles_dict_without_content(self) -> None:
+        # TITLE が dict だが content key を持たないケース
+        assert _get_text({"TITLE": {"attr_only": "x"}}, "TITLE") is None
+
+    def test_get_text_handles_list_of_dicts(self) -> None:
+        # 値が list で、先頭が content 持つ dict のケース → str を抽出
+        assert _get_text({"TITLE": [{"content": "A"}, "B"]}, "TITLE") == "A"
+
+    def test_parse_submission_handles_huge_title(self) -> None:
+        huge = "T" * 10_000
+        xml = f"<SUBMISSION accession='DRA1'><TITLE>{huge}</TITLE></SUBMISSION>".encode()
+        result = parse_submission(xml, "DRA1")
+        assert result is not None
+        assert result["title"] == huge

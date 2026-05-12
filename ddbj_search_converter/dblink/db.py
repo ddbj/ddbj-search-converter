@@ -225,7 +225,11 @@ def build_dbxref_table(config: Config) -> None:
 
     with duckdb.connect(str(db_path)) as conn:
         conn.execute("SET memory_limit='256GB'")
-        conn.execute(f"SET temp_directory='{spill_dir}'")
+        # DuckDB の `SET` は parameter binding を受け付けないので、single quote を
+        # `''` に escape して埋め込む。spill_dir は config 由来で攻撃面は小さいが、
+        # quote を含むパス (アクセント記号付き親ディレクトリ等) でも壊れない安全側。
+        escaped_spill_dir = str(spill_dir).replace("'", "''")
+        conn.execute(f"SET temp_directory='{escaped_spill_dir}'")
         conn.execute("""
             CREATE TABLE dbxref AS
             SELECT DISTINCT

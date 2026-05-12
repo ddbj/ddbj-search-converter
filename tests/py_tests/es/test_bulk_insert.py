@@ -586,6 +586,43 @@ class TestNotFoundClassification:
         assert result.error_count == 1
         assert len(result.errors) == 1
 
+    def test_parallel_bulk_receives_retry_settings(
+        self,
+        mock_get_client: MagicMock,
+        mock_check: MagicMock,
+        mock_set_refresh: MagicMock,
+        mock_refresh: MagicMock,
+        tmp_path: Path,
+        test_config: MagicMock,
+    ) -> None:
+        """``parallel_bulk`` に retry 設定 (max_retries / backoff / retry_on_status) が渡る。
+
+        SSOT は ``ddbj_search_converter.es.settings`` の ``BULK_*`` 定数。`bulk_delete`
+        と非対称だった retry 欠落を pin する。
+        """
+        from ddbj_search_converter.es.settings import (
+            BULK_INITIAL_BACKOFF,
+            BULK_MAX_BACKOFF,
+            BULK_MAX_RETRIES,
+            BULK_RETRY_ON_STATUS,
+        )
+
+        docs = [{"identifier": "ID0"}]
+        jsonl_file = _make_jsonl_file(tmp_path, docs)
+        parallel_results = [(True, {"index": {"_id": "ID0"}})]
+
+        with patch(
+            "ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk",
+            return_value=iter(parallel_results),
+        ) as mock_parallel_bulk:
+            bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
+
+        kwargs = mock_parallel_bulk.call_args.kwargs
+        assert kwargs["max_retries"] == BULK_MAX_RETRIES
+        assert kwargs["initial_backoff"] == BULK_INITIAL_BACKOFF
+        assert kwargs["max_backoff"] == BULK_MAX_BACKOFF
+        assert kwargs["retry_on_status"] == BULK_RETRY_ON_STATUS
+
 
 class TestBulkInsertResultInvariant:
     """``success + not_found + error == total_docs`` invariant enforced by

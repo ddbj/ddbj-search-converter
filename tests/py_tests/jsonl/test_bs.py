@@ -955,3 +955,97 @@ class TestXmlEntryIncludesAttributeFields:
         assert bs.strain == "DSM 17216"
         assert bs.isolate == "DGRP-26"
         assert [x.identifier for x in bs.derivedFrom] == ["SAMD00056903", "SAMD00056904"]
+
+
+@pytest.mark.usefixtures("with_logger_isolated")
+class TestParseMalformedInput:
+    """parse_* 系関数が malformed XML 由来の不正型に対して silent fallback することの確認。
+
+    上流の XML 構造変化や xmltodict の出力ぶれで、想定外の型 (list / 数値 / None) が
+    入ることがある。各 parser が `Exception` 系で落ちずに、None / [] / 妥当な fallback
+    を返すことを縛る。これが破れると 1 件の異常 entry が JSONL 生成全体を止める。
+
+    parse_* 内の log_warn は run_logger context を要求するため、`with_logger_isolated`
+    で全テストを wrap する。
+    """
+
+    def test_parse_organism_handles_none_description(self) -> None:
+        assert parse_organism({"Description": None}, is_ddbj=True) is None
+
+    def test_parse_organism_handles_unexpected_organism_type(self) -> None:
+        # Organism が dict ではなく str (上流の壊れた XML を xmltodict が text に flatten した想定)
+        assert parse_organism({"Description": {"Organism": "Homo sapiens"}}, is_ddbj=True) is None
+
+    def test_parse_title_handles_dict_value(self) -> None:
+        # Title が dict (text + attribute の混在 XML を xmltodict が dict 化したケース)
+        result = parse_title({"Description": {"Title": {"content": "T"}}})
+        assert result is not None
+        # str() 化されるが crash しない
+        assert "content" in result
+
+    def test_parse_organization_handles_owner_none(self) -> None:
+        assert parse_organization({"Owner": None}) == []
+
+    def test_parse_organization_handles_owner_str(self) -> None:
+        # Owner が str (壊れた XML)
+        assert parse_organization({"Owner": "unexpected str"}) == []
+
+    def test_parse_status_with_unknown_value_falls_back_to_public(self) -> None:
+        # 不明な status 文字列 → default "public"
+        assert parse_status({"Status": {"status": "exploded"}}) == "public"
+
+    def test_parse_status_with_status_field_missing(self) -> None:
+        assert parse_status({}) == "public"
+
+    def test_parse_collection_date_returns_freeform_string(self) -> None:
+        # collection_date は free-form なので "not-a-date" もそのまま返す (検証は下流)
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [{"attribute_name": "collection_date", "content": "not-a-date"}],
+        }
+        assert parse_collection_date(sample) == "not-a-date"
+
+    def test_parse_model_handles_none_models(self) -> None:
+        assert parse_model({"Models": None}) == []
+
+    def test_parse_model_handles_list_of_dicts(self) -> None:
+        # Models.Model が list of dict (xmltodict が複数 <Model> を list 化したケース)
+        sample = _make_sample()
+        sample["Models"] = {"Model": [{"content": "MIGS.ba"}, {"content": "MIGS.eu"}]}
+        result = parse_model(sample)
+        assert "MIGS.ba" in result
+        assert "MIGS.eu" in result
+
+    def test_parse_derived_from_returns_empty_for_missing_attribute(self) -> None:
+        sample = _make_sample()
+        # derived_from attribute が無いケース
+        assert parse_derived_from(sample) == []
+
+    def test_parse_derived_from_skips_invalid_ids(self) -> None:
+        sample = _make_sample()
+        sample["Attributes"] = {
+            "Attribute": [{"attribute_name": "derived_from", "content": "not-a-biosample-id"}],
+        }
+        # BIOSAMPLE_ID_FINDALL_RE に match しない文字列は drop
+        assert parse_derived_from(sample) == []
+
+    def test_xml_entry_raises_when_no_accession(self) -> None:
+        # トップで accession を欠いた場合は ValueError (silent fail せず escalate)
+        with pytest.raises(ValueError, match="No accession"):
+            xml_entry_to_bs_instance({"BioSample": {}}, is_ddbj=False)
+
+    def test_xml_entry_handles_huge_title(self) -> None:
+        # 10KB の title でも crash しない
+        sample = _make_sample()
+        sample["Description"] = {"Title": "T" * 10_000}
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=True)
+        assert bs.title is not None
+        assert len(bs.title) == 10_000
+
+    def test_xml_entry_handles_unexpected_attributes_type(self) -> None:
+        # Attributes が想定外の型 (str) でも crash せず、attribute 由来 field は None
+        sample = _make_sample()
+        sample["Attributes"] = "broken"
+        bs = xml_entry_to_bs_instance({"BioSample": sample}, is_ddbj=True)
+        assert bs.collectionDate is None
+        assert bs.host is None

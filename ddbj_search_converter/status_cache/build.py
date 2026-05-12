@@ -26,10 +26,19 @@ FILE_STATUS_MAP: dict[str, str] = {
 LivelistKind = Literal["bioproject", "biosample"]
 
 
-def find_latest_livelist_date(base_path: Path, kind: LivelistKind) -> str | None:
-    """TODAY から 180 日遡り、3 ファイル (public/suppressed/withdrawn) が全て存在する最新日付を返す。"""
+def find_latest_livelist_date(
+    base_path: Path,
+    kind: LivelistKind,
+    *,
+    today: datetime.date | None = None,
+) -> str | None:
+    """``today`` から 180 日遡り、3 ファイル (public/suppressed/withdrawn) が全て存在する最新日付を返す。
+
+    ``today=None`` のときは ``config.TODAY`` を使う。テストで日付を固定したいときに渡す。
+    """
+    base_date = TODAY if today is None else today
     for days in range(180):
-        check_date = TODAY - datetime.timedelta(days=days)
+        check_date = base_date - datetime.timedelta(days=days)
         date_str = check_date.strftime("%Y%m%d")
 
         all_exist = True

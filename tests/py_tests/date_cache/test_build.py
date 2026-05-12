@@ -49,7 +49,7 @@ class TestFetchAllBpDates:
         cur = _make_named_cursor_mock([])
         conn = _make_connection_mock(cur)
         mock_connect = mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -67,7 +67,7 @@ class TestFetchAllBpDates:
         cur = _make_named_cursor_mock([])
         conn = _make_connection_mock(cur)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -85,7 +85,7 @@ class TestFetchAllBpDates:
         cur = _make_named_cursor_mock([])
         conn = _make_connection_mock(cur)
         mock_connect = mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -105,7 +105,7 @@ class TestFetchAllBpDates:
         cur = _make_named_cursor_mock([])
         conn = _make_connection_mock(cur)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -134,7 +134,7 @@ class TestFetchAllBpDates:
         cur = _make_named_cursor_mock(rows)
         conn = _make_connection_mock(cur)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -150,7 +150,7 @@ class TestFetchAllBpDates:
         cur = _make_named_cursor_mock([("PRJDB1", None, None, None)])
         conn = _make_connection_mock(cur)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -171,7 +171,7 @@ class TestFetchAllBpDates:
         cur.__iter__.side_effect = raising_iter
         conn = _make_connection_mock(cur)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -188,7 +188,7 @@ class TestFetchAllBsDates:
         cur = _make_named_cursor_mock([])
         conn = _make_connection_mock(cur)
         mock_connect = mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 
@@ -200,7 +200,7 @@ class TestFetchAllBsDates:
         cur = _make_named_cursor_mock([])
         conn = _make_connection_mock(cur)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build.psycopg2.connect",
+            "ddbj_search_converter.date_cache.build.connect_with_retry",
             return_value=conn,
         )
 

@@ -38,7 +38,7 @@ from ddbj_search_converter.dblink.utils import filter_pairs_by_blacklist, load_b
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
-from ddbj_search_converter.postgres.utils import parse_postgres_url
+from ddbj_search_converter.postgres.utils import connect_with_retry, parse_postgres_url
 
 TRAD_DBS = [
     ("g-actual", 54308),
@@ -80,7 +80,7 @@ def _fetch_from_db(
     tsv_path: Path,
 ) -> int:
     """Fetch INSDC relations from a single TRAD PostgreSQL database."""
-    conn = psycopg2.connect(
+    conn = connect_with_retry(
         host=host,
         port=port,
         user=user,

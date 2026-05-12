@@ -4,12 +4,19 @@ import traceback
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from secrets import token_hex
 from typing import Any
 
-from ddbj_search_converter.config import LOCAL_TZ, LOG_DIR_NAME, TODAY, TODAY_STR, Config, default_config
+from ddbj_search_converter.config import (
+    DATE_FORMAT,
+    LOCAL_TZ,
+    LOG_DIR_NAME,
+    TODAY,
+    Config,
+    default_config,
+)
 from ddbj_search_converter.logging.schema import ErrorInfo, Extra, LoggerContext, LogLevel, LogRecord
 
 _ctx: ContextVar[LoggerContext | None] = ContextVar("_ctx", default=None)
@@ -58,17 +65,21 @@ def init_logger(
     *,
     run_name: str,
     config: Config | None = None,
+    today: date | None = None,
 ) -> None:
     if config is None:
         config = default_config
+    if today is None:
+        today = TODAY
+    today_str = today.strftime(DATE_FORMAT)
     hex_token = token_hex(2)
-    run_id = f"{TODAY_STR}_{run_name}_{hex_token}"
-    log_file = config.result_dir.joinpath(LOG_DIR_NAME, TODAY_STR, f"{run_name}_{hex_token}.log.jsonl")
+    run_id = f"{today_str}_{run_name}_{hex_token}"
+    log_file = config.result_dir.joinpath(LOG_DIR_NAME, today_str, f"{run_name}_{hex_token}.log.jsonl")
 
     ctx = LoggerContext(
         run_name=run_name,
         run_id=run_id,
-        run_date=TODAY,
+        run_date=today,
         log_file=log_file,
         config=config,
     )
@@ -82,6 +93,7 @@ def run_logger(
     *,
     run_name: str | None = None,
     config: Config | None = None,
+    today: date | None = None,
 ) -> Iterator[None]:
     """
     Context manager for logging a run.
@@ -90,11 +102,13 @@ def run_logger(
     Args:
         run_name: Run name. If omitted, inferred automatically.
         config: Config. If omitted, default config is used.
+        today: Run date. If omitted, ``config.TODAY`` (env var override 可能) を使う。
+            テストで日付を明示固定するときに渡す。
     """
     if run_name is None:
         run_name = _infer_run_name()
 
-    init_logger(run_name=run_name, config=config)
+    init_logger(run_name=run_name, config=config, today=today)
     log_start()
     try:
         yield

@@ -10,7 +10,6 @@ from ddbj_search_converter.config import (
     BP_BASE_DIR_NAME,
     DEFAULT_MARGIN_DAYS,
     JSONL_DIR_NAME,
-    SEARCH_BASE_URL,
     TMP_XML_DIR_NAME,
     TODAY_STR,
     Config,
@@ -22,8 +21,10 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.jsonl.distribution import make_bp_distribution
 from ddbj_search_converter.jsonl.utils import (
+    _build_url,
     build_doi_url,
     build_pubmed_url,
+    build_search_entry_self_url,
     deduplicate_organizations,
     get_dbxref_map,
     is_valid_external_url,
@@ -450,7 +451,7 @@ def parse_same_as(project: dict[str, Any], accession: str = "") -> list[Xref]:
         return Xref(
             identifier=id_,
             type="geo",
-            url=f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id_}",
+            url=_build_url("geo", id_),
         )
 
     try:
@@ -628,7 +629,7 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
         type="bioproject",
         objectType=parse_object_type(project),
         name=parse_name(project, accession),
-        url=f"{SEARCH_BASE_URL}/search/entry/bioproject/{accession}",
+        url=build_search_entry_self_url("bioproject", accession),
         organism=parse_organism(project, is_ddbj, accession),
         title=parse_title(project, accession),
         description=parse_description(project, accession),

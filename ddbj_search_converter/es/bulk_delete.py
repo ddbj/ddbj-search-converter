@@ -8,6 +8,12 @@ from pydantic import BaseModel
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es._error_utils import sanitize_error_info
 from ddbj_search_converter.es.client import get_es_client
+from ddbj_search_converter.es.settings import (
+    BULK_INITIAL_BACKOFF,
+    BULK_MAX_BACKOFF,
+    BULK_MAX_RETRIES,
+    BULK_RETRY_ON_STATUS,
+)
 from ddbj_search_converter.logging.logger import log_info
 from elasticsearch import helpers
 
@@ -85,7 +91,10 @@ def bulk_delete_by_ids(
         chunk_size=batch_size,
         stats_only=False,
         raise_on_error=False,
-        max_retries=3,
+        max_retries=BULK_MAX_RETRIES,
+        initial_backoff=BULK_INITIAL_BACKOFF,
+        max_backoff=BULK_MAX_BACKOFF,
+        retry_on_status=BULK_RETRY_ON_STATUS,
     )
 
     if isinstance(failed, list):

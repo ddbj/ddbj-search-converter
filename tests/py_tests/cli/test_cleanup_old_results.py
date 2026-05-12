@@ -11,9 +11,12 @@ from hypothesis import strategies as st
 from pytest_mock import MockerFixture
 
 from ddbj_search_converter.cli.cleanup_old_results import (
+    DUCKDB_TMP_DIR_NAME,
     cleanup,
+    cleanup_spill,
     find_date_dirs,
     get_cleanup_target_parents,
+    get_spill_dir,
     main,
     parse_args,
 )
@@ -462,18 +465,26 @@ class TestParseArgs:
     """Tests for parse_args function."""
 
     def test_parse_args_defaults(self) -> None:
-        """デフォルト値で keep=3, dry_run=False。"""
-        _, keep, dry_run = parse_args([])
+        """デフォルト値で keep=3, dry_run=False, include_spill=False。"""
+        _, keep, dry_run, include_spill = parse_args([])
 
         assert keep == 3
         assert dry_run is False
+        assert include_spill is False
 
     def test_parse_args_custom_values(self) -> None:
         """--keep 5 --dry-run を正しくパースする。"""
-        _, keep, dry_run = parse_args(["--keep", "5", "--dry-run"])
+        _, keep, dry_run, include_spill = parse_args(["--keep", "5", "--dry-run"])
 
         assert keep == 5
         assert dry_run is True
+        assert include_spill is False
+
+    def test_parse_args_include_spill_flag(self) -> None:
+        """--include-spill が True としてパースされる。"""
+        _, _, _, include_spill = parse_args(["--include-spill"])
+
+        assert include_spill is True
 
     def test_parse_args_keep_zero_raises_error(self) -> None:
         """--keep 0 はエラーになる。"""
@@ -487,6 +498,85 @@ class TestParseArgs:
 
     def test_parse_args_keep_one_is_minimum_allowed(self) -> None:
         """--keep 1 は最小許容値 (境界の正常側)。"""
-        _, keep, _ = parse_args(["--keep", "1"])
+        _, keep, _, _ = parse_args(["--keep", "1"])
 
         assert keep == 1
+
+
+class TestCleanupSpill:
+    """``cleanup_spill`` は ``--keep`` を無視して duckdb_tmp 配下を全件削除する。"""
+
+    def test_removes_all_date_dirs(self, tmp_path: Path) -> None:
+        spill_dir = tmp_path / DBLINK_DIR_NAME / DUCKDB_TMP_DIR_NAME
+        _make_date_dirs(spill_dir, ["20260101", "20260201", "20260301"])
+        config = Config(result_dir=tmp_path)
+
+        removed, failed = cleanup_spill(config, dry_run=False)
+
+        assert len(removed) == 3
+        assert len(failed) == 0
+        for d in ("20260101", "20260201", "20260301"):
+            assert not spill_dir.joinpath(d).exists()
+
+    def test_dry_run_keeps_dirs(self, tmp_path: Path) -> None:
+        spill_dir = tmp_path / DBLINK_DIR_NAME / DUCKDB_TMP_DIR_NAME
+        _make_date_dirs(spill_dir, ["20260101", "20260201"])
+        config = Config(result_dir=tmp_path)
+
+        removed, failed = cleanup_spill(config, dry_run=True)
+
+        assert len(removed) == 2
+        assert len(failed) == 0
+        # dry-run のため物理削除されない
+        for d in ("20260101", "20260201"):
+            assert spill_dir.joinpath(d).exists()
+
+    def test_no_spill_dir_is_safe(self, tmp_path: Path) -> None:
+        """spill ディレクトリが存在しなくてもエラーにならない。"""
+        config = Config(result_dir=tmp_path)
+
+        removed, failed = cleanup_spill(config, dry_run=False)
+
+        assert removed == []
+        assert failed == []
+
+    def test_main_without_flag_does_not_touch_spill(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        clean_ctx: None,
+    ) -> None:
+        """--include-spill 無しで main を呼ぶと spill ディレクトリは保持される。"""
+        spill_dir = tmp_path / DBLINK_DIR_NAME / DUCKDB_TMP_DIR_NAME
+        _make_date_dirs(spill_dir, ["20260101"])
+        config = Config(result_dir=tmp_path)
+        _stub_get_config(monkeypatch, config)
+        _set_argv(monkeypatch, ["--keep", "3"])
+
+        main()
+
+        assert spill_dir.joinpath("20260101").exists()
+
+    def test_main_with_flag_removes_spill(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        clean_ctx: None,
+    ) -> None:
+        """--include-spill ありで main を呼ぶと spill ディレクトリも削除される。"""
+        spill_dir = tmp_path / DBLINK_DIR_NAME / DUCKDB_TMP_DIR_NAME
+        _make_date_dirs(spill_dir, ["20260101", "20260201"])
+        config = Config(result_dir=tmp_path)
+        _stub_get_config(monkeypatch, config)
+        _set_argv(monkeypatch, ["--keep", "3", "--include-spill"])
+
+        main()
+
+        for d in ("20260101", "20260201"):
+            assert not spill_dir.joinpath(d).exists()
+
+    def test_get_spill_dir_path(self) -> None:
+        """get_spill_dir は result_dir/dblink/duckdb_tmp を返す。"""
+        config = Config(result_dir=Path("/tmp/r"))
+
+        assert get_spill_dir(config) == Path("/tmp/r") / DBLINK_DIR_NAME / DUCKDB_TMP_DIR_NAME

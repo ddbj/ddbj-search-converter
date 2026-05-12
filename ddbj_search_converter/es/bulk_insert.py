@@ -15,7 +15,13 @@ from ddbj_search_converter.es._error_utils import sanitize_error_info as _saniti
 from ddbj_search_converter.es._error_utils import sanitize_value as _sanitize_value
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, refresh_index, set_refresh_interval
 from ddbj_search_converter.es.index import IndexName
-from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+from ddbj_search_converter.es.settings import (
+    BULK_INITIAL_BACKOFF,
+    BULK_INSERT_SETTINGS,
+    BULK_MAX_BACKOFF,
+    BULK_MAX_RETRIES,
+    BULK_RETRY_ON_STATUS,
+)
 from ddbj_search_converter.logging.logger import log_warn
 from elasticsearch import helpers
 
@@ -207,6 +213,10 @@ def bulk_insert_jsonl(
                 chunk_size=batch_size,
                 raise_on_error=False,
                 raise_on_exception=False,
+                max_retries=BULK_MAX_RETRIES,
+                initial_backoff=BULK_INITIAL_BACKOFF,
+                max_backoff=BULK_MAX_BACKOFF,
+                retry_on_status=BULK_RETRY_ON_STATUS,
             ):
                 if ok:
                     success_count += 1

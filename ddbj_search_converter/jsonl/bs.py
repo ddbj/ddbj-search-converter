@@ -10,7 +10,6 @@ from ddbj_search_converter.config import (
     BS_BASE_DIR_NAME,
     DEFAULT_MARGIN_DAYS,
     JSONL_DIR_NAME,
-    SEARCH_BASE_URL,
     TMP_XML_DIR_NAME,
     TODAY_STR,
     Config,
@@ -23,6 +22,8 @@ from ddbj_search_converter.dblink.utils import load_blacklist
 from ddbj_search_converter.id_patterns import BIOSAMPLE_ID_FINDALL_RE
 from ddbj_search_converter.jsonl.distribution import make_bs_distribution
 from ddbj_search_converter.jsonl.utils import (
+    _build_url,
+    build_search_entry_self_url,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
@@ -325,7 +326,7 @@ def parse_derived_from(sample: dict[str, Any], accession: str = "") -> list[Xref
                 Xref(
                     identifier=id_,
                     type="biosample",
-                    url=f"{SEARCH_BASE_URL}/search/entry/biosample/{id_}",
+                    url=_build_url("biosample", id_),
                 )
             )
     except Exception as e:
@@ -351,7 +352,7 @@ def parse_same_as(sample: dict[str, Any], accession: str = "") -> list[Xref]:
                     Xref(
                         identifier=content,
                         type="sra-sample",
-                        url=f"{SEARCH_BASE_URL}/search/entry/sra-sample/{content}",
+                        url=_build_url("sra-sample", content),
                     )
                 )
     except Exception as e:
@@ -468,7 +469,7 @@ def xml_entry_to_bs_instance(entry: dict[str, Any], is_ddbj: bool) -> BioSample:
         isPartOf="biosample",
         type="biosample",
         name=parse_name(sample, accession),
-        url=f"{SEARCH_BASE_URL}/search/entry/biosample/{accession}",
+        url=build_search_entry_self_url("biosample", accession),
         organism=parse_organism(sample, is_ddbj, accession),
         title=parse_title(sample, accession),
         description=parse_description(sample, accession),

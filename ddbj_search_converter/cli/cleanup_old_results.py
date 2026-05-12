@@ -2,6 +2,9 @@
 
 result_dir 以下の複数の親ディレクトリについて、YYYYMMDD 形式の
 サブディレクトリを日付順にソートし、最新 N 個を残して残りを削除する。
+
+``--include-spill`` を指定すると DuckDB の spill ディレクトリ
+(``{result_dir}/dblink/duckdb_tmp/{YYYYMMDD}/``) を ``--keep`` を無視して全件削除する。
 """
 
 import argparse
@@ -28,6 +31,8 @@ from ddbj_search_converter.config import (
     get_config,
 )
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
+
+DUCKDB_TMP_DIR_NAME = "duckdb_tmp"
 
 
 def get_cleanup_target_parents(config: Config) -> list[Path]:
@@ -78,6 +83,11 @@ def find_date_dirs(parent: Path) -> list[tuple[str, Path]]:
     return date_dirs
 
 
+def get_spill_dir(config: Config) -> Path:
+    """DuckDB spill ディレクトリの親パスを返す (``{result_dir}/dblink/duckdb_tmp``)。"""
+    return config.result_dir.joinpath(DBLINK_DIR_NAME, DUCKDB_TMP_DIR_NAME)
+
+
 def cleanup(config: Config, keep: int, dry_run: bool) -> tuple[list[Path], list[tuple[Path, Exception]]]:
     """古い日付ディレクトリを削除する。
 
@@ -108,7 +118,31 @@ def cleanup(config: Config, keep: int, dry_run: bool) -> tuple[list[Path], list[
     return removed, failed
 
 
-def parse_args(args: list[str]) -> tuple[Config, int, bool]:
+def cleanup_spill(config: Config, dry_run: bool) -> tuple[list[Path], list[tuple[Path, Exception]]]:
+    """DuckDB spill ディレクトリ配下の YYYYMMDD ディレクトリを ``--keep`` 無視で全件削除する。
+
+    spill は finalize 後に意味を持たない一時データなので、保持の必要はない。今日分も
+    削除対象に含まれる点に注意 (実行中の pipeline と競合しないよう docs に注意書きあり)。
+    """
+    parent = get_spill_dir(config)
+    date_dirs = find_date_dirs(parent)
+    removed: list[Path] = []
+    failed: list[tuple[Path, Exception]] = []
+
+    for _, dir_path in date_dirs:
+        if dry_run:
+            removed.append(dir_path)
+        else:
+            try:
+                shutil.rmtree(dir_path)
+                removed.append(dir_path)
+            except Exception as e:
+                failed.append((dir_path, e))
+
+    return removed, failed
+
+
+def parse_args(args: list[str]) -> tuple[Config, int, bool, bool]:
     """コマンドライン引数をパースする。"""
     parser = argparse.ArgumentParser(
         description="Clean up old date directories under result_dir.",
@@ -124,22 +158,37 @@ def parse_args(args: list[str]) -> tuple[Config, int, bool]:
         action="store_true",
         help="Show what would be deleted without actually deleting",
     )
+    parser.add_argument(
+        "--include-spill",
+        action="store_true",
+        help=(
+            "Also delete all YYYYMMDD directories under "
+            "{result_dir}/dblink/duckdb_tmp/ (--keep is ignored for this path)."
+        ),
+    )
 
     parsed = parser.parse_args(args)
     if parsed.keep < 1:
         parser.error("--keep must be at least 1")
     config = get_config()
 
-    return config, parsed.keep, parsed.dry_run
+    return config, parsed.keep, parsed.dry_run, parsed.include_spill
 
 
 def main() -> None:
-    config, keep, dry_run = parse_args(sys.argv[1:])
+    config, keep, dry_run, include_spill = parse_args(sys.argv[1:])
     with run_logger(run_name="cleanup_old_results", config=config):
         log_debug("config loaded", config=config.model_dump())
-        log_info(f"cleanup_old_results: keep={keep}, dry_run={dry_run}")
+        log_info(
+            f"cleanup_old_results: keep={keep}, dry_run={dry_run}, include_spill={include_spill}"
+        )
 
         removed, failed = cleanup(config, keep, dry_run)
+
+        if include_spill:
+            spill_removed, spill_failed = cleanup_spill(config, dry_run)
+            removed.extend(spill_removed)
+            failed.extend(spill_failed)
 
         for path in removed:
             if dry_run:

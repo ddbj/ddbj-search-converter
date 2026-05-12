@@ -258,6 +258,7 @@ def cmd_restore(args: argparse.Namespace) -> None:
                 rename_replacement=args.rename_replacement,
                 include_global_state=args.include_global_state,
                 wait_for_completion=not args.no_wait,
+                force=args.force,
             )
 
             log_info("snapshot restored successfully", result=result)

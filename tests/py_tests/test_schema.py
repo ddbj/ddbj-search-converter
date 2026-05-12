@@ -1243,3 +1243,41 @@ class TestSchemaDescriptions:
         assert prop.get("additionalProperties") is True, (
             f"{model_cls.__name__}.properties の additionalProperties が true でない"
         )
+
+
+class TestAliasPopulateByName:
+    """alias 名と attribute 名のどちらでも構築でき、`by_alias=True` の dump が一致することの確認。
+
+    `_Base.model_config` の `populate_by_name=True` が外れると、いずれかの構築方向が壊れる。
+    JSONL builder は alias 名 (`type=` / `id=`) を使う慣習だが、テストや直接構築では
+    attribute 名 (`type_=` / `id_=`) も通る必要がある。両者の dump が完全に同一であること
+    を assert することで「alias は出力 schema を制御するだけで、内部の値は変わらない」という
+    契約を縛る。
+    """
+
+    def test_distribution_two_ways(self) -> None:
+        a = Distribution(type="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")
+        b = Distribution(type_="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")
+        assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
+
+    def test_publication_two_ways(self) -> None:
+        a = Publication(id="123", dbType="pubmed")
+        b = Publication(id_="123", dbType="pubmed")
+        assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
+
+    def test_grant_two_ways(self) -> None:
+        a = Grant(id="g1", agency=[])
+        b = Grant(id_="g1", agency=[])
+        assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
+
+    def test_xref_two_ways(self) -> None:
+        a = Xref(identifier="PRJDB1", type="bioproject", url="https://e/x")
+        b = Xref(identifier="PRJDB1", type_="bioproject", url="https://e/x")
+        assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
+
+    def test_alias_key_present_attribute_key_absent(self) -> None:
+        """`by_alias=True` の dump では alias 名のみが key として出ること。"""
+        d = Distribution(type_="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")
+        dumped = d.model_dump(by_alias=True)
+        assert "type" in dumped
+        assert "type_" not in dumped
