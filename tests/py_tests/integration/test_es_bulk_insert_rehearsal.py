@@ -59,8 +59,14 @@ def _run_rehearsal(
     logical_index: IndexName,
     docs: Sequence[BaseModel],
     file_stem: str,
+    es_client: Elasticsearch,
 ) -> None:
-    """Write docs to JSONL, create dated index, bulk insert, assert invariants."""
+    """Write docs to JSONL, create dated index, bulk insert, assert invariants.
+
+    bulk insert 後に明示 refresh を呼んで ``count`` で実 doc 数を verify する。
+    refresh を介さずに count を読むと、bulk_insert 内部の refresh が race の
+    タイミングでまだ反映されていない場合に false negative になりうる。
+    """
     physical = make_physical_index_name(logical_index, suffix)
     jsonl_path = tmp_path / f"{file_stem}.jsonl"
     with jsonl_path.open("w", encoding="utf-8") as f:
@@ -71,9 +77,22 @@ def _run_rehearsal(
     result = bulk_insert_jsonl(config, [jsonl_path], index=logical_index, target_index=physical)
 
     assert result.error_count == 0, f"[{logical_index}] unexpected errors: {result.errors}"
+    assert result.not_found_count == 0, (
+        f"[{logical_index}] unexpected 409 conflicts: {result.errors}"
+    )
     assert result.success_count == len(docs)
     assert result.total_docs == len(docs)
     assert result.index == physical
+    # Pydantic model_validator 由来の不変条件
+    assert result.success_count + result.not_found_count + result.error_count == result.total_docs
+
+    # post-refresh / count による物理 index 上の実 doc 数検証。docs は sameAs を
+    # 持たない factory が出すため alias doc は増えず、len(docs) と一致するはず。
+    es_client.indices.refresh(index=physical)
+    actual_count = es_client.count(index=physical).body["count"]
+    assert actual_count == len(docs), (
+        f"[{logical_index}] physical {physical} has {actual_count} docs, expected {len(docs)}"
+    )
 
 
 def test_current_bp_mapping_accepts_pydantic_schema_docs(
@@ -92,6 +111,7 @@ def test_current_bp_mapping_accepts_pydantic_schema_docs(
         logical_index="bioproject",
         docs=docs,
         file_stem="bp",
+        es_client=integration_es_client,
     )
 
 
@@ -115,6 +135,7 @@ def test_current_bs_mapping_accepts_pydantic_schema_docs(
         logical_index="biosample",
         docs=docs,
         file_stem="bs",
+        es_client=integration_es_client,
     )
 
 
@@ -137,6 +158,7 @@ def test_current_sra_mapping_accepts_pydantic_schema_docs(
         logical_index=logical_index,
         docs=docs,
         file_stem=f"sra_{logical_index}",
+        es_client=integration_es_client,
     )
 
 
@@ -159,6 +181,7 @@ def test_current_jga_mapping_accepts_pydantic_schema_docs(
         logical_index=logical_index,
         docs=docs,
         file_stem=f"jga_{logical_index}",
+        es_client=integration_es_client,
     )
 
 
@@ -178,6 +201,7 @@ def test_current_gea_mapping_accepts_pydantic_schema_docs(
         logical_index="gea",
         docs=docs,
         file_stem="gea",
+        es_client=integration_es_client,
     )
 
 
@@ -197,4 +221,5 @@ def test_current_mtb_mapping_accepts_pydantic_schema_docs(
         logical_index="metabobank",
         docs=docs,
         file_stem="mtb",
+        es_client=integration_es_client,
     )

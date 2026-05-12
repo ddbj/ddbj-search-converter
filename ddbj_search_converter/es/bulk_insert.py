@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from elastic_transport import ConnectionTimeout
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.es._error_utils import sanitize_error_info as _sanitize_error_info
@@ -31,13 +31,47 @@ __all__ = [
 
 
 class BulkInsertResult(BaseModel):
-    """Result of a bulk insert operation."""
+    """Result of a bulk insert operation.
+
+    HTTP 409 (version conflict) は ``not_found_count`` に分類する
+    (詳細は docs/elasticsearch.md § bulk insert / bulk delete の結果モデル)。
+    """
 
     index: str
     total_docs: int
     success_count: int
+    not_found_count: int = 0
     error_count: int
     errors: list[dict[str, Any]]
+
+    @model_validator(mode="after")
+    def _check_counts_sum_to_total(self) -> "BulkInsertResult":
+        total_parts = self.success_count + self.not_found_count + self.error_count
+        if total_parts != self.total_docs:
+            raise ValueError(
+                f"BulkInsertResult invariant violated: "
+                f"success({self.success_count}) + not_found({self.not_found_count}) "
+                f"+ error({self.error_count}) = {total_parts} != total_docs({self.total_docs})"
+            )
+        return self
+
+
+def _extract_status_from_info(info: dict[str, Any]) -> int | None:
+    """Extract HTTP status from a parallel_bulk error item.
+
+    ``helpers.parallel_bulk`` yields ``(ok, info)`` where ``info`` is a dict
+    like ``{"index": {"_id": "...", "status": 409, "error": ...}}`` (the
+    outer key is the op_type).  Some failure modes deliver an exception
+    object instead of a dict — in that case there is no usable status code.
+    """
+    if not isinstance(info, dict):
+        return None
+    for op_payload in info.values():
+        if isinstance(op_payload, dict):
+            status = op_payload.get("status")
+            if isinstance(status, int):
+                return status
+    return None
 
 
 def _extract_prefix(identifier: str) -> str:
@@ -152,6 +186,7 @@ def bulk_insert_jsonl(
 
     total_docs = 0
     success_count = 0
+    not_found_count = 0
     error_count = 0
     errors: list[dict[str, Any]] = []
 
@@ -176,10 +211,14 @@ def bulk_insert_jsonl(
                 if ok:
                     success_count += 1
                 else:
-                    error_count += 1
-                    if len(errors) < max_errors:
-                        errors.append(_sanitize_error_info(info))
-            total_docs = success_count + error_count
+                    status = _extract_status_from_info(info)
+                    if status == 409:
+                        not_found_count += 1
+                    else:
+                        error_count += 1
+                        if len(errors) < max_errors:
+                            errors.append(_sanitize_error_info(info))
+            total_docs = success_count + not_found_count + error_count
 
     finally:
         # Re-enable refresh and manually refresh to make docs searchable
@@ -190,6 +229,7 @@ def bulk_insert_jsonl(
         index=write_index,
         total_docs=total_docs,
         success_count=success_count,
+        not_found_count=not_found_count,
         error_count=error_count,
         errors=errors,
     )
@@ -229,6 +269,7 @@ def bulk_insert_from_dir(
             index=write_index,
             total_docs=0,
             success_count=0,
+            not_found_count=0,
             error_count=0,
             errors=[],
         )

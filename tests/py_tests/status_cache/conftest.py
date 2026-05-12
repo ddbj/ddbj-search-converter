@@ -6,12 +6,20 @@ from pathlib import Path
 import pytest
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.logging.logger import run_logger
+from ddbj_search_converter.logging.logger import _ctx, run_logger
 
 
 @pytest.fixture(autouse=True)
 def _with_logger(tmp_path: Path) -> Generator[None, None, None]:
-    """Ensure logger is initialized for all status_cache tests."""
+    """Ensure logger is initialized for all status_cache tests.
+
+    `_ctx.set(None)` in the finally block guarantees the ContextVar is reset
+    even if the test body or `run_logger.__exit__` leaves it dirty — required
+    for `-n auto` parallel safety (workers reuse pytest processes).
+    """
     config = Config(result_dir=tmp_path)
-    with run_logger(config=config):
-        yield
+    try:
+        with run_logger(config=config):
+            yield
+    finally:
+        _ctx.set(None)

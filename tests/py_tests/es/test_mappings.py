@@ -556,6 +556,10 @@ class TestMetabobankMapping:
 
 
 class TestIndexSettings:
+    """``INDEX_SETTINGS`` の実値を SSOT で pin する。
+    docs/elasticsearch.md § bulk insert 中の refresh 無効化 と一致させること。
+    """
+
     def test_settings_have_required_fields(self) -> None:
         assert "index" in INDEX_SETTINGS
         assert "refresh_interval" in INDEX_SETTINGS["index"]
@@ -565,3 +569,93 @@ class TestIndexSettings:
 
     def test_nested_objects_limit(self) -> None:
         assert INDEX_SETTINGS["index"]["mapping.nested_objects.limit"] == 100000
+
+    def test_refresh_interval_default_is_1s(self) -> None:
+        """通常運用の refresh_interval = 1s (bulk 中は -1 に切替)。"""
+        assert INDEX_SETTINGS["index"]["refresh_interval"] == "1s"
+
+    def test_number_of_shards_is_one(self) -> None:
+        """単一 node 想定で shard 1 固定。"""
+        assert INDEX_SETTINGS["index"]["number_of_shards"] == 1
+
+    def test_number_of_replicas_is_zero(self) -> None:
+        """単一 node 構成のため replica 0。"""
+        assert INDEX_SETTINGS["index"]["number_of_replicas"] == 0
+
+
+class TestBulkInsertSettings:
+    """``BULK_INSERT_SETTINGS`` の実値を SSOT で pin する。
+    docs/elasticsearch.md § bulk insert と一致させること。
+    """
+
+    def test_batch_size_is_5000(self) -> None:
+        from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+
+        assert BULK_INSERT_SETTINGS["batch_size"] == 5000
+
+    def test_bulk_refresh_interval_is_minus_one(self) -> None:
+        """bulk insert 中は refresh_interval = -1 (refresh 無効化)。"""
+        from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+
+        assert BULK_INSERT_SETTINGS["bulk_refresh_interval"] == "-1"
+
+    def test_normal_refresh_interval_matches_index_settings(self) -> None:
+        """通常時の refresh_interval は INDEX_SETTINGS の値と一致する。"""
+        from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+
+        assert (
+            BULK_INSERT_SETTINGS["normal_refresh_interval"]
+            == INDEX_SETTINGS["index"]["refresh_interval"]
+        )
+
+    def test_thread_count_positive(self) -> None:
+        from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+
+        assert BULK_INSERT_SETTINGS["thread_count"] >= 1
+
+    def test_request_timeout_seconds(self) -> None:
+        """大きい bulk 投入を吸収するため >= 60s を要求 (現状 600)。"""
+        from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+
+        assert BULK_INSERT_SETTINGS["request_timeout"] >= 60
+
+
+class TestPublicationDbTypeKeyword:
+    """``publication.dbType`` は全 index で ``keyword`` 型で統一されている。
+    docs/elasticsearch.md NOTE (2026-04-22) で dbType 値の小文字化が決定済。
+    """
+
+    def _publication_props(self, mapping: dict[str, object]) -> dict[str, object]:
+        outer = mapping["mappings"]["properties"]  # type: ignore[index]
+        return outer["publication"]["properties"]  # type: ignore[index]
+
+    def test_jga_publication_dbtype(self) -> None:
+        from ddbj_search_converter.es.mappings.jga import get_jga_mapping
+
+        props = self._publication_props(get_jga_mapping("jga-study"))
+        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+
+    def test_gea_publication_dbtype(self) -> None:
+        from ddbj_search_converter.es.mappings.gea import get_gea_mapping
+
+        props = self._publication_props(get_gea_mapping())
+        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+
+    def test_metabobank_publication_dbtype(self) -> None:
+        from ddbj_search_converter.es.mappings.metabobank import get_metabobank_mapping
+
+        props = self._publication_props(get_metabobank_mapping())
+        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+
+    def test_bioproject_publication_dbtype(self) -> None:
+        from ddbj_search_converter.es.mappings.bioproject import get_bioproject_mapping
+
+        props = self._publication_props(get_bioproject_mapping())
+        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+
+    def test_sra_publication_dbtype(self) -> None:
+        from ddbj_search_converter.es.mappings.sra import get_sra_mapping
+
+        # SRA は entity 別 mapping を持つので submission 代表で。
+        props = self._publication_props(get_sra_mapping("sra-submission"))
+        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]

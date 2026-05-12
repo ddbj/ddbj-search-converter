@@ -211,6 +211,8 @@ def main() -> None:
         insdc_to_bs = _load_insdc_preserved_file(config, INSDC_BS_PRESERVED_REL_PATH, "biosample")
 
         # 2. Blacklist 適用
+        # SPEC: docs/data-architecture.md §Blacklist と Preserved の precedence
+        # preserved を読み込んでから blacklist で filter する = blacklist 優先。
         insdc_to_bp = filter_pairs_by_blacklist(insdc_to_bp, bp_blacklist, "right")
         insdc_to_bs = filter_pairs_by_blacklist(insdc_to_bs, bs_blacklist, "right")
 

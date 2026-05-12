@@ -477,6 +477,8 @@ def main() -> None:
         process_sra_dra_accessions(config, bs_to_bp, bs_id_to_accession, bp_id_to_accession)
 
         # 6. Process preserved file
+        # SPEC: docs/data-architecture.md §Blacklist と Preserved の precedence
+        # preserved を合流させたあと blacklist で filter する = blacklist 優先。
         process_preserved_file(config, bs_to_bp)
 
         log_info(f"total {len(bs_to_bp)} unique BioSample -> BioProject relations (before filtering)")

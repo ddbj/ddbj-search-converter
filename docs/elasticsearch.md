@@ -42,13 +42,29 @@ ES のヒープを swap させないため、`compose.yml` で `bootstrap.memory
 - batch size のデフォルトは 5000 (`--batch-size` で調整可能)。メモリと速度のバランス
 - SRA は entity 別 (`sra-run` / `sra-study` 等) に分けて投入する。`--pattern '*_run_*.jsonl'` で entity 別 jsonl を絞り込める
 
+## bulk insert / bulk delete の結果モデル
+
+`bulk_insert` / `bulk_delete` は Pydantic モデル `BulkInsertResult` / `BulkDeleteResult` で結果を返す。両モデルとも `@model_validator(mode="after")` で **`success_count + not_found_count + error_count == total_*`** を assert する (戻り値を受け取る側で個別に集計検証する必要はない)。
+
+| モデル | total フィールド | success | not_found | error |
+|---|---|---|---|---|
+| `BulkInsertResult` | `total_docs` | bulk API 成功 (201/200) | **HTTP 409 (version conflict)** | HTTP 5xx / connection error / その他想定外 |
+| `BulkDeleteResult` | `total_requested` | bulk API 成功 | HTTP 404 (削除対象不在) | HTTP 5xx / connection error / その他想定外 |
+
+`_op_type: "index"` は upsert 動作のため、bulk insert で 404 はほぼ発生しない。一方 **409 (version conflict)** は同一 `_id` に並列 write が発生したときや、ES が cluster block 中の場合に起きうる「ドキュメント状態が ES 側と converter 側で不整合」のシグナルなので、`bulk_delete` の `not_found_count` (削除対象が存在しない) と同じ「想定はしているが今回は反映されていない」枠として分類する。
+
+不変条件を model 内 validator で守ることで:
+
+- 戻り値を受けた API / CLI 層では `errors` リスト (詳細は最大 100 件) と各カウンタを直接そのまま信用してよい
+- partial failure 検知時の運用ロジック (rollback / 再投入) も `not_found` と `error` を別経路で扱える
+
 ## blacklist 削除
 
 `es_delete_blacklist` は blacklist ファイル (詳細は [data-architecture.md § Blacklist](data-architecture.md)) に含まれる accession を ES から削除する。
 
 落とし穴:
 
-- 存在しないドキュメント (404) はエラーとせず `not_found` としてカウントする (過去にインデックスされたが現在は不在のものを許容)
+- 存在しないドキュメント (404) はエラーとせず `not_found_count` としてカウントする (過去にインデックスされたが現在は不在のものを許容)
 - accession の ID パターンから対象インデックスを判定するので、誤った blacklist ファイル (例: `bp/blacklist.txt` に SRA ID) に書いても効かない
 
 ## ヘルスチェック

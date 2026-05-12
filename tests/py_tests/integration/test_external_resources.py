@@ -23,13 +23,28 @@ from ddbj_search_converter.config import (
 
 
 def test_ncbi_assembly_summary_is_reachable() -> None:
-    """IT-RESOURCE-01: NCBI FTP の assembly_summary_genbank.txt が HEAD で到達できる。
+    """IT-RESOURCE-01: NCBI FTP の assembly_summary_genbank.txt が DL 可能。
 
-    本パイプラインの Assembly 同期 (`sync_ncbi_tar` 系) はこの URL を起点に動く。
-    DL 自体ではなく HEAD でリーチャビリティだけを確認する。
+    HEAD で 200 が返るだけでは不十分 (FTP→HTTP gateway が HEAD に偽 200 を返す
+    プロキシが過去にあった)。GET で stream を開いて最初の数 byte を実際に読み、
+    Content-Type が text 系であることを確認する。
     """
-    response = httpx.head(ASSEMBLY_SUMMARY_URL, timeout=30, follow_redirects=True)
-    assert response.status_code == 200, f"unexpected status {response.status_code} for {ASSEMBLY_SUMMARY_URL}"
+    with httpx.stream(
+        "GET", ASSEMBLY_SUMMARY_URL, timeout=30, follow_redirects=True
+    ) as response:
+        assert response.status_code == 200, (
+            f"unexpected status {response.status_code} for {ASSEMBLY_SUMMARY_URL}"
+        )
+        content_type = response.headers.get("content-type", "")
+        assert "text" in content_type.lower() or "octet-stream" in content_type.lower(), (
+            f"unexpected content-type {content_type!r} (assembly_summary は plain text)"
+        )
+        first_chunk = next(response.iter_bytes(chunk_size=512), b"")
+        assert len(first_chunk) > 0, "GET 開始したが 0 byte (proxy 経由の偽 200 の疑い)"
+        # assembly_summary_genbank.txt は "#" コメントヘッダから始まる
+        assert first_chunk.startswith(b"#"), (
+            f"expected comment header '#...' as first bytes, got {first_chunk[:32]!r}"
+        )
 
 
 def _assert_directory_has_at_least_one_file(path: Path, label: str) -> None:

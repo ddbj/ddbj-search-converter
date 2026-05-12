@@ -10,6 +10,43 @@ DDBJ Search Converter のログ確認とデバッグ方法。
 | **DuckDB** | `{result_dir}/log.duckdb` (集計用、JSONL から自動挿入) |
 | **stderr** | INFO 以上のログのみ出力 (DEBUG は出力しない) |
 
+## DuckDB スキーマと run_id lifecycle
+
+`log.duckdb` には 1 テーブル `log_records` がある。
+
+```sql
+CREATE TABLE log_records (
+    run_id UUID NOT NULL,
+    run_name TEXT NOT NULL,
+    run_date DATE NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    log_level TEXT NOT NULL,         -- DEBUG / INFO / WARNING / ERROR / CRITICAL
+    lifecycle TEXT,                   -- 'start' / 'end' / 'failed' (else NULL)
+    message TEXT,
+    extra JSON,                       -- accession, file, debug_category, error 等
+);
+-- UNIQUE (run_id, lifecycle) WHERE lifecycle IS NOT NULL
+```
+
+`lifecycle` フィールドは 1 つの run の境界マーカーで、通常 INFO/DEBUG/WARNING/ERROR ログでは NULL。`run_logger` context manager が以下のルールで自動付与する:
+
+| lifecycle | 付与タイミング | log_level |
+|---|---|---|
+| `start` | run 開始時 (context 入口) | INFO |
+| `end` | run が例外なく終了したとき | INFO |
+| `failed` | run が例外で終了したとき | CRITICAL |
+
+**UNIQUE (run_id, lifecycle) WHERE lifecycle IS NOT NULL** の partial unique 制約により、各 run_id について:
+
+- `start` は最大 1 行
+- (`end` または `failed`) は最大 1 行 (= 1 つの run は成功 or 失敗のどちらか 1 度だけ完了する)
+
+通常の INFO/DEBUG ログ (lifecycle が NULL) は UNIQUE 制約の対象外で、同一 run_id について何度でも追加できる。
+
+この制約は `get_last_successful_run_date` (`logging/db.py`) が「INFO + lifecycle='end'」フィルタで run の終了時刻を取り出す経路の前提条件 (同一 run_id について end が複数あれば最新を取らされ、意味の取れない値になるため)。
+
+既存 DB に重複行がある場合は `python -m ddbj_search_converter.logging.migrate_unique_run_id --keep latest --db <path>` で migration できる (1 つの (run_id, lifecycle) について最新 (or 最古) を残し他を削除)。migration を流す前に UNIQUE インデックスは作成できない。
+
 ## デバッグコマンド
 
 ### show_log_summary: 全体把握

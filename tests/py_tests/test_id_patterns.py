@@ -7,7 +7,29 @@ from hypothesis import strategies as st
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP, is_ddbj_sra_accession, is_valid_accession
 
-from .strategies import ALL_ACCESSION_TYPES
+from .strategies import (
+    ALL_ACCESSION_TYPES,
+    st_bioproject_id,
+    st_biosample_id,
+    st_gea_id,
+    st_geo_id,
+    st_humandbs_id,
+    st_insdc_assembly_id,
+    st_insdc_master_id,
+    st_invalid_accession_text,
+    st_jga_dac,
+    st_jga_dataset,
+    st_jga_policy,
+    st_jga_study,
+    st_metabobank_id,
+    st_pubmed_id,
+    st_sra_analysis,
+    st_sra_experiment,
+    st_sra_run,
+    st_sra_sample,
+    st_sra_study,
+    st_sra_submission,
+)
 
 
 class TestIsValidAccession:
@@ -257,6 +279,103 @@ class TestPBT:
             assert result is False
         else:
             assert result is False
+
+
+class TestPositivePBT:
+    """各 AccessionType ごとに、対応する positive strategy で生成した値が
+    必ず ``is_valid_accession`` で True と判定されることを確認する。
+
+    strategies.py 側が id_patterns の regex とずれたら直ちに検出される。
+    """
+
+    @given(acc=st_bioproject_id())
+    def test_bioproject(self, acc: str) -> None:
+        assert is_valid_accession(acc, "bioproject") is True
+
+    @given(acc=st_biosample_id())
+    def test_biosample(self, acc: str) -> None:
+        assert is_valid_accession(acc, "biosample") is True
+
+    @given(acc=st_sra_submission())
+    def test_sra_submission(self, acc: str) -> None:
+        assert is_valid_accession(acc, "sra-submission") is True
+
+    @given(acc=st_sra_study())
+    def test_sra_study(self, acc: str) -> None:
+        assert is_valid_accession(acc, "sra-study") is True
+
+    @given(acc=st_sra_experiment())
+    def test_sra_experiment(self, acc: str) -> None:
+        assert is_valid_accession(acc, "sra-experiment") is True
+
+    @given(acc=st_sra_run())
+    def test_sra_run(self, acc: str) -> None:
+        assert is_valid_accession(acc, "sra-run") is True
+
+    @given(acc=st_sra_sample())
+    def test_sra_sample(self, acc: str) -> None:
+        assert is_valid_accession(acc, "sra-sample") is True
+
+    @given(acc=st_sra_analysis())
+    def test_sra_analysis(self, acc: str) -> None:
+        assert is_valid_accession(acc, "sra-analysis") is True
+
+    @given(acc=st_jga_study())
+    def test_jga_study(self, acc: str) -> None:
+        assert is_valid_accession(acc, "jga-study") is True
+
+    @given(acc=st_jga_dataset())
+    def test_jga_dataset(self, acc: str) -> None:
+        assert is_valid_accession(acc, "jga-dataset") is True
+
+    @given(acc=st_jga_dac())
+    def test_jga_dac(self, acc: str) -> None:
+        assert is_valid_accession(acc, "jga-dac") is True
+
+    @given(acc=st_jga_policy())
+    def test_jga_policy(self, acc: str) -> None:
+        assert is_valid_accession(acc, "jga-policy") is True
+
+    @given(acc=st_gea_id())
+    def test_gea(self, acc: str) -> None:
+        assert is_valid_accession(acc, "gea") is True
+
+    @given(acc=st_geo_id())
+    def test_geo(self, acc: str) -> None:
+        assert is_valid_accession(acc, "geo") is True
+
+    @given(acc=st_metabobank_id())
+    def test_metabobank(self, acc: str) -> None:
+        assert is_valid_accession(acc, "metabobank") is True
+
+    @given(acc=st_humandbs_id())
+    def test_humandbs(self, acc: str) -> None:
+        assert is_valid_accession(acc, "humandbs") is True
+
+    @given(acc=st_insdc_assembly_id())
+    def test_insdc_assembly(self, acc: str) -> None:
+        assert is_valid_accession(acc, "insdc-assembly") is True
+
+    @given(acc=st_insdc_master_id())
+    def test_insdc_master(self, acc: str) -> None:
+        assert is_valid_accession(acc, "insdc-master") is True
+
+    @given(acc=st_pubmed_id())
+    def test_pubmed(self, acc: str) -> None:
+        assert is_valid_accession(acc, "pubmed") is True
+
+
+class TestNegativePBT:
+    """``st_invalid_accession_text`` が生成した文字列は対応する ``acc_type`` で
+    必ず False と判定される。strategy の filter が緩いと false positive が
+    紛れ込むため、ここでブロックする。"""
+
+    PATTERN_TYPES = [t for t in ALL_ACCESSION_TYPES if t != "insdc"]
+
+    @given(data=st.data(), acc_type=st.sampled_from(PATTERN_TYPES))
+    def test_invalid_strategy_never_matches(self, data: st.DataObject, acc_type: str) -> None:
+        text = data.draw(st_invalid_accession_text(acc_type))  # type: ignore[arg-type]
+        assert is_valid_accession(text, acc_type) is False  # type: ignore[arg-type]
 
 
 class TestBug12TrailingNewline:

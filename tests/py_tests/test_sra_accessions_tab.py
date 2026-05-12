@@ -10,7 +10,7 @@ from pathlib import Path
 
 import duckdb
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter import sra_accessions_tab
@@ -942,49 +942,160 @@ class TestGetAccessionInfoBulk:
         result = get_accession_info_bulk(config, "sra", accessions)
         assert len(result) == n
 
-    def test_duplicate_accession_overwritten(self, tmp_path: Path) -> None:
-        """同一 accession の複数行は dict 上書きで最後の値になる。"""
+    @settings(
+        max_examples=15,
+        deadline=None,
+        suppress_health_check=[HealthCheck.function_scoped_fixture],
+    )
+    @given(
+        batch_size=st.integers(min_value=1, max_value=500),
+        n_rows=st.integers(min_value=0, max_value=2500),
+    )
+    def test_batch_split_variable_boundary_pbt(
+        self,
+        batch_size: int,
+        n_rows: int,
+        tmp_path_factory: pytest.TempPathFactory,
+    ) -> None:
+        """``QUERY_BATCH_SIZE`` をランダム化して境界 (n < / == / > batch_size, 倍数前後)
+        を Hypothesis に探索させる。固定境界 (100 行) だけだと off-by-one バグが
+        特定 batch_size でしか発火しないケースを取りこぼす。
+
+        ``monkeypatch`` は function-scoped で Hypothesis の警告対象なので、本テスト
+        内では使わず ``setattr``/``setattr`` を ``try``/``finally`` で囲んで明示的に
+        restore する。
+        """
+        original = sra_accessions_tab.QUERY_BATCH_SIZE
+        sra_accessions_tab.QUERY_BATCH_SIZE = batch_size
+        try:
+            tmp_path = tmp_path_factory.mktemp("pbt_batch")
+            rows = [
+                (
+                    f"SRR{i:06d}", f"SRA{i:06d}", None, None, None, None, None,
+                    "RUN", "live", "public", None, None, None,
+                )
+                for i in range(n_rows)
+            ]
+            config = _make_config_with_db(tmp_path, "sra", rows)
+            accessions = [f"SRR{i:06d}" for i in range(n_rows)]
+            result = get_accession_info_bulk(config, "sra", accessions)
+            assert len(result) == n_rows, (
+                f"batch_size={batch_size} n_rows={n_rows} got {len(result)}"
+            )
+        finally:
+            sra_accessions_tab.QUERY_BATCH_SIZE = original
+
+    def test_duplicate_accession_resolves_by_priority_live_beats_suppressed(self, tmp_path: Path) -> None:
+        """同一 accession の複数行は STATUS_PRIORITY で resolve される。
+        SPEC: docs/data-architecture.md §SRA Accessions: 同 accession の status 重複時の優先順位
+        live (0) は suppressed (2) より強いので live が勝つ。
+        """
         config = _make_config_with_db(
             tmp_path,
             "sra",
             [
                 (
-                    "SRR000001",
-                    "SRA000001",
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    "RUN",
-                    "live",
-                    "public",
-                    None,
-                    None,
-                    None,
+                    "SRR000001", "SRA000001", None, None, None, None, None, "RUN",
+                    "suppressed", "public", None, None, None,
                 ),
                 (
-                    "SRR000001",
-                    "SRA000001",
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    "RUN",
-                    "suppressed",
-                    "public",
-                    None,
-                    None,
-                    None,
+                    "SRR000001", "SRA000001", None, None, None, None, None, "RUN",
+                    "live", "public", None, None, None,
                 ),
             ],
         )
         result = get_accession_info_bulk(config, "sra", ["SRR000001"])
-        assert "SRR000001" in result
-        # 結果は 2 行のうちいずれかで dict 上書きされている
         status, _, _, _, _, _ = result["SRR000001"]
-        assert status in ("live", "suppressed")
+        assert status == "live"
+
+    def test_duplicate_accession_live_beats_withdrawn(self, tmp_path: Path) -> None:
+        """live (0) は withdrawn (3) より強い。"""
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000002", "SRA000001", None, None, None, None, None, "RUN",
+                    "live", "public", None, None, None,
+                ),
+                (
+                    "SRR000002", "SRA000001", None, None, None, None, None, "RUN",
+                    "withdrawn", "public", None, None, None,
+                ),
+            ],
+        )
+        status, _, _, _, _, _ = get_accession_info_bulk(config, "sra", ["SRR000002"])["SRR000002"]
+        assert status == "live"
+
+    def test_duplicate_accession_public_beats_suppressed(self, tmp_path: Path) -> None:
+        """public (1) は suppressed (2) より強い。"""
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000003", "SRA000001", None, None, None, None, None, "RUN",
+                    "suppressed", "public", None, None, None,
+                ),
+                (
+                    "SRR000003", "SRA000001", None, None, None, None, None, "RUN",
+                    "public", "public", None, None, None,
+                ),
+            ],
+        )
+        status, _, _, _, _, _ = get_accession_info_bulk(config, "sra", ["SRR000003"])["SRR000003"]
+        assert status == "public"
+
+    def test_duplicate_accession_suppressed_beats_withdrawn(self, tmp_path: Path) -> None:
+        """suppressed (2) は withdrawn (3) より強い。"""
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000004", "SRA000001", None, None, None, None, None, "RUN",
+                    "withdrawn", "public", None, None, None,
+                ),
+                (
+                    "SRR000004", "SRA000001", None, None, None, None, None, "RUN",
+                    "suppressed", "public", None, None, None,
+                ),
+            ],
+        )
+        status, _, _, _, _, _ = get_accession_info_bulk(config, "sra", ["SRR000004"])["SRR000004"]
+        assert status == "suppressed"
+
+    def test_unknown_status_treated_as_public_strength(self, tmp_path: Path) -> None:
+        """STATUS_PRIORITY 外の status (未来の表記揺れ) は public 強度として扱う。
+        public 強度の new と既存 live (live が強い) では live が勝つ。
+        """
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRR000005", "SRA000001", None, None, None, None, None, "RUN",
+                    "live", "public", None, None, None,
+                ),
+                (
+                    "SRR000005", "SRA000001", None, None, None, None, None, "RUN",
+                    "future_status_xyz", "public", None, None, None,
+                ),
+            ],
+        )
+        status, _, _, _, _, _ = get_accession_info_bulk(config, "sra", ["SRR000005"])["SRR000005"]
+        # live (0) < public 強度 (1, fallback) → live が勝つ
+        assert status == "live"
+
+    def test_status_priority_constant(self) -> None:
+        """STATUS_PRIORITY は docs/data-architecture.md の SSOT と一致する。"""
+        from ddbj_search_converter.sra_accessions_tab import STATUS_PRIORITY
+        assert STATUS_PRIORITY == {
+            "live": 0,
+            "public": 1,
+            "suppressed": 2,
+            "withdrawn": 3,
+        }
 
 
 class TestIterAllSubmissions:

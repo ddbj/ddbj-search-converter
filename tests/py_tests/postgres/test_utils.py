@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ddbj_search_converter.postgres.utils import format_date, parse_postgres_url, postgres_connection
+from ddbj_search_converter.postgres.utils import ALLOWED_POSTGRES_SCHEMES, format_date, parse_postgres_url, postgres_connection
 
 
 class TestFormatDate:
@@ -59,6 +59,57 @@ class TestParsePostgresUrl:
         assert port == 5432
         assert user == ""
         assert password == ""
+
+
+class TestParsePostgresUrlSchemeValidation:
+    """``parse_postgres_url`` must reject schemes that aren't in
+    ``ALLOWED_POSTGRES_SCHEMES``. The point is to catch typos and
+    cross-DB URLs at startup instead of silently falling back to localhost
+    (which would surface only as a misleading connection refused later).
+    """
+
+    @pytest.mark.parametrize(
+        "scheme",
+        ["postgresql", "postgresql+psycopg", "postgres"],
+    )
+    def test_allowed_schemes_pass(self, scheme: str) -> None:
+        host, port, user, password = parse_postgres_url(
+            f"{scheme}://user:pass@db.example.com:5432/dbname"
+        )
+        assert host == "db.example.com"
+        assert port == 5432
+        assert user == "user"
+        assert password == "pass"
+
+    @pytest.mark.parametrize(
+        "scheme",
+        ["mysql", "sqlite", "http", "redis", "postgresql+asyncpg"],
+    )
+    def test_other_schemes_raise(self, scheme: str) -> None:
+        with pytest.raises(ValueError, match="unsupported PostgreSQL URL scheme"):
+            parse_postgres_url(f"{scheme}://user@host:5432")
+
+    def test_uppercase_scheme_passes(self) -> None:
+        # urlparse は scheme を lowercase に正規化するので、入力の大文字小文字は
+        # 区別しない (RFC 3986 互換)。"POSTGRESQL://..." も "postgresql" として
+        # accept されることを pin する。
+        host, _, _, _ = parse_postgres_url("POSTGRESQL://user:pass@host:5432")
+        assert host == "host"
+
+    def test_empty_url_raises(self) -> None:
+        with pytest.raises(ValueError, match="unsupported PostgreSQL URL scheme"):
+            parse_postgres_url("")
+
+    def test_no_scheme_raises(self) -> None:
+        # urlparse("host:5432") returns scheme="" — must fail early.
+        with pytest.raises(ValueError, match="unsupported PostgreSQL URL scheme"):
+            parse_postgres_url("host:5432")
+
+    def test_allowed_schemes_constant_shape(self) -> None:
+        # SSOT pin: docs/data-architecture.md と一致させる。
+        assert ALLOWED_POSTGRES_SCHEMES == frozenset(
+            {"postgresql", "postgresql+psycopg", "postgres"}
+        )
 
 
 class TestPostgresConnection:

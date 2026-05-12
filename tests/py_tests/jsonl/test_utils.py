@@ -20,6 +20,17 @@ from ddbj_search_converter.jsonl.utils import (
 )
 from ddbj_search_converter.schema import Organization, XrefType
 
+from ..strategies import (
+    st_bioproject_id,
+    st_biosample_id,
+    st_gea_id,
+    st_geo_id,
+    st_jga_study,
+    st_metabobank_id,
+    st_pubmed_id,
+    st_sra_run,
+)
+
 
 class TestToXref:
     """Tests for to_xref function."""
@@ -126,6 +137,63 @@ class TestPBT:
         """type_hint 指定時、結果の type が type_hint と一致する。"""
         xref = to_xref(id_, type_hint=type_hint)
         assert xref.type_ == type_hint
+
+
+class TestRealAccessionPBT:
+    """``st.text`` ベースの PBT だと URL 生成側の経路 (regex match / URL formatting)
+    がほとんど走らない。AccessionType 別の strategy で生成した「実形式の ID」を
+    投入し、 type 推定とそれに対応する URL 構造が破綻しないことを pin する。
+    """
+
+    @given(acc=st_bioproject_id())
+    def test_bioproject_pattern_match_yields_bioproject(self, acc: str) -> None:
+        xref = to_xref(acc)
+        assert xref.identifier == acc
+        assert xref.type_ == "bioproject"
+        # URL は必ず scheme:// から始まる絶対 URL
+        assert xref.url.startswith("http")
+
+    @given(acc=st_biosample_id())
+    def test_biosample_pattern_match_yields_biosample(self, acc: str) -> None:
+        xref = to_xref(acc)
+        assert xref.type_ == "biosample"
+        assert xref.url.startswith("http")
+
+    @given(acc=st_sra_run())
+    def test_sra_run_pattern_match_yields_sra_run(self, acc: str) -> None:
+        xref = to_xref(acc)
+        assert xref.type_ == "sra-run"
+        assert xref.url.startswith("http")
+
+    @given(acc=st_jga_study())
+    def test_jga_study_pattern_match_yields_jga_study(self, acc: str) -> None:
+        xref = to_xref(acc)
+        assert xref.type_ == "jga-study"
+
+    @given(acc=st_gea_id())
+    def test_gea_pattern_match_with_hint_agrees_without_hint(self, acc: str) -> None:
+        """type_hint なし / あり両方で URL が一致 (TestGeaUrlPathConsistency の拡張)。"""
+        with_hint = to_xref(acc, type_hint="gea")
+        without_hint = to_xref(acc)
+        assert with_hint.type_ == "gea"
+        assert without_hint.type_ == "gea"
+        assert with_hint.url == without_hint.url
+
+    @given(acc=st_geo_id())
+    def test_geo_pattern_match_yields_geo(self, acc: str) -> None:
+        xref = to_xref(acc)
+        assert xref.type_ == "geo"
+
+    @given(acc=st_metabobank_id())
+    def test_metabobank_pattern_match_yields_metabobank(self, acc: str) -> None:
+        xref = to_xref(acc)
+        assert xref.type_ == "metabobank"
+
+    @given(acc=st_pubmed_id())
+    def test_numeric_falls_back_to_taxonomy(self, acc: str) -> None:
+        """pubmed と taxonomy は同 pattern (\\d+) で、priority で taxonomy にフォールバック。"""
+        xref = to_xref(acc)
+        assert xref.type_ == "taxonomy"
 
 
 class TestEdgeCases:

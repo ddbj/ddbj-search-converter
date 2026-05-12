@@ -736,6 +736,24 @@ AccessionInfo = tuple[str, str, str | None, str | None, str | None, str]
 # (status, visibility, received, updated, published, type)
 
 
+# SPEC: docs/data-architecture.md §SRA Accessions: 同 accession の status 重複時の優先順位
+# 小さいほど「強い」(= 表示すべき) status。同 accession が複数行で出現するとき、
+# priority が小さい status を勝たせる。tie は dict 挿入順で先勝ち。
+STATUS_PRIORITY: dict[str, int] = {
+    "live": 0,
+    "public": 1,
+    "suppressed": 2,
+    "withdrawn": 3,
+}
+_DEFAULT_STATUS_STRENGTH = STATUS_PRIORITY["public"]
+
+
+def _status_strength(status: str | None) -> int:
+    if status is None:
+        return _DEFAULT_STATUS_STRENGTH
+    return STATUS_PRIORITY.get(status, _DEFAULT_STATUS_STRENGTH)
+
+
 def get_accession_info_bulk(
     config: Config,
     source: SourceKind,
@@ -751,6 +769,9 @@ def get_accession_info_bulk(
 
     Returns:
         {accession: (status, visibility, received, updated, published, type)}
+
+    同一 accession が複数行ある場合、``STATUS_PRIORITY`` の小さい順 (live > public
+    > suppressed > withdrawn) で 1 件に集約する。tie は先勝ち。
     """
     if not accessions:
         return {}
@@ -781,7 +802,7 @@ def get_accession_info_bulk(
 
             for row in rows:
                 acc, status, visibility, received, updated, published, type_ = row
-                result[acc] = (
+                new_info: AccessionInfo = (
                     status or "public",
                     visibility or "public",
                     received,
@@ -789,6 +810,9 @@ def get_accession_info_bulk(
                     published,
                     type_ or "",
                 )
+                existing = result.get(acc)
+                if existing is None or _status_strength(new_info[0]) < _status_strength(existing[0]):
+                    result[acc] = new_info
 
     return result
 

@@ -23,6 +23,13 @@ INTEGRATION_ENV_VAR_ES_URL = "DDBJ_SEARCH_INTEGRATION_ES_URL"
 INTEGRATION_ENV_VAR_TRAD_POSTGRES_URL = "DDBJ_SEARCH_INTEGRATION_TRAD_POSTGRES_URL"
 INTEGRATION_ENV_VAR_XSM_POSTGRES_URL = "DDBJ_SEARCH_INTEGRATION_XSM_POSTGRES_URL"
 INTEGRATION_ENV_VAR_ALLOW_DESTRUCTIVE_ALIAS = "DDBJ_SEARCH_INTEGRATION_ALLOW_DESTRUCTIVE_ALIAS"
+INTEGRATION_ENV_VAR_DBLINK_DB_PATH = "DDBJ_SEARCH_INTEGRATION_DBLINK_DB_PATH"
+INTEGRATION_ENV_VAR_LOG_DB_PATH = "DDBJ_SEARCH_INTEGRATION_LOG_DB_PATH"
+
+# Default paths for the staging host. Override via env vars (above) on
+# dev machines so the same suite can run against local fixtures.
+_DEFAULT_DBLINK_DB_PATH = "/home/w3ddbjld/const/dblink/dblink.duckdb"
+_DEFAULT_LOG_DB_PATH = "/app/ddbj_search_converter_results/log.duckdb"
 
 
 # === Date suffixes for staging-isolated dated physical indexes ===
@@ -38,11 +45,24 @@ REHEARSAL_OLD_DATE_SUFFIX = "99991230"
 # === Representative accessions for invariant assertions ===
 #
 # Some scenarios need a known accession of a specific status / data type.
-# Add representative IDs here as scenarios are implemented; keep them
-# in sync with ``scripts/fetch_test_fixtures.sh`` outputs.
+# These IDs come from ``tests/fixtures/lustre9/.../bp-collab/bioproject/``
+# and ``.../bs-collab/biosample/`` livelist files. If the fixture set is
+# refreshed via ``scripts/fetch_test_fixtures.sh`` (run on the staging host),
+# also update the values here.
 #
 # Shape: {data_type: {status: accession_id}}
-INTEGRATION_REPRESENTATIVE_ACCESSIONS: dict[str, dict[str, str]] = {}
+INTEGRATION_REPRESENTATIVE_ACCESSIONS: dict[str, dict[str, str]] = {
+    "bioproject": {
+        "public": "PRJDB2",
+        "suppressed": "PRJDB51",
+        "withdrawn": "PRJDB2272",
+    },
+    "biosample": {
+        "public": "SAMD00000001",
+        "suppressed": "SAMD00003141",
+        "withdrawn": "SAMD00008862",
+    },
+}
 
 
 # === ES fixtures ===
@@ -129,19 +149,39 @@ def integration_trad_postgres_url() -> str:
 
 @pytest.fixture(scope="session")
 def integration_dblink_db_path() -> Path:
-    """Path to a populated dblink.duckdb on the integration host. Skip if absent."""
-    path = Path("/home/w3ddbjld/const/dblink/dblink.duckdb")
+    """Path to a populated ``dblink.duckdb`` on the integration host.
+
+    Defaults to the staging path but can be overridden with
+    ``DDBJ_SEARCH_INTEGRATION_DBLINK_DB_PATH`` for local development
+    (e.g. running against a fixture-built DuckDB). Skip if absent.
+    """
+    raw = os.environ.get(INTEGRATION_ENV_VAR_DBLINK_DB_PATH) or _DEFAULT_DBLINK_DB_PATH
+    path = Path(raw)
     if not path.exists():
-        pytest.skip(f"dblink.duckdb not found at {path}; needs a converter pipeline run")
+        pytest.skip(
+            f"dblink.duckdb not found at {path}; "
+            f"set {INTEGRATION_ENV_VAR_DBLINK_DB_PATH} to override, "
+            "or run the converter pipeline to produce it"
+        )
     return path
 
 
 @pytest.fixture(scope="session")
 def integration_log_db_path() -> Path:
-    """Path to a populated log.duckdb. Skip if absent."""
-    path = Path("/app/ddbj_search_converter_results/log.duckdb")
+    """Path to a populated ``log.duckdb``.
+
+    Defaults to the staging path but can be overridden with
+    ``DDBJ_SEARCH_INTEGRATION_LOG_DB_PATH`` for local development.
+    Skip if absent.
+    """
+    raw = os.environ.get(INTEGRATION_ENV_VAR_LOG_DB_PATH) or _DEFAULT_LOG_DB_PATH
+    path = Path(raw)
     if not path.exists():
-        pytest.skip(f"log.duckdb not found at {path}; needs a converter pipeline run")
+        pytest.skip(
+            f"log.duckdb not found at {path}; "
+            f"set {INTEGRATION_ENV_VAR_LOG_DB_PATH} to override, "
+            "or run the converter pipeline to produce it"
+        )
     return path
 
 

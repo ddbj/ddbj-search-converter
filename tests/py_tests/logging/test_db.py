@@ -87,6 +87,7 @@ class TestInitLogDb:
             "message",
             "error",
             "extra",
+            "lifecycle",
         }
 
     def test_creates_indexes_on_lookup_columns(self, tmp_path: Path) -> None:
@@ -101,6 +102,8 @@ class TestInitLogDb:
         assert "idx_run_name" in index_names
         assert "idx_run_date" in index_names
         assert "idx_log_level" in index_names
+        # SSOT pin: docs/logging.md § DuckDB スキーマと run_id lifecycle
+        assert "idx_run_lifecycle_unique" in index_names
 
     def test_idempotent(self, tmp_path: Path) -> None:
         """2 回呼んでも例外にならない (CREATE TABLE/INDEX IF NOT EXISTS)。"""
@@ -357,14 +360,15 @@ class TestGetLastSuccessfulRunDate:
         assert result is None
 
     def test_returns_max_date_among_successes(self, tmp_path: Path) -> None:
-        """複数の成功 run があれば最新の run_date を返す。"""
+        """複数 run の end lifecycle があれば最新の run_date を返す。
+        (run_id, lifecycle) UNIQUE のため、run_id は run ごとに別個にする。"""
         config = _make_config(tmp_path)
         self._populate(
             config,
             [
-                _record(run_name="my_run", run_date="2026-04-01", extra={"lifecycle": "end"}),
-                _record(run_name="my_run", run_date="2026-04-15", extra={"lifecycle": "end"}),
-                _record(run_name="my_run", run_date="2026-04-10", extra={"lifecycle": "end"}),
+                _record(run_id="20260401_my_run_a001", run_name="my_run", run_date="2026-04-01", extra={"lifecycle": "end"}),
+                _record(run_id="20260415_my_run_b002", run_name="my_run", run_date="2026-04-15", extra={"lifecycle": "end"}),
+                _record(run_id="20260410_my_run_c003", run_name="my_run", run_date="2026-04-10", extra={"lifecycle": "end"}),
             ],
         )
 
@@ -409,3 +413,99 @@ class TestGetLastSuccessfulRunDate:
         result = get_last_successful_run_date(config, "my_run")
 
         assert result is None
+
+
+class TestRoundTrip:
+    """write (insert_log_records) → read (get_last_successful_run_date) の完全往復。
+
+    既存テストは「INSERT 後に read query で何が返るか」を assert するが、
+    本クラスは write 経路 (JSONL extra.lifecycle → lifecycle column への物理化)
+    も含めた end-to-end の往復で「実装の繋ぎ目」が壊れていないかを pin する。
+    """
+
+    def _populate(self, config: Config, records: list[dict[str, Any]]) -> None:
+        jsonl = config.result_dir / "tmp.jsonl"
+        _write_jsonl(jsonl, records)
+        insert_log_records(config, jsonl)
+
+    def test_full_lifecycle_round_trip(self, tmp_path: Path) -> None:
+        """1 run 分の start + end を書いて end の日付が read で取れる。"""
+        config = _make_config(tmp_path)
+        run_id = "20260512_test_run_a1b2"
+        self._populate(
+            config,
+            [
+                _record(run_id=run_id, run_name="test_run", run_date="2026-05-12",
+                        timestamp="2026-05-12T10:00:00+09:00", extra={"lifecycle": "start"}),
+                _record(run_id=run_id, run_name="test_run", run_date="2026-05-12",
+                        timestamp="2026-05-12T12:00:00+09:00", extra={"lifecycle": "end"}),
+            ],
+        )
+        result = get_last_successful_run_date(config, "test_run")
+        assert result == date(2026, 5, 12)
+
+    def test_multiple_runs_read_back_latest_end(self, tmp_path: Path) -> None:
+        """3 つの異なる run 間で、最新の end が選ばれる。"""
+        config = _make_config(tmp_path)
+        self._populate(
+            config,
+            [
+                _record(run_id="20260401_r_001", run_name="r", run_date="2026-04-01", extra={"lifecycle": "end"}),
+                _record(run_id="20260415_r_002", run_name="r", run_date="2026-04-15", extra={"lifecycle": "end"}),
+                _record(run_id="20260410_r_003", run_name="r", run_date="2026-04-10", extra={"lifecycle": "end"}),
+            ],
+        )
+        result = get_last_successful_run_date(config, "r")
+        assert result == date(2026, 4, 15)
+
+    def test_failed_then_succeeded_picks_succeeded(self, tmp_path: Path) -> None:
+        """run A が failed、run B が end の場合、B の日付が返る。"""
+        config = _make_config(tmp_path)
+        self._populate(
+            config,
+            [
+                _record(run_id="20260401_r_failA", run_name="r", run_date="2026-04-01",
+                        log_level="CRITICAL", extra={"lifecycle": "failed"}),
+                _record(run_id="20260415_r_endB", run_name="r", run_date="2026-04-15",
+                        extra={"lifecycle": "end"}),
+            ],
+        )
+        result = get_last_successful_run_date(config, "r")
+        assert result == date(2026, 4, 15)
+
+    def test_only_failed_returns_none(self, tmp_path: Path) -> None:
+        """failed のみのとき None を返す。"""
+        config = _make_config(tmp_path)
+        self._populate(
+            config,
+            [
+                _record(run_id="20260401_r_fail", run_name="r", run_date="2026-04-01",
+                        log_level="CRITICAL", extra={"lifecycle": "failed"}),
+            ],
+        )
+        result = get_last_successful_run_date(config, "r")
+        assert result is None
+
+    def test_lifecycle_column_populated_on_insert(self, tmp_path: Path) -> None:
+        """insert_log_records が ``extra.lifecycle`` を ``lifecycle`` column に転記している。"""
+        config = _make_config(tmp_path)
+        self._populate(
+            config,
+            [
+                _record(run_id="20260512_r_x001", run_name="r", run_date="2026-05-12",
+                        timestamp="2026-05-12T10:00:00+09:00",
+                        extra={"lifecycle": "start"}),
+                _record(run_id="20260512_r_x001", run_name="r", run_date="2026-05-12",
+                        timestamp="2026-05-12T12:00:00+09:00",
+                        extra={"lifecycle": "end"}),
+                _record(run_id="20260512_r_x001", run_name="r", run_date="2026-05-12",
+                        timestamp="2026-05-12T11:00:00+09:00",
+                        extra=None),  # 通常 INFO ログ
+            ],
+        )
+        with duckdb.connect(str(tmp_path / LOG_DB_FILE_NAME), read_only=True) as conn:
+            rows = conn.execute(
+                "SELECT lifecycle FROM log_records ORDER BY timestamp"
+            ).fetchall()
+        lifecycles = [r[0] for r in rows]
+        assert lifecycles == ["start", None, "end"]

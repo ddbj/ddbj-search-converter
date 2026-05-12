@@ -29,3 +29,32 @@ api は本リポジトリの Pydantic モデル (`schema.py`) と ES mapping を
 - 新しいエッジケースに対応する accession を追加したいとき
 
 これらは遺伝研スパコン上で `scripts/fetch_test_fixtures.sh` を実行する。手元では取得できないため、必要が生じたタイミングでスパコン作業を依頼する。
+
+## Mutation testing (ローカル only)
+
+`mutmut` でテストの検出力を検証する。**CI には組み込まない** (ローカル実行のみ)。
+
+設定は `pyproject.toml` の `[tool.mutmut]` セクション。テスト強化を行った高リスク
+モジュール (id_patterns / dblink.db / sra_accessions_tab / es.bulk_insert /
+es.monitoring / postgres.utils) のみを mutate 対象とする。
+
+```bash
+# 設定全モジュールを走らせる (数分〜数十分)
+docker compose exec app mutmut run
+
+# 特定モジュールに絞る
+docker compose exec app mutmut run --paths-to-mutate ddbj_search_converter/id_patterns.py
+
+# 結果サマリ
+docker compose exec app mutmut results
+
+# 殺せなかった mutant を見る
+docker compose exec app mutmut show <id>
+```
+
+殺せなかった mutant が見つかったら:
+
+1. その挙動差分を検出できる test を追加する (PBT で対応できることが多い)
+2. その変異が「実装上の意図」で無害なら xfail コメントで残す
+3. 殺害率を期待値として CI に乗せたい誘惑は無視する (テスト品質の指針として
+   ローカルで使う)

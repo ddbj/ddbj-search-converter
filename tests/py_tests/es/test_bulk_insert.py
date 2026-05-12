@@ -10,6 +10,7 @@ import pytest
 from ddbj_search_converter.es.bulk_insert import (
     BulkInsertResult,
     _extract_prefix,
+    _extract_status_from_info,
     _sanitize_error_info,
     bulk_insert_jsonl,
     generate_bulk_actions,
@@ -316,6 +317,7 @@ class TestBulkInsertJsonl:
             result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 5
+        assert result.not_found_count == 0
         assert result.error_count == 0
         assert result.total_docs == 5
         assert result.errors == []
@@ -337,6 +339,7 @@ class TestBulkInsertJsonl:
             result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 0
+        assert result.not_found_count == 0
         assert result.error_count == 3
         assert result.total_docs == 3
         assert len(result.errors) == 3
@@ -363,6 +366,7 @@ class TestBulkInsertJsonl:
             result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
 
         assert result.success_count == 2
+        assert result.not_found_count == 0
         assert result.error_count == 2
         assert result.total_docs == 4
         assert len(result.errors) == 2
@@ -470,3 +474,156 @@ class TestBulkInsertJsonl:
 
         assert mock_set_refresh.call_count == 2
         assert mock_refresh.call_count == 1
+
+
+class TestExtractStatusFromInfo:
+    def test_index_op_with_status(self) -> None:
+        assert _extract_status_from_info({"index": {"_id": "X", "status": 409}}) == 409
+
+    def test_create_op_with_status(self) -> None:
+        assert _extract_status_from_info({"create": {"_id": "X", "status": 409}}) == 409
+
+    def test_no_status_key(self) -> None:
+        assert _extract_status_from_info({"index": {"_id": "X", "error": "boom"}}) is None
+
+    def test_non_dict_payload(self) -> None:
+        assert _extract_status_from_info({"index": "raw error string"}) is None
+
+    def test_exception_at_top_level(self) -> None:
+        assert _extract_status_from_info(RuntimeError("boom")) is None  # type: ignore[arg-type]
+
+    def test_empty_dict(self) -> None:
+        assert _extract_status_from_info({}) is None
+
+    def test_status_is_string_ignored(self) -> None:
+        assert _extract_status_from_info({"index": {"status": "409"}}) is None
+
+
+@patch("ddbj_search_converter.es.bulk_insert.refresh_index")
+@patch("ddbj_search_converter.es.bulk_insert.set_refresh_interval")
+@patch("ddbj_search_converter.es.bulk_insert.check_index_exists", return_value=True)
+@patch("ddbj_search_converter.es.bulk_insert.get_es_client")
+class TestNotFoundClassification:
+    """Verify that 409 (version conflict) is classified as not_found_count
+    rather than error_count, in line with bulk_delete's 404 handling.
+    See docs/elasticsearch.md § bulk insert / bulk delete の結果モデル.
+    """
+
+    def test_409_goes_to_not_found(
+        self,
+        mock_get_client: MagicMock,
+        mock_check: MagicMock,
+        mock_set_refresh: MagicMock,
+        mock_refresh: MagicMock,
+        tmp_path: Path,
+        test_config: MagicMock,
+    ) -> None:
+        docs = [{"identifier": f"ID{i}"} for i in range(3)]
+        jsonl_file = _make_jsonl_file(tmp_path, docs)
+        parallel_results = [
+            (False, {"index": {"_id": "ID0", "status": 409, "error": "version conflict"}}),
+            (False, {"index": {"_id": "ID1", "status": 409, "error": "version conflict"}}),
+            (False, {"index": {"_id": "ID2", "status": 409, "error": "version conflict"}}),
+        ]
+
+        with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
+
+        assert result.success_count == 0
+        assert result.not_found_count == 3
+        assert result.error_count == 0
+        assert result.total_docs == 3
+        # 409 はサマリ枠で扱うので errors リストには積まない
+        assert result.errors == []
+
+    def test_mixed_success_409_5xx(
+        self,
+        mock_get_client: MagicMock,
+        mock_check: MagicMock,
+        mock_set_refresh: MagicMock,
+        mock_refresh: MagicMock,
+        tmp_path: Path,
+        test_config: MagicMock,
+    ) -> None:
+        docs = [{"identifier": f"ID{i}"} for i in range(5)]
+        jsonl_file = _make_jsonl_file(tmp_path, docs)
+        parallel_results = [
+            (True, {"index": {"_id": "ID0"}}),
+            (False, {"index": {"_id": "ID1", "status": 409, "error": "version conflict"}}),
+            (False, {"index": {"_id": "ID2", "status": 503, "error": "unavailable"}}),
+            (True, {"index": {"_id": "ID3"}}),
+            (False, {"index": {"_id": "ID4", "status": 409, "error": "version conflict"}}),
+        ]
+
+        with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
+
+        assert result.success_count == 2
+        assert result.not_found_count == 2
+        assert result.error_count == 1
+        assert result.total_docs == 5
+        # error 側は 5xx 1 件のみ詳細を残す
+        assert len(result.errors) == 1
+
+    def test_status_missing_falls_back_to_error(
+        self,
+        mock_get_client: MagicMock,
+        mock_check: MagicMock,
+        mock_set_refresh: MagicMock,
+        mock_refresh: MagicMock,
+        tmp_path: Path,
+        test_config: MagicMock,
+    ) -> None:
+        docs = [{"identifier": "ID0"}]
+        jsonl_file = _make_jsonl_file(tmp_path, docs)
+        # status field 欠落 (raw exception 系) は error_count に倒す
+        parallel_results = [(False, {"index": {"_id": "ID0", "error": "no status"}})]
+
+        with patch("ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk", return_value=iter(parallel_results)):
+            result = bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
+
+        assert result.not_found_count == 0
+        assert result.error_count == 1
+        assert len(result.errors) == 1
+
+
+class TestBulkInsertResultInvariant:
+    """``success + not_found + error == total_docs`` invariant enforced by
+    a Pydantic model_validator.  These tests verify that bad sums raise."""
+
+    def test_valid_construction(self) -> None:
+        r = BulkInsertResult(
+            index="x", total_docs=5, success_count=3, not_found_count=1,
+            error_count=1, errors=[],
+        )
+        assert r.total_docs == 5
+
+    def test_default_not_found_zero(self) -> None:
+        # Backwards-compatible default for callers that haven't migrated.
+        r = BulkInsertResult(
+            index="x", total_docs=3, success_count=2, error_count=1, errors=[],
+        )
+        assert r.not_found_count == 0
+
+    def test_sum_less_than_total_raises(self) -> None:
+        with pytest.raises(ValueError, match="invariant"):
+            BulkInsertResult(
+                index="x", total_docs=10, success_count=3, not_found_count=2,
+                error_count=1, errors=[],
+            )
+
+    def test_sum_greater_than_total_raises(self) -> None:
+        with pytest.raises(ValueError, match="invariant"):
+            BulkInsertResult(
+                index="x", total_docs=5, success_count=3, not_found_count=2,
+                error_count=2, errors=[],
+            )
+
+    def test_zero_docs(self) -> None:
+        r = BulkInsertResult(
+            index="x", total_docs=0, success_count=0, not_found_count=0,
+            error_count=0, errors=[],
+        )
+        assert r.total_docs == 0
+        # 不変条件が空集合で成立
+        assert r.success_count + r.not_found_count + r.error_count == r.total_docs

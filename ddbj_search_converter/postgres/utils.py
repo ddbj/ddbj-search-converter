@@ -35,13 +35,26 @@ def format_date(dt: datetime | None) -> str | None:
     return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+ALLOWED_POSTGRES_SCHEMES = frozenset({"postgresql", "postgresql+psycopg", "postgres"})
+
+
 def parse_postgres_url(postgres_url: str) -> tuple[str, int, str, str]:
     """
     PostgreSQL URL を解析して (host, port, user, password) を返す。
 
-    Format: postgresql://{username}:{password}@{host}:{port}
+    Format: ``{scheme}://{username}:{password}@{host}:{port}``
+
+    Accepted schemes: ``postgresql``, ``postgresql+psycopg``, ``postgres``.
+    Anything else (missing scheme, ``mysql://``, etc.) raises ``ValueError``
+    early so we never silently fall back to localhost.
+    See docs/data-architecture.md §TRAD PostgreSQL の接続文字列の許容 scheme.
     """
     parsed = urlparse(postgres_url)
+    if parsed.scheme not in ALLOWED_POSTGRES_SCHEMES:
+        raise ValueError(
+            f"unsupported PostgreSQL URL scheme: {parsed.scheme!r}. "
+            f"Allowed schemes: {sorted(ALLOWED_POSTGRES_SCHEMES)}"
+        )
     host = parsed.hostname or "localhost"
     port = parsed.port or 5432
     user = parsed.username or ""

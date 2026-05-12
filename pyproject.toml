@@ -83,6 +83,20 @@ cleanup_old_results = "ddbj_search_converter.cli.cleanup_old_results:main"
 testpaths = ["tests/py_tests"]
 addopts = ["-n", "auto"]
 
+# mutation testing (ローカル実行のみ、CI には組み込まない)。
+# テスト強化を行ったエリアに限定して走らせる方針。
+# 詳細手順は docs/development.md § Mutation testing を参照。
+[tool.mutmut]
+paths_to_mutate = [
+    "ddbj_search_converter/id_patterns.py",
+    "ddbj_search_converter/dblink/db.py",
+    "ddbj_search_converter/sra_accessions_tab.py",
+    "ddbj_search_converter/es/bulk_insert.py",
+    "ddbj_search_converter/es/monitoring.py",
+    "ddbj_search_converter/postgres/utils.py",
+]
+runner = "pytest -q -x"
+
 [tool.mypy]
 files = ["./ddbj_search_converter/**/*.py", "./tests/py_tests/**/*.py"]
 namespace_packages = true

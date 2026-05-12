@@ -157,18 +157,23 @@ def get_index_stats(config: Config) -> list[IndexStats]:
 
 
 def _parse_size(size_str: str) -> int:
-    """Parse a size string like '10mb' or '1gb' to bytes."""
+    """Parse a size string like '10mb' or '1gb' to bytes.
+
+    Suffix matching is longest-first so that ``1kb`` matches ``kb`` (1024)
+    rather than the shorter ``b`` (which would leave ``1k`` and fail to
+    parse as a float, returning 0).
+    """
     if not size_str:
         return 0
 
     size_str = size_str.lower().strip()
 
     multipliers = {
-        "b": 1,
-        "kb": 1024,
-        "mb": 1024**2,
-        "gb": 1024**3,
         "tb": 1024**4,
+        "gb": 1024**3,
+        "mb": 1024**2,
+        "kb": 1024,
+        "b": 1,
     }
 
     for suffix, multiplier in multipliers.items():
