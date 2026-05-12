@@ -52,8 +52,10 @@ DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
 
 # Literal safeguard: 想定外値は None fallback として扱う
-_VALID_ORG_TYPES: frozenset[str] = frozenset(get_args(OrganizationType))
-_VALID_ORG_ROLES: frozenset[str] = frozenset(get_args(OrganizationRole))
+# OrganizationType / OrganizationRole は Annotated[Literal[...], Field(...)] のため、
+# 二段で get_args して Literal の値を取り出す。
+_VALID_ORG_TYPES: frozenset[str] = frozenset(get_args(get_args(OrganizationType)[0]))
+_VALID_ORG_ROLES: frozenset[str] = frozenset(get_args(get_args(OrganizationRole)[0]))
 
 _RELEVANCE_KEYS: tuple[str, ...] = (
     "Agricultural",

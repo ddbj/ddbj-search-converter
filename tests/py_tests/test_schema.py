@@ -15,6 +15,7 @@ from ddbj_search_converter.schema import (
     BioSample,
     BioSamplePackage,
     Distribution,
+    ExternalLink,
     Grant,
     MetaboBank,
     Organism,
@@ -1160,3 +1161,85 @@ class TestBioProjectArrayFieldKeyPersistencePBT:
         dumped = json.loads(bp.model_dump_json(by_alias=True))
         for field in _REQUIRED_LIST_FIELDS[BioProject]:
             assert field in dumped, f"BioProject.{field} key が JSON 出力から消えた"
+
+
+SCHEMA_CLASSES: list[type] = [
+    BioProject,
+    BioSample,
+    SRA,
+    JGA,
+    GEA,
+    MetaboBank,
+    Distribution,
+    Organism,
+    Organization,
+    Publication,
+    Grant,
+    ExternalLink,
+    Xref,
+    BioSamplePackage,
+]
+
+
+class TestSchemaDescriptions:
+    """全 BaseModel に schema-level docstring と全 field に description が存在する regression。
+
+    Pydantic v2 の `model_json_schema()` 経由で生成される OpenAPI / JSON Schema に
+    description が確実に乗ることを担保する。ddbj-search-api / ddbj-search-front /
+    db-portal で `openapi-typescript` 等が JSDoc コメントを生成するための SSOT を
+    converter 側で保証する。
+    """
+
+    @pytest.mark.parametrize("model_cls", SCHEMA_CLASSES)
+    def test_class_docstring_present(self, model_cls: type) -> None:
+        """各 BaseModel クラスに非空 docstring が存在する。"""
+        doc = (model_cls.__doc__ or "").strip()
+        assert doc, f"{model_cls.__name__} class docstring が空"
+
+    @pytest.mark.parametrize(
+        ("model_cls", "field_name"),
+        [(cls, fname) for cls in SCHEMA_CLASSES for fname in cls.model_fields.keys()],
+    )
+    def test_field_description_present(self, model_cls: type, field_name: str) -> None:
+        """各 field に非空 description が存在する。"""
+        info = model_cls.model_fields[field_name]
+        desc = (info.description or "").strip()
+        assert desc, f"{model_cls.__name__}.{field_name} の description が空"
+
+    @pytest.mark.parametrize("model_cls", SCHEMA_CLASSES)
+    def test_json_schema_field_descriptions_propagate(self, model_cls: type) -> None:
+        """`model_json_schema()` 出力の各 field property に description が伝播する。
+
+        Annotated alias 化した Literal (Status / Accessibility / XrefType 等) の
+        description が、`model_json_schema()` 出力の field property レベルに正しく
+        伝播することを担保する。伝播していなければ openapi.json 経由の JSDoc 注入が
+        効かないため fail させる。
+        """
+        schema = model_cls.model_json_schema()
+        for field_name, field_info in model_cls.model_fields.items():
+            alias_or_name = field_info.alias or field_name
+            prop = schema["properties"].get(alias_or_name)
+            assert prop is not None, (
+                f"{model_cls.__name__}.{alias_or_name} が model_json_schema 出力に存在しない"
+            )
+            desc = (prop.get("description") or "").strip()
+            assert desc, (
+                f"{model_cls.__name__}.{alias_or_name} の description が "
+                f"model_json_schema 出力に伝播していない"
+            )
+
+    @pytest.mark.parametrize(
+        "model_cls",
+        [BioProject, BioSample, SRA, JGA, GEA, MetaboBank],
+    )
+    def test_properties_field_additional_properties_true(self, model_cls: type) -> None:
+        """6 エンティティの `properties` field は openapi 上 `additionalProperties: true` を持つ。
+
+        `properties: Any` を opaque blob のままにせず、未指定 key を許容する nested
+        構造であることを openapi consumer に明示する契約。
+        """
+        schema = model_cls.model_json_schema()
+        prop = schema["properties"]["properties"]
+        assert prop.get("additionalProperties") is True, (
+            f"{model_cls.__name__}.properties の additionalProperties が true でない"
+        )
