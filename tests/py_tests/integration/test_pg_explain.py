@@ -61,11 +61,18 @@ def test_bp_dates_bulk_query_plans_against_xsm_bioproject(integration_xsm_postgr
 def test_bp_accessions_modified_since_query_plans_against_xsm_bioproject(
     integration_xsm_postgres_url: str,
 ) -> None:
-    """IT-PG-03-bp-modified: BP 更新分取得 SQL が staging XSM (`bioproject`) で EXPLAIN 通る。"""
+    """IT-PG-03-bp-modified: BP 更新分取得 SQL が staging XSM (`bioproject`) で EXPLAIN 通る。
+
+    modified_since query は集計 + join を伴うため、planner が Index Scan ではなく
+    Hash Join + Seq Scan を選ぶことが現実的に多い (テーブル サイズが大きいほど
+    Hash Join が有利)。Index Scan が **完全に消える** ことだけが回帰のサイン
+    だが、Hash Join も明示 join なので加える (Nested Loop だけに退化したら検出
+    したい)。
+    """
     query = BP_ACCESSIONS_MODIFIED_SINCE_QUERY.replace("%s", "'2026-01-01'")
     plan = _explain(integration_xsm_postgres_url, "bioproject", query)
     assert plan
-    _assert_plan_has_node(plan, ["Index Scan", "Bitmap Index Scan", "Index Only Scan"])
+    _assert_plan_has_node(plan, ["Index Scan", "Bitmap Index Scan", "Index Only Scan", "Hash Join"])
 
 
 def test_bs_dates_bulk_query_plans_against_xsm_biosample(integration_xsm_postgres_url: str) -> None:
@@ -79,8 +86,14 @@ def test_bs_dates_bulk_query_plans_against_xsm_biosample(integration_xsm_postgre
 def test_bs_accessions_modified_since_query_plans_against_xsm_biosample(
     integration_xsm_postgres_url: str,
 ) -> None:
-    """IT-PG-03-bs-modified: BS 更新分取得 SQL が staging XSM (`biosample`) で EXPLAIN 通る。"""
+    """IT-PG-03-bs-modified: BS 更新分取得 SQL が staging XSM (`biosample`) で EXPLAIN 通る。
+
+    biosample テーブルは ~200 万行で、modified_since query には集計 (HashAggregate)
+    と複数 join が含まれる。staging では planner が Parallel Seq Scan + Hash Join を
+    選ぶ (これが index lookup より cost 効率がいい)。Hash Join が消えて Nested
+    Loop だけになる退化は検出したいので、Hash Join も期待リストに含める。
+    """
     query = BS_ACCESSIONS_MODIFIED_SINCE_QUERY.replace("%s", "'2026-01-01'")
     plan = _explain(integration_xsm_postgres_url, "biosample", query)
     assert plan
-    _assert_plan_has_node(plan, ["Index Scan", "Bitmap Index Scan", "Index Only Scan"])
+    _assert_plan_has_node(plan, ["Index Scan", "Bitmap Index Scan", "Index Only Scan", "Hash Join"])
