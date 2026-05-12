@@ -152,88 +152,17 @@ DBLink 構築時に追加する手動管理の関連。
 | `metabobank/mtb_id_bioproject_preserve.tsv` | MetaboBank - BioProject |
 | `metabobank/mtb_id_biosample_preserve.tsv` | MetaboBank - BioSample |
 
-### Blacklist / Preserved ファイルの挙動と役割
+### Blacklist と Preserved の precedence
 
-#### Blacklist ファイル
-
-Blacklist ファイルは、公開すべきでないデータを除外するための仕組み。
-
-**ファイル形式:**
-
-- 1 行 1 accession
-- `#` で始まる行はコメントとして無視
-- 空行は無視
-
-**使用されるタイミング:**
-
-| ファイル | DBLink 構築 | JSONL 生成 | ES 削除 |
-|---------|-------------|-----------|---------|
-| `bp/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
-| `bs/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
-| `sra/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
-| `jga/blacklist.txt` | ○ (関連を除外) | ○ (エントリを除外) | ○ |
-
-**挙動の詳細:**
-
-1. **DBLink 構築時**: blacklist に含まれる accession を含む関連ペアを除外。両側のいずれかが blacklist に含まれていれば除外される。
-2. **JSONL 生成時**: blacklist に含まれる accession のエントリは JSONL に出力されない。
-3. **ES 削除 (`es_delete_blacklist`)**: パイプライン実行後、blacklist に含まれる accession を Elasticsearch から削除。過去にインデックスされていたが後から blacklist に追加されたエントリを削除するために使用。
-
-**運用フロー:**
-
-```plain
-1. 問題のある accession を特定
-2. 該当する blacklist.txt に追記
-3. パイプラインを実行 (JSONL に含まれなくなる)
-4. es_delete_blacklist で ES から削除
-```
-
-#### Preserved ファイル
-
-Preserved ファイルは、XML/CSV などの元データに記載されていない関連を手動で追加するための仕組み。
-
-**ファイル形式:**
-
-- TSV (タブ区切り)
-- ヘッダ行: `from_id` と `to_id` (または同等のカラム名)
-- `#` で始まる行はコメントとして無視
-
-**使用されるタイミング:**
-
-| ファイル | 使用コマンド | 挙動 |
-|---------|-------------|------|
-| `dblink/bp_bs_preserved.tsv` | `create_dblink_bp_bs_relations` | BioProject-BioSample 関連に追加 |
-| `dblink/insdc_bp_preserved.tsv` | `create_dblink_insdc_relations` | INSDC-BioProject 関連に追加 |
-| `dblink/insdc_bs_preserved.tsv` | `create_dblink_insdc_relations` | INSDC-BioSample 関連に追加 |
-| `dblink/jga_study_hum_id.tsv` | `create_dblink_jga_relations` | JGA Study-humandbs 関連に追加 |
-| `dblink/jga_dataset_hum_id.tsv` | `create_dblink_jga_relations` | JGA Dataset-humandbs 関連に追加 |
-| `metabobank/mtb_id_bioproject_preserve.tsv` | `create_dblink_metabobank_relations` | MetaboBank-BioProject 関連に追加 |
-| `metabobank/mtb_id_biosample_preserve.tsv` | `create_dblink_metabobank_relations` | MetaboBank-BioSample 関連に追加 |
-
-**挙動の詳細:**
-
-1. **DBLink 構築時**: preserved ファイルの関連ペアを DBLink DB に追加。元データから抽出した関連と合算される。
-2. **JSONL 生成時**: DBLink DB から読み込まれた関連が `dbXrefs` フィールドに反映される。preserved で追加された関連も含まれる。
-
-**ユースケース:**
-
-- BioSample の XML に BioProject ID が記載されていないが、関連があることが分かっている場合
-- MetaboBank のデータで、IDF/SDRF から抽出できない関連を補完する場合
-- 過去のデータで関連情報が欠落している場合の補完
-
-#### Blacklist と Preserved の precedence
-
-ある accession が **blacklist と preserved の両方に含まれる** とき、その accession を含む関連ペアは **blacklist を優先して除外する**。converter 内部の処理順は:
+blacklist は「公開すべきでない accession」、preserved は「元データに記載が無いが運用上必要なリンク」を表す。両方に同じ accession が含まれるとき、その accession を含む関連ペアは **blacklist を優先して除外する**。converter 内部の処理順は:
 
 1. 元データ (XML / IDF / TSV) からペアを抽出
 2. preserved ファイルのペアを **同じ集合に合流** (`bs_to_bp.update(preserved_pairs)`)
 3. 合流済みの集合に対して blacklist で filter (片側でも blacklist にあれば除外)
 
-つまり「preserved の追加」 < 「blacklist の除外」の関係。blacklist は最終的な公開可否を絶対値で表現する設定であり、preserved は「元データには無いが運用上ペアとして欲しい」リンクを足すための入力。両者で衝突したときは「公開しない」側を勝たせる安全寄りの仕様。
+つまり「preserved の追加」 < 「blacklist の除外」。blacklist は最終的な公開可否を絶対値で表現する設定であり、両者が衝突したときは「公開しない」側を勝たせる安全寄りの仕様。両者を排他的に使いたい (= blacklist にも preserved にも入れない) 運用にしたい場合は、設定ファイル側でレビューする。converter は重複を検出して warn することはしない。
 
-両者を排他的に使いたい場合 (= blacklist にも preserved にも入れない) は、設定ファイル側でレビューする運用にする。converter は重複を検出して warn することはしない。
-
-実装エントリポイント: `ddbj_search_converter/dblink/bp_bs.py::main` (`process_preserved_file` → `filter_by_blacklist` の順)、`ddbj_search_converter/dblink/insdc.py::main` (`_load_insdc_preserved_file` → `filter_pairs_by_blacklist` の順)。コード側にも `# SPEC: docs/data-architecture.md §Blacklist と Preserved の precedence` コメントを置いて SSOT との対応を明示する。
+blacklist は JSONL 生成時の除外だけでなく `es_delete_blacklist` でも参照され、過去にインデックスされていたが後から blacklist に追加された ES doc を削除する経路がある。
 
 ## 中間データベース
 
@@ -506,15 +435,9 @@ XML ファイル単位で分割されたファイルが出力される。
 
 BioProject エントリーは umbrella 階層構造に対応しており、`parentBioProjects` / `childBioProjects` フィールドで直接の親子関係（推移的閉包ではない）を保持する。これらのフィールドの値は Umbrella DB から取得される。Xref の type は `"bioproject"` で統一し、フィールド名自体が方向を示す。umbrella 関連は `dbXrefs` には含めない。
 
-BioProject には以下のファセット候補フィールドが含まれる:
-- `projectType`: `ProjectType.ProjectTypeSubmission.ProjectDataTypeSet.DataType` から抽出 (NCBI のみ値あり)。例: "Genome sequencing" / "Transcriptome"
-- `relevance`: `ProjectDescr.Relevance.*` の 7 子要素 (Agricultural / Medical / Industrial / Environmental / Evolution / ModelOrganism / Other) で `"yes"` となっているタグ名
+BioProject の `relevance` は元 XML が 7 子要素 (Agricultural / Medical / Industrial / Environmental / Evolution / ModelOrganism / Other) で構成され、各タグの `"yes"` / `"no"` 値ではなく **`"yes"` だったタグ名の配列** として格納する。フロント側でファセット値として使いやすくするためのスキーマ整形で、生 XML の構造とは異なる。
 
-BioSample には以下のファセット候補フィールドが含まれる:
-- `derivedFrom`: `Attributes/Attribute[@attribute_name∈{derived-from, derived_from}]` の値から regex `SAM[NDE]\d+` で ID 抽出。NCBI 自由文埋め込み / DDBJ カンマ区切りの両方を統一処理
-- `geoLocName` / `collectionDate` / `host` / `strain` / `isolate`: `Attributes/Attribute[@attribute_name=...]` から直接抽出 (`isolate` は strain と区別される個別分離株識別子)
-
-詳細は [schema.py](../ddbj_search_converter/schema.py) を参照。
+BioSample の `derivedFrom` は NCBI の自由文埋め込みと DDBJ のカンマ区切りの両表記から BioSample ID を統一抽出する。一方 `isolate` は `strain` と意味的に区別される個別分離株識別子で、両者を別フィールドとして並べて持つ。詳細は [schema.py](../ddbj_search_converter/schema.py) を参照。
 
 ### SRA
 
@@ -530,10 +453,7 @@ BioSample には以下のファセット候補フィールドが含まれる:
 並列処理のためバッチ単位（5000 submissions/batch）で分割されたファイルが出力される。
 `es_bulk_insert` では `--pattern` オプションで対象ファイルを絞り込む。
 
-SRA には以下の type 別ファセット候補フィールドが含まれる:
-- sra-submission: `Organization.department` に `SUBMISSION/@lab_name` を詰める (center Organization のみ、broker には付けない)
-- sra-sample: `collectionDate` / `geoLocName` (`SAMPLE_ATTRIBUTE[TAG=...]` から抽出)、`derivedFrom` (BioSample と同じ regex `SAM[NDE]\d+` で ID 抽出、nested Xref 構造)
-- sra-experiment: `libraryName` / `libraryConstructionProtocol` (`LIBRARY_DESCRIPTOR/LIBRARY_NAME` と `/LIBRARY_CONSTRUCTION_PROTOCOL` から抽出)
+SRA は entity 別 (submission / sample / experiment) で独自フィールドの追加先が異なる。sra-submission の `Organization.department` には `lab_name` が center Organization にのみ付与され、broker には付けない (broker は提出経路の中継役で実際の研究室ではないため)。sra-sample の `derivedFrom` は BioSample と同じ ID 抽出ロジックを通すが nested Xref 構造で持つ。具体的な抽出元タグは [schema.py](../ddbj_search_converter/schema.py) と `ddbj_search_converter/jsonl/sra.py` を参照。
 
 ### JGA
 

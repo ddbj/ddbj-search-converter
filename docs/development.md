@@ -17,7 +17,7 @@ api は本リポジトリの Pydantic モデル (`schema.py`) と ES mapping を
 - 同 PR で api 側の対応 PR の存在を確認する。api 側のテストは converter の Pydantic モデルを `hypothesis.strategies.builds()` で生成しているので、モデル変更で大量に落ちる場合がある
 - 大きな mapping 変更は ES 側の Blue-Green Alias Swap が必要になることがある ([elasticsearch.md](elasticsearch.md))
 - DuckDB のスキーマ変更は api 側の read 連携にも影響する (api コンテナは `dblink.duckdb` を起動中ずっと read mode で握っている)
-- 同 git 並びでチェックアウトしておくと両方向の影響確認が楽 (`~/git/github.com/ddbj/ddbj-search-{converter,api}`)
+- api リポジトリを並べてチェックアウトしておくと、両方向の影響確認が楽
 
 ## test fixtures の更新タイミング
 
@@ -32,29 +32,8 @@ api は本リポジトリの Pydantic モデル (`schema.py`) と ES mapping を
 
 ## Mutation testing (ローカル only)
 
-`mutmut` でテストの検出力を検証する。**CI には組み込まない** (ローカル実行のみ)。
+`mutmut` でテストの検出力を検証する。**CI には組み込まない** (ローカル実行のみ)。殺害率を CI の合格条件として運用すると、テスト追加よりも mutant を諦める方向 (xfail スパム) に圧力が偏るため。あくまでテスト品質を「測る」用途で、ローカルで散発的に回すのが想定運用。
 
-設定は `pyproject.toml` の `[tool.mutmut]` セクション。テスト強化を行った高リスク
-モジュール (id_patterns / dblink.db / sra_accessions_tab / es.bulk_insert /
-es.monitoring / postgres.utils) のみを mutate 対象とする。
+設定 (mutate 対象モジュール) は `pyproject.toml` の `[tool.mutmut]` セクションが SSOT。テスト強化を行った高リスクモジュールに絞っており、全モジュールは対象にしない。
 
-```bash
-# 設定全モジュールを走らせる (数分〜数十分)
-docker compose exec app mutmut run
-
-# 特定モジュールに絞る
-docker compose exec app mutmut run --paths-to-mutate ddbj_search_converter/id_patterns.py
-
-# 結果サマリ
-docker compose exec app mutmut results
-
-# 殺せなかった mutant を見る
-docker compose exec app mutmut show <id>
-```
-
-殺せなかった mutant が見つかったら:
-
-1. その挙動差分を検出できる test を追加する (PBT で対応できることが多い)
-2. その変異が「実装上の意図」で無害なら xfail コメントで残す
-3. 殺害率を期待値として CI に乗せたい誘惑は無視する (テスト品質の指針として
-   ローカルで使う)
+殺せなかった mutant が見つかったら、挙動差分を検出できるテストを追加する (PBT で対応できることが多い)。変異が「実装上の意図」で無害なら xfail コメントで残し、なぜそうなるかを併記する。

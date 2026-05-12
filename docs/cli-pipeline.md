@@ -45,12 +45,7 @@ JSONL 生成は `--parallel-num` で **各コマンド内部の worker 数** を
 - `--blue-green`: ゼロダウンタイム更新 ([elasticsearch.md § Blue-Green Alias Swap](elasticsearch.md))。`--clean-es` と排他
 - `--clean-es`: ES の全 index を削除してから投入 (mapping が変わらない更新向け、bulk insert 中はダウンタイムあり)
 
-### cron 設定例
-
-```bash
-# 毎日 AM 3:00 に差分更新
-0 3 * * * /path/to/scripts/run_pipeline.sh --date $(date +\%Y\%m\%d) >> /var/log/ddbj_search_converter.log 2>&1
-```
+production の日次運用は Rundeck (`scripts/rundeck-job.yaml`) で `run_pipeline.sh --parallel 16` を実行する。詳細は [deployment.md](deployment.md)。
 
 ## 差分更新
 

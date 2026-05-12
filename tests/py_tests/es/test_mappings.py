@@ -621,9 +621,7 @@ class TestBulkInsertSettings:
 
 
 class TestPublicationDbTypeKeyword:
-    """``publication.dbType`` は全 index で ``keyword`` 型で統一されている。
-    docs/elasticsearch.md NOTE (2026-04-22) で dbType 値の小文字化が決定済。
-    """
+    """``publication.dbType`` は全 index で ``keyword`` 型で統一されている。"""
 
     def _publication_props(self, mapping: dict[str, object]) -> dict[str, object]:
         outer = mapping["mappings"]["properties"]  # type: ignore[index]

@@ -49,86 +49,32 @@ CREATE TABLE log_records (
 
 ## デバッグコマンド
 
-### show_log_summary: 全体把握
+各コマンドの引数は `--help` を参照する。docs では使い分けと連携例だけを示す。
 
-コマンド実行状況 (SUCCESS/FAILED/IN_PROGRESS) と各レベルのログ件数を確認。
+- **`show_log_summary`**: 対象日 (デフォルト今日) の各 run の SUCCESS / FAILED / IN_PROGRESS とログレベル別件数を出す。最初に流すコマンド
+- **`show_log`**: 特定 run の生ログを JSONL で出す。`--latest` で最新 run_id を自動選択、`--level` でフィルタ。jq に流して集計するのが基本動線
+- **`show_dblink_counts`**: dblink DB の無向 edge 数を type ペアごとに出す。半辺化スキーマで 1 edge が 2 行持つことを考慮し、`(LEAST(a,b), GREATEST(a,b))` で canonical 化した上で `COUNT / 2` を取るため、表示値はそのまま無向 edge 数と一致する
 
-| オプション | 説明 | デフォルト |
-|-----------|------|-----------|
-| `--date YYYYMMDD` | 対象日を指定 | 今日 |
-| `--raw` | 人間向けテキスト出力 | - |
-| `--json` | JSON 出力 | ○ |
+### jq との連携例
 
-```bash
-# 今日の実行サマリー
-show_log_summary
-
-# 人間向けの見やすい出力
-show_log_summary --raw
-
-# 特定日のサマリー
-show_log_summary --date 20260125
-```
-
-### show_log: ログ詳細
-
-特定コマンドのログを JSONL で出力。jq と組み合わせて使う。
-
-| オプション | 説明 | デフォルト |
-|-----------|------|-----------|
-| `--date YYYYMMDD` | 対象日を指定 | 今日 |
-| `--run-name NAME` | コマンド名を指定（省略時は対話選択） | - |
-| `--latest` | 複数 run_id があるとき最新を自動選択 | - |
-| `--level LEVEL` | ログレベルでフィルタ (DEBUG/INFO/WARNING/ERROR/CRITICAL) | 全レベル |
-| `--limit N` | 出力件数を制限（0 = 無制限） | 0 |
-| `--raw` | 人間向けテキスト出力 | - |
-| `--jsonl` | JSONL 出力 | ○ |
+`show_log` は JSONL 出力なので、jq で集計や絞り込みを重ねるのが速い。
 
 ```bash
-# 最新 run のログを見る
-show_log --run-name create_dblink_bp_bs_relations --latest
-
-# ERROR のみ抽出
-show_log --run-name create_dblink_bp_bs_relations --latest --level ERROR
-
-# DEBUG ログを見る（想定内のスキップ、正規化失敗など）
-show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG
-
-# 人間向けの見やすい出力
-show_log --run-name create_dblink_bp_bs_relations --latest --raw
-
-# 最新 100 件のみ
-show_log --run-name create_dblink_bp_bs_relations --latest --limit 100
-```
-
-jq と組み合わせた例：
-
-```bash
-# レベル別のカウント
+# レベル別カウント
 show_log --run-name create_dblink_bp_bs_relations --latest | \
   jq -s 'group_by(.log_level) | map({level: .[0].log_level, count: length})'
 
-# DEBUG ログをカテゴリ別に集計
+# DEBUG をカテゴリ別に集計 (どの normalize 経路が落ちているかの俯瞰)
 show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG | \
   jq -s 'group_by(.debug_category) | map({category: .[0].debug_category, count: length})'
 
-# 特定カテゴリのみ抽出
+# 特定カテゴリだけ抽出
 show_log --run-name create_dblink_bp_bs_relations --latest --level DEBUG | \
   jq 'select(.debug_category == "invalid_biosample_id")'
 
 # エラーが多い accession を特定
 show_log --run-name create_dblink_bp_bs_relations --latest | \
   jq -r '.accession // empty' | sort | uniq -c | sort -rn | head -20
-```
-
-### show_dblink_counts: 無向 edge 数
-
-dblink DB の無向 edge 数を type ペアごとに確認。オプションなし。
-
-半辺化スキーマのため `dbxref` は 1 edge あたり 2 行持つが、本コマンドは `(LEAST(a,b), GREATEST(a,b))` で canonical にまとめた上で COUNT/2 を出力するので、表示値は無向 edge 数と一致する。
-
-```bash
-show_dblink_counts
 ```
 
 ## 典型的なデバッグフロー
