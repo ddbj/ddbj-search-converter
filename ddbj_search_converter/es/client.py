@@ -1,15 +1,31 @@
 """Elasticsearch client management."""
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.es.settings import (
+    BULK_MAX_RETRIES,
+    BULK_RETRY_ON_STATUS,
+)
 from elasticsearch import Elasticsearch
 
 _clients: dict[str, Elasticsearch] = {}
 
 
 def get_es_client(config: Config) -> Elasticsearch:
-    """Return a cached Elasticsearch client for the given config."""
+    """Return a cached Elasticsearch client for the given config.
+
+    Transport-level retry (timeout / 429 / 502 / 503 / 504) は client 生成時に
+    指定する。`helpers.parallel_bulk` / `helpers.bulk` 自体は retry kwargs を受け取らず
+    (内部の `streaming_bulk` には `max_retries` 等の引数はあるが、`parallel_bulk` 経由では
+    transport level retry の方が動作が確実)、HTTP layer で吸収する設計。
+    """
     if config.es_url not in _clients:
-        _clients[config.es_url] = Elasticsearch(config.es_url, request_timeout=120)
+        _clients[config.es_url] = Elasticsearch(
+            config.es_url,
+            request_timeout=120,
+            retry_on_timeout=True,
+            retry_on_status=BULK_RETRY_ON_STATUS,
+            max_retries=BULK_MAX_RETRIES,
+        )
     return _clients[config.es_url]
 
 

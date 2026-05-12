@@ -586,7 +586,7 @@ class TestNotFoundClassification:
         assert result.error_count == 1
         assert len(result.errors) == 1
 
-    def test_parallel_bulk_receives_retry_settings(
+    def test_es_client_constructed_with_retry_settings(
         self,
         mock_get_client: MagicMock,
         mock_check: MagicMock,
@@ -595,33 +595,32 @@ class TestNotFoundClassification:
         tmp_path: Path,
         test_config: MagicMock,
     ) -> None:
-        """``parallel_bulk`` に retry 設定 (max_retries / backoff / retry_on_status) が渡る。
-
-        SSOT は ``ddbj_search_converter.es.settings`` の ``BULK_*`` 定数。`bulk_delete`
-        と非対称だった retry 欠落を pin する。
+        """``Elasticsearch()`` client 生成時に retry 設定 (max_retries / retry_on_status /
+        retry_on_timeout) が渡る。``helpers.parallel_bulk`` 自体は retry kwargs を
+        受け取らないため transport 層で吸収する設計。
         """
+        from elasticsearch import Elasticsearch
+
+        from ddbj_search_converter.config import Config
+        from ddbj_search_converter.es.client import _clients, get_es_client
         from ddbj_search_converter.es.settings import (
-            BULK_INITIAL_BACKOFF,
-            BULK_MAX_BACKOFF,
             BULK_MAX_RETRIES,
             BULK_RETRY_ON_STATUS,
         )
 
-        docs = [{"identifier": "ID0"}]
-        jsonl_file = _make_jsonl_file(tmp_path, docs)
-        parallel_results = [(True, {"index": {"_id": "ID0"}})]
+        # 既存 cache を消して新規 client 生成を観測する
+        _clients.clear()
+        config = Config(es_url="http://test-es:9200")
 
-        with patch(
-            "ddbj_search_converter.es.bulk_insert.helpers.parallel_bulk",
-            return_value=iter(parallel_results),
-        ) as mock_parallel_bulk:
-            bulk_insert_jsonl(test_config, [jsonl_file], "test-index")  # type: ignore[arg-type]
+        with patch("ddbj_search_converter.es.client.Elasticsearch", spec=Elasticsearch) as mock_cls:
+            get_es_client(config)
 
-        kwargs = mock_parallel_bulk.call_args.kwargs
+        kwargs = mock_cls.call_args.kwargs
         assert kwargs["max_retries"] == BULK_MAX_RETRIES
-        assert kwargs["initial_backoff"] == BULK_INITIAL_BACKOFF
-        assert kwargs["max_backoff"] == BULK_MAX_BACKOFF
         assert kwargs["retry_on_status"] == BULK_RETRY_ON_STATUS
+        assert kwargs["retry_on_timeout"] is True
+
+        _clients.clear()
 
 
 class TestBulkInsertResultInvariant:

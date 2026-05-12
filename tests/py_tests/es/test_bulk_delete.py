@@ -108,7 +108,9 @@ class TestBulkDeleteByIdsHelpersBulkArgs:
         assert kwargs["chunk_size"] == 1000  # default batch_size
         assert kwargs["stats_only"] is False
         assert kwargs["raise_on_error"] is False
-        assert kwargs["max_retries"] == 3
+        # retry は Elasticsearch client 生成時 (retry_on_status / max_retries) に
+        # 設定されており、helpers.bulk には渡さない (parallel_bulk が retry kwargs を
+        # 受け付けないため、bulk_insert と非対称にしないように client-level に統一)。
         # request_timeout は es_client.options(request_timeout=...) 経由で適用される
         es.options.assert_called_once_with(request_timeout=600)
         # 第一引数は options() で派生した client
