@@ -39,12 +39,13 @@ Accessibility = Annotated[
 ]
 
 EncodingFormat = Annotated[
-    Literal["JSON", "JSON-LD", "XML", "FASTQ", "SRA"],
+    Literal["JSON", "JSON-LD", "XML", "FASTQ", "SRA", "DATA"],
     Field(
         description=(
             "Representation format of a Schema.org Distribution. "
             '"JSON" / "JSON-LD" / "XML" describe textual metadata payloads; '
-            '"FASTQ" / "SRA" describe binary sequencing data downloads.'
+            '"FASTQ" / "SRA" describe binary sequencing data downloads; '
+            '"DATA" describes a directory landing page that lists analysis output files.'
         ),
     ),
 ]

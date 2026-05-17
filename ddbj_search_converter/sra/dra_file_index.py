@@ -40,7 +40,8 @@ def dra_file_index_exists(config: Config) -> bool:
 def build_dra_file_index(config: Config) -> None:
     """FS をスキャンして DRA ファイルインデックス DuckDB を構築する。
 
-    FASTQ: 各 submission ディレクトリ内の experiment サブディレクトリを収集
+    FASTQ (experiment): 各 submission ディレクトリ内の DRX サブディレクトリ
+    FASTQ (analysis): 各 submission ディレクトリ内の DRZ サブディレクトリ
     SRA: DRA_BASE_PATH/sra/ByExp/sra/DRX/ ツリーの .sra ファイルから run を抽出
     """
     tmp_path = _tmp_db_path(config)
@@ -54,10 +55,12 @@ def build_dra_file_index(config: Config) -> None:
 
     with duckdb.connect(str(tmp_path)) as conn:
         conn.execute("CREATE TABLE dra_fastq_dir (submission TEXT NOT NULL, experiment TEXT NOT NULL)")
+        conn.execute("CREATE TABLE dra_fastq_analysis_dir (submission TEXT NOT NULL, analysis TEXT NOT NULL)")
         conn.execute("CREATE TABLE dra_sra_file (run TEXT NOT NULL)")
 
         # FASTQ ディレクトリをスキャン
         fastq_count = 0
+        analysis_count = 0
         sub_count = 0
         for submission in iter_all_dra_submissions(config):
             sub_dir = DRA_BASE_PATH.joinpath("fastq", submission[:6], submission)
@@ -66,7 +69,16 @@ def build_dra_file_index(config: Config) -> None:
             except FileNotFoundError:
                 continue
 
-            experiments = [e.name for e in entries if e.is_dir() and e.name.startswith("DRX")]
+            experiments: list[str] = []
+            analyses: list[str] = []
+            for e in entries:
+                if not e.is_dir():
+                    continue
+                if e.name.startswith("DRX"):
+                    experiments.append(e.name)
+                elif e.name.startswith("DRZ"):
+                    analyses.append(e.name)
+
             if experiments:
                 conn.executemany(
                     "INSERT INTO dra_fastq_dir VALUES (?, ?)",
@@ -74,11 +86,24 @@ def build_dra_file_index(config: Config) -> None:
                 )
                 fastq_count += len(experiments)
 
+            if analyses:
+                conn.executemany(
+                    "INSERT INTO dra_fastq_analysis_dir VALUES (?, ?)",
+                    [(submission, ana) for ana in analyses],
+                )
+                analysis_count += len(analyses)
+
             sub_count += 1
             if sub_count % 10000 == 0:
-                log_info(f"scanned {sub_count} submissions ({fastq_count} fastq dirs)")
+                log_info(
+                    f"scanned {sub_count} submissions "
+                    f"({fastq_count} fastq dirs, {analysis_count} analysis dirs)"
+                )
 
-        log_info(f"fastq scan complete: {sub_count} submissions, {fastq_count} experiment dirs")
+        log_info(
+            f"fastq scan complete: {sub_count} submissions, "
+            f"{fastq_count} experiment dirs, {analysis_count} analysis dirs"
+        )
 
         # SRA ファイルをスキャン
         sra_base = DRA_BASE_PATH.joinpath("sra", "ByExp", "sra", "DRX")
@@ -95,6 +120,7 @@ def build_dra_file_index(config: Config) -> None:
 
         # インデックス作成
         conn.execute("CREATE INDEX idx_dra_fastq_sub ON dra_fastq_dir(submission)")
+        conn.execute("CREATE INDEX idx_dra_fastq_analysis_sub ON dra_fastq_analysis_dir(submission)")
         conn.execute("CREATE INDEX idx_dra_sra_run ON dra_sra_file(run)")
 
     # tmp -> final
@@ -102,7 +128,10 @@ def build_dra_file_index(config: Config) -> None:
         final_path.unlink()
     tmp_path.replace(final_path)
 
-    log_info(f"dra file index built: {fastq_count} fastq dirs, {sra_count} sra files")
+    log_info(
+        f"dra file index built: {fastq_count} fastq dirs, "
+        f"{analysis_count} analysis dirs, {sra_count} sra files"
+    )
 
 
 def query_fastq_dirs_bulk(config: Config, submissions: list[str]) -> dict[str, set[str]]:
@@ -128,6 +157,33 @@ def query_fastq_dirs_bulk(config: Config, submissions: list[str]) -> dict[str, s
 
     for sub, exp in rows:
         result.setdefault(sub, set()).add(exp)
+
+    return result
+
+
+def query_analysis_dirs_bulk(config: Config, submissions: list[str]) -> dict[str, set[str]]:
+    """submission のリストから analysis (DRZ) ディレクトリの存在情報を一括取得する。
+
+    Returns:
+        {submission: {analysis1, analysis2, ...}}
+    """
+    if not submissions:
+        return {}
+
+    db_path = get_dra_file_index_db_path(config)
+    if not db_path.exists():
+        return {}
+
+    result: dict[str, set[str]] = {}
+    with duckdb.connect(str(db_path), read_only=True) as conn:
+        placeholders = ", ".join(["?"] * len(submissions))
+        rows = conn.execute(
+            f"SELECT submission, analysis FROM dra_fastq_analysis_dir WHERE submission IN ({placeholders})",
+            submissions,
+        ).fetchall()
+
+    for sub, ana in rows:
+        result.setdefault(sub, set()).add(ana)
 
     return result
 

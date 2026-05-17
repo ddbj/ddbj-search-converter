@@ -11,6 +11,7 @@ from ddbj_search_converter.config import Config
 from ddbj_search_converter.sra.dra_file_index import (
     dra_file_index_exists,
     get_dra_file_index_db_path,
+    query_analysis_dirs_bulk,
     query_fastq_dirs_bulk,
     query_sra_files_bulk,
 )
@@ -19,17 +20,22 @@ from ddbj_search_converter.sra.dra_file_index import (
 def _create_test_db(
     db_path: Path,
     fastq_rows: list[tuple[str, str]] | None = None,
+    analysis_rows: list[tuple[str, str]] | None = None,
     sra_rows: list[str] | None = None,
 ) -> None:
     """テスト用の DRA ファイルインデックス DB を作成するヘルパー。"""
     with duckdb.connect(str(db_path)) as conn:
         conn.execute("CREATE TABLE dra_fastq_dir (submission TEXT NOT NULL, experiment TEXT NOT NULL)")
+        conn.execute("CREATE TABLE dra_fastq_analysis_dir (submission TEXT NOT NULL, analysis TEXT NOT NULL)")
         conn.execute("CREATE TABLE dra_sra_file (run TEXT NOT NULL)")
         conn.execute("CREATE INDEX idx_dra_fastq_sub ON dra_fastq_dir(submission)")
+        conn.execute("CREATE INDEX idx_dra_fastq_analysis_sub ON dra_fastq_analysis_dir(submission)")
         conn.execute("CREATE INDEX idx_dra_sra_run ON dra_sra_file(run)")
 
         if fastq_rows:
             conn.executemany("INSERT INTO dra_fastq_dir VALUES (?, ?)", fastq_rows)
+        if analysis_rows:
+            conn.executemany("INSERT INTO dra_fastq_analysis_dir VALUES (?, ?)", analysis_rows)
         if sra_rows:
             conn.executemany("INSERT INTO dra_sra_file VALUES (?)", [(r,) for r in sra_rows])
 
@@ -72,6 +78,7 @@ class TestTableSchema:
             table_names = {t[0] for t in tables}
 
         assert "dra_fastq_dir" in table_names
+        assert "dra_fastq_analysis_dir" in table_names
         assert "dra_sra_file" in table_names
 
     def test_fastq_dir_columns(self, tmp_path: Path) -> None:
@@ -86,6 +93,19 @@ class TestTableSchema:
 
         assert "submission" in col_names
         assert "experiment" in col_names
+
+    def test_fastq_analysis_dir_columns(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path, const_dir=tmp_path)
+        db_path = get_dra_file_index_db_path(config)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        _create_test_db(db_path)
+
+        with duckdb.connect(str(db_path), read_only=True) as conn:
+            cols = conn.execute("DESCRIBE dra_fastq_analysis_dir").fetchall()
+            col_names = [c[0] for c in cols]
+
+        assert "submission" in col_names
+        assert "analysis" in col_names
 
     def test_sra_file_columns(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path)
@@ -155,6 +175,78 @@ class TestQueryFastqDirsBulk:
         assert result == {}
 
 
+class TestQueryAnalysisDirsBulk:
+    """query_analysis_dirs_bulk のテスト。"""
+
+    def test_normal_query(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path, const_dir=tmp_path)
+        db_path = get_dra_file_index_db_path(config)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        _create_test_db(
+            db_path,
+            analysis_rows=[
+                ("DRA016427", "DRZ138937"),
+                ("DRA016427", "DRZ138938"),
+                ("DRA000002", "DRZ000003"),
+            ],
+        )
+
+        result = query_analysis_dirs_bulk(config, ["DRA016427", "DRA000002"])
+
+        assert result == {
+            "DRA016427": {"DRZ138937", "DRZ138938"},
+            "DRA000002": {"DRZ000003"},
+        }
+
+    def test_empty_input(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path, const_dir=tmp_path)
+        db_path = get_dra_file_index_db_path(config)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        _create_test_db(db_path)
+
+        result = query_analysis_dirs_bulk(config, [])
+
+        assert result == {}
+
+    def test_no_matching_submissions(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path, const_dir=tmp_path)
+        db_path = get_dra_file_index_db_path(config)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        _create_test_db(
+            db_path,
+            analysis_rows=[("DRA016427", "DRZ138937")],
+        )
+
+        result = query_analysis_dirs_bulk(config, ["DRA999999"])
+
+        assert result == {}
+
+    def test_graceful_degradation_no_db(self, tmp_path: Path) -> None:
+        """DB が存在しない場合、空の dict を返す。"""
+        config = Config(result_dir=tmp_path, const_dir=tmp_path)
+
+        result = query_analysis_dirs_bulk(config, ["DRA016427"])
+
+        assert result == {}
+
+    def test_isolated_from_fastq_table(self, tmp_path: Path) -> None:
+        """experiment (DRX) を fastq テーブルに、analysis (DRZ) を analysis テーブルに分離して保持する。"""
+        config = Config(result_dir=tmp_path, const_dir=tmp_path)
+        db_path = get_dra_file_index_db_path(config)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        _create_test_db(
+            db_path,
+            fastq_rows=[("DRA016427", "DRX138937")],
+            analysis_rows=[("DRA016427", "DRZ138937")],
+        )
+
+        fastq_result = query_fastq_dirs_bulk(config, ["DRA016427"])
+        analysis_result = query_analysis_dirs_bulk(config, ["DRA016427"])
+
+        assert fastq_result == {"DRA016427": {"DRX138937"}}
+        assert analysis_result == {"DRA016427": {"DRZ138937"}}
+
+
 class TestQuerySraFilesBulk:
     """query_sra_files_bulk のテスト。"""
 
@@ -201,6 +293,7 @@ class TestQuerySraFilesBulk:
 _dra_sub_st = st.from_regex(r"DRA[0-9]{6}", fullmatch=True)
 _drx_exp_st = st.from_regex(r"DRX[0-9]{6}", fullmatch=True)
 _drr_run_st = st.from_regex(r"DRR[0-9]{6}", fullmatch=True)
+_drz_ana_st = st.from_regex(r"DRZ[0-9]{6}", fullmatch=True)
 
 
 class TestDraFileIndexPBT:
@@ -227,6 +320,28 @@ class TestDraFileIndexPBT:
             for sub in submissions:
                 assert sub in result
                 assert result[sub] == set(experiments)
+
+    @given(
+        submissions=st.lists(_dra_sub_st, min_size=1, max_size=5, unique=True),
+        analyses=st.lists(_drz_ana_st, min_size=1, max_size=3, unique=True),
+    )
+    @settings(max_examples=30)
+    def test_analysis_roundtrip(self, submissions: list[str], analyses: list[str]) -> None:
+        """挿入した (submission, analysis) ペアが query_analysis_dirs_bulk で取得できる。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            config = Config(result_dir=tmp_path, const_dir=tmp_path)
+            db_path = get_dra_file_index_db_path(config)
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+
+            rows = [(sub, ana) for sub in submissions for ana in analyses]
+            _create_test_db(db_path, analysis_rows=rows)
+
+            result = query_analysis_dirs_bulk(config, submissions)
+
+            for sub in submissions:
+                assert sub in result
+                assert result[sub] == set(analyses)
 
     @given(runs=st.lists(_drr_run_st, min_size=1, max_size=10, unique=True))
     @settings(max_examples=30)

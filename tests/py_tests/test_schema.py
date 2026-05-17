@@ -30,7 +30,7 @@ class TestEncodingFormat:
 
     def test_valid_values(self) -> None:
         """全ての有効な値を受け入れる。"""
-        for fmt in ("JSON", "JSON-LD", "XML", "FASTQ", "SRA"):
+        for fmt in ("JSON", "JSON-LD", "XML", "FASTQ", "SRA", "DATA"):
             dist = Distribution(type="DataDownload", encodingFormat=fmt, contentUrl="https://example.com")
 
             assert dist.encodingFormat == fmt

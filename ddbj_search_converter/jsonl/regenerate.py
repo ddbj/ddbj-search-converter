@@ -325,15 +325,18 @@ def regenerate_sra_jsonl(
         # DRA の場合はファイルインデックスをクエリ
         fastq_dirs_map: dict[str, set[str]] = {}
         sra_file_runs: set[str] = set()
+        analysis_dirs_map: dict[str, set[str]] = {}
         if is_ddbj_origin:
             from ddbj_search_converter.sra.dra_file_index import (
                 dra_file_index_exists,
+                query_analysis_dirs_bulk,
                 query_fastq_dirs_bulk,
                 query_sra_files_bulk,
             )
 
             if dra_file_index_exists(config):
                 fastq_dirs_map = query_fastq_dirs_bulk(config, submissions)
+                analysis_dirs_map = query_analysis_dirs_bulk(config, submissions)
                 # run accession を全 submission から収集
                 all_run_accs: list[str] = []
                 for sub in submissions:
@@ -394,6 +397,7 @@ def regenerate_sra_jsonl(
                 is_ddbj_origin=is_ddbj_origin,
                 fastq_dirs=fastq_dirs_map.get(sub, set()),
                 sra_file_runs=sra_file_runs,
+                analysis_dirs=analysis_dirs_map.get(sub, set()),
             )
 
             # target_accessions に含まれるもののみフィルタ

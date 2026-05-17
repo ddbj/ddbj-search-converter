@@ -643,6 +643,7 @@ def create_sra_entry(
     submission: str = "",
     fastq_dirs: set[str] | None = None,
     sra_file_runs: set[str] | None = None,
+    analysis_dirs: set[str] | None = None,
 ) -> SRA:
     """SRA エントリを作成する。"""
     entry_type = SRA_TYPE_MAP[sra_type]
@@ -662,6 +663,7 @@ def create_sra_entry(
         experiment=experiment,
         fastq_dirs=fastq_dirs,
         sra_file_runs=sra_file_runs,
+        analysis_dirs=analysis_dirs,
     )
 
     props = parsed["properties"]
@@ -724,6 +726,7 @@ def process_submission_xml(
     is_ddbj_origin: bool = False,
     fastq_dirs: set[str] | None = None,
     sra_file_runs: set[str] | None = None,
+    analysis_dirs: set[str] | None = None,
 ) -> dict[SraXmlType, list[Any]]:
     """
     1つの submission から全 XML タイプを処理する。
@@ -736,6 +739,7 @@ def process_submission_xml(
         is_ddbj_origin: DDBJ-origin (DRA/DRR/DRX/DRZ/DRS/DRP) かどうか
         fastq_dirs: FASTQ ディレクトリが存在する experiment の集合
         sra_file_runs: .sra ファイルが存在する run の集合
+        analysis_dirs: analysis ディレクトリが存在する DRZ accession の集合
 
     Returns:
         {xml_type: [model_instance, ...]}
@@ -782,6 +786,7 @@ def process_submission_xml(
                 submission=submission,
                 fastq_dirs=fastq_dirs,
                 sra_file_runs=sra_file_runs,
+                analysis_dirs=analysis_dirs,
             )
             results[xml_type].append(sra_entry)
 
@@ -894,15 +899,18 @@ def _process_batch_worker(
     # Step 2.5: DRA ファイルインデックスクエリ
     fastq_dirs_map: dict[str, set[str]] = {}
     sra_file_runs: set[str] = set()
+    analysis_dirs_map: dict[str, set[str]] = {}
     if is_ddbj_origin:
         from ddbj_search_converter.sra.dra_file_index import (
             dra_file_index_exists,
+            query_analysis_dirs_bulk,
             query_fastq_dirs_bulk,
             query_sra_files_bulk,
         )
 
         if dra_file_index_exists(config):
             fastq_dirs_map = query_fastq_dirs_bulk(config, batch_subs)
+            analysis_dirs_map = query_analysis_dirs_bulk(config, batch_subs)
             all_runs: list[str] = []
             for sub in batch_subs:
                 all_runs.extend(_extract_accessions_from_xml(xml_data[sub].get("run"), "run", sub))
@@ -923,6 +931,7 @@ def _process_batch_worker(
             is_ddbj_origin=is_ddbj_origin,
             fastq_dirs=fastq_dirs_map.get(sub, set()),
             sra_file_runs=sra_file_runs,
+            analysis_dirs=analysis_dirs_map.get(sub, set()),
         )
         for xml_type in XML_TYPES:
             for entry in results[xml_type]:

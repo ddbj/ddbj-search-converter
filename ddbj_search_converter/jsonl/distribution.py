@@ -90,6 +90,7 @@ def make_sra_distribution(
     experiment: str | None = None,
     fastq_dirs: set[str] | None = None,
     sra_file_runs: set[str] | None = None,
+    analysis_dirs: set[str] | None = None,
 ) -> list[Distribution]:
     """SRA の distribution を生成する。
 
@@ -102,6 +103,7 @@ def make_sra_distribution(
         experiment: experiment accession (run の場合のみ)
         fastq_dirs: FASTQ ディレクトリが存在する experiment の集合 (DRA-origin only)
         sra_file_runs: .sra ファイルが存在する run の集合 (DRA-origin only)
+        analysis_dirs: analysis ディレクトリが存在する DRZ accession の集合 (DRA-origin only)
     """
     dists: list[Distribution] = [
         _json_dist(entry_type, identifier),
@@ -117,6 +119,18 @@ def make_sra_distribution(
             contentUrl=f"{DRA_PUBLIC_BASE_URL}/fastq/{sub_prefix}/{submission}/{submission}.{sra_type}.xml",
         )
     )
+
+    if sra_type == "analysis":
+        # DRA-origin の analysis ディレクトリ landing page (実在チェック済のみ)
+        if is_ddbj_origin and analysis_dirs is not None and identifier in analysis_dirs:
+            dists.append(
+                Distribution(
+                    type="DataDownload",
+                    encodingFormat="DATA",
+                    contentUrl=f"{DRA_PUBLIC_BASE_URL}/fastq/{sub_prefix}/{submission}/{identifier}/",
+                )
+            )
+        return dists
 
     # FASTQ / SRA は run のみ
     if sra_type != "run" or experiment is None:

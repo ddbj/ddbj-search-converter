@@ -208,6 +208,113 @@ class TestMakeSraDistribution:
             assert "FASTQ" not in formats, f"FASTQ should not be in {sra_type}"
             assert "SRA" not in formats, f"SRA should not be in {sra_type}"
 
+    def test_dra_analysis_with_data_dir(self) -> None:
+        """DRA analysis + analysis_dirs に identifier が含まれる -> DATA distribution が追加される。"""
+        dists = make_sra_distribution(
+            "sra-analysis",
+            "DRZ138937",
+            is_ddbj_origin=True,
+            sra_type="analysis",
+            submission="DRA016427",
+            analysis_dirs={"DRZ138937"},
+        )
+
+        formats = [d.encodingFormat for d in dists]
+        assert formats == ["JSON", "JSON-LD", "XML", "DATA"]
+
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+        assert data_dist.type_ == "DataDownload"
+        assert data_dist.contentUrl == (
+            f"{DRA_PUBLIC_BASE_URL}/fastq/DRA016/DRA016427/DRZ138937/"
+        )
+
+    def test_dra_analysis_no_data_dir(self) -> None:
+        """DRA analysis で実在 DRZ ディレクトリなし -> DATA distribution なし。"""
+        dists = make_sra_distribution(
+            "sra-analysis",
+            "DRZ138937",
+            is_ddbj_origin=True,
+            sra_type="analysis",
+            submission="DRA016427",
+            analysis_dirs=set(),
+        )
+
+        formats = [d.encodingFormat for d in dists]
+        assert "DATA" not in formats
+        assert formats == ["JSON", "JSON-LD", "XML"]
+
+    def test_dra_analysis_dirs_none(self) -> None:
+        """analysis_dirs=None -> DATA distribution なし (file index 未構築 fallback)。"""
+        dists = make_sra_distribution(
+            "sra-analysis",
+            "DRZ138937",
+            is_ddbj_origin=True,
+            sra_type="analysis",
+            submission="DRA016427",
+            analysis_dirs=None,
+        )
+
+        formats = [d.encodingFormat for d in dists]
+        assert "DATA" not in formats
+
+    def test_dra_analysis_dirs_missing_identifier(self) -> None:
+        """analysis_dirs に identifier が含まれない -> DATA distribution なし。"""
+        dists = make_sra_distribution(
+            "sra-analysis",
+            "DRZ138937",
+            is_ddbj_origin=True,
+            sra_type="analysis",
+            submission="DRA016427",
+            analysis_dirs={"DRZ999999"},
+        )
+
+        formats = [d.encodingFormat for d in dists]
+        assert "DATA" not in formats
+
+    def test_non_ddbj_analysis_no_data(self) -> None:
+        """SRZ/ERZ (他極) analysis -> analysis_dirs を渡しても DATA なし (自極限定)。"""
+        for identifier, submission in [("SRZ000001", "SRA000001"), ("ERZ000001", "ERA000001")]:
+            dists = make_sra_distribution(
+                "sra-analysis",
+                identifier,
+                is_ddbj_origin=False,
+                sra_type="analysis",
+                submission=submission,
+                analysis_dirs={identifier},
+            )
+
+            formats = [d.encodingFormat for d in dists]
+            assert "DATA" not in formats, f"DATA must not appear for non-DDBJ analysis {identifier}"
+            assert formats == ["JSON", "JSON-LD", "XML"]
+
+    def test_dra_run_unchanged_with_analysis_dirs(self) -> None:
+        """run のとき analysis_dirs を渡しても run の挙動 (FASTQ/SRA) が変わらない (regression 防御)。"""
+        baseline = make_sra_distribution(
+            "sra-run",
+            "DRR000001",
+            is_ddbj_origin=True,
+            sra_type="run",
+            submission="DRA000001",
+            experiment="DRX000001",
+            fastq_dirs={"DRX000001"},
+            sra_file_runs={"DRR000001"},
+        )
+        with_analysis = make_sra_distribution(
+            "sra-run",
+            "DRR000001",
+            is_ddbj_origin=True,
+            sra_type="run",
+            submission="DRA000001",
+            experiment="DRX000001",
+            fastq_dirs={"DRX000001"},
+            sra_file_runs={"DRR000001"},
+            analysis_dirs={"DRZ000001"},
+        )
+
+        baseline_urls = [(d.encodingFormat, d.contentUrl) for d in baseline]
+        with_analysis_urls = [(d.encodingFormat, d.contentUrl) for d in with_analysis]
+        assert baseline_urls == with_analysis_urls
+
     def test_ncbi_study_returns_json_jsonld_xml(self) -> None:
         """NCBI study (is_ddbj_origin=False) -> [JSON, JSON-LD, XML]。"""
         dists = make_sra_distribution(
@@ -436,6 +543,53 @@ class TestDistributionPBT:
         assert len(dists) == 4
         formats = [d.encodingFormat for d in dists]
         assert formats == ["JSON", "JSON-LD", "XML", "SRA"]
+
+    @given(
+        accession=st.from_regex(r"DRZ[0-9]{6}", fullmatch=True),
+        submission=st.from_regex(r"DRA[0-9]{6}", fullmatch=True),
+    )
+    @settings(max_examples=50)
+    def test_dra_analysis_with_dir_has_four_items(self, accession: str, submission: str) -> None:
+        """DRA analysis + DRZ ディレクトリ実在 -> [JSON, JSON-LD, XML, DATA] の 4 件。"""
+        dists = make_sra_distribution(
+            "sra-analysis",
+            accession,
+            is_ddbj_origin=True,
+            sra_type="analysis",
+            submission=submission,
+            analysis_dirs={accession},
+        )
+
+        assert len(dists) == 4
+        formats = [d.encodingFormat for d in dists]
+        assert formats == ["JSON", "JSON-LD", "XML", "DATA"]
+
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+        assert data_dist.contentUrl == (
+            f"{DRA_PUBLIC_BASE_URL}/fastq/{submission[:6]}/{submission}/{accession}/"
+        )
+        # 末尾スラッシュは directory landing page の慣習
+        assert data_dist.contentUrl.endswith("/")
+
+    @given(
+        accession=st.from_regex(r"[SE]RZ[0-9]{6}", fullmatch=True),
+        submission=st.from_regex(r"[SE]RA[0-9]{6}", fullmatch=True),
+    )
+    @settings(max_examples=50)
+    def test_non_ddbj_analysis_never_has_data(self, accession: str, submission: str) -> None:
+        """他極 (SRZ/ERZ) analysis では analysis_dirs を渡しても DATA は絶対に出ない (自極限定)。"""
+        dists = make_sra_distribution(
+            "sra-analysis",
+            accession,
+            is_ddbj_origin=False,
+            sra_type="analysis",
+            submission=submission,
+            analysis_dirs={accession},
+        )
+
+        formats = [d.encodingFormat for d in dists]
+        assert "DATA" not in formats
+        assert formats == ["JSON", "JSON-LD", "XML"]
 
     @given(
         accession=st.from_regex(r"[SE]RR[0-9]{6}", fullmatch=True),

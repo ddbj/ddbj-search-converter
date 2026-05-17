@@ -259,6 +259,83 @@ class TestProcessSubmissionXml:
         assert results["study"][0].dateCreated is None
 
 
+class TestProcessSubmissionXmlAnalysisDirs:
+    """analysis_dirs を渡したときに sra-analysis に DATA distribution が付くことを検証。"""
+
+    _SUBMISSION_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION accession="DRA016427" submission_date="2024-01-01">
+  <TITLE>Test DRA Submission</TITLE>
+</SUBMISSION>
+"""
+
+    _ANALYSIS_XML = b"""\
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET>
+  <ANALYSIS accession="DRZ138937">
+    <TITLE>Test analysis</TITLE>
+  </ANALYSIS>
+  <ANALYSIS accession="DRZ138938">
+    <TITLE>Another analysis without dir</TITLE>
+  </ANALYSIS>
+</ANALYSIS_SET>
+"""
+
+    @staticmethod
+    def _accession_info(
+        accs: list[str], type_label: str
+    ) -> dict[str, tuple[str, str, str | None, str | None, str | None, str]]:
+        return dict.fromkeys(accs, ("live", "public", "2024-06-15", "2024-07-01", "2024-08-01", type_label))
+
+    def _xml_cache(self) -> dict[SraXmlType, bytes | None]:
+        cache: dict[SraXmlType, bytes | None] = dict.fromkeys(XML_TYPES, None)
+        cache["submission"] = self._SUBMISSION_XML
+        cache["analysis"] = self._ANALYSIS_XML
+        return cache
+
+    def test_analysis_with_dir_includes_data_distribution(self) -> None:
+        """analysis_dirs に含まれる DRZ entry には DATA distribution が付く。"""
+        results = process_submission_xml(
+            submission="DRA016427",
+            blacklist=set(),
+            accession_info=self._accession_info(
+                ["DRA016427", "DRZ138937", "DRZ138938"], "analysis"
+            ),
+            xml_cache=self._xml_cache(),
+            is_ddbj_origin=True,
+            analysis_dirs={"DRZ138937"},
+        )
+
+        analyses = {e.identifier: e for e in results["analysis"]}
+        assert set(analyses.keys()) == {"DRZ138937", "DRZ138938"}
+
+        with_dir = analyses["DRZ138937"]
+        formats = [d.encodingFormat for d in with_dir.distribution]
+        assert "DATA" in formats
+        data_dist = next(d for d in with_dir.distribution if d.encodingFormat == "DATA")
+        assert data_dist.contentUrl.endswith("/fastq/DRA016/DRA016427/DRZ138937/")
+
+        without_dir = analyses["DRZ138938"]
+        without_formats = [d.encodingFormat for d in without_dir.distribution]
+        assert "DATA" not in without_formats
+
+    def test_analysis_without_analysis_dirs_argument_has_no_data(self) -> None:
+        """analysis_dirs を渡さない (None) -> どの DRZ にも DATA は付かない。"""
+        results = process_submission_xml(
+            submission="DRA016427",
+            blacklist=set(),
+            accession_info=self._accession_info(
+                ["DRA016427", "DRZ138937", "DRZ138938"], "analysis"
+            ),
+            xml_cache=self._xml_cache(),
+            is_ddbj_origin=True,
+        )
+
+        for entry in results["analysis"]:
+            formats = [d.encodingFormat for d in entry.distribution]
+            assert "DATA" not in formats
+
+
 class TestProcessSubmissionXmlNcbiSkipsDdbj:
     """NCBI バッチ (is_ddbj_origin=False) で DDBJ origin accession を skip する仕様の regression。"""
 
