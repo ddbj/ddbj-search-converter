@@ -69,11 +69,13 @@ def insert_log_records(config: Config, jsonl_path: Path) -> None:
 
     ``extra.lifecycle`` is denormalised into the ``lifecycle`` column at insert
     time so that the ``(run_id, lifecycle)`` UNIQUE index can fire.
-    """
-    db_path = _get_db_path(config)
 
-    if not db_path.exists():
-        init_log_db(config)
+    ``init_log_db`` is invoked unconditionally because the INSERT below uses
+    ``ON CONFLICT DO NOTHING``, which requires the ``(run_id, lifecycle)``
+    UNIQUE index to be present even for DBs created before the migration.
+    """
+    init_log_db(config)
+    db_path = _get_db_path(config)
 
     records = []
     with jsonl_path.open("r", encoding="utf-8") as f:

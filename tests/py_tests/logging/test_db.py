@@ -211,8 +211,8 @@ class TestInsertLogRecords:
         # 不存在時に 1 回だけ init される
         assert spy.call_count == 1
 
-    def test_db_existing_skips_init(self, tmp_path: Path, mocker: MockerFixture) -> None:
-        """DB が既に存在するとき insert_log_records は init を呼ばない。"""
+    def test_db_existing_still_invokes_init(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        """DB が既存でも init_log_db を呼ぶ (legacy schema を冪等に migrate する)。"""
         config = _make_config(tmp_path)
         init_log_db(config)
         assert (tmp_path / LOG_DB_FILE_NAME).exists()
@@ -223,7 +223,115 @@ class TestInsertLogRecords:
         spy = mocker.spy(db_module, "init_log_db")
         insert_log_records(config, jsonl)
 
-        assert spy.call_count == 0
+        assert spy.call_count == 1
+
+    def test_legacy_db_without_lifecycle_is_migrated(self, tmp_path: Path) -> None:
+        """`lifecycle` カラム / UNIQUE INDEX を持たない旧 DB に対しても insert が成功する。
+
+        Regression for log finalize failing with
+        ``BinderException: ON CONFLICT requires UNIQUE/PRIMARY KEY``.
+        """
+        config = _make_config(tmp_path)
+        db_path = tmp_path / LOG_DB_FILE_NAME
+
+        # 旧スキーマ (lifecycle カラム無し / UNIQUE INDEX 無し) を素の DuckDB で作る
+        with duckdb.connect(str(db_path)) as conn:
+            conn.execute(
+                """
+                CREATE TABLE log_records (
+                    timestamp TIMESTAMP,
+                    run_date DATE,
+                    run_id TEXT,
+                    run_name TEXT,
+                    source TEXT,
+                    log_level TEXT,
+                    message TEXT,
+                    error JSON,
+                    extra JSON
+                )
+                """
+            )
+            conn.execute("CREATE INDEX idx_run_name ON log_records(run_name)")
+            conn.execute("CREATE INDEX idx_run_date ON log_records(run_date)")
+            conn.execute("CREATE INDEX idx_log_level ON log_records(log_level)")
+
+            # 旧スキーマでも追記できる既存行を 1 件用意 (migration 後も生き残るべき)
+            conn.execute(
+                "INSERT INTO log_records VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    "2026-04-24T12:00:00+09:00",
+                    "2026-04-24",
+                    "20260424_legacy_zzzz",
+                    "legacy_run",
+                    "legacy.module",
+                    "INFO",
+                    "legacy",
+                    None,
+                    None,
+                ],
+            )
+
+        # 新スキーマで lifecycle を伴う行を流す
+        jsonl = tmp_path / "rec.jsonl"
+        _write_jsonl(jsonl, [_record(extra={"lifecycle": "start"})])
+
+        insert_log_records(config, jsonl)
+
+        with duckdb.connect(str(db_path), read_only=True) as conn:
+            cols = {row[0] for row in conn.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'log_records'"
+            ).fetchall()}
+            indexes = {row[0] for row in conn.execute(
+                "SELECT index_name FROM duckdb_indexes() WHERE table_name = 'log_records'"
+            ).fetchall()}
+            total = conn.execute("SELECT COUNT(*) FROM log_records").fetchone()
+            new_row = conn.execute(
+                "SELECT lifecycle FROM log_records WHERE run_id = ?",
+                ["20260425_test_aaaa"],
+            ).fetchone()
+
+        assert "lifecycle" in cols
+        assert "idx_run_lifecycle_unique" in indexes
+        assert total is not None
+        assert total[0] == 2  # 既存 1 件 + 新 1 件
+        assert new_row is not None
+        assert new_row[0] == "start"
+
+    def test_legacy_db_insert_is_idempotent_for_lifecycle_rows(self, tmp_path: Path) -> None:
+        """Legacy DB を migration した後、同じ (run_id, lifecycle='start') を 2 回流しても重複しない。"""
+        config = _make_config(tmp_path)
+        db_path = tmp_path / LOG_DB_FILE_NAME
+
+        with duckdb.connect(str(db_path)) as conn:
+            conn.execute(
+                """
+                CREATE TABLE log_records (
+                    timestamp TIMESTAMP,
+                    run_date DATE,
+                    run_id TEXT,
+                    run_name TEXT,
+                    source TEXT,
+                    log_level TEXT,
+                    message TEXT,
+                    error JSON,
+                    extra JSON
+                )
+                """
+            )
+
+        jsonl = tmp_path / "rec.jsonl"
+        _write_jsonl(jsonl, [_record(extra={"lifecycle": "start"})])
+
+        insert_log_records(config, jsonl)
+        insert_log_records(config, jsonl)
+
+        with duckdb.connect(str(db_path), read_only=True) as conn:
+            count = conn.execute(
+                "SELECT COUNT(*) FROM log_records WHERE lifecycle = 'start'"
+            ).fetchone()
+
+        assert count is not None
+        assert count[0] == 1
 
     @pytest.mark.parametrize(
         "tricky_message",
