@@ -259,6 +259,35 @@ class TestLoadInsdcPreservedFile:
         assert pairs == {("AB000001", "PRJDB12345")}
 
 
+class TestQueryShape:
+    """INSDC_TO_BP_QUERY / INSDC_TO_BS_QUERY が status filter を含むことの guard。
+
+    既存テストは psycopg2.connect を mock 化しており SQL の WHERE 文字列を実行しないため、
+    constant assertion で SQL 構造の退化を検出する。
+    SSOT: docs/data-architecture.md §公開状態の判定 (manager テーブル)。
+    """
+
+    @pytest.mark.parametrize(
+        ("query", "label"),
+        [
+            (INSDC_TO_BP_QUERY, "INSDC_TO_BP_QUERY"),
+            (INSDC_TO_BS_QUERY, "INSDC_TO_BS_QUERY"),
+        ],
+    )
+    def test_query_joins_manager_and_filters_public_status(self, query: str, label: str) -> None:
+        # JOIN manager は exactly 1 回 (LEFT JOIN や JOIN 重複への mutation を検出)
+        assert query.count("JOIN manager") == 1, label
+        assert "LEFT JOIN manager" not in query, label
+        # status filter は IN かつ NOT IN ではない (反転 mutation を検出)
+        assert "manager.status IN (1002, 1005)" in query, label
+        assert "NOT IN" not in query, label
+        # 採用しない status 値の単独混入を検出 (e.g. 1001 private を IN リストに追加する mutation)
+        for forbidden in (1000, 1001, 1004, 1006, 1007):
+            assert f", {forbidden}" not in query and f"({forbidden}," not in query, (
+                f"{label}: status {forbidden} は採用外なのに IN リストに含まれている"
+            )
+
+
 class TestNormalizeEdgeInsdc:
     """normalize_edge で insdc タイプの正規化テスト。"""
 

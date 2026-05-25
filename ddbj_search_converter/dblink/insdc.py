@@ -54,8 +54,10 @@ INSDC_TO_BP_QUERY = """
     FROM accession AS acc
     JOIN link_pr_ac USING(ac_id)
     JOIN project ON(project.pr_id = link_pr_ac.pr_id)
+    JOIN manager ON(manager.ac_id = acc.ac_id)
     WHERE project.project_id LIKE 'PRJ%%'
       AND acc.accession IS NOT NULL
+      AND manager.status IN (1002, 1005)
 """
 
 INSDC_TO_BS_QUERY = """
@@ -63,8 +65,10 @@ INSDC_TO_BS_QUERY = """
     FROM accession AS acc
     JOIN link_pr_ac USING(ac_id)
     JOIN project ON(project.pr_id = link_pr_ac.pr_id)
+    JOIN manager ON(manager.ac_id = acc.ac_id)
     WHERE project.project_id LIKE 'SAM%%'
       AND acc.accession IS NOT NULL
+      AND manager.status IN (1002, 1005)
 """
 
 
