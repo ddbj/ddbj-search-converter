@@ -16,9 +16,9 @@ def test_log_db_has_start_and_termination_records(integration_log_db_path: Path)
     with duckdb.connect(str(integration_log_db_path), read_only=True) as conn:
         rows = conn.execute(
             """
-            SELECT json_extract_string(extra, '$.lifecycle') AS lifecycle, COUNT(*) AS cnt
+            SELECT lifecycle, COUNT(*) AS cnt
             FROM log_records
-            WHERE json_extract_string(extra, '$.lifecycle') IS NOT NULL
+            WHERE lifecycle IS NOT NULL
             GROUP BY lifecycle
             """,
         ).fetchall()
@@ -40,9 +40,9 @@ def test_log_db_each_run_has_at_most_one_start_and_one_termination(integration_l
             """
             SELECT
                 run_id,
-                COUNT(*) FILTER (WHERE json_extract_string(extra, '$.lifecycle') = 'start') AS starts,
-                COUNT(*) FILTER (WHERE json_extract_string(extra, '$.lifecycle') = 'end') AS ends,
-                COUNT(*) FILTER (WHERE json_extract_string(extra, '$.lifecycle') = 'failed') AS fails
+                COUNT(*) FILTER (WHERE lifecycle = 'start') AS starts,
+                COUNT(*) FILTER (WHERE lifecycle = 'end') AS ends,
+                COUNT(*) FILTER (WHERE lifecycle = 'failed') AS fails
             FROM log_records
             WHERE run_id IS NOT NULL
             GROUP BY run_id
@@ -62,9 +62,10 @@ def test_log_db_each_run_has_at_most_one_start_and_one_termination(integration_l
 def test_get_last_successful_run_date_returns_a_date(integration_log_db_path: Path) -> None:
     """IT-LOG-03: ``get_last_successful_run_date`` が staging の log.duckdb で動く。
 
-    `logging/db.py::get_last_successful_run_date` が `INFO` + `lifecycle='end'` を
-    JSON extract で抽出する経路の round-trip 確認。少なくとも 1 つの run_name が
-    成功完了している前提 (staging 通常運用)。
+    `logging/db.py::get_last_successful_run_date` が `INFO` + 物理 ``lifecycle='end'`` を
+    抽出する経路の round-trip 確認。``lifecycle`` は ``init_log_db`` で
+    ``extra.lifecycle`` から denormalise される物理カラム (logging/db.py の docstring)。
+    少なくとも 1 つの run_name が成功完了している前提 (staging 通常運用)。
     """
     with duckdb.connect(str(integration_log_db_path), read_only=True) as conn:
         rows = conn.execute(
@@ -72,7 +73,7 @@ def test_get_last_successful_run_date_returns_a_date(integration_log_db_path: Pa
             SELECT run_name, MAX(run_date) AS last_date
             FROM log_records
             WHERE log_level = 'INFO'
-              AND json_extract_string(extra, '$.lifecycle') = 'end'
+              AND lifecycle = 'end'
             GROUP BY run_name
             """,
         ).fetchall()

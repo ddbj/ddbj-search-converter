@@ -172,6 +172,12 @@ def integration_log_db_path() -> Path:
     Defaults to the staging path but can be overridden with
     ``DDBJ_SEARCH_INTEGRATION_LOG_DB_PATH`` for local development.
     Skip if absent.
+
+    SSOT: ``lifecycle`` は ``init_log_db`` で ``extra.lifecycle`` から denormalise される
+    物理カラム (``logging/db.py`` docstring)。pipeline 実行前の古い log.duckdb には
+    ``lifecycle`` 列が存在しないので、fixture で ``init_log_db`` を呼んで migration を
+    保証する。``init_log_db`` は ``CREATE TABLE IF NOT EXISTS`` / ``ALTER TABLE ADD COLUMN
+    IF NOT EXISTS`` のみで冪等。
     """
     raw = os.environ.get(INTEGRATION_ENV_VAR_LOG_DB_PATH) or _DEFAULT_LOG_DB_PATH
     path = Path(raw)
@@ -180,6 +186,21 @@ def integration_log_db_path() -> Path:
             f"log.duckdb not found at {path}; "
             f"set {INTEGRATION_ENV_VAR_LOG_DB_PATH} to override, "
             "or run the converter pipeline to produce it"
+        )
+    import duckdb
+
+    from ddbj_search_converter.logging.db import init_log_db
+
+    init_log_db(Config(result_dir=path.parent))
+    with duckdb.connect(str(path), read_only=True) as conn:
+        populated = conn.execute(
+            "SELECT COUNT(*) FROM log_records WHERE lifecycle IS NOT NULL"
+        ).fetchone()[0]
+    if populated == 0:
+        pytest.skip(
+            f"log.duckdb at {path} has no rows with non-NULL lifecycle; "
+            "run a pipeline after the lifecycle migration (c395172) so the "
+            "physical lifecycle column gets populated by insert_log_records"
         )
     return path
 
