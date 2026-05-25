@@ -130,13 +130,19 @@ def get_grant_mapping() -> dict[str, Any]:
 
 
 def get_external_link_mapping() -> dict[str, Any]:
-    """Return the shared ExternalLink nested mapping."""
+    """Return the shared ExternalLink nested mapping.
+
+    label は submitter 自由文 (機関名・コーパス名・URL 直書き等) で表記揺れが
+    大きいため text 単独。api 側 `externalLinkLabel` パラメータが `match` /
+    `match_phrase` を投げる経路に合わせる (keyword だと analyzer が走らず完全
+    一致になる)。url は表示用で検索しないため `index: False`。
+    """
     return {
         "externalLink": {
             "type": "nested",
             "properties": {
                 "url": {"type": "keyword", "index": False},
-                "label": {"type": "keyword"},
+                "label": {"type": "text"},
             },
         },
     }

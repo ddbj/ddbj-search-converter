@@ -33,8 +33,10 @@ def get_sra_specific_mapping(index_type: SraIndexType) -> dict[str, Any]:
     """Return SRA type 別の specific mapping.
 
     - sra-experiment: libraryStrategy / librarySource / librarySelection /
-      libraryLayout / platform / instrumentModel / libraryName (text + keyword)、
-      libraryConstructionProtocol (text 単独、長文)
+      libraryLayout / platform / instrumentModel は controlled vocab 寄りで
+      text + keyword、libraryName / libraryConstructionProtocol は text 単独
+      (libraryName は値がほぼユニークな submitter 自由文、
+      libraryConstructionProtocol は長文)
     - sra-analysis: analysisType (text + keyword subfield)
     - sra-sample: collectionDate / geoLocName (text 単独)、derivedFrom (nested)
     - sra-study / sra-run / sra-submission: 追加 specific なし
@@ -51,7 +53,7 @@ def get_sra_specific_mapping(index_type: SraIndexType) -> dict[str, Any]:
             "libraryLayout": text_keyword_256,
             "platform": text_keyword_256,
             "instrumentModel": text_keyword_256,
-            "libraryName": text_keyword_256,
+            "libraryName": {"type": "text"},
             "libraryConstructionProtocol": {"type": "text"},
         }
     if index_type == "sra-analysis":

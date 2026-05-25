@@ -11,7 +11,13 @@ from ddbj_search_converter.es.mappings.common import (
 
 
 def get_biosample_specific_mapping() -> dict[str, Any]:
-    """Return BioSample-specific mapping properties."""
+    """Return BioSample-specific mapping properties.
+
+    host は中程度 cardinality の生物名で facet 化要請があり text + keyword を維持。
+    strain / isolate は submitter 自由文 (株名・検体名の表記揺れ多数、placeholder
+    "not provided" 等の混入も多い) で `.keyword` を生やしても facet/term 用途に
+    使えないため text 単独。
+    """
     text_keyword_256: dict[str, Any] = {
         "type": "text",
         "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
@@ -36,8 +42,8 @@ def get_biosample_specific_mapping() -> dict[str, Any]:
         "geoLocName": {"type": "text"},
         "collectionDate": {"type": "text"},
         "host": text_keyword_256,
-        "strain": text_keyword_256,
-        "isolate": text_keyword_256,
+        "strain": {"type": "text"},
+        "isolate": {"type": "text"},
     }
 
 

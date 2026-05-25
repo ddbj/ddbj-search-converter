@@ -204,6 +204,23 @@ class TestBioProjectMapping:
         props = mapping["mappings"]["properties"]
         assert props["relevance"] == {"type": "keyword"}
 
+    def test_external_link_structure(self) -> None:
+        """externalLink は nested で label は text 単独 / url は keyword 検索対象外。
+
+        label は submitter 自由文 (`JGI Genome Portal` / `GOLD` / `GOLD Project` /
+        URL 直書き等) で表記揺れ多数のため text 単独 (api 側が `match` /
+        `match_phrase` を投げる経路に合わせる。keyword だと analyzer が走らず
+        `externalLinkLabel=GOLD` で `GOLD Project` が hit しない)。
+        url は表示用で検索しないため `index: False` 維持。
+        """
+        mapping = get_bioproject_mapping()
+        external_link = mapping["mappings"]["properties"]["externalLink"]
+        assert external_link["type"] == "nested"
+        link_props = external_link["properties"]
+        assert link_props["label"] == {"type": "text"}
+        assert link_props["url"] == {"type": "keyword", "index": False}
+        assert set(link_props.keys()) == {"label", "url"}
+
     def test_pydantic_fields_present_in_mapping(self) -> None:
         """BioProject Pydantic schema の全 field が ES mapping に存在する。
 
@@ -271,15 +288,25 @@ class TestBioSampleMapping:
         assert "grant" not in props
         assert "externalLink" not in props
 
-    def test_host_and_strain_are_text_keyword(self) -> None:
+    def test_host_is_text_keyword(self) -> None:
+        """host は中程度 cardinality の生物名で facet 化要請があるため text+keyword 維持。"""
         props = get_biosample_mapping()["mappings"]["properties"]
         _assert_text_keyword(props, "host")
-        _assert_text_keyword(props, "strain")
 
-    def test_isolate_is_text_keyword(self) -> None:
-        """isolate は短い識別子で facet/term 想定のため text+keyword。"""
+    def test_strain_is_text_only(self) -> None:
+        """strain は `C57BL/6J` / `C57BL/6` / `C57BL6` 等の表記揺れが多く、
+        `.keyword` での集計・term 検索が成立しないため text 単独。
+        """
         props = get_biosample_mapping()["mappings"]["properties"]
-        _assert_text_keyword(props, "isolate")
+        _assert_text_only(props, "strain")
+
+    def test_isolate_is_text_only(self) -> None:
+        """isolate は submitter 自由文 (検体名・cell line・"not provided" 等の
+        placeholder 混在) で値がほぼユニーク。`.keyword` index を生やしても
+        facet/term 用途に使えないため text 単独。
+        """
+        props = get_biosample_mapping()["mappings"]["properties"]
+        _assert_text_only(props, "isolate")
 
     def test_geo_loc_name_is_text_only(self) -> None:
         """geoLocName は 'Japan:Kagawa, Aji city, Seto Inland Sea' のような階層値で
@@ -389,11 +416,12 @@ class TestSraMapping:
         _assert_text_keyword(props, "instrumentModel")
 
     def test_sra_experiment_library_name_and_protocol(self) -> None:
-        """libraryName は短文で facet 候補にもなり得るため text + keyword。
+        """libraryName は値がほぼユニークな submitter 自由文で `.keyword` index
+        コストが利得を上回るため text 単独。
         libraryConstructionProtocol は長文で facet 向かず text 単独。
         """
         props = get_sra_mapping("sra-experiment")["mappings"]["properties"]
-        _assert_text_keyword(props, "libraryName")
+        _assert_text_only(props, "libraryName")
         _assert_text_only(props, "libraryConstructionProtocol")
 
     def test_sra_analysis_has_analysis_type(self) -> None:
@@ -498,6 +526,25 @@ class TestJgaMapping:
             props = get_jga_mapping(jga_type)["mappings"]["properties"]
             assert "externalLink" in props
             assert props["externalLink"]["type"] == "nested"
+
+    def test_jga_external_link_structure(self) -> None:
+        """JGA 全 4 type で externalLink が nested + label text + url keyword/index:False。
+
+        BioProject 側と同じ common helper 由来だが、4 type に独立に merge されるため
+        merge 過程で property が欠落していないかを type ごとに検証する。
+        """
+        for jga_type in JGA_INDEXES:
+            props = get_jga_mapping(jga_type)["mappings"]["properties"]
+            external_link = props["externalLink"]
+            assert external_link["type"] == "nested", f"{jga_type}: externalLink should be nested"
+            link_props = external_link["properties"]
+            assert link_props["label"] == {"type": "text"}, f"{jga_type}: label should be text only"
+            assert link_props["url"] == {"type": "keyword", "index": False}, (
+                f"{jga_type}: url should be non-indexed keyword"
+            )
+            assert set(link_props.keys()) == {"label", "url"}, (
+                f"{jga_type}: unexpected externalLink sub-properties"
+            )
 
     def test_study_has_publication_and_grant(self) -> None:
         """jga-study のみ publication / grant (nested) を持つ。"""
