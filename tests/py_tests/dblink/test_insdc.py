@@ -17,6 +17,7 @@ from ddbj_search_converter.dblink.db import init_dblink_db, normalize_edge
 from ddbj_search_converter.dblink.insdc import (
     INSDC_TO_BP_QUERY,
     INSDC_TO_BS_QUERY,
+    MANAGER_BLACKLIST_QUERY,
     TRAD_DBS,
     _load_insdc_preserved_file,
     _write_insdc_relations,
@@ -26,23 +27,36 @@ from ddbj_search_converter.logging.logger import _ctx, init_logger
 
 
 def _make_mock_connect(
-    data_by_db: dict[str, list[tuple[str, str]]] | None = None,
+    data_by_db: dict[str, tuple[list[int], list[tuple[int, str, str]]]] | None = None,
 ) -> Callable[..., MagicMock]:
     """psycopg2.connect のモック生成ヘルパー。
 
-    data_by_db: dbname -> rows マッピング。未指定の DB は空結果を返す。
+    data_by_db: ``dbname -> (manager_blacklist_acids, main_rows)`` のマッピング。
+    未指定の DB は両方空。
+
+    - manager_blacklist_acids: ``MANAGER_BLACKLIST_QUERY`` の戻り値 (ac_id の list)
+    - main_rows: ``INSDC_TO_BP/BS_QUERY`` の戻り値 (``(ac_id, accession, target_id)`` の 3-tuple)
+
+    本番実装 ``_fetch_from_db`` は同一 connection 内で ``conn.cursor()`` を
+    2 回呼ぶ (manager blacklist 用 client cursor → 本クエリ用 server-side
+    cursor) ため、``conn.cursor.side_effect`` で呼び順契約を表現する。
     """
     if data_by_db is None:
         data_by_db = {}
 
+    def _make_cursor(rows: list[Any]) -> MagicMock:
+        cur = MagicMock()
+        cur.__iter__ = MagicMock(return_value=iter(rows))
+        cur.__enter__ = MagicMock(return_value=cur)
+        cur.__exit__ = MagicMock(return_value=False)
+        return cur
+
     def mock_connect(**kwargs: Any) -> MagicMock:
-        rows = data_by_db.get(kwargs.get("dbname", ""), [])
-        mock_cursor = MagicMock()
-        mock_cursor.__iter__ = MagicMock(return_value=iter(rows))
-        mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_cursor.__exit__ = MagicMock(return_value=False)
+        manager_blacklist_acids, main_rows = data_by_db.get(kwargs.get("dbname", ""), ([], []))
+        mgr_cursor = _make_cursor([(acid,) for acid in manager_blacklist_acids])
+        main_cursor = _make_cursor(main_rows)
         mock_conn = MagicMock()
-        mock_conn.cursor.return_value = mock_cursor
+        mock_conn.cursor.side_effect = [mgr_cursor, main_cursor]
         return mock_conn
 
     return mock_connect
@@ -76,11 +90,11 @@ class TestWriteInsdcRelations:
         init_dblink_db(insdc_config)
 
         sample_data = [
-            ("AB000001", "PRJDB12345"),
-            ("CP035466", "PRJNA999999"),
+            (1, "AB000001", "PRJDB12345"),
+            (2, "CP035466", "PRJNA999999"),
         ]
 
-        mock_connect = _make_mock_connect({"g-actual": sample_data})
+        mock_connect = _make_mock_connect({"g-actual": ([], sample_data)})
         with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
 
@@ -98,11 +112,11 @@ class TestWriteInsdcRelations:
         init_dblink_db(insdc_config)
 
         sample_data = [
-            ("AB000001", "SAMD00000001"),
-            ("CP035466", "SAMN12345678"),
+            (1, "AB000001", "SAMD00000001"),
+            (2, "CP035466", "SAMN12345678"),
         ]
 
-        mock_connect = _make_mock_connect({"g-actual": sample_data})
+        mock_connect = _make_mock_connect({"g-actual": ([], sample_data)})
         with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "biosample", INSDC_TO_BS_QUERY, set())
 
@@ -120,13 +134,13 @@ class TestWriteInsdcRelations:
         init_dblink_db(insdc_config)
 
         sample_data = [
-            ("AB000001", "PRJDB12345"),
-            ("AB000002", "PRJDB99999"),
-            ("AB000003", "PRJDB12345"),
+            (1, "AB000001", "PRJDB12345"),
+            (2, "AB000002", "PRJDB99999"),
+            (3, "AB000003", "PRJDB12345"),
         ]
 
         blacklist = {"PRJDB99999"}
-        mock_connect = _make_mock_connect({"g-actual": sample_data})
+        mock_connect = _make_mock_connect({"g-actual": ([], sample_data)})
         with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, blacklist)
 
@@ -157,7 +171,7 @@ class TestWriteInsdcRelations:
     def test_tsv_content_is_normalized(self, insdc_config: Config) -> None:
         init_dblink_db(insdc_config)
 
-        mock_connect = _make_mock_connect({"g-actual": [("AB000001", "PRJDB12345")]})
+        mock_connect = _make_mock_connect({"g-actual": ([], [(1, "AB000001", "PRJDB12345")])})
         with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
             _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
 
@@ -176,6 +190,174 @@ class TestWriteInsdcRelations:
         # normalize_edge("insdc", "AB000001", "bioproject", "PRJDB12345")
         # => ("bioproject", "PRJDB12345", "insdc", "AB000001")
         assert cols == ["bioproject", "PRJDB12345", "insdc", "AB000001"]
+
+    def test_skips_rows_in_manager_blacklist(self, insdc_config: Config) -> None:
+        """manager blacklist の ac_id を持つ row は TSV に出ない。"""
+        init_dblink_db(insdc_config)
+
+        main_rows = [
+            (1, "AB000001", "PRJDB12345"),  # 採用
+            (2, "AB000002", "PRJDB99999"),  # blacklist
+            (3, "AB000003", "PRJDB11111"),  # 採用
+        ]
+
+        mock_connect = _make_mock_connect({"g-actual": ([2], main_rows)})
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
+            _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
+
+        db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute("SELECT * FROM raw_edges").fetchall()
+
+        assert len(rows) == 2
+        accessions = {row[3] for row in rows}
+        assert "AB000002" not in accessions
+        assert "AB000001" in accessions
+        assert "AB000003" in accessions
+
+    def test_manager_blacklist_skips_all_rows_sharing_ac_id(self, insdc_config: Config) -> None:
+        """1 ac_id が複数 row (primary + secondary accession の併存等) に展開されているとき、
+        manager blacklist hit で **全 row** が skip されること。`in set` 比較が ac_id 単位で
+        作用することの境界 guard。
+        """
+        init_dblink_db(insdc_config)
+
+        main_rows = [
+            (1, "AB000001", "PRJDB12345"),
+            (1, "AB000001.1", "PRJDB12345"),  # ac_id=1 の別 accession (secondary 想定)
+            (2, "AB000002", "PRJDB99999"),  # 採用
+        ]
+
+        mock_connect = _make_mock_connect({"g-actual": ([1], main_rows)})
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
+            _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
+
+        db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute("SELECT * FROM raw_edges").fetchall()
+
+        accessions = {row[3] for row in rows}
+        assert "AB000001" not in accessions
+        assert "AB000001.1" not in accessions
+        assert "AB000002" in accessions
+
+    def test_empty_manager_blacklist_passes_all_rows(self, insdc_config: Config) -> None:
+        """manager blacklist が空のとき、全 row が通る (filter 反転 mutation を検出)。"""
+        init_dblink_db(insdc_config)
+
+        main_rows = [
+            (1, "AB000001", "PRJDB12345"),
+            (2, "AB000002", "PRJDB99999"),
+        ]
+
+        mock_connect = _make_mock_connect({"g-actual": ([], main_rows)})
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=mock_connect):
+            _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
+
+        db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute("SELECT * FROM raw_edges").fetchall()
+
+        assert len(rows) == 2
+
+    def test_manager_blacklist_fetch_failure_triggers_retry(self, insdc_config: Config) -> None:
+        """manager blacklist fetch の OperationalError で retry が発火し、2 回目成功で全件処理される。
+
+        retry スコープが connect だけでなく blacklist fetch も含んでいることの guard。
+        """
+        import psycopg2
+
+        init_dblink_db(insdc_config)
+
+        g_actual_call_count = {"n": 0}
+
+        def flaky_connect(**kwargs: Any) -> MagicMock:
+            dbname = kwargs.get("dbname", "")
+            if dbname != "g-actual":
+                # 他 DB は空結果で素通り
+                mgr = MagicMock()
+                mgr.__iter__ = MagicMock(return_value=iter([]))
+                mgr.__enter__ = MagicMock(return_value=mgr)
+                mgr.__exit__ = MagicMock(return_value=False)
+                main = MagicMock()
+                main.__iter__ = MagicMock(return_value=iter([]))
+                main.__enter__ = MagicMock(return_value=main)
+                main.__exit__ = MagicMock(return_value=False)
+                mock_conn = MagicMock()
+                mock_conn.cursor.side_effect = [mgr, main]
+                return mock_conn
+
+            g_actual_call_count["n"] += 1
+            if g_actual_call_count["n"] == 1:
+                # 1 回目: blacklist fetch の execute で OperationalError
+                bad = MagicMock()
+                bad.__enter__ = MagicMock(return_value=bad)
+                bad.__exit__ = MagicMock(return_value=False)
+                bad.execute.side_effect = psycopg2.OperationalError("connection lost")
+                mock_conn = MagicMock()
+                mock_conn.cursor.return_value = bad
+                return mock_conn
+
+            # 2 回目以降: 正常
+            main_rows = [(1, "AB000001", "PRJDB12345")]
+            mgr = MagicMock()
+            mgr.__iter__ = MagicMock(return_value=iter([]))
+            mgr.__enter__ = MagicMock(return_value=mgr)
+            mgr.__exit__ = MagicMock(return_value=False)
+            main = MagicMock()
+            main.__iter__ = MagicMock(return_value=iter(main_rows))
+            main.__enter__ = MagicMock(return_value=main)
+            main.__exit__ = MagicMock(return_value=False)
+            mock_conn = MagicMock()
+            mock_conn.cursor.side_effect = [mgr, main]
+            return mock_conn
+
+        with (
+            patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=flaky_connect),
+            patch("ddbj_search_converter.dblink.insdc.time.sleep"),
+        ):
+            _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
+
+        assert g_actual_call_count["n"] == 2
+
+        db_path = insdc_config.const_dir.joinpath("dblink", "dblink.tmp.duckdb")
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute("SELECT * FROM raw_edges WHERE dst_accession = 'AB000001'").fetchall()
+        assert len(rows) == 1
+
+    def test_no_commit_called_between_cursors(self, insdc_config: Config) -> None:
+        """blacklist fetch と本クエリの間で commit が呼ばれない (server-side cursor 保護)。
+
+        psycopg2 の DECLARE ... CURSOR は transaction 内でだけ生きる。manager
+        blacklist fetch で開いた transaction を commit() で閉じると、続く
+        server-side cursor が無効化される。
+        """
+        init_dblink_db(insdc_config)
+
+        captured: list[MagicMock] = []
+
+        def capturing_connect(**kwargs: Any) -> MagicMock:
+            mgr = MagicMock()
+            mgr.__iter__ = MagicMock(return_value=iter([]))
+            mgr.__enter__ = MagicMock(return_value=mgr)
+            mgr.__exit__ = MagicMock(return_value=False)
+            main = MagicMock()
+            main.__iter__ = MagicMock(
+                return_value=iter([(1, "AB000001", "PRJDB12345")] if kwargs.get("dbname") == "g-actual" else [])
+            )
+            main.__enter__ = MagicMock(return_value=main)
+            main.__exit__ = MagicMock(return_value=False)
+            mock_conn = MagicMock()
+            mock_conn.cursor.side_effect = [mgr, main]
+            captured.append(mock_conn)
+            return mock_conn
+
+        with patch("ddbj_search_converter.dblink.insdc.connect_with_retry", side_effect=capturing_connect):
+            _write_insdc_relations(insdc_config, "bioproject", INSDC_TO_BP_QUERY, set())
+
+        assert captured, "_write_insdc_relations が 1 度も connect しなかった"
+        for conn in captured:
+            conn.commit.assert_not_called()
 
 
 class TestLoadInsdcPreservedFile:
@@ -260,11 +442,12 @@ class TestLoadInsdcPreservedFile:
 
 
 class TestQueryShape:
-    """INSDC_TO_BP_QUERY / INSDC_TO_BS_QUERY が status filter を含むことの guard。
+    """INSDC クエリ群の SQL 構造 guard。
 
-    既存テストは psycopg2.connect を mock 化しており SQL の WHERE 文字列を実行しないため、
+    既存テストは ``psycopg2.connect`` を mock 化しており SQL の WHERE 文字列を実行しないため、
     constant assertion で SQL 構造の退化を検出する。
-    SSOT: docs/data-architecture.md §公開状態の判定 (manager テーブル)。
+
+    SSOT: ``docs/data-architecture.md`` §「公開状態の判定 (manager テーブル)」。
     """
 
     @pytest.mark.parametrize(
@@ -274,18 +457,36 @@ class TestQueryShape:
             (INSDC_TO_BS_QUERY, "INSDC_TO_BS_QUERY"),
         ],
     )
-    def test_query_joins_manager_and_filters_public_status(self, query: str, label: str) -> None:
-        # JOIN manager は exactly 1 回 (LEFT JOIN や JOIN 重複への mutation を検出)
-        assert query.count("JOIN manager") == 1, label
-        assert "LEFT JOIN manager" not in query, label
-        # status filter は IN かつ NOT IN ではない (反転 mutation を検出)
-        assert "manager.status IN (1002, 1005)" in query, label
-        assert "NOT IN" not in query, label
-        # 採用しない status 値の単独混入を検出 (e.g. 1001 private を IN リストに追加する mutation)
-        for forbidden in (1000, 1001, 1004, 1006, 1007):
-            assert f", {forbidden}" not in query and f"({forbidden}," not in query, (
-                f"{label}: status {forbidden} は採用外なのに IN リストに含まれている"
-            )
+    def test_main_query_does_not_join_manager(self, query: str, label: str) -> None:
+        # 本クエリは manager を JOIN しない (planner 劣化を避けるため別クエリで取得)。
+        # ``manager`` 文字列の混入だけで JOIN/WHERE 双方の退化を検出できる。
+        assert "manager" not in query.lower(), label
+        # JOIN は link_pr_ac と project の 2 つだけ (manager / entry / その他の JOIN 混入を検出)。
+        assert query.count("JOIN") == 2, label
+        # post-filter 用 ac_id が SELECT 列の 1 番目に含まれる (列順退化で in-set 比較が
+        # silent に常時 False 化する事故を防ぐ)。
+        assert "SELECT acc.ac_id," in query, label
+
+    def test_manager_blacklist_query_selects_blacklist_acids(self) -> None:
+        # 採用 status (1002 public / 1005 secondary) 以外を blacklist として返す形であること。
+        # IN ↔ NOT IN の反転 mutation を検出。
+        assert "FROM manager" in MANAGER_BLACKLIST_QUERY
+        assert "status NOT IN (1002, 1005)" in MANAGER_BLACKLIST_QUERY
+        assert "status IN (1002, 1005)" not in MANAGER_BLACKLIST_QUERY.replace("NOT IN", "")
+
+    @pytest.mark.parametrize("forbidden_status", [1000, 1001, 1004, 1006, 1007])
+    def test_manager_blacklist_query_keeps_white_set_minimal(self, forbidden_status: int) -> None:
+        # 採用外 status を白リスト側 (NOT IN リスト) に混入させる mutation を検出。
+        # 1000/1001/1004/1006/1007 のいずれかが NOT IN リストに追加されると、
+        # 該当 status の ac_id が blacklist から漏れて dbXrefs に出てしまう。
+        token_tail = f", {forbidden_status}"
+        token_head = f"({forbidden_status},"
+        assert token_tail not in MANAGER_BLACKLIST_QUERY, (
+            f"status {forbidden_status} が NOT IN リスト末尾に混入 (採用外なのに blacklist から外れる)"
+        )
+        assert token_head not in MANAGER_BLACKLIST_QUERY, (
+            f"status {forbidden_status} が NOT IN リスト先頭に混入 (採用外なのに blacklist から外れる)"
+        )
 
 
 class TestNormalizeEdgeInsdc:

@@ -7,9 +7,15 @@ DBLink データベースに挿入する。
     - insdc_bp_preserved.tsv: 手動キュレーションされた INSDC-BioProject 関連
     - insdc_bs_preserved.tsv: 手動キュレーションされた INSDC-BioSample 関連
 - TRAD PostgreSQL (g-actual:54308, e-actual:54309, w-actual:54310)
-    - accession テーブルと project テーブルを JOIN
+    - 各 DB ごとに readonly transaction を張り、同一 connection 内で
+      ``manager`` から採用外 ``status`` を持つ ac_id 集合 (manager blacklist)
+      を先に取得 (``MANAGER_BLACKLIST_QUERY``) してから、accession ⋈ link_pr_ac
+      ⋈ project の server-side cursor stream を流し、ac_id が manager
+      blacklist にある row を Python 側で skip する。
     - project_id が PRJ% で始まる行 → insdc-bioproject 関連
     - project_id が SAM% で始まる行 → insdc-biosample 関連
+    - 採用 ``status`` 値は ``docs/data-architecture.md`` の
+      「公開状態の判定 (manager テーブル)」を参照。
 
 出力:
 - dblink.tmp.duckdb (raw_edges テーブル) に挿入
@@ -50,26 +56,38 @@ MAX_RETRIES = 3
 RETRY_WAIT_SECONDS = 30
 
 INSDC_TO_BP_QUERY = """
-    SELECT translate(acc.accession, ' ', ''), project.project_id
+    SELECT acc.ac_id, translate(acc.accession, ' ', ''), project.project_id
     FROM accession AS acc
     JOIN link_pr_ac USING(ac_id)
     JOIN project ON(project.pr_id = link_pr_ac.pr_id)
-    JOIN manager ON(manager.ac_id = acc.ac_id)
     WHERE project.project_id LIKE 'PRJ%%'
       AND acc.accession IS NOT NULL
-      AND manager.status IN (1002, 1005)
 """
 
 INSDC_TO_BS_QUERY = """
-    SELECT translate(acc.accession, ' ', ''), project.project_id
+    SELECT acc.ac_id, translate(acc.accession, ' ', ''), project.project_id
     FROM accession AS acc
     JOIN link_pr_ac USING(ac_id)
     JOIN project ON(project.pr_id = link_pr_ac.pr_id)
-    JOIN manager ON(manager.ac_id = acc.ac_id)
     WHERE project.project_id LIKE 'SAM%%'
       AND acc.accession IS NOT NULL
-      AND manager.status IN (1002, 1005)
 """
+
+MANAGER_BLACKLIST_QUERY = """
+    SELECT ac_id FROM manager WHERE status NOT IN (1002, 1005)
+"""
+
+
+def _load_manager_blacklist(conn: psycopg2.extensions.connection) -> set[int]:
+    """採用外 ``manager.status`` (1002/1005 以外) を持つ ac_id 集合を取得する。
+
+    後段で同一 connection に server-side cursor を開くため、ここでは client
+    cursor + fetchall。同一 transaction を維持する必要があるので ``commit()``
+    は呼ばない (commit すると後段の server-side cursor が無効化される)。
+    """
+    with conn.cursor() as cur:
+        cur.execute(MANAGER_BLACKLIST_QUERY)
+        return {row[0] for row in cur}
 
 
 def _fetch_from_db(
@@ -96,13 +114,19 @@ def _fetch_from_db(
         keepalives_count=5,
     )
     try:
+        conn.set_session(readonly=True)
+        manager_blacklist = _load_manager_blacklist(conn)
+        log_info(f"manager blacklist: {len(manager_blacklist)} for {dbname}")
+
         count = 0
         with conn.cursor(name=f"insdc_{dbname}") as cur:
             cur.itersize = CURSOR_ITERSIZE
             cur.execute(query)
 
             with tsv_path.open("w", encoding="utf-8") as f:
-                for accession, target_id in cur:
+                for ac_id, accession, target_id in cur:
+                    if ac_id in manager_blacklist:
+                        continue
                     if target_id in blacklist:
                         continue
                     normalized = normalize_edge("insdc", accession, dst_type, target_id)
