@@ -163,6 +163,27 @@ def extract_description(entry: dict[str, Any], index_name: IndexName) -> str | N
     return str(description) if description is not None else None
 
 
+_ACCESSION_RE = re.compile(r"^([A-Za-z]+)(\d+)$")
+
+
+def _is_zero_padding_variant(sid: str, accession: str) -> bool:
+    """`sid` が `accession` の「同じ英字 prefix・数値部はゼロ埋め桁数の違いを無視して一致」かを判定する。
+
+    例: ``_is_zero_padding_variant("JGAS00000000001", "JGAS000001")`` は True
+    (どちらも prefix ``JGAS``・数値 ``1``)。prefix なし / 数値部なし / prefix 違い /
+    数値違い / 空文字 はすべて False を返す。
+
+    JGA の SECONDARY_ID には accession のゼロ埋め桁数だけが異なる同一エントリの別表記
+    (例: ``JGAS000001`` に対する ``JGAS00000000001``) が入るため、これを sameAs から
+    除外する判定に使う。
+    """
+    m_sid = _ACCESSION_RE.match(sid)
+    m_acc = _ACCESSION_RE.match(accession)
+    if m_sid is None or m_acc is None:
+        return False
+    return m_sid.group(1) == m_acc.group(1) and int(m_sid.group(2)) == int(m_acc.group(2))
+
+
 def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str = "") -> list[Xref]:
     """JGA エントリから sameAs (SECONDARY_ID) を抽出する。"""
     xrefs: list[Xref] = []
@@ -175,7 +196,7 @@ def parse_same_as(entry: dict[str, Any], index_name: IndexName, accession: str =
             return []
         sid_list = secondary_id if isinstance(secondary_id, list) else [secondary_id]
         for sid in sid_list:
-            if not sid or sid == accession:
+            if not sid or sid == accession or _is_zero_padding_variant(sid, accession):
                 continue
             xrefs.append(
                 Xref(

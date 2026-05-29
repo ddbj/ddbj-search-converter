@@ -4,11 +4,12 @@ from datetime import datetime, timezone
 from typing import Any
 
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.jsonl.jga import (
     _format_date_from_csv,
+    _is_zero_padding_variant,
     extract_dataset_type,
     extract_description,
     extract_study_type,
@@ -353,6 +354,132 @@ class TestParseSameAs:
         }
         result = parse_same_as(entry, "jga-study", "JGAS000001")
         assert result == []
+
+    def test_secondary_id_zero_padding_variant_excluded(self) -> None:
+        """ゼロ埋め桁数だけ違う同一 accession (JGAS000001 ⇔ JGAS00000000001) は取り込まない。"""
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAS00000000001"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert result == []
+
+    def test_secondary_id_zero_padding_reverse_excluded(self) -> None:
+        """accession 側が長く Secondary 側が短い逆向きでも同一とみなして除外する。"""
+        entry = {
+            "accession": "JGAS00000000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAS000001"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS00000000001")
+        assert result == []
+
+    def test_secondary_id_different_number_retained(self) -> None:
+        """数値が異なる Secondary ID は別 accession として保持する。"""
+        entry = {
+            "accession": "JGAS000561",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGAS000556"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000561")
+        assert len(result) == 1
+        assert result[0].identifier == "JGAS000556"
+
+    def test_secondary_id_different_prefix_retained(self) -> None:
+        """prefix が異なる Secondary ID は保持する (bulk insert 側で別途除外される)。"""
+        entry = {
+            "accession": "JGAD000452",
+            "IDENTIFIERS": {"SECONDARY_ID": "AGDD_000001"},
+        }
+        result = parse_same_as(entry, "jga-dataset", "JGAD000452")
+        assert len(result) == 1
+        assert result[0].identifier == "AGDD_000001"
+
+    def test_secondary_id_no_numeric_part_retained(self) -> None:
+        """数値部を持たない Secondary ID は桁数違い判定の対象外なので保持する。"""
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": "JGASABC"},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert len(result) == 1
+        assert result[0].identifier == "JGASABC"
+
+    def test_secondary_id_mixed_list_excludes_only_variant(self) -> None:
+        """リスト内で桁数違い同一だけ除外し、数値違いは残す。"""
+        entry = {
+            "accession": "JGAS000001",
+            "IDENTIFIERS": {"SECONDARY_ID": ["JGAS00000000001", "JGAS000561"]},
+        }
+        result = parse_same_as(entry, "jga-study", "JGAS000001")
+        assert len(result) == 1
+        assert result[0].identifier == "JGAS000561"
+
+
+class TestIsZeroPaddingVariant:
+    """Tests for _is_zero_padding_variant function."""
+
+    def test_zero_padding_variant_true(self) -> None:
+        assert _is_zero_padding_variant("JGAS00000000001", "JGAS000001") is True
+
+    def test_exact_match_true(self) -> None:
+        assert _is_zero_padding_variant("JGAS000001", "JGAS000001") is True
+
+    def test_zero_values_true(self) -> None:
+        assert _is_zero_padding_variant("JGAS0", "JGAS0000") is True
+
+    def test_different_number_false(self) -> None:
+        assert _is_zero_padding_variant("JGAS000556", "JGAS000561") is False
+
+    def test_different_prefix_false(self) -> None:
+        assert _is_zero_padding_variant("AGDD000001", "JGAS000001") is False
+
+    def test_underscore_prefix_false(self) -> None:
+        assert _is_zero_padding_variant("AGDD_000001", "JGAS000001") is False
+
+    def test_empty_accession_false(self) -> None:
+        assert _is_zero_padding_variant("JGAS000001", "") is False
+
+    def test_empty_sid_false(self) -> None:
+        assert _is_zero_padding_variant("", "JGAS000001") is False
+
+    def test_no_prefix_false(self) -> None:
+        assert _is_zero_padding_variant("12345", "JGAS000001") is False
+
+    def test_no_numeric_part_false(self) -> None:
+        assert _is_zero_padding_variant("JGASABC", "JGAS000001") is False
+
+    @given(
+        prefix=st.sampled_from(["JGAS", "JGAD", "JGAC", "JGAP"]),
+        n=st.integers(min_value=0, max_value=10**12),
+        extra_a=st.integers(min_value=0, max_value=8),
+        extra_b=st.integers(min_value=0, max_value=8),
+    )
+    def test_same_number_any_zero_padding_is_variant(
+        self, prefix: str, n: int, extra_a: int, extra_b: int
+    ) -> None:
+        """同 prefix・同数値ならゼロ埋め桁数がどれだけ違っても常に variant。"""
+        digits = str(n)
+        a = f"{prefix}{'0' * extra_a}{digits}"
+        b = f"{prefix}{'0' * extra_b}{digits}"
+        assert _is_zero_padding_variant(a, b) is True
+
+    @given(
+        prefix=st.sampled_from(["JGAS", "JGAD", "JGAC"]),
+        m=st.integers(min_value=0, max_value=10**9),
+        n=st.integers(min_value=0, max_value=10**9),
+    )
+    def test_different_number_never_variant(self, prefix: str, m: int, n: int) -> None:
+        """同 prefix でも数値が違えば variant ではない。"""
+        assume(m != n)
+        assert _is_zero_padding_variant(f"{prefix}{m}", f"{prefix}{n}") is False
+
+    @given(
+        p1=st.sampled_from(["JGAS", "JGAD"]),
+        p2=st.sampled_from(["JGAC", "JGAP"]),
+        n=st.integers(min_value=0, max_value=10**9),
+    )
+    def test_different_prefix_never_variant(self, p1: str, p2: str, n: int) -> None:
+        """prefix が違えば数値が同じでも variant ではない。"""
+        assert _is_zero_padding_variant(f"{p1}{n}", f"{p2}{n}") is False
 
 
 class TestJgaEntryToJgaInstanceProperties:
