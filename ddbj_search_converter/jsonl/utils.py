@@ -16,8 +16,8 @@ def build_search_entry_url(entry_type: str, accession: str, ext: SearchEntryExt)
     """`{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}.{ext}` を組み立てる。
 
     distribution の `.json` / `.jsonld` / `.xml` metadata URL を SSOT 化するためのヘルパ。
-    Xref の URL とは別経路 (Xref は `URL_TEMPLATE` 経由で `?` クエリや GEA の prefix
-    分割など type 固有ロジックを含むため、共通化しない)。
+    Xref の URL とは別経路 (Xref は `URL_TEMPLATE` 経由で `?` クエリなど type 固有の
+    URL 構造を含むため、共通化しない)。
     """
     return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}.{ext}"
 
@@ -25,9 +25,8 @@ def build_search_entry_url(entry_type: str, accession: str, ext: SearchEntryExt)
 def build_search_entry_self_url(entry_type: str, accession: str) -> str:
     """`{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}` を組み立てる。
 
-    各エントリの検索 UI 上の self URL (`{entry}.url` field) を SSOT 化する。GEA / MetaboBank
-    のような Xref URL とは別構造 (Xref は外部リソース URL、self URL は検索 UI URL) のため、
-    `URL_TEMPLATE` 経由の `_build_url` とは別経路。
+    各エントリの検索 UI 上の self URL (`{entry}.url` field) を SSOT 化する。`URL_TEMPLATE`
+    経由の `_build_url` (Xref URL 生成) とは拡張子・クエリの有無が異なるため別経路。
     """
     return f"{SEARCH_BASE_URL}/search/entry/{entry_type}/{accession}"
 
@@ -66,12 +65,12 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "jga-dataset": f"{SEARCH_BASE_URL}/search/entry/jga-dataset/{{id}}",
     "jga-dac": f"{SEARCH_BASE_URL}/search/entry/jga-dac/{{id}}",
     "jga-policy": f"{SEARCH_BASE_URL}/search/entry/jga-policy/{{id}}",
-    "gea": "https://ddbj.nig.ac.jp/public/ddbj_database/gea/experiment/{prefix}/{id}/",
+    "gea": f"{SEARCH_BASE_URL}/search/entry/gea/{{id}}",
     "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
     "insdc": "https://getentry.ddbj.nig.ac.jp/getentry?database=ddbj&accession_number={id}",
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
     "insdc-master": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
-    "metabobank": "https://mb2.ddbj.nig.ac.jp/study/{id}.html",
+    "metabobank": f"{SEARCH_BASE_URL}/search/entry/metabobank/{{id}}",
     "humandbs": "https://humandbs.dbcls.jp/{id}",
     "pubmed": "https://pubmed.ncbi.nlm.nih.gov/{id}/",
     "taxonomy": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={id}",
@@ -127,23 +126,9 @@ def normalize_publication_dbtype(raw: str | None) -> PublicationDbType | None:
 
 
 def _build_url(db_type: XrefType, id_: str) -> str:
-    """``URL_TEMPLATE`` から URL を生成する。GEA は prefix 切り出しが必要なため特例。
+    """``URL_TEMPLATE`` の `{id}` プレースホルダに accession を埋めて URL を生成する。"""
 
-    GEA URL は ``{base}/experiment/E-GEAD-{NNN}/E-GEAD-{full}/`` 形式で、
-    prefix の ``E-GEAD-{NNN}`` は accession の数値部を 1000 単位で切り捨てた
-    グループ (FTP 側のディレクトリ構造と一致)。``E-GEAD-`` で始まらない、
-    あるいは末尾が数字でない id でも crash しないよう、parse 失敗時は 0 に
-    fallback する。type_hint 経由 / pattern match 経由のどちらから来ても
-    同じ挙動になるよう 1 箇所に集約する。"""
-    template = URL_TEMPLATE[db_type]
-    if db_type == "gea":
-        try:
-            gea_id_num = int(id_.removeprefix("E-GEAD-"))
-        except ValueError:
-            gea_id_num = 0
-        prefix = f"E-GEAD-{(gea_id_num // 1000) * 1000:03d}"
-        return template.format(prefix=prefix, id=id_)
-    return template.format(id=id_)
+    return URL_TEMPLATE[db_type].format(id=id_)
 
 
 def to_xref(id_: str, *, type_hint: XrefType | None = None) -> Xref:

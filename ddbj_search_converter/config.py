@@ -60,6 +60,7 @@ TMP_STATUS_CACHE_DB_FILE_NAME = "bp_bs_status.tmp.duckdb"
 DRA_FILE_INDEX_DB_FILE_NAME = "dra_file_index.duckdb"
 TMP_DRA_FILE_INDEX_DB_FILE_NAME = "dra_file_index.tmp.duckdb"
 DRA_PUBLIC_BASE_URL = "https://ddbj.nig.ac.jp/public/ddbj_database/dra"
+GEA_PUBLIC_BASE_URL = "https://ddbj.nig.ac.jp/public/ddbj_database/gea"
 
 # ID to accession mapping files (for numeric ID conversion)
 BP_ID_TO_ACCESSION_FILE_NAME = "bp_id_to_accession.tsv"

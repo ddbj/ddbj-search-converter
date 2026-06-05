@@ -298,9 +298,7 @@ class TestProcessSubmissionXmlAnalysisDirs:
         results = process_submission_xml(
             submission="DRA016427",
             blacklist=set(),
-            accession_info=self._accession_info(
-                ["DRA016427", "DRZ138937", "DRZ138938"], "analysis"
-            ),
+            accession_info=self._accession_info(["DRA016427", "DRZ138937", "DRZ138938"], "analysis"),
             xml_cache=self._xml_cache(),
             is_ddbj_origin=True,
             analysis_dirs={"DRZ138937"},
@@ -324,9 +322,7 @@ class TestProcessSubmissionXmlAnalysisDirs:
         results = process_submission_xml(
             submission="DRA016427",
             blacklist=set(),
-            accession_info=self._accession_info(
-                ["DRA016427", "DRZ138937", "DRZ138938"], "analysis"
-            ),
+            accession_info=self._accession_info(["DRA016427", "DRZ138937", "DRZ138938"], "analysis"),
             xml_cache=self._xml_cache(),
             is_ddbj_origin=True,
         )

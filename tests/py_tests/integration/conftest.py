@@ -193,9 +193,7 @@ def integration_log_db_path() -> Path:
 
     init_log_db(Config(result_dir=path.parent))
     with duckdb.connect(str(path), read_only=True) as conn:
-        populated = conn.execute(
-            "SELECT COUNT(*) FROM log_records WHERE lifecycle IS NOT NULL"
-        ).fetchone()[0]
+        populated = conn.execute("SELECT COUNT(*) FROM log_records WHERE lifecycle IS NOT NULL").fetchone()[0]
     if populated == 0:
         pytest.skip(
             f"log.duckdb at {path} has no rows with non-NULL lifecycle; "

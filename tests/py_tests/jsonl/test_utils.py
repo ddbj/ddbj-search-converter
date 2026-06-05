@@ -8,7 +8,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import finalize_dblink_db, init_dblink_db
 from ddbj_search_converter.jsonl.utils import (
     URL_TEMPLATE,
@@ -66,18 +66,15 @@ class TestToXref:
         xref = to_xref(acc)
         assert xref.type_ == expected_type
 
-    def test_gea_id_url(self) -> None:
+    def test_gea_url(self) -> None:
         xref = to_xref("E-GEAD-123")
         assert xref.type_ == "gea"
-        assert "E-GEAD-000" in xref.url
+        assert xref.url == f"{SEARCH_BASE_URL}/search/entry/gea/E-GEAD-123"
 
-    def test_gea_id_url_boundary(self) -> None:
-        """GEA ID 999 -> prefix E-GEAD-000, ID 1000 -> prefix E-GEAD-1000."""
-        xref_999 = to_xref("E-GEAD-999")
-        assert "E-GEAD-000" in xref_999.url
-
-        xref_1000 = to_xref("E-GEAD-1000")
-        assert "E-GEAD-1000" in xref_1000.url
+    def test_metabobank_url(self) -> None:
+        xref = to_xref("MTBKS123")
+        assert xref.type_ == "metabobank"
+        assert xref.url == f"{SEARCH_BASE_URL}/search/entry/metabobank/MTBKS123"
 
     def test_type_hint_overrides_detection(self) -> None:
         xref = to_xref("12345678", type_hint="pubmed")
@@ -91,18 +88,19 @@ class TestToXref:
     def test_type_hint_gea(self) -> None:
         xref = to_xref("E-GEAD-123", type_hint="gea")
         assert xref.type_ == "gea"
-        assert "E-GEAD-000" in xref.url
+        assert xref.url == f"{SEARCH_BASE_URL}/search/entry/gea/E-GEAD-123"
 
 
-class TestBug6GeaNonNumericId:
-    """Bug #6 (fixed): to_xref GEA の非数値 ID でもクラッシュしない。"""
+class TestGeaNonNumericId:
+    """GEA の非数値 ID に対する Xref 生成。"""
 
     def test_non_numeric_gea_id_with_hint(self) -> None:
         xref = to_xref("E-GEAD-abc", type_hint="gea")
         assert xref.type_ == "gea"
+        assert xref.url == f"{SEARCH_BASE_URL}/search/entry/gea/E-GEAD-abc"
 
     def test_non_numeric_gea_id_without_hint(self) -> None:
-        """type_hint なしの場合、パターンマッチで弾かれるので問題ない。"""
+        """type_hint なしの場合、パターンマッチで弾かれ taxonomy にフォールバックする。"""
         xref = to_xref("E-GEAD-abc")
         assert xref.type_ == "taxonomy"
 
@@ -113,22 +111,6 @@ class TestBug7InvalidTypeHint:
     def test_invalid_type_hint(self) -> None:
         with pytest.raises(ValueError, match="Unknown type_hint"):
             to_xref("test", type_hint="nonexistent")  # type: ignore[arg-type]
-
-
-class TestGeaUrlPathConsistency:
-    """type_hint="gea" と pattern match 経路の GEA URL が一致する。
-
-    旧実装は GEA URL 生成を 2 箇所に重複させていて、type_hint 経路だけが ``int()``
-    失敗を catch していたという非対称があった。``_build_url`` に集約後の回帰検出。
-    """
-
-    @pytest.mark.parametrize("gea_id", ["E-GEAD-1", "E-GEAD-999", "E-GEAD-1000", "E-GEAD-12345"])
-    def test_paths_agree_for_valid_gea_id(self, gea_id: str) -> None:
-        with_hint = to_xref(gea_id, type_hint="gea")
-        without_hint = to_xref(gea_id)
-        assert without_hint.type_ == "gea"
-        assert with_hint.type_ == "gea"
-        assert with_hint.url == without_hint.url
 
 
 class TestPBT:
@@ -174,7 +156,7 @@ class TestRealAccessionPBT:
 
     @given(acc=st_gea_id())
     def test_gea_pattern_match_with_hint_agrees_without_hint(self, acc: str) -> None:
-        """type_hint なし / あり両方で URL が一致 (TestGeaUrlPathConsistency の拡張)。"""
+        """GEA accession は type_hint の有無によらず同じ type / URL になる。"""
         with_hint = to_xref(acc, type_hint="gea")
         without_hint = to_xref(acc)
         assert with_hint.type_ == "gea"
@@ -211,11 +193,6 @@ class TestEdgeCases:
         xref = to_xref("12345")
         # pubmed and taxonomy share the same pattern, but neither is in priority_types
         assert xref.type_ == "taxonomy"
-
-    def test_gea_id_zero(self) -> None:
-        xref = to_xref("E-GEAD-0")
-        assert xref.type_ == "gea"
-        assert "E-GEAD-000" in xref.url
 
 
 class TestEnsureAttributeList:

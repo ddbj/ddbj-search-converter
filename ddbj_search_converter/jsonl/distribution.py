@@ -3,7 +3,7 @@
 各エントリータイプの distribution リスト生成ロジックを 1 箇所に集約する。
 """
 
-from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL
+from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL
 from ddbj_search_converter.jsonl.utils import build_search_entry_url
 from ddbj_search_converter.schema import Distribution
 
@@ -53,12 +53,39 @@ def make_jga_distribution(index_name: str, accession: str) -> list[Distribution]
     ]
 
 
+def _gea_data_url(accession: str) -> str:
+    """GEA の public ディレクトリ landing page URL を組み立てる。
+
+    `{base}/experiment/E-GEAD-{NNN}/E-GEAD-{full}/` 形式で、prefix の
+    `E-GEAD-{NNN}` は accession の数値部を 1000 単位で切り捨てたグループ
+    (FTP 側のディレクトリ構造と一致)。末尾が数字でない id でも crash しない
+    よう parse 失敗時は 0 に fallback する。
+    """
+    try:
+        gea_id_num = int(accession.removeprefix("E-GEAD-"))
+    except ValueError:
+        gea_id_num = 0
+    prefix = f"E-GEAD-{(gea_id_num // 1000) * 1000:03d}"
+
+    return f"{GEA_PUBLIC_BASE_URL}/experiment/{prefix}/{accession}/"
+
+
 def make_gea_distribution(accession: str) -> list[Distribution]:
-    """GEA の distribution を生成する。"""
+    """GEA の distribution を生成する。
+
+    JSON / JSON-LD の metadata に加え、生データの公開ディレクトリ landing page を
+    DATA として付与する。GEA entry は IDF/SDRF が存在するディレクトリからのみ作られ、
+    対応ディレクトリは必ず存在するため実在チェックは行わず全 entry に付与する。
+    """
 
     return [
         _json_dist("gea", accession),
         _jsonld_dist("gea", accession),
+        Distribution(
+            type="DataDownload",
+            encodingFormat="DATA",
+            contentUrl=_gea_data_url(accession),
+        ),
     ]
 
 

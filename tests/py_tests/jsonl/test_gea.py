@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ddbj_search_converter.config import SEARCH_BASE_URL, Config
+from ddbj_search_converter.config import GEA_PUBLIC_BASE_URL, SEARCH_BASE_URL, Config
 from ddbj_search_converter.jsonl.gea import (
     create_gea_entry,
     extract_dates,
@@ -208,10 +208,12 @@ class TestCreateGeaEntry:
 
         assert gea.experimentType == ["transcription profiling by array"]
 
-        # distribution は JSON + JSON-LD の 2 件
-        assert len(gea.distribution) == 2
+        # distribution は JSON + JSON-LD + DATA (公開ディレクトリ landing page) の 3 件
+        assert len(gea.distribution) == 3
         assert gea.distribution[0].encodingFormat == "JSON"
         assert gea.distribution[1].encodingFormat == "JSON-LD"
+        assert gea.distribution[2].encodingFormat == "DATA"
+        assert gea.distribution[2].contentUrl == f"{GEA_PUBLIC_BASE_URL}/experiment/E-GEAD-1000/E-GEAD-1005/"
 
         # properties には IDF 全 tag が保持される
         assert gea.properties["Investigation Title"] == ["RT2ProfilerTM PCR Array-Human common cytokines (CBX140)"]

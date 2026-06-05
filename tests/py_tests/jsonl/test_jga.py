@@ -453,9 +453,7 @@ class TestIsZeroPaddingVariant:
         extra_a=st.integers(min_value=0, max_value=8),
         extra_b=st.integers(min_value=0, max_value=8),
     )
-    def test_same_number_any_zero_padding_is_variant(
-        self, prefix: str, n: int, extra_a: int, extra_b: int
-    ) -> None:
+    def test_same_number_any_zero_padding_is_variant(self, prefix: str, n: int, extra_a: int, extra_b: int) -> None:
         """同 prefix・同数値ならゼロ埋め桁数がどれだけ違っても常に variant。"""
         digits = str(n)
         a = f"{prefix}{'0' * extra_a}{digits}"

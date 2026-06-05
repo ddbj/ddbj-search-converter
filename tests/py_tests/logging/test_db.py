@@ -278,12 +278,18 @@ class TestInsertLogRecords:
         insert_log_records(config, jsonl)
 
         with duckdb.connect(str(db_path), read_only=True) as conn:
-            cols = {row[0] for row in conn.execute(
-                "SELECT column_name FROM information_schema.columns WHERE table_name = 'log_records'"
-            ).fetchall()}
-            indexes = {row[0] for row in conn.execute(
-                "SELECT index_name FROM duckdb_indexes() WHERE table_name = 'log_records'"
-            ).fetchall()}
+            cols = {
+                row[0]
+                for row in conn.execute(
+                    "SELECT column_name FROM information_schema.columns WHERE table_name = 'log_records'"
+                ).fetchall()
+            }
+            indexes = {
+                row[0]
+                for row in conn.execute(
+                    "SELECT index_name FROM duckdb_indexes() WHERE table_name = 'log_records'"
+                ).fetchall()
+            }
             total = conn.execute("SELECT COUNT(*) FROM log_records").fetchone()
             new_row = conn.execute(
                 "SELECT lifecycle FROM log_records WHERE run_id = ?",
@@ -326,9 +332,7 @@ class TestInsertLogRecords:
         insert_log_records(config, jsonl)
 
         with duckdb.connect(str(db_path), read_only=True) as conn:
-            count = conn.execute(
-                "SELECT COUNT(*) FROM log_records WHERE lifecycle = 'start'"
-            ).fetchone()
+            count = conn.execute("SELECT COUNT(*) FROM log_records WHERE lifecycle = 'start'").fetchone()
 
         assert count is not None
         assert count[0] == 1

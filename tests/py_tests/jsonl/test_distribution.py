@@ -1,15 +1,19 @@
 """Tests for ddbj_search_converter.jsonl.distribution module."""
 
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, SEARCH_BASE_URL
+from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL, SEARCH_BASE_URL
 from ddbj_search_converter.jsonl.distribution import (
     make_bp_distribution,
     make_bs_distribution,
+    make_gea_distribution,
     make_jga_distribution,
+    make_metabobank_distribution,
     make_sra_distribution,
 )
+from py_tests.strategies import st_gea_id
 
 
 class TestMakeBpDistribution:
@@ -75,6 +79,73 @@ class TestMakeJgaDistribution:
 
         assert dists[0].contentUrl == f"{SEARCH_BASE_URL}/search/entry/jga-dataset/JGAD000001.json"
         assert dists[1].contentUrl == f"{SEARCH_BASE_URL}/search/entry/jga-dataset/JGAD000001.jsonld"
+
+
+class TestMakeGeaDistribution:
+    """Tests for make_gea_distribution."""
+
+    def test_returns_json_jsonld_data(self) -> None:
+        dists = make_gea_distribution("E-GEAD-1005")
+
+        assert len(dists) == 3
+        formats = [d.encodingFormat for d in dists]
+        assert formats == ["JSON", "JSON-LD", "DATA"]
+
+    def test_json_jsonld_url_pattern(self) -> None:
+        dists = make_gea_distribution("E-GEAD-1005")
+
+        assert dists[0].contentUrl == f"{SEARCH_BASE_URL}/search/entry/gea/E-GEAD-1005.json"
+        assert dists[1].contentUrl == f"{SEARCH_BASE_URL}/search/entry/gea/E-GEAD-1005.jsonld"
+
+    def test_data_url_pattern(self) -> None:
+        dists = make_gea_distribution("E-GEAD-1005")
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+
+        assert data_dist.type_ == "DataDownload"
+        assert data_dist.contentUrl == f"{GEA_PUBLIC_BASE_URL}/experiment/E-GEAD-1000/E-GEAD-1005/"
+
+    @pytest.mark.parametrize(
+        ("accession", "expected_prefix"),
+        [
+            ("E-GEAD-0", "E-GEAD-000"),
+            ("E-GEAD-1", "E-GEAD-000"),
+            ("E-GEAD-999", "E-GEAD-000"),
+            ("E-GEAD-1000", "E-GEAD-1000"),
+            ("E-GEAD-1005", "E-GEAD-1000"),
+            ("E-GEAD-12345", "E-GEAD-12000"),
+        ],
+    )
+    def test_data_url_prefix_grouping(self, accession: str, expected_prefix: str) -> None:
+        """DATA URL の prefix は accession 数値部を 1000 単位で切り捨てたグループ。"""
+        dists = make_gea_distribution(accession)
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+
+        assert data_dist.contentUrl == f"{GEA_PUBLIC_BASE_URL}/experiment/{expected_prefix}/{accession}/"
+
+    def test_data_url_non_numeric_id_falls_back_to_zero_prefix(self) -> None:
+        """末尾が数字でない accession でも crash せず prefix 0 にフォールバックする。"""
+        dists = make_gea_distribution("E-GEAD-abc")
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+
+        assert data_dist.contentUrl == f"{GEA_PUBLIC_BASE_URL}/experiment/E-GEAD-000/E-GEAD-abc/"
+
+
+class TestMakeMetabobankDistribution:
+    """Tests for make_metabobank_distribution."""
+
+    def test_returns_json_and_jsonld_only(self) -> None:
+        """MetaboBank は metadata の JSON / JSON-LD のみで DATA を持たない。"""
+        dists = make_metabobank_distribution("MTBKS102")
+
+        assert len(dists) == 2
+        formats = [d.encodingFormat for d in dists]
+        assert formats == ["JSON", "JSON-LD"]
+
+    def test_url_pattern(self) -> None:
+        dists = make_metabobank_distribution("MTBKS102")
+
+        assert dists[0].contentUrl == f"{SEARCH_BASE_URL}/search/entry/metabobank/MTBKS102.json"
+        assert dists[1].contentUrl == f"{SEARCH_BASE_URL}/search/entry/metabobank/MTBKS102.jsonld"
 
 
 class TestMakeSraDistribution:
@@ -224,9 +295,7 @@ class TestMakeSraDistribution:
 
         data_dist = next(d for d in dists if d.encodingFormat == "DATA")
         assert data_dist.type_ == "DataDownload"
-        assert data_dist.contentUrl == (
-            f"{DRA_PUBLIC_BASE_URL}/fastq/DRA016/DRA016427/DRZ138937/"
-        )
+        assert data_dist.contentUrl == (f"{DRA_PUBLIC_BASE_URL}/fastq/DRA016/DRA016427/DRZ138937/")
 
     def test_dra_analysis_no_data_dir(self) -> None:
         """DRA analysis で実在 DRZ ディレクトリなし -> DATA distribution なし。"""
@@ -461,6 +530,18 @@ class TestDistributionPBT:
 
         assert len(dists) == 2
 
+    @given(accession=st_gea_id())
+    @settings(max_examples=50)
+    def test_gea_distribution_always_has_json_jsonld_data(self, accession: str) -> None:
+        dists = make_gea_distribution(accession)
+
+        formats = [d.encodingFormat for d in dists]
+        assert formats == ["JSON", "JSON-LD", "DATA"]
+
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+        assert data_dist.contentUrl.startswith(f"{GEA_PUBLIC_BASE_URL}/experiment/")
+        assert data_dist.contentUrl.endswith(f"/{accession}/")
+
     @given(accession=_accession_st)
     @settings(max_examples=50)
     def test_dra_sra_distribution_has_at_least_three_items(self, accession: str) -> None:
@@ -565,9 +646,7 @@ class TestDistributionPBT:
         assert formats == ["JSON", "JSON-LD", "XML", "DATA"]
 
         data_dist = next(d for d in dists if d.encodingFormat == "DATA")
-        assert data_dist.contentUrl == (
-            f"{DRA_PUBLIC_BASE_URL}/fastq/{submission[:6]}/{submission}/{accession}/"
-        )
+        assert data_dist.contentUrl == (f"{DRA_PUBLIC_BASE_URL}/fastq/{submission[:6]}/{submission}/{accession}/")
         # 末尾スラッシュは directory landing page の慣習
         assert data_dist.contentUrl.endswith("/")
 

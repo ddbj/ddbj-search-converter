@@ -542,9 +542,7 @@ class TestJgaMapping:
             assert link_props["url"] == {"type": "keyword", "index": False}, (
                 f"{jga_type}: url should be non-indexed keyword"
             )
-            assert set(link_props.keys()) == {"label", "url"}, (
-                f"{jga_type}: unexpected externalLink sub-properties"
-            )
+            assert set(link_props.keys()) == {"label", "url"}, f"{jga_type}: unexpected externalLink sub-properties"
 
     def test_study_has_publication_and_grant(self) -> None:
         """jga-study のみ publication / grant (nested) を持つ。"""

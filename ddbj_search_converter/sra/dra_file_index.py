@@ -95,10 +95,7 @@ def build_dra_file_index(config: Config) -> None:
 
             sub_count += 1
             if sub_count % 10000 == 0:
-                log_info(
-                    f"scanned {sub_count} submissions "
-                    f"({fastq_count} fastq dirs, {analysis_count} analysis dirs)"
-                )
+                log_info(f"scanned {sub_count} submissions ({fastq_count} fastq dirs, {analysis_count} analysis dirs)")
 
         log_info(
             f"fastq scan complete: {sub_count} submissions, "
@@ -128,10 +125,7 @@ def build_dra_file_index(config: Config) -> None:
         final_path.unlink()
     tmp_path.replace(final_path)
 
-    log_info(
-        f"dra file index built: {fastq_count} fastq dirs, "
-        f"{analysis_count} analysis dirs, {sra_count} sra files"
-    )
+    log_info(f"dra file index built: {fastq_count} fastq dirs, {analysis_count} analysis dirs, {sra_count} sra files")
 
 
 def query_fastq_dirs_bulk(config: Config, submissions: list[str]) -> dict[str, set[str]]:
