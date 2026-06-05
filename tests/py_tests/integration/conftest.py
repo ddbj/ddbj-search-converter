@@ -173,11 +173,13 @@ def integration_log_db_path() -> Path:
     ``DDBJ_SEARCH_INTEGRATION_LOG_DB_PATH`` for local development.
     Skip if absent.
 
-    SSOT: ``lifecycle`` は ``init_log_db`` で ``extra.lifecycle`` から denormalise される
-    物理カラム (``logging/db.py`` docstring)。pipeline 実行前の古い log.duckdb には
-    ``lifecycle`` 列が存在しないので、fixture で ``init_log_db`` を呼んで migration を
-    保証する。``init_log_db`` は ``CREATE TABLE IF NOT EXISTS`` / ``ALTER TABLE ADD COLUMN
-    IF NOT EXISTS`` のみで冪等。
+    SSOT: ``lifecycle`` は ``insert_log_records`` が ``extra.lifecycle`` から
+    denormalise する物理カラム (``logging/db.py`` docstring)。この fixture は
+    staging の live 運用 ``log.duckdb`` を対象にするため strict read-only で開く
+    (本番 DB を mutate しない / ``addopts`` の ``-n auto`` で並列化された xdist
+    worker 間で write lock が衝突しない)。``lifecycle`` 列を持たない migration 前の
+    DB は (mutate せず) skip する。migration は pipeline 実行時の
+    ``insert_log_records`` が ``init_log_db`` 経由で適用する。
     """
     raw = os.environ.get(INTEGRATION_ENV_VAR_LOG_DB_PATH) or _DEFAULT_LOG_DB_PATH
     path = Path(raw)
@@ -189,10 +191,19 @@ def integration_log_db_path() -> Path:
         )
     import duckdb
 
-    from ddbj_search_converter.logging.db import init_log_db
-
-    init_log_db(Config(result_dir=path.parent))
     with duckdb.connect(str(path), read_only=True) as conn:
+        columns = {
+            row[0]
+            for row in conn.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'log_records'"
+            ).fetchall()
+        }
+        if "lifecycle" not in columns:
+            pytest.skip(
+                f"log.duckdb at {path} predates the lifecycle migration "
+                "(no physical lifecycle column); run a pipeline so insert_log_records "
+                "applies init_log_db's migration"
+            )
         populated = conn.execute("SELECT COUNT(*) FROM log_records WHERE lifecycle IS NOT NULL").fetchone()[0]
     if populated == 0:
         pytest.skip(
