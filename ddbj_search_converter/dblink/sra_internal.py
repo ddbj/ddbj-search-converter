@@ -11,9 +11,14 @@ SRA/DRA accessions DB から以下の関連を抽出する:
 
 SRA 内部関連:
 - Submission <-> Study
-- Study <-> Experiment
-- Study <-> Analysis
+- Submission <-> Experiment
+- Submission <-> Run
+- Submission <-> Sample
 - Submission <-> Analysis
+- Study <-> Experiment
+- Study <-> Run
+- Study <-> Sample
+- Study <-> Analysis
 - Experiment <-> Run
 - Experiment <-> Sample
 - Run <-> Sample
@@ -62,7 +67,12 @@ from ddbj_search_converter.sra_accessions_tab import (
     iter_run_sample_relations,
     iter_study_analysis_relations,
     iter_study_experiment_relations,
+    iter_study_run_relations,
+    iter_study_sample_relations,
     iter_submission_analysis_relations,
+    iter_submission_experiment_relations,
+    iter_submission_run_relations,
+    iter_submission_sample_relations,
     iter_submission_study_relations,
 )
 
@@ -281,6 +291,143 @@ def process_sra_internal_relations(
     run_sample = filter_sra_pairs_by_blacklist(run_sample, sra_blacklist)
     if run_sample:
         load_to_db(config, run_sample, "sra-run", "sra-sample")
+
+    # === SRA 階層横断関連 ===
+
+    # Submission <-> Experiment
+    submission_experiment: IdPairs = set()
+    for submission, experiment in iter_submission_experiment_relations(config, source=source):
+        if not submission or not experiment:
+            continue
+        if not is_valid_accession(submission, "sra-submission"):
+            log_debug(
+                f"skipping invalid sra-submission: {submission}",
+                accession=submission,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        if not is_valid_accession(experiment, "sra-experiment"):
+            log_debug(
+                f"skipping invalid sra-experiment: {experiment}",
+                accession=experiment,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        submission_experiment.add((submission, experiment))
+    log_info(f"extracted {len(submission_experiment)} {source_label} Submission <-> Experiment relations")
+    submission_experiment = filter_sra_pairs_by_blacklist(submission_experiment, sra_blacklist)
+    if submission_experiment:
+        load_to_db(config, submission_experiment, "sra-submission", "sra-experiment")
+
+    # Submission <-> Run
+    submission_run: IdPairs = set()
+    for submission, run in iter_submission_run_relations(config, source=source):
+        if not submission or not run:
+            continue
+        if not is_valid_accession(submission, "sra-submission"):
+            log_debug(
+                f"skipping invalid sra-submission: {submission}",
+                accession=submission,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        if not is_valid_accession(run, "sra-run"):
+            log_debug(
+                f"skipping invalid sra-run: {run}",
+                accession=run,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        submission_run.add((submission, run))
+    log_info(f"extracted {len(submission_run)} {source_label} Submission <-> Run relations")
+    submission_run = filter_sra_pairs_by_blacklist(submission_run, sra_blacklist)
+    if submission_run:
+        load_to_db(config, submission_run, "sra-submission", "sra-run")
+
+    # Submission <-> Sample
+    submission_sample: IdPairs = set()
+    for submission, sample in iter_submission_sample_relations(config, source=source):
+        if not submission or not sample:
+            continue
+        if not is_valid_accession(submission, "sra-submission"):
+            log_debug(
+                f"skipping invalid sra-submission: {submission}",
+                accession=submission,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        if not is_valid_accession(sample, "sra-sample"):
+            log_debug(
+                f"skipping invalid sra-sample: {sample}",
+                accession=sample,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        submission_sample.add((submission, sample))
+    log_info(f"extracted {len(submission_sample)} {source_label} Submission <-> Sample relations")
+    submission_sample = filter_sra_pairs_by_blacklist(submission_sample, sra_blacklist)
+    if submission_sample:
+        load_to_db(config, submission_sample, "sra-submission", "sra-sample")
+
+    # Study <-> Run
+    study_run: IdPairs = set()
+    for study, run in iter_study_run_relations(config, source=source):
+        if not study or not run:
+            continue
+        if not is_valid_accession(study, "sra-study"):
+            log_debug(
+                f"skipping invalid sra-study: {study}",
+                accession=study,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        if not is_valid_accession(run, "sra-run"):
+            log_debug(
+                f"skipping invalid sra-run: {run}",
+                accession=run,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        study_run.add((study, run))
+    log_info(f"extracted {len(study_run)} {source_label} Study <-> Run relations")
+    study_run = filter_sra_pairs_by_blacklist(study_run, sra_blacklist)
+    if study_run:
+        load_to_db(config, study_run, "sra-study", "sra-run")
+
+    # Study <-> Sample
+    study_sample: IdPairs = set()
+    for study, sample in iter_study_sample_relations(config, source=source):
+        if not study or not sample:
+            continue
+        if not is_valid_accession(study, "sra-study"):
+            log_debug(
+                f"skipping invalid sra-study: {study}",
+                accession=study,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        if not is_valid_accession(sample, "sra-sample"):
+            log_debug(
+                f"skipping invalid sra-sample: {sample}",
+                accession=sample,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source=source,
+            )
+            continue
+        study_sample.add((study, sample))
+    log_info(f"extracted {len(study_sample)} {source_label} Study <-> Sample relations")
+    study_sample = filter_sra_pairs_by_blacklist(study_sample, sra_blacklist)
+    if study_sample:
+        load_to_db(config, study_sample, "sra-study", "sra-sample")
 
     # === BioProject <-> SRA ===
 

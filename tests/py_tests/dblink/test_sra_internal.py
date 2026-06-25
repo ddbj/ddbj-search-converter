@@ -178,6 +178,212 @@ class TestBsSampleRelation:
         assert "SRS000001" in accessions
 
 
+class TestSubmissionExperimentRelation:
+    """Submission <-> Experiment 階層横断関連テスト。"""
+
+    def test_submission_experiment_basic(self, tmp_path: Path, clean_ctx: None) -> None:
+        """Submission <-> Experiment が正しく登録される。"""
+        rows = [
+            (
+                "SRX000001",
+                "SRA000001",
+                None,
+                None,
+                "SRP000001",
+                "SRX000001",
+                "SRS000001",
+                "EXPERIMENT",
+                "live",
+                "public",
+                None,
+                None,
+                None,
+            ),
+        ]
+        config = _make_config(tmp_path, "sra", rows)
+        with run_logger(config=config):
+            process_sra_internal_relations(config, source="sra", **_default_kwargs())
+
+        relations = _get_relations(config)
+        sub_exp = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-submission", "sra-experiment"}]
+        assert len(sub_exp) == 1
+        accessions = {sub_exp[0][1], sub_exp[0][3]}
+        assert "SRA000001" in accessions
+        assert "SRX000001" in accessions
+
+
+class TestSubmissionRunRelation:
+    """Submission <-> Run 階層横断関連テスト。"""
+
+    def test_submission_run_basic(self, tmp_path: Path, clean_ctx: None) -> None:
+        """Submission <-> Run が正しく登録される。"""
+        rows = [
+            (
+                "SRR000001",
+                "SRA000001",
+                None,
+                None,
+                "SRP000001",
+                "SRX000001",
+                "SRS000001",
+                "RUN",
+                "live",
+                "public",
+                None,
+                None,
+                None,
+            ),
+        ]
+        config = _make_config(tmp_path, "sra", rows)
+        with run_logger(config=config):
+            process_sra_internal_relations(config, source="sra", **_default_kwargs())
+
+        relations = _get_relations(config)
+        sub_run = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-submission", "sra-run"}]
+        assert len(sub_run) == 1
+        accessions = {sub_run[0][1], sub_run[0][3]}
+        assert "SRA000001" in accessions
+        assert "SRR000001" in accessions
+
+
+class TestSubmissionSampleRelation:
+    """Submission <-> Sample 階層横断関連テスト。"""
+
+    def test_submission_sample_basic(self, tmp_path: Path, clean_ctx: None) -> None:
+        """Submission <-> Sample が正しく登録される。"""
+        rows = [
+            (
+                "SRS000001",
+                "SRA000001",
+                "SAMN00001",
+                None,
+                None,
+                None,
+                "SRS000001",
+                "SAMPLE",
+                "live",
+                "public",
+                None,
+                None,
+                None,
+            ),
+        ]
+        config = _make_config(tmp_path, "sra", rows)
+        with run_logger(config=config):
+            process_sra_internal_relations(config, source="sra", **_default_kwargs())
+
+        relations = _get_relations(config)
+        sub_sample = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-submission", "sra-sample"}]
+        assert len(sub_sample) == 1
+        accessions = {sub_sample[0][1], sub_sample[0][3]}
+        assert "SRA000001" in accessions
+        assert "SRS000001" in accessions
+
+
+class TestStudyRunRelation:
+    """Study <-> Run 階層横断関連テスト。"""
+
+    def test_study_run_basic(self, tmp_path: Path, clean_ctx: None) -> None:
+        """Study <-> Run が正しく登録される。"""
+        rows = [
+            (
+                "SRR000001",
+                "SRA000001",
+                None,
+                None,
+                "SRP000001",
+                "SRX000001",
+                "SRS000001",
+                "RUN",
+                "live",
+                "public",
+                None,
+                None,
+                None,
+            ),
+        ]
+        config = _make_config(tmp_path, "sra", rows)
+        with run_logger(config=config):
+            process_sra_internal_relations(config, source="sra", **_default_kwargs())
+
+        relations = _get_relations(config)
+        study_run = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-study", "sra-run"}]
+        assert len(study_run) == 1
+        accessions = {study_run[0][1], study_run[0][3]}
+        assert "SRP000001" in accessions
+        assert "SRR000001" in accessions
+
+
+class TestStudySampleRelation:
+    """Study <-> Sample 階層横断関連テスト。"""
+
+    def test_study_sample_basic(self, tmp_path: Path, clean_ctx: None) -> None:
+        """Study <-> Sample が EXPERIMENT 行の Study+Sample から正しく登録される。"""
+        rows = [
+            (
+                "SRX000001",
+                "SRA000001",
+                None,
+                None,
+                "SRP000001",
+                "SRX000001",
+                "SRS000001",
+                "EXPERIMENT",
+                "live",
+                "public",
+                None,
+                None,
+                None,
+            ),
+        ]
+        config = _make_config(tmp_path, "sra", rows)
+        with run_logger(config=config):
+            process_sra_internal_relations(config, source="sra", **_default_kwargs())
+
+        relations = _get_relations(config)
+        study_sample = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-study", "sra-sample"}]
+        assert len(study_sample) == 1
+        accessions = {study_sample[0][1], study_sample[0][3]}
+        assert "SRP000001" in accessions
+        assert "SRS000001" in accessions
+
+
+class TestCrossHierarchyBlacklistFiltering:
+    """階層横断関連の blacklist フィルタテスト。"""
+
+    def test_sra_blacklist_filters_cross_hierarchy(self, tmp_path: Path, clean_ctx: None) -> None:
+        """SRA blacklist に含まれる accession は階層横断関連でも除外される。"""
+        rows = [
+            (
+                "SRX000001",
+                "SRA000001",
+                None,
+                None,
+                "SRP000001",
+                "SRX000001",
+                "SRS000001",
+                "EXPERIMENT",
+                "live",
+                "public",
+                None,
+                None,
+                None,
+            ),
+        ]
+        config = _make_config(tmp_path, "sra", rows)
+        kwargs = _default_kwargs()
+        kwargs["sra_blacklist"] = {"SRX000001"}
+        with run_logger(config=config):
+            process_sra_internal_relations(config, source="sra", **kwargs)
+
+        relations = _get_relations(config)
+        sub_exp = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-submission", "sra-experiment"}]
+        assert len(sub_exp) == 0
+        # study_sample ペアは (SRP000001, SRS000001) で blacklist (SRX000001) にヒットしない
+        study_sample = [(s, sa, d, da) for s, sa, d, da in relations if {s, d} == {"sra-study", "sra-sample"}]
+        assert len(study_sample) == 1
+
+
 class TestBlacklistFiltering:
     """Blacklist フィルタテスト。"""
 

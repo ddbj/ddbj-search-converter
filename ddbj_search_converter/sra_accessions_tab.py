@@ -265,7 +265,7 @@ def _iter_relation(
     yield from rows
 
 
-# 18 個の `iter_*_relations` は (col_a, col_b, type_filter) のみが異なる薄い wrapper。
+# 23 個の `iter_*_relations` は (col_a, col_b, type_filter) のみが異なる薄い wrapper。
 # 重複を `_iter_relation` 経由で 1 行ずつに集約しつつ、関数名は明示する (mypy / IDE 補完
 # のため、また `from ddbj_search_converter.sra_accessions_tab import iter_*` 互換のため)。
 
@@ -308,6 +308,34 @@ def iter_study_analysis_relations(config: Config, *, source: SourceKind) -> Iter
 def iter_submission_analysis_relations(config: Config, *, source: SourceKind) -> Iterator[tuple[str, str]]:
     """Submission <-> Analysis (Type='ANALYSIS')。Study が NULL でも Submission 経由で関連を保つ。"""
     yield from _iter_relation(config, source=source, col_a="Submission", col_b="Accession", type_filter="ANALYSIS")
+
+
+# === SRA 階層横断関連 iterators ===
+
+
+def iter_submission_experiment_relations(config: Config, *, source: SourceKind) -> Iterator[tuple[str, str]]:
+    """Submission <-> Experiment (Type='EXPERIMENT')。"""
+    yield from _iter_relation(config, source=source, col_a="Submission", col_b="Accession", type_filter="EXPERIMENT")
+
+
+def iter_submission_run_relations(config: Config, *, source: SourceKind) -> Iterator[tuple[str, str]]:
+    """Submission <-> Run (Type='RUN')。"""
+    yield from _iter_relation(config, source=source, col_a="Submission", col_b="Accession", type_filter="RUN")
+
+
+def iter_submission_sample_relations(config: Config, *, source: SourceKind) -> Iterator[tuple[str, str]]:
+    """Submission <-> Sample (Type='SAMPLE')。"""
+    yield from _iter_relation(config, source=source, col_a="Submission", col_b="Accession", type_filter="SAMPLE")
+
+
+def iter_study_run_relations(config: Config, *, source: SourceKind) -> Iterator[tuple[str, str]]:
+    """Study <-> Run (Type='RUN')。"""
+    yield from _iter_relation(config, source=source, col_a="Study", col_b="Accession", type_filter="RUN")
+
+
+def iter_study_sample_relations(config: Config, *, source: SourceKind) -> Iterator[tuple[str, str]]:
+    """Study <-> Sample (Type='EXPERIMENT')。EXPERIMENT 行の Study と Sample カラムから抽出。"""
+    yield from _iter_relation(config, source=source, col_a="Study", col_b="Sample", type_filter="EXPERIMENT")
 
 
 # === BioProject/BioSample <-> SRA relation iterators ===
