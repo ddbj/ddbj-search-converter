@@ -3,7 +3,7 @@
 各エントリータイプの distribution リスト生成ロジックを 1 箇所に集約する。
 """
 
-from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL
+from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL, METABOBANK_PUBLIC_BASE_URL
 from ddbj_search_converter.jsonl.utils import build_search_entry_url
 from ddbj_search_converter.schema import Distribution
 
@@ -90,11 +90,21 @@ def make_gea_distribution(accession: str) -> list[Distribution]:
 
 
 def make_metabobank_distribution(accession: str) -> list[Distribution]:
-    """MetaboBank の distribution を生成する。"""
+    """MetaboBank の distribution を生成する。
+
+    JSON / JSON-LD の metadata に加え、生データの公開ディレクトリ landing page を
+    DATA として付与する。MetaboBank entry は IDF が存在するディレクトリからのみ
+    作られ対応ディレクトリが必ず存在するため実在チェックは行わず全 entry に付与する。
+    """
 
     return [
         _json_dist("metabobank", accession),
         _jsonld_dist("metabobank", accession),
+        Distribution(
+            type="DataDownload",
+            encodingFormat="DATA",
+            contentUrl=f"{METABOBANK_PUBLIC_BASE_URL}/study/{accession}/",
+        ),
     ]
 
 

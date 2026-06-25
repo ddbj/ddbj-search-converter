@@ -4,7 +4,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL, SEARCH_BASE_URL
+from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL, METABOBANK_PUBLIC_BASE_URL, SEARCH_BASE_URL
 from ddbj_search_converter.jsonl.distribution import (
     make_bp_distribution,
     make_bs_distribution,
@@ -13,7 +13,7 @@ from ddbj_search_converter.jsonl.distribution import (
     make_metabobank_distribution,
     make_sra_distribution,
 )
-from py_tests.strategies import st_gea_id
+from py_tests.strategies import st_gea_id, st_metabobank_id
 
 
 class TestMakeBpDistribution:
@@ -133,19 +133,26 @@ class TestMakeGeaDistribution:
 class TestMakeMetabobankDistribution:
     """Tests for make_metabobank_distribution."""
 
-    def test_returns_json_and_jsonld_only(self) -> None:
-        """MetaboBank は metadata の JSON / JSON-LD のみで DATA を持たない。"""
+    def test_returns_json_jsonld_data(self) -> None:
         dists = make_metabobank_distribution("MTBKS102")
 
-        assert len(dists) == 2
+        assert len(dists) == 3
         formats = [d.encodingFormat for d in dists]
-        assert formats == ["JSON", "JSON-LD"]
+        assert formats == ["JSON", "JSON-LD", "DATA"]
 
-    def test_url_pattern(self) -> None:
+    def test_json_jsonld_url_pattern(self) -> None:
         dists = make_metabobank_distribution("MTBKS102")
 
         assert dists[0].contentUrl == f"{SEARCH_BASE_URL}/search/entry/metabobank/MTBKS102.json"
         assert dists[1].contentUrl == f"{SEARCH_BASE_URL}/search/entry/metabobank/MTBKS102.jsonld"
+
+    def test_data_url_pattern(self) -> None:
+        dists = make_metabobank_distribution("MTBKS202")
+        data_dist = dists[2]
+
+        assert data_dist.type_ == "DataDownload"
+        assert data_dist.encodingFormat == "DATA"
+        assert data_dist.contentUrl == f"{METABOBANK_PUBLIC_BASE_URL}/study/MTBKS202/"
 
 
 class TestMakeSraDistribution:
@@ -541,6 +548,17 @@ class TestDistributionPBT:
         data_dist = next(d for d in dists if d.encodingFormat == "DATA")
         assert data_dist.contentUrl.startswith(f"{GEA_PUBLIC_BASE_URL}/experiment/")
         assert data_dist.contentUrl.endswith(f"/{accession}/")
+
+    @given(accession=st_metabobank_id())
+    @settings(max_examples=50)
+    def test_metabobank_distribution_always_has_json_jsonld_data(self, accession: str) -> None:
+        dists = make_metabobank_distribution(accession)
+
+        formats = [d.encodingFormat for d in dists]
+        assert formats == ["JSON", "JSON-LD", "DATA"]
+
+        data_dist = next(d for d in dists if d.encodingFormat == "DATA")
+        assert data_dist.contentUrl == f"{METABOBANK_PUBLIC_BASE_URL}/study/{accession}/"
 
     @given(accession=_accession_st)
     @settings(max_examples=50)

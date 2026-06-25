@@ -322,10 +322,11 @@ class TestCreateMetabobankEntry:
         assert mtb.experimentType[0] == "liquid chromatography-mass spectrometry"
         assert mtb.submissionType == ["LC-DAD-MS"]
 
-        # distribution は JSON + JSON-LD の 2 件
-        assert len(mtb.distribution) == 2
+        assert len(mtb.distribution) == 3
         assert mtb.distribution[0].encodingFormat == "JSON"
         assert mtb.distribution[1].encodingFormat == "JSON-LD"
+        assert mtb.distribution[2].encodingFormat == "DATA"
+        assert mtb.distribution[2].contentUrl == "https://ddbj.nig.ac.jp/public/metabobank/study/MTBKS102/"
 
     def test_dbxrefs_default_empty(self) -> None:
         idf = parse_idf(MTBKS102_IDF)
