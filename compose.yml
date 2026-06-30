@@ -3,10 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: ddbj-search-converter-${DDBJ_SEARCH_ENV}
     container_name: ddbj-search-converter-${DDBJ_SEARCH_ENV}
     volumes:
       - .:/app:rw
-      - app-venv:/app/.venv
       - ${DDBJ_SEARCH_CONVERTER_RESULT_PATH}:/app/ddbj_search_converter_results:rw
       - ${DDBJ_SEARCH_CONVERTER_CONST_PATH}:/home/w3ddbjld/const:rw
       # SRA / DRA Accessions
@@ -80,9 +80,9 @@ networks:
     external: true
 
 volumes:
-  app-venv:
-    driver: local
   es-data:
+    name: es-data-${DDBJ_SEARCH_ENV}
     driver: local
   es-backup:
+    name: es-backup-${DDBJ_SEARCH_ENV}
     driver: local

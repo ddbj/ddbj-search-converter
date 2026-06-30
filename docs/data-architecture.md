@@ -163,6 +163,12 @@ URL に scheme を書き忘れたり、`mysql://` のように他 DB の scheme 
 
 `{const_dir}` 以下に配置するファイル。
 
+### path 命名規約
+
+ホスト側 path は `/home/w3ddbjld/const/` (production) と `/home/w3ddbjld/const-staging/` (staging) の 2 系統で固定。converter / api / その他外部 system がここに read / write する interface 契約のため、命名を勝手に変えるとデータ受信側との同期が止まる。コンテナ内では `compose.yml` の bind mount で `/home/w3ddbjld/const` に統一する (= ホスト側 path のみ env で振り分け、アプリケーションは env を意識しない)。
+
+`compose.yml` 側の named volume (`es-data` / `es-backup`) は同一ホスト上で env を分離するためだけのもので、こちらは `${DDBJ_SEARCH_ENV}` suffix を付けて env 切替時の取り違えを防ぐ。const dir と命名規約が違うのは、前者が外部 system 契約、後者が同一ホスト上の env 分離という別目的のため。
+
 ### Blacklist
 
 JSONL 生成時に除外する accession のリスト。
