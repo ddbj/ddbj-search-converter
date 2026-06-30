@@ -47,10 +47,6 @@ rename を挟まずに新 compose で `up -d` すると、新名で空の volume
 
 切替前に旧コンテナを `podman stop && podman rm` で手動掃除しておく。
 
-## nginx resolver の gateway IP は環境ごと・再作成ごとに変わる
-
-nginx の `DDBJ_SEARCH_RESOLVER` は **コンテナが所属するネットワークの gateway IP**。podman network を再作成すると IP が変わるため、deploy のたびに `podman network inspect <name> --format '{{range .Subnets}}{{.Gateway}}{{end}}'` で確認して `.env` に反映する。
-
 ## api コンテナが `dblink.duckdb` を read lock で握っている
 
 api コンテナは起動中ずっと `dblink.duckdb` を read mode で握っている。converter 側で書き込みモード (`access_mode='read_write'`) で開く必要があるパッチや調査スクリプトを動かす場合は、先に api を `podman stop` で止める必要がある。
