@@ -28,9 +28,7 @@ bind mount (`.:/app:rw`) は Python ソース変更を即時反映するが、ve
 
 ## named volume の rename
 
-`compose.yml` の named volume 名を変えたあとに、ホスト上の既存 volume データを保持したい場合は `podman volume rename` を使う (podman 4.4+)。
-
-例: `<project>_es-data` を `es-data-staging` に rename する:
+`compose.yml` の named volume 名を変えたあとに、ホスト上の既存 volume データを保持したい場合は `podman volume rename` を使う (podman 5.x+)。
 
 ```bash
 podman-compose down                                              # writers を止める
