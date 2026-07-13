@@ -264,12 +264,13 @@ CREATE TABLE dbxref (
 );
 -- 物理 sort: ORDER BY accession_type, accession, linked_type, linked_accession
 -- index: idx_dbxref_accession (accession_type, accession)
---        idx_dbxref_unique    (accession_type, accession, linked_type, linked_accession) UNIQUE
 ```
 
 **半辺化スキーマ (half-edge)**。無向 edge `{A, B}` は `dbxref` に 2 行として保存される (`A→B` と `B→A`)。これにより `WHERE accession_type=? AND accession=?` の単一 WHERE だけで両 endpoint の隣接を取得でき、DuckDB の zone map が常に効く (point lookup でも SEQ_SCAN にならない)。UNION ALL による逆方向検索が不要になる。
 
 ストレージは canonical 形の約 2 倍になるが、`normalize_edge` によって TSV 段階では `(A, B)` 1 行で済む (A ≤ B 正規化)。DB 構築時に `build_dbxref_table` が `UNION ALL` で両方向を mirror する。
+
+`dbxref` は `finalize_dblink_db` 後は追記されない read-only テーブル。行の一意性は `build_dbxref_table` の `SELECT DISTINCT` が build 時点で保証し、テストは `COUNT(*) == COUNT(DISTINCT ...)` で直接検証する。DuckDB の ART index (spill しない完全 in-memory 構造) で 4 列 UNIQUE を張ると数億行 × 4 列で peak memory が数十 GB 級に膨らむため、冗長な uniqueness 用 index は張らず 2 列 `idx_dbxref_accession` のみを保持する。
 
 #### 中間 table: `raw_edges`
 
@@ -290,9 +291,11 @@ CREATE TABLE raw_edges (
 `finalize_dblink_db` は以下を順に実行する:
 
 1. `build_dbxref_table`: `raw_edges` を UNION ALL で両方向に mirror し、`SELECT DISTINCT ... ORDER BY accession_type, accession, linked_type, linked_accession` で `dbxref` を構築
-2. `create_dbxref_indexes`: `idx_dbxref_accession` と `idx_dbxref_unique` を作成
+2. `create_dbxref_indexes`: `idx_dbxref_accession (accession_type, accession)` を作成
 3. `DROP TABLE raw_edges`
 4. tmp DB から final DB へ atomic replace
+
+`build_dbxref_table` と `create_dbxref_indexes` はどちらも DuckDB の `SET memory_limit='128GB'` + `SET temp_directory=result_dir/dblink/duckdb_tmp/{TODAY_STR}` を明示する。container 側の cgroup `mem_limit` (`compose.yml` の `DDBJ_SEARCH_APP_MEM_LIMIT`, 本番 256g) との間に buffer を確保し、DuckDB がオーバーシュートした際も container が OOM-kill されるだけで node を巻き添えにしない構成にする。
 
 #### 無向 edge 数の算出 (`show_dblink_counts` が内部で使う集計)
 

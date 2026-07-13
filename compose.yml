@@ -36,6 +36,8 @@ services:
       DDBJ_SEARCH_BASE_URL: ${DDBJ_SEARCH_BASE_URL}
     working_dir: /app
     command: ["sleep", "infinity"]
+    mem_limit: ${DDBJ_SEARCH_APP_MEM_LIMIT}
+    memswap_limit: ${DDBJ_SEARCH_APP_MEM_LIMIT}
     networks:
       - ddbj-search-network
     init: true

@@ -224,12 +224,7 @@ def build_dbxref_table(config: Config) -> None:
     spill_dir.mkdir(parents=True, exist_ok=True)
 
     with duckdb.connect(str(db_path)) as conn:
-        conn.execute("SET memory_limit='256GB'")
-        # DuckDB の `SET` は parameter binding を受け付けないので、single quote を
-        # `''` に escape して埋め込む。spill_dir は config 由来で攻撃面は小さいが、
-        # quote を含むパス (アクセント記号付き親ディレクトリ等) でも壊れない安全側。
-        escaped_spill_dir = str(spill_dir).replace("'", "''")
-        conn.execute(f"SET temp_directory='{escaped_spill_dir}'")
+        _apply_duckdb_limits(conn, spill_dir)
         conn.execute("""
             CREATE TABLE dbxref AS
             SELECT DISTINCT
@@ -254,18 +249,30 @@ def build_dbxref_table(config: Config) -> None:
         conn.execute("DROP TABLE raw_edges")
 
 
+def _apply_duckdb_limits(conn: duckdb.DuckDBPyConnection, spill_dir: Path) -> None:
+    """container の cgroup `mem_limit` より小さい budget を DuckDB に強制し、超過分は
+    disk spill に流す。共有計算機で他プロセス (qemu VM, ES など) のメモリを巻き込まない
+    ための soft guard で、compose 側 `DDBJ_SEARCH_APP_MEM_LIMIT` との間に buffer を残す。
+
+    `SET` は parameter binding を受け付けないので single quote を `''` に escape して
+    埋め込む (spill_dir は config 由来だが、quote を含むパスでも壊れない安全側)。
+    """
+    conn.execute("SET memory_limit='128GB'")
+    escaped_spill_dir = str(spill_dir).replace("'", "''")
+    conn.execute(f"SET temp_directory='{escaped_spill_dir}'")
+
+
 def create_dbxref_indexes(config: Config) -> None:
-    """``dbxref`` に unique 制約 + accession 前方検索の index を張る。
+    """``dbxref`` に accession 前方検索の index を張る。
 
     半辺化により ``(accession_type, accession)`` prefix で両端点が covering
-    されるため、旧 ``idx_relation_dst`` 相当の逆方向 index は不要。
+    されるため、逆方向 index は不要。
     """
     db_path = _tmp_db_path(config)
+    spill_dir = config.result_dir.joinpath("dblink", "duckdb_tmp", TODAY_STR)
+    spill_dir.mkdir(parents=True, exist_ok=True)
     with duckdb.connect(str(db_path)) as conn:
-        conn.execute("""
-            CREATE UNIQUE INDEX idx_dbxref_unique
-            ON dbxref (accession_type, accession, linked_type, linked_accession)
-        """)
+        _apply_duckdb_limits(conn, spill_dir)
         conn.execute("""
             CREATE INDEX idx_dbxref_accession
             ON dbxref (accession_type, accession)

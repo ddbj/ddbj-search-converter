@@ -10,7 +10,7 @@
         1 行しか出ない (両方向が等価)。``allow_self_loops=True`` で許容する。
     (2) 任意の ``(a→b)`` 行に対し ``(b→a)`` 行が存在する (self-loop を除く)。
     (3) DISTINCT で重複なし (`SELECT COUNT(*) == COUNT(DISTINCT ...)`)。
-    (4) ``idx_dbxref_accession`` / ``idx_dbxref_unique`` index が登録済み。
+    (4) ``idx_dbxref_accession`` index が登録済み。
 
 SPEC: docs/data-architecture.md §DBLink DB の半辺化スキーマ。
 """
@@ -104,7 +104,6 @@ def assert_dbxref_symmetric(
         idx_rows = con.execute("SELECT index_name FROM duckdb_indexes() WHERE table_name = 'dbxref'").fetchall()
         names = {r[0] for r in idx_rows}
         assert "idx_dbxref_accession" in names, f"idx_dbxref_accession 不在: {names}"
-        assert "idx_dbxref_unique" in names, f"idx_dbxref_unique 不在: {names}"
     finally:
         con.close()
 
