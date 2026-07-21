@@ -40,6 +40,7 @@ services:
     memswap_limit: ${DDBJ_SEARCH_APP_MEM_LIMIT}
     networks:
       - ddbj-search-network
+    restart: unless-stopped
     init: true
 
   elasticsearch:
@@ -74,6 +75,7 @@ services:
       retries: 5
     networks:
       - ddbj-search-network
+    restart: unless-stopped
     init: true
 
 networks:
