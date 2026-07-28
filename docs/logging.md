@@ -9,8 +9,20 @@ DDBJ Search Converter のログ確認とデバッグ方法。
 | **JSONL ファイル** | `{result_dir}/logs/{YYYYMMDD}/{run_name}_{hex_token}.log.jsonl` (全ログ) |
 | **DuckDB** | `{result_dir}/log.duckdb` (集計用、JSONL から自動挿入) |
 | **stderr** | INFO 以上のログのみ出力 (DEBUG は出力しない) |
+| **stderr 退避ファイル** | `{result_dir}/logs/{YYYYMMDD}/{command}.stderr.log` (`run_pipeline.sh` が各ステップの stderr を追記) |
+| **ステップ終了ログ** | `{result_dir}/logs/step_exits.tsv` (`run_pipeline.sh` が 1 ステップ 1 行を追記) |
 
 `run_id` は `{YYYYMMDD}_{run_name}_{hex_token}` 形式の文字列で生成する (`hex_token` は `secrets.token_hex(2)` 由来の 4 桁 hex)。JSONL ファイル名は日付ディレクトリ配下に `run_name` と `hex_token` を結合した形で配置する。
+
+## シグナルで落ちた run の追跡
+
+`log.duckdb` への挿入はプロセス終了時の 1 回だけで、それまでのログは JSONL にしか無い。したがって **SIGKILL されたコマンドは `log.duckdb` に 1 行も残らない**。`show_log` / `show_log_summary` は `log.duckdb` しか見ないため、この種の死に方をした run はデバッグコマンドから完全に不可視になる。
+
+`step_exits.tsv` はこの穴を埋めるためのもので、`run_pipeline.sh` が起動したコマンドの終了ステータスを、成否によらず 1 行ずつ追記する。列は `timestamp / run_date / command / exit_code / signal / duration_seconds` で、シグナルで終了した場合 (`exit_code` が 128 超) は `signal` に `SIGKILL` のような名前が入る。OOM kill (`SIGKILL`) と通常の異常終了を判別できるのはこの列だけ。
+
+保持期間が他と違う点に注意する。`{YYYYMMDD}` ディレクトリ配下の JSONL と stderr 退避ファイルは `cleanup_old_results --keep 3` で 3 日ぶんしか残らないが、`step_exits.tsv` は `logs/` 直下のファイルなので削除対象にならず、全期間ぶんが蓄積する。数日前に消えた run を追うときは、まず `step_exits.tsv` で終了コードを確認してから `log.duckdb` を見る。
+
+stderr 退避ファイルには、JSONL に載らない情報が残る。`run_logger` が開く前 (import や設定読み込みの段階) に落ちたときのインタプリタの traceback と、`postgres/utils.py` の接続リトライが標準 logging で出す警告がこれにあたる。
 
 ## DuckDB スキーマと run_id lifecycle
 

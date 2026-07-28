@@ -229,6 +229,10 @@ fi
 
 DATE_STR="$DDBJ_SEARCH_CONVERTER_DATE"
 RESULT_DIR="${DDBJ_SEARCH_CONVERTER_RESULT_DIR:-$(pwd)/ddbj_search_converter_results}"
+LOG_DATE_DIR="${RESULT_DIR}/logs/${DATE_STR}"
+# Kept directly under logs/ so cleanup_old_results, which only prunes YYYYMMDD
+# directories, never removes it.
+STEP_EXIT_LOG="${RESULT_DIR}/logs/step_exits.tsv"
 
 # Logging functions
 log_info() {
@@ -251,7 +255,68 @@ get_cmd_name() {
     echo "$1" | awk '{print $1}'
 }
 
-# Run command with optional dry-run (sequential, stdout/stderr suppressed)
+# Expand a signal termination (128 + N) to its name; empty for a plain exit code
+describe_exit() {
+    local rc=$1
+    local signame
+
+    if (( rc > 128 && rc <= 192 )); then
+        if signame=$(kill -l "$(( rc - 128 ))" 2>/dev/null) && [[ -n "$signame" ]]; then
+            echo "SIG${signame}"
+            return
+        fi
+    fi
+    echo ""
+}
+
+# Per-step stderr destination. The Python logger writes its own JSONL, but an
+# uncaught exception raised before run_logger opens, and the retry warnings that
+# postgres/utils.py emits through standard logging, only ever reach stderr.
+step_stderr_file() {
+    mkdir -p "$LOG_DATE_DIR"
+    echo "${LOG_DATE_DIR}/$1.stderr.log"
+}
+
+# Append the outcome of one step. A step killed by a signal writes nothing to
+# log.duckdb (the Python logger inserts once, at process exit), so this file is
+# the only place a SIGKILL leaves a trace.
+record_step_exit() {
+    local cmd_name=$1
+    local rc=$2
+    local started=$3
+
+    mkdir -p "$(dirname "$STEP_EXIT_LOG")"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$(date '+%Y-%m-%dT%H:%M:%S')" \
+        "$DATE_STR" \
+        "$cmd_name" \
+        "$rc" \
+        "$(describe_exit "$rc")" \
+        "$(( $(date '+%s') - started ))" \
+        >> "$STEP_EXIT_LOG"
+}
+
+# Record and report a finished step. Returns the step's success so callers can
+# branch without tripping set -e.
+report_step_result() {
+    local cmd_name=$1
+    local rc=$2
+    local started=$3
+    local signal
+
+    record_step_exit "$cmd_name" "$rc" "$started"
+
+    if (( rc == 0 )); then
+        log_info "  ✓ ${cmd_name}"
+        return 0
+    fi
+
+    signal=$(describe_exit "$rc")
+    log_error "  ✗ ${cmd_name} (exit=${rc}${signal:+ ${signal}}, use show_log for details)"
+    return 1
+}
+
+# Run command with optional dry-run (sequential, stdout suppressed)
 run_cmd() {
     local cmd="$*"
     local cmd_name
@@ -259,26 +324,27 @@ run_cmd() {
 
     if [[ "$DRY_RUN" == true ]]; then
         log_info "[DRY-RUN] $cmd"
-    else
-        log_info "Running: $cmd_name"
-        if eval "$cmd" > /dev/null 2>&1; then
-            log_info "  ✓ ${cmd_name}"
-        else
-            log_error "  ✗ ${cmd_name} (use show_log for details)"
-            return 1
-        fi
+        return 0
     fi
+
+    local started rc=0 stderr_file
+    log_info "Running: $cmd_name"
+    stderr_file=$(step_stderr_file "$cmd_name")
+    started=$(date '+%s')
+    eval "$cmd" > /dev/null 2>>"$stderr_file" || rc=$?
+    report_step_result "$cmd_name" "$rc" "$started" || return 1
 }
 
-# Run commands in parallel (stdout/stderr suppressed, use show_log for details)
+# Run commands in parallel (stdout suppressed, use show_log for details)
 run_parallel() {
     local pids=()
     local cmds=("$@")
     local cmd_names=()
+    local started_times=()
     local failed=0
 
     for cmd in "${cmds[@]}"; do
-        local cmd_name
+        local cmd_name stderr_file
         cmd_name=$(get_cmd_name "$cmd")
         cmd_names+=("$cmd_name")
 
@@ -286,7 +352,9 @@ run_parallel() {
             log_info "[DRY-RUN] (parallel) $cmd"
         else
             log_info "Starting: $cmd_name"
-            eval "$cmd" > /dev/null 2>&1 &
+            stderr_file=$(step_stderr_file "$cmd_name")
+            started_times+=("$(date '+%s')")
+            eval "$cmd" > /dev/null 2>>"$stderr_file" &
             pids+=($!)
         fi
     done
@@ -295,12 +363,9 @@ run_parallel() {
         local i=0
         for pid in "${pids[@]}"; do
             local cmd_name="${cmd_names[$i]}"
-            if wait "$pid"; then
-                log_info "  ✓ ${cmd_name}"
-            else
-                log_error "  ✗ ${cmd_name} (use show_log for details)"
-                failed=1
-            fi
+            local rc=0
+            wait "$pid" || rc=$?
+            report_step_result "$cmd_name" "$rc" "${started_times[$i]}" || failed=1
             ((i++)) || true
         done
 
@@ -318,6 +383,7 @@ run_parallel_limited() {
     local cmds=("$@")
     local pids=()
     local cmd_names=()
+    local started_times=()
     local failed=0
 
     for cmd in "${cmds[@]}"; do
@@ -325,39 +391,40 @@ run_parallel_limited() {
         while [[ ${#pids[@]} -ge $max_jobs ]]; do
             local new_pids=()
             local new_cmd_names=()
+            local new_started_times=()
             local j=0
             for pid in "${pids[@]}"; do
                 if kill -0 "$pid" 2>/dev/null; then
                     new_pids+=("$pid")
                     new_cmd_names+=("${cmd_names[$j]}")
+                    new_started_times+=("${started_times[$j]}")
                 else
-                    local cmd_name="${cmd_names[$j]}"
-                    if wait "$pid"; then
-                        log_info "  ✓ ${cmd_name}"
-                    else
-                        log_error "  ✗ ${cmd_name} (use show_log for details)"
-                        failed=1
-                    fi
+                    local rc=0
+                    wait "$pid" || rc=$?
+                    report_step_result "${cmd_names[$j]}" "$rc" "${started_times[$j]}" || failed=1
                 fi
                 ((j++)) || true
             done
             pids=("${new_pids[@]}")
             cmd_names=("${new_cmd_names[@]}")
+            started_times=("${new_started_times[@]}")
             if [[ ${#pids[@]} -ge $max_jobs ]]; then
                 sleep 1
             fi
         done
 
-        local cmd_name
+        local cmd_name stderr_file
         cmd_name=$(get_cmd_name "$cmd")
 
         if [[ "$DRY_RUN" == true ]]; then
             log_info "[DRY-RUN] (parallel) $cmd"
         else
             log_info "Starting: $cmd_name"
-            eval "$cmd" > /dev/null 2>&1 &
+            stderr_file=$(step_stderr_file "$cmd_name")
+            eval "$cmd" > /dev/null 2>>"$stderr_file" &
             pids+=($!)
             cmd_names+=("$cmd_name")
+            started_times+=("$(date '+%s')")
         fi
     done
 
@@ -365,13 +432,9 @@ run_parallel_limited() {
     if [[ "$DRY_RUN" == false ]]; then
         local i=0
         for pid in "${pids[@]}"; do
-            local cmd_name="${cmd_names[$i]}"
-            if wait "$pid"; then
-                log_info "  ✓ ${cmd_name}"
-            else
-                log_error "  ✗ ${cmd_name} (use show_log for details)"
-                failed=1
-            fi
+            local rc=0
+            wait "$pid" || rc=$?
+            report_step_result "${cmd_names[$i]}" "$rc" "${started_times[$i]}" || failed=1
             ((i++)) || true
         done
 
