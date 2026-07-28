@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -665,3 +667,96 @@ class TestRoundTrip:
             rows = conn.execute("SELECT lifecycle FROM log_records ORDER BY timestamp").fetchall()
         lifecycles = [r[0] for r in rows]
         assert lifecycles == ["start", None, "end"]
+
+
+class TestWriteLockContention:
+    """log.duckdb は single writer なので、並列に終了したコマンド同士が衝突する。"""
+
+    _HOLD_LOCK_SCRIPT = (
+        "import sys, time, duckdb\n"
+        "con = duckdb.connect(sys.argv[1])\n"
+        "con.execute('CREATE TABLE IF NOT EXISTS probe (i INTEGER)')\n"
+        "print('LOCKED', flush=True)\n"
+        "time.sleep(float(sys.argv[2]))\n"
+        "con.close()\n"
+    )
+
+    def _spawn_lock_holder(self, db_path: Path, hold_seconds: float) -> subprocess.Popen[str]:
+        """別プロセスで書き込みロックを保持する。同一プロセス内の 2 接続では
+        DuckDB は衝突しないため、再現には必ず別プロセスが要る。"""
+        proc = subprocess.Popen(
+            [sys.executable, "-c", self._HOLD_LOCK_SCRIPT, str(db_path), str(hold_seconds)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        assert proc.stdout is not None
+        ready = proc.stdout.readline()
+        if ready.strip() != "LOCKED":
+            proc.kill()
+            pytest.fail(f"lock holder failed to start: {ready!r} {proc.stderr.read() if proc.stderr else ''}")
+        return proc
+
+    def test_insert_waits_out_a_concurrently_held_lock(self, tmp_path: Path) -> None:
+        """他プロセスがロックを握っていても、離せば insert は成功する。"""
+        db_path = tmp_path / LOG_DB_FILE_NAME
+        jsonl = tmp_path / "run.log.jsonl"
+        _write_jsonl(jsonl, [_record(run_id="20260428_contended_aaaa", extra={"lifecycle": "end"})])
+
+        holder = self._spawn_lock_holder(db_path, hold_seconds=1.5)
+        try:
+            insert_log_records(_make_config(tmp_path), jsonl)
+        finally:
+            holder.wait(timeout=10)
+
+        with duckdb.connect(str(db_path), read_only=True) as conn:
+            rows = conn.execute("SELECT run_id, lifecycle FROM log_records").fetchall()
+        assert rows == [("20260428_contended_aaaa", "end")]
+
+    def test_non_lock_io_error_is_not_retried(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        """容量不足や破損は待っても直らないので、即座に送出して再試行しない。"""
+        connect = mocker.patch.object(
+            db_module.duckdb,
+            "connect",
+            side_effect=duckdb.IOException("IO Error: Cannot open file: No space left on device"),
+        )
+        sleep = mocker.patch.object(db_module.time, "sleep")
+
+        with pytest.raises(duckdb.IOException):
+            db_module._connect_for_write(tmp_path / LOG_DB_FILE_NAME)
+
+        assert connect.call_count == 1
+        assert sleep.call_count == 0
+
+    def test_gives_up_after_the_retry_budget(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        """ロックが解放されないまま予算を使い切ったら、握り潰さず送出する。"""
+        connect = mocker.patch.object(
+            db_module.duckdb,
+            "connect",
+            side_effect=duckdb.IOException("IO Error: Could not set lock on file: Conflicting lock is held"),
+        )
+        sleep = mocker.patch.object(db_module.time, "sleep")
+
+        with pytest.raises(duckdb.IOException):
+            db_module._connect_for_write(tmp_path / LOG_DB_FILE_NAME)
+
+        assert connect.call_count == db_module.LOCK_RETRY_ATTEMPTS
+        assert sleep.call_count == db_module.LOCK_RETRY_ATTEMPTS - 1
+
+    def test_backoff_grows_but_stays_capped(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        """待ち時間は指数的に伸び、上限で頭打ちになる (無限に伸びない)。"""
+        mocker.patch.object(
+            db_module.duckdb,
+            "connect",
+            side_effect=duckdb.IOException("IO Error: Could not set lock on file: Conflicting lock is held"),
+        )
+        sleep = mocker.patch.object(db_module.time, "sleep")
+
+        with pytest.raises(duckdb.IOException):
+            db_module._connect_for_write(tmp_path / LOG_DB_FILE_NAME)
+
+        waits = [call.args[0] for call in sleep.call_args_list]
+        assert waits[0] == db_module.LOCK_RETRY_BASE_SECONDS
+        assert waits == sorted(waits)
+        assert max(waits) == db_module.LOCK_RETRY_MAX_SECONDS
+        assert sum(waits) < 60

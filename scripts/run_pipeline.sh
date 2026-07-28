@@ -360,13 +360,25 @@ run_parallel() {
     done
 
     if [[ "$DRY_RUN" == false ]]; then
+        # Reap in completion order. Waiting on pids in launch order instead would
+        # stamp every job with the time the slowest earlier one finished, so a
+        # 20-second step queued behind a 98-minute one would be recorded as
+        # having taken 98 minutes.
+        local -A name_by_pid=() start_by_pid=()
         local i=0
         for pid in "${pids[@]}"; do
-            local cmd_name="${cmd_names[$i]}"
-            local rc=0
-            wait "$pid" || rc=$?
-            report_step_result "$cmd_name" "$rc" "${started_times[$i]}" || failed=1
+            name_by_pid[$pid]="${cmd_names[$i]}"
+            start_by_pid[$pid]="${started_times[$i]}"
             ((i++)) || true
+        done
+
+        local remaining=${#pids[@]}
+        while (( remaining > 0 )); do
+            local finished="" rc=0
+            wait -n -p finished || rc=$?
+            [[ -n "$finished" ]] || break
+            report_step_result "${name_by_pid[$finished]}" "$rc" "${start_by_pid[$finished]}" || failed=1
+            ((remaining--)) || true
         done
 
         if [[ $failed -ne 0 ]]; then

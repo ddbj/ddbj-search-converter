@@ -4,7 +4,12 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from ddbj_search_converter.config import DRA_PUBLIC_BASE_URL, GEA_PUBLIC_BASE_URL, METABOBANK_PUBLIC_BASE_URL, SEARCH_BASE_URL
+from ddbj_search_converter.config import (
+    DRA_PUBLIC_BASE_URL,
+    GEA_PUBLIC_BASE_URL,
+    METABOBANK_PUBLIC_BASE_URL,
+    SEARCH_BASE_URL,
+)
 from ddbj_search_converter.jsonl.distribution import (
     make_bp_distribution,
     make_bs_distribution,

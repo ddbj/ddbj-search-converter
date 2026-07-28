@@ -2,6 +2,7 @@
 
 import contextlib
 import json
+import time
 from datetime import date
 from pathlib import Path
 
@@ -9,9 +10,40 @@ import duckdb
 
 from ddbj_search_converter.config import LOG_DB_FILE_NAME, Config
 
+LOCK_RETRY_ATTEMPTS = 12
+LOCK_RETRY_BASE_SECONDS = 0.25
+LOCK_RETRY_MAX_SECONDS = 5.0
+
 
 def _get_db_path(config: Config) -> Path:
     return config.result_dir.joinpath(LOG_DB_FILE_NAME)
+
+
+def _connect_for_write(db_path: Path) -> duckdb.DuckDBPyConnection:
+    """単一 writer の競合を待ってから ``log.duckdb`` への書き込み接続を返す。
+
+    パイプラインは複数のコマンドを並列に起動し、各コマンドは終了時に自分の
+    JSONL をまとめて ``log.duckdb`` に流し込む。実行時間が近いもの同士は同じ
+    瞬間に writer になろうとするが、DuckDB は single writer なので後から来た
+    側が ``IOException`` で落ちる。落ちる先が ``run_logger`` の ``finally`` の
+    中なので、そのコマンドは処理自体を終えているのに異常終了し、しかも
+    ``log.duckdb`` に 1 行も残らない。
+
+    ロックは 1 回の insert のあいだしか保持されないため、待てば必ず取れる。
+    ロック以外の I/O エラー (破損・容量不足など) は待っても解決しないので、
+    そのまま送出する。
+    """
+    delay = LOCK_RETRY_BASE_SECONDS
+    for attempt in range(1, LOCK_RETRY_ATTEMPTS + 1):
+        try:
+            return duckdb.connect(str(db_path))
+        except duckdb.IOException as e:
+            if "lock" not in str(e).lower() or attempt == LOCK_RETRY_ATTEMPTS:
+                raise
+            time.sleep(delay)
+            delay = min(delay * 2, LOCK_RETRY_MAX_SECONDS)
+
+    raise AssertionError("unreachable")
 
 
 def init_log_db(config: Config) -> None:
@@ -32,7 +64,7 @@ def init_log_db(config: Config) -> None:
     db_path = _get_db_path(config)
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    con = duckdb.connect(str(db_path))
+    con = _connect_for_write(db_path)
     try:
         con.execute("""
             CREATE TABLE IF NOT EXISTS log_records (
@@ -107,7 +139,7 @@ def insert_log_records(config: Config, jsonl_path: Path) -> None:
     if not records:
         return
 
-    con = duckdb.connect(str(db_path))
+    con = _connect_for_write(db_path)
     try:
         # ON CONFLICT DO NOTHING: ``(run_id, lifecycle)`` の UNIQUE 違反 (= 同じ
         # run の重複 start / end / failed 行) は silent skip する。DB レベルで

@@ -22,9 +22,18 @@ def test_config(tmp_path: Path) -> Config:
     )
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def clean_ctx() -> Generator[None, None, None]:
-    """Clean up logger context after each test."""
+    """Reset the logger context around every test.
+
+    ``_ctx`` is a module-level ContextVar that ``init_logger`` sets and nothing
+    clears, so a test that initialises the logger leaves it set for whatever
+    runs next on the same ``-n auto`` worker. Resetting before the test as well
+    as after keeps the suite independent of execution order; cleaning up only
+    afterwards protects the next test only when the polluting test happened to
+    request this fixture.
+    """
+    _ctx.set(None)
     yield
     _ctx.set(None)
 

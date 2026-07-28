@@ -24,6 +24,12 @@ DDBJ Search Converter のログ確認とデバッグ方法。
 
 stderr 退避ファイルには、JSONL に載らない情報が残る。`run_logger` が開く前 (import や設定読み込みの段階) に落ちたときのインタプリタの traceback と、`postgres/utils.py` の接続リトライが標準 logging で出す警告がこれにあたる。
 
+## 並列ステップと単一 writer
+
+`log.duckdb` への挿入はプロセス終了時の 1 回だけなので、パイプラインが並列に起動したコマンドは、実行時間が近いと同じ瞬間に writer になろうとする。DuckDB は単一 writer で、後から来た側は `IOException` になる。これが `run_logger` の `finally` の中で起きると、コマンドは処理を終えているのに異常終了し、しかも `log.duckdb` には 1 行も残らない。
+
+`insert_log_records` はロック取得を指数バックオフで再試行してこれを吸収する。ロックは 1 回の挿入のあいだしか保持されないため待てば取れる。容量不足や破損のようなロック以外の I/O エラーは待っても解決しないので再試行せずそのまま送出する。
+
 ## DuckDB スキーマと run_id lifecycle
 
 `log.duckdb` には 1 テーブル `log_records` がある。
