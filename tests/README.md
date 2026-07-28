@@ -71,8 +71,8 @@ CLI レベルのテストは subprocess で entrypoint を起動するのでは�
 - **dblink/**: 半辺化スキーマの不変条件 (`(A→B)` と `(B→A)` の両方存在)、UNIQUE 制約、ORDER BY、`raw_edges` の DROP、atomic replace
 - **jsonl/**: XML / IDF / SDRF → Pydantic モデル → JSONL の round-trip。blacklist / preserved 適用、`Attribute` 配列正規化、sameAs alias、`isPartOf` / `type` 値、distribution 生成
 - **es/**: index 作成・削除、bulk insert / bulk delete、alias 構成、Blue-Green の swap ロジック、blacklist 削除。実 ES での mapping accept / alias swap / bulk delete 分類は integration (`IT-MAPPING-*` / `IT-SWAP-*` / `IT-DELETE-*`) でカバーする
-- **date_cache / status_cache**: 外部入力 (PostgreSQL / Livelist) を mock し、DuckDB への bulk insert を `tmp_path` で実検証
-- **postgres/**: 接続・クエリ結果整形。unit では `psycopg` の戻り値を mock する。`bp_date` / `bs_date` の SQL は staging スキーマでの `EXPLAIN` を integration (`IT-PG-03`) でカバーし、接続性は `IT-PG-01` / `IT-PG-02`
+- **date_cache / status_cache**: 外部入力 (PostgreSQL / Livelist) を mock し、DuckDB への bulk load を `tmp_path` で実検証。date_cache は加えて、窓ビルドの結果が全件ビルドを同じ窓で絞ったものと一致すること、窓外の既存行が upsert で保持されること、全件ビルドへ切り替わる条件 (`cache_meta` の欠落・`schema_version` の相違)、そして **DuckDB への投入開始時点で PostgreSQL 接続が閉じていること**
+- **postgres/**: 接続・retry・日付整形。unit では `psycopg` の戻り値を mock する。接続性は integration (`IT-PG-01` / `IT-PG-02`) でカバーし、date cache が実際に発行する SQL の現スキーマ整合は `IT-PG-03`
 - **logging/**: run_id ライフサイクル、JSONL ログ出力、DuckDB への自動 insert、SUCCESS / FAILED 判定
 
 ## バグ回帰テスト
@@ -98,7 +98,7 @@ CLI レベルのテストは subprocess で entrypoint を起動するのでは�
 - `pyproject.toml` の `addopts` で `-n auto` (pytest-xdist) がデフォルト有効。並列実行時に worker 間で競合する state (共有ファイル・グローバル変数・外部リソース) を作らない。`tmp_path` や `monkeypatch` でテストを隔離する
 - `pdb` や `print` デバッグで出力が混ざるときは `-n 0` で直列実行する
 - hypothesis の deadline は `tests/py_tests/conftest.py` の `default` プロファイルで無効化済み (並列化時の負荷で `DeadlineExceeded` が出るのを避けるため)
-- 境界値を大量データで検証したいときは、対象モジュールの定数 (例: `date_cache.db.CHUNK_SIZE`、`sra_accessions_tab.QUERY_BATCH_SIZE`) を `monkeypatch.setattr` で小さい値に置き換える。数万件を実 DuckDB に insert すると 1 テストで数十秒かかるので避ける
+- 境界値を大量データで検証したいときは、対象モジュールの定数 (例: `sra_accessions_tab.QUERY_BATCH_SIZE`) を `monkeypatch.setattr` で小さい値に置き換える。数万件を実 DuckDB に insert すると 1 テストで数十秒かかるので避ける
 
 ## fixture データ
 

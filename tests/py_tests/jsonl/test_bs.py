@@ -545,13 +545,13 @@ class TestFetchStatuses:
         from ddbj_search_converter.status_cache.db import (
             finalize_status_cache_db,
             init_status_cache_db,
-            insert_bs_statuses,
+            insert_statuses,
         )
 
         config = Config(result_dir=tmp_path)
         with run_logger(config=config):
             init_status_cache_db(config)
-            insert_bs_statuses(config, [("SAMD00000001", "suppressed")])
+            insert_statuses(config, "bs_status", [("SAMD00000001", "suppressed")])
             finalize_status_cache_db(config)
 
             docs = {"SAMD00000001": _make_bs_instance("SAMD00000001")}

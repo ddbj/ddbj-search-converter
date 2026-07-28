@@ -504,6 +504,12 @@ phase1_dblink() {
 phase2_jsonl() {
     log_section "PHASE 2: JSONL Generation"
 
+    # --full applies to both the date cache rebuild (Step 2-1) and JSONL generation (Step 2-2)
+    local full_opt=""
+    if [[ "$FULL_MODE" == true ]]; then
+        full_opt="--full"
+    fi
+
     # Step: sync_tar
     if should_skip_step "sync_tar"; then
         log_info "[SKIP] sync_tar (--from-step)"
@@ -512,15 +518,13 @@ phase2_jsonl() {
         run_parallel \
             "sync_ncbi_tar" \
             "sync_dra_tar" \
-            "build_bp_bs_date_cache" \
+            "build_bp_bs_date_cache ${full_opt}" \
             "build_bp_bs_status_cache"
     fi
 
     # Determine JSONL generation mode
-    local full_opt=""
     if [[ "$FULL_MODE" == true ]]; then
         log_info "Step 2-2: Generating JSONL files (full mode)..."
-        full_opt="--full"
     else
         log_info "Step 2-2: Generating JSONL files (incremental mode)..."
     fi

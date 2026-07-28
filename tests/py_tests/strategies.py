@@ -250,6 +250,24 @@ def st_accession_like_text(*, min_size: int = 1, max_size: int = 20) -> st.Searc
     )
 
 
+def st_tsv_hostile_text(*, min_size: int = 0, max_size: int = 20) -> st.SearchStrategy[str]:
+    """TSV の区切り・quote・改行を意図的に混ぜた文字列。
+
+    ``st_accession_like_text`` は ``\\W`` を含まないので、TSV encode が壊れる
+    失敗モード (区切り文字の混入、quote の escape 漏れ、空文字列と NULL の混同)
+    を一切踏まない。round-trip を壊しにいくのはこちらを使う。``min_size=0`` な
+    ので空文字列も生成し、NULL と区別されることを検証できる。
+    """
+    return st.text(
+        alphabet=st.one_of(
+            st.characters(categories=["L", "N"]),
+            st.sampled_from(["\t", "\n", "\r", '"', "\\"]),
+        ),
+        min_size=min_size,
+        max_size=max_size,
+    )
+
+
 def st_timestamp_str() -> st.SearchStrategy[str]:
     """ISO 8601 timestamp string suitable for SRA Accessions TSV."""
     return st.datetimes(

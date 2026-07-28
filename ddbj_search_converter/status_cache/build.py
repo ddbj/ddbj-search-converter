@@ -13,8 +13,7 @@ from ddbj_search_converter.logging.logger import log_info
 from ddbj_search_converter.status_cache.db import (
     finalize_status_cache_db,
     init_status_cache_db,
-    insert_bp_statuses,
-    insert_bs_statuses,
+    insert_statuses,
 )
 
 FILE_STATUS_MAP: dict[str, str] = {
@@ -89,7 +88,7 @@ def build_status_cache(config: Config) -> None:
     else:
         log_info(f"found bioproject livelist date: {bp_date}")
         bp_rows = _iter_statuses(BP_LIVELIST_BASE_PATH, "bioproject", bp_date)
-        bp_count = insert_bp_statuses(config, bp_rows)
+        bp_count = insert_statuses(config, "bp_status", bp_rows)
         log_info(f"inserted {bp_count} bp_status rows")
 
     # BioSample
@@ -99,7 +98,7 @@ def build_status_cache(config: Config) -> None:
     else:
         log_info(f"found biosample livelist date: {bs_date}")
         bs_rows = _iter_statuses(BS_LIVELIST_BASE_PATH, "biosample", bs_date)
-        bs_count = insert_bs_statuses(config, bs_rows)
+        bs_count = insert_statuses(config, "bs_status", bs_rows)
         log_info(f"inserted {bs_count} bs_status rows")
 
     log_info("finalizing status cache db")

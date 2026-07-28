@@ -43,7 +43,7 @@ DDBJ Search Converter のデータフローと構造。
 +-----------------------------------------------------------------------------+
 | Phase 2: JSONL Generation                                                   |
 |                                                                             |
-|   build_bp_bs_date_cache   -- PostgreSQL --> {const}/bp_bs_date.duckdb      |
+|   build_bp_bs_date_cache   -- PostgreSQL --> {result}/bp_bs_date.duckdb     |
 |   build_bp_bs_status_cache -- Livelist --> {result}/bp_bs_status.duckdb     |
 |   sync_ncbi_tar            -- download/merge --> {result}/sra_tar/NCBI_SRA  |
 |   sync_dra_tar             -- archive DRA XML -> {result}/sra_tar/DRA.tar   |
@@ -212,7 +212,8 @@ converter は途中段階の状態を複数の DuckDB に保持する。主要�
 
 - **DBLink DB を ES と分ける**: 1 BioProject エントリーが数千〜数千万件の関連 ID を持つことがあるため、ES の `nested` フィールドで持たせるとインデックスサイズが膨大になり検索負荷も悪化する。逆引き (関連 ID → 元エントリー) も必要なので、ES とは独立した DuckDB に正規化して持たせる
 - **Umbrella DB を DBLink DB と分ける**: umbrella の親子関係は方向のある関係なので、対称性を仮定する DBLink の半辺化スキーマと相性が悪い。有向 edge として独立 DB に持つことで、1 child が複数 parent を持つ DAG (約 6,700 件) を自然に表現でき、半辺化スキーマに方向情報を埋め込まずに済む
-- **Date Cache / Status Cache を事前構築する**: 日付・status は外部 (XSM PostgreSQL、Livelist) から取得する。JSONL 生成時に毎回問い合わせると数百万エントリーで N+1 クエリ問題が発生し、外部リソースの負荷とネットワーク往復で生成時間が大きく伸びる。DuckDB に bulk fetch で集約し、JSONL 生成本体を外部リソースから切り離す
+- **Date Cache / Status Cache を事前構築する**: 日付・status は外部 (XSM PostgreSQL、Livelist) から取得する。JSONL 生成は XML ファイル単位で並列実行されるため、生成中に外部へ問い合わせると worker 数 × ファイル数だけ往復が発生し、外部リソース側の負荷と生成時間の両方が読めなくなる。事前に DuckDB へ集約することで JSONL 生成本体を外部リソースから切り離す。Date Cache は日付を配るだけでなく、差分更新でどの accession を処理するかを決める台帳も兼ねる
+- **Date Cache の構築を PostgreSQL 取得と DuckDB 投入の 2 段に分ける**: 両者を 1 つのループに融合すると、DuckDB への書き込みが終わるまで PostgreSQL のカーソルが開いたままになり、「全件をメモリに載せる」か「接続を長時間保持する」かのトレードオフから逃げられなくなる。取得結果を一度 TSV に書き切って接続を閉じ、その後で DuckDB にロードすることで、どちらも選ばずに済む
 
 ### ID 変換マッピング
 
@@ -339,17 +340,68 @@ CREATE TABLE umbrella_relation (
 
 ### Date Cache DB
 
-PostgreSQL から取得した BioProject/BioSample の日付情報をキャッシュした DuckDB。
+XSM PostgreSQL から取得した BioProject/BioSample の日付情報をキャッシュした DuckDB。
 
 - `{result_dir}/bp_bs_date.duckdb`
 
-JSONL 生成時に `dateCreated`, `dateModified`, `datePublished` を付与するために使用。
+```sql
+CREATE TABLE bp_date (
+    accession TEXT NOT NULL,
+    date_created TEXT,
+    date_modified TEXT,
+    date_published TEXT
+);
+CREATE TABLE bs_date (  -- bp_date と同一のカラム構成
+    accession TEXT NOT NULL,
+    date_created TEXT,
+    date_modified TEXT,
+    date_published TEXT
+);
+-- index: idx_{bp,bs}_date_accession (accession, UNIQUE), idx_{bp,bs}_date_modified (date_modified)
+
+CREATE TABLE cache_meta (
+    table_name TEXT NOT NULL,      -- 'bp_date' | 'bs_date'
+    schema_version INTEGER NOT NULL,
+    full_built_at TEXT,            -- 最後に全件ビルドした日 (YYYY-MM-DD)
+    watermark TEXT                 -- 取り込み済みの上限日 (YYYY-MM-DD)
+);
+```
+
+日付は UTC ISO8601 (`Z` 終端) の TEXT で保持する。この書式は辞書順が時刻順と一致するので、範囲検索を文字列比較のまま行える。
+
+対象は DDBJ 分のみ (`PRJD*` / `SAMD*`)。NCBI 由来のエントリーは日付を XML から取るため、この DB には入らない。
+
+用途は 2 つある。JSONL 生成時に `dateCreated` / `dateModified` / `datePublished` を付与すること、そして差分更新で処理対象の accession を決めることである。後者があるため、**この DB の `date_modified` が実際の更新日とずれると、そのエントリーは差分更新から取りこぼされる**。BioSample 側は accession と `mass.sample` の行が 1:1 で対応するので、両者を `smp_id` で結合して accession ごとの日付を取る。
+
+#### 窓ビルドと全件ビルド
+
+`build_bp_bs_date_cache` は既定で**窓ビルド**として動く。`cache_meta.watermark` から margin を引いた日以降に更新された行だけを PostgreSQL から取得し、既存 DB に upsert する。窓に入らなかった行はそのまま残るため、DB は常に全件を保持する。消費側から見た内容は全件ビルドと変わらない。
+
+`--full` を指定すると**全件ビルド**になり、DB を空から作り直す。以下のいずれかに当てはまるときは、指定がなくても全件ビルドに切り替わる。
+
+- final DB が存在しない
+- `cache_meta` が読めない、または `full_built_at` が NULL
+- `cache_meta.schema_version` が converter の現行値より古い
+
+3 つ目があるので、日付の意味が変わる変更を入れたときは `schema_version` を上げるだけでよい。次回の実行が自動的に一度だけ全件ビルドになり、以降は窓ビルドに戻る。
+
+窓の境界は日単位で扱う。秒精度の時刻を watermark にすると、取得クエリの実行中に更新された行が窓の内と外のどちらにも入らず行方不明になるため。margin は JSONL 生成の差分判定と同じ既定値を使う。日次実行が N 日失敗すると `watermark` がその間進まないので、窓は自動的に N 日分広がる。
+
+窓ビルドでは、PostgreSQL 側で削除された accession の行が DB に残り続ける。消えた accession は XML にも現れず JSONL 生成の対象にならないため、ES への影響はない。掃除が必要なら `--full` を実行する。
 
 ### Status Cache DB
 
 Livelist ファイルから取得した BioProject/BioSample の status 情報をキャッシュした DuckDB。
 
 - `{result_dir}/bp_bs_status.duckdb`
+
+```sql
+CREATE TABLE bp_status (accession TEXT NOT NULL, status TEXT NOT NULL);
+CREATE TABLE bs_status (accession TEXT NOT NULL, status TEXT NOT NULL);
+-- index: idx_{bp,bs}_status_accession (accession, UNIQUE)
+```
+
+Date Cache と違い、こちらは毎回全件で作り直す。入力の Livelist が日付付きの全件スナップショットで、status 自体に更新日時を持たないため、取得範囲を絞る手がかりがない。
 
 JSONL 生成時に `status` (`public` / `private` / `suppressed` / `withdrawn` の 4 値) を付与するために使用。
 キャッシュに accession が存在しない場合は、XML から取得した値 (デフォルト "public") をそのまま使用する。BP/BS の Livelist 由来は実態として 3 値 (`public` / `suppressed` / `withdrawn`) のみ。SRA は `unpublished -> private` 等の正規化 (`ddbj_search_converter/jsonl/sra.py::_normalize_status`) で 4 値が出る。JGA / GEA / MetaboBank は `public` 固定 (`accessibility` で controlled-access / public-access を区別)。

@@ -14,7 +14,7 @@ Phase 1: 前処理 + DBLink 構築
     外部リソース -> 前処理コマンド -> DBLink DB -> TSV
 
 Phase 2: JSONL 生成
-    XML + DBLink DB -> JSONL
+    XML + DBLink DB + Date/Status Cache -> JSONL
 
 Phase 3: ES 投入
     JSONL -> Elasticsearch
@@ -44,7 +44,7 @@ JSONL 生成は `--parallel-num` で **各コマンド内部の worker 数** を
 
 ### 主要なフラグ
 
-- `--full`: 差分判定なしの全件再生成 (初回または mapping 変更時)
+- `--full`: 差分判定なしの全件再生成 (初回または mapping 変更時)。JSONL 生成に加えて Date Cache DB の全件再構築も行う
 - `--blue-green`: ゼロダウンタイム更新 ([elasticsearch.md § Blue-Green Alias Swap](elasticsearch.md))。`--clean-es` と排他
 - `--clean-es`: ES の全 index を削除してから投入 (mapping が変わらない更新向け、bulk insert 中はダウンタイムあり)
 
@@ -75,14 +75,20 @@ production の日次運用は Rundeck (`scripts/rundeck-job.yaml`) で `run_pipe
 
 | データタイプ | 差分判定方法 |
 |-------------|-------------|
-| BioProject | XML の `date_modified` フィールド |
-| BioSample | XML の `last_update` フィールド |
+| BioProject / BioSample (DDBJ) | [Date Cache DB](data-architecture.md) の `date_modified` を範囲検索し、処理対象の accession 集合を得る |
+| BioProject / BioSample (NCBI) | XML から取り出した更新日を worker 内で `since` と比較する |
 | SRA | Accessions.tab の `Updated` カラム |
 | JGA | 常に全件処理 (`null` 固定) |
 | GEA | 常に全件処理 (IDF 全走査、`last_run.json` に含めない) |
 | MetaboBank | 常に全件処理 (IDF 全走査、`last_run.json` に含めない) |
 
 JGA / GEA / MetaboBank は更新時刻フィールドがないため差分判定できない。
+
+DDBJ 分の差分判定は Date Cache DB に依存する。したがって Date Cache DB の `date_modified` が実際の更新日とずれていると、そのエントリーは差分更新から漏れて ES に反映されない。`build_bp_bs_date_cache` が `generate_bp_jsonl` / `generate_bs_jsonl` より前に完了している必要があり、Date Cache DB がない状態で JSONL 生成を実行するとエラーで停止する。
+
+### Date Cache DB の更新範囲
+
+Date Cache DB 自身も差分で構築されるが、その範囲は `last_run.json` ではなく DB 内の `cache_meta.watermark` で管理する。両者は意味が違う (前者は「JSONL をどこまで出力したか」、後者は「cache がどこまで取り込み済みか」) ので別々に持つ。watermark を DB 本体と同じファイルに置くことで、両者が食い違った状態になり得ないようにしている。詳細は [data-architecture.md](data-architecture.md) を参照。
 
 ## Hotfix: regenerate_jsonl
 

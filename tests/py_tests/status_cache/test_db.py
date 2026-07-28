@@ -1,217 +1,129 @@
-"""Tests for ddbj_search_converter.status_cache.db module."""
+"""status_cache.db のテスト。
 
-import string
+status cache は毎回全件で作り直すので、窓ビルドのような差分の観点はない。
+TSV を経由する投入が値を歪めないこと、finalize が accession の一意性を保証する
+ことを見る。
+"""
+
 from pathlib import Path
 
+import duckdb
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
-from ddbj_search_converter.status_cache import db as status_cache_db
 from ddbj_search_converter.status_cache.db import (
+    StatusTable,
     fetch_bp_statuses_from_cache,
     fetch_bs_statuses_from_cache,
     finalize_status_cache_db,
     init_status_cache_db,
-    insert_bp_statuses,
-    insert_bs_statuses,
+    insert_statuses,
     status_cache_exists,
 )
+from py_tests.strategies import st_tsv_hostile_text
+
+STATUS_STRATEGY = st.sampled_from(["public", "private", "suppressed", "withdrawn"])
 
 
-def _make_config(tmp_path: Path) -> Config:
-    return Config(result_dir=tmp_path)
+def build_cache(config: Config, rows_by_table: dict[StatusTable, list[tuple[str, str]]]) -> None:
+    tables: tuple[StatusTable, ...] = ("bp_status", "bs_status")
+    init_status_cache_db(config)
+    for table in tables:
+        insert_statuses(config, table, rows_by_table.get(table, []))
+    finalize_status_cache_db(config)
 
 
-class TestInitCreatesTable:
-    def test_init_creates_tables(self, tmp_path):
-        import duckdb
-
-        config = _make_config(tmp_path)
+class TestBuild:
+    def test_insert_returns_row_count(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
         init_status_cache_db(config)
+        assert insert_statuses(config, "bp_status", [("PRJDB1", "public"), ("PRJDB2", "withdrawn")]) == 2
 
-        db_path = tmp_path.joinpath("bp_bs_status.tmp.duckdb")
-        assert db_path.exists()
-
-        with duckdb.connect(str(db_path)) as conn:
-            tables = conn.execute("SELECT table_name FROM information_schema.tables").fetchall()
-            table_names = {row[0] for row in tables}
-
-        assert "bp_status" in table_names
-        assert "bs_status" in table_names
-
-
-class TestInsertAndFetchBpStatuses:
-    def test_insert_and_fetch_bp_statuses(self, tmp_path):
-        config = _make_config(tmp_path)
+    def test_insert_empty_returns_zero(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
         init_status_cache_db(config)
+        assert insert_statuses(config, "bp_status", []) == 0
 
-        rows = [
-            ("PRJDB1", "public"),
-            ("PRJDB2", "suppressed"),
-            ("PRJDB3", "withdrawn"),
-        ]
-        count = insert_bp_statuses(config, rows)
-        assert count == 3
+    def test_roundtrip_through_cache(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
+        build_cache(
+            config,
+            {
+                "bp_status": [("PRJDB1", "public"), ("PRJDB2", "suppressed")],
+                "bs_status": [("SAMD1", "withdrawn")],
+            },
+        )
 
+        assert fetch_bp_statuses_from_cache(config, ["PRJDB1", "PRJDB2"]) == {
+            "PRJDB1": "public",
+            "PRJDB2": "suppressed",
+        }
+        assert fetch_bs_statuses_from_cache(config, ["SAMD1"]) == {"SAMD1": "withdrawn"}
+
+    def test_cache_exists_only_after_finalize(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
+        assert status_cache_exists(config) is False
+        init_status_cache_db(config)
+        assert status_cache_exists(config) is False
         finalize_status_cache_db(config)
+        assert status_cache_exists(config) is True
 
-        result = fetch_bp_statuses_from_cache(config, ["PRJDB1", "PRJDB2", "PRJDB3"])
-        assert result == {"PRJDB1": "public", "PRJDB2": "suppressed", "PRJDB3": "withdrawn"}
+    def test_rebuild_over_existing_cache_keeps_file_present(self, tmp_path: Path) -> None:
+        """置き換えは atomic rename なので、cache が存在しない瞬間を作らない。"""
+        config = Config(result_dir=tmp_path)
+        build_cache(config, {"bp_status": [("PRJDB1", "public")]})
+        final_path = tmp_path / "bp_bs_status.duckdb"
+        assert final_path.exists()
 
+        build_cache(config, {"bp_status": [("PRJDB2", "public")]})
+        assert final_path.exists()
+        assert fetch_bp_statuses_from_cache(config, ["PRJDB1", "PRJDB2"]) == {"PRJDB2": "public"}
 
-class TestInsertAndFetchBsStatuses:
-    def test_insert_and_fetch_bs_statuses(self, tmp_path):
-        config = _make_config(tmp_path)
+    def test_duplicate_accession_fails_at_finalize(self, tmp_path: Path) -> None:
+        """同一 accession が 2 度出たら、どちらが勝つか曖昧なまま通さない。"""
+        config = Config(result_dir=tmp_path)
         init_status_cache_db(config)
+        insert_statuses(config, "bp_status", [("PRJDB1", "public"), ("PRJDB1", "withdrawn")])
 
-        rows = [
-            ("SAMD00000001", "public"),
-            ("SAMD00000002", "suppressed"),
-        ]
-        count = insert_bs_statuses(config, rows)
-        assert count == 2
-
-        finalize_status_cache_db(config)
-
-        result = fetch_bs_statuses_from_cache(config, ["SAMD00000001", "SAMD00000002"])
-        assert result == {"SAMD00000001": "public", "SAMD00000002": "suppressed"}
+        with pytest.raises(duckdb.ConstraintException):
+            finalize_status_cache_db(config)
 
 
-class TestFetchEmptyAccessions:
-    def test_fetch_empty_accessions_returns_empty_dict(self, tmp_path):
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-        finalize_status_cache_db(config)
+class TestFetch:
+    def test_fetch_empty_accessions_returns_empty(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
+        build_cache(config, {"bp_status": [("PRJDB1", "public")]})
+        assert fetch_bp_statuses_from_cache(config, []) == {}
 
-        result = fetch_bp_statuses_from_cache(config, [])
-        assert result == {}
+    def test_fetch_missing_accession_is_omitted(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
+        build_cache(config, {"bp_status": [("PRJDB1", "public")]})
+        assert fetch_bp_statuses_from_cache(config, ["PRJDB_ABSENT"]) == {}
 
-        result = fetch_bs_statuses_from_cache(config, [])
-        assert result == {}
+    def test_tables_are_queried_independently(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path)
+        build_cache(config, {"bp_status": [("ACC", "public")], "bs_status": [("ACC", "withdrawn")]})
 
-
-class TestFetchMissingAccessions:
-    def test_fetch_missing_accessions_returns_empty_dict(self, tmp_path):
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-        finalize_status_cache_db(config)
-
-        result = fetch_bp_statuses_from_cache(config, ["PRJDB_NONEXISTENT"])
-        assert result == {}
-
-
-class TestStatusCacheExists:
-    def test_status_cache_exists_false_when_no_db(self, tmp_path):
-        config = _make_config(tmp_path)
-        assert not status_cache_exists(config)
-
-    def test_status_cache_exists_true_after_finalize(self, tmp_path):
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-        finalize_status_cache_db(config)
-        assert status_cache_exists(config)
-
-
-class TestChunkBoundary:
-    def test_chunk_boundary_below(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(status_cache_db, "CHUNK_SIZE", 100)
-        n = status_cache_db.CHUNK_SIZE - 1
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-
-        rows = [(f"PRJDB{i}", "public") for i in range(n)]
-        count = insert_bp_statuses(config, rows)
-        assert count == n
-
-        finalize_status_cache_db(config)
-
-        accessions = [f"PRJDB{i}" for i in range(n)]
-        result = fetch_bp_statuses_from_cache(config, accessions)
-        assert len(result) == n
-
-    def test_chunk_boundary_exact(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(status_cache_db, "CHUNK_SIZE", 100)
-        n = status_cache_db.CHUNK_SIZE
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-
-        rows = [(f"PRJDB{i}", "public") for i in range(n)]
-        count = insert_bp_statuses(config, rows)
-        assert count == n
-
-        finalize_status_cache_db(config)
-
-        accessions = [f"PRJDB{i}" for i in range(n)]
-        result = fetch_bp_statuses_from_cache(config, accessions)
-        assert len(result) == n
-
-    def test_chunk_boundary_above(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(status_cache_db, "CHUNK_SIZE", 100)
-        n = status_cache_db.CHUNK_SIZE + 1
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-
-        rows = [(f"PRJDB{i}", "public") for i in range(n)]
-        count = insert_bp_statuses(config, rows)
-        assert count == n
-
-        finalize_status_cache_db(config)
-
-        accessions = [f"PRJDB{i}" for i in range(n)]
-        result = fetch_bp_statuses_from_cache(config, accessions)
-        assert len(result) == n
-
-
-accession_strategy = st.text(
-    alphabet=string.ascii_uppercase + string.digits,
-    min_size=1,
-    max_size=20,
-)
-status_strategy = st.sampled_from(["public", "private", "suppressed", "withdrawn"])
+        assert fetch_bp_statuses_from_cache(config, ["ACC"]) == {"ACC": "public"}
+        assert fetch_bs_statuses_from_cache(config, ["ACC"]) == {"ACC": "withdrawn"}
 
 
 class TestPbtRoundTrip:
     @given(
-        st.lists(
-            st.tuples(accession_strategy, status_strategy),
+        rows=st.lists(
+            st.tuples(st_tsv_hostile_text(min_size=1), STATUS_STRATEGY),
             min_size=0,
-            max_size=50,
-            unique_by=lambda x: x[0],
+            max_size=30,
+            unique_by=lambda row: row[0],
         )
     )
     @settings(max_examples=20, deadline=None)
-    def test_bp_insert_fetch_roundtrip(self, tmp_path_factory, rows):
-        tmp_path = tmp_path_factory.mktemp("pbt")
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-        insert_bp_statuses(config, rows)
-        finalize_status_cache_db(config)
+    def test_roundtrip_preserves_rows(
+        self, rows: list[tuple[str, str]], tmp_path_factory: pytest.TempPathFactory
+    ) -> None:
+        config = Config(result_dir=tmp_path_factory.mktemp("pbt"))
+        build_cache(config, {"bp_status": rows})
 
-        accessions = [r[0] for r in rows]
-        result = fetch_bp_statuses_from_cache(config, accessions)
-
-        expected = dict(rows)
-        assert result == expected
-
-    @given(
-        st.lists(
-            st.tuples(accession_strategy, status_strategy),
-            min_size=0,
-            max_size=50,
-            unique_by=lambda x: x[0],
-        )
-    )
-    @settings(max_examples=20, deadline=None)
-    def test_bs_insert_fetch_roundtrip(self, tmp_path_factory, rows):
-        tmp_path = tmp_path_factory.mktemp("pbt")
-        config = _make_config(tmp_path)
-        init_status_cache_db(config)
-        insert_bs_statuses(config, rows)
-        finalize_status_cache_db(config)
-
-        accessions = [r[0] for r in rows]
-        result = fetch_bs_statuses_from_cache(config, accessions)
-
-        expected = dict(rows)
-        assert result == expected
+        assert fetch_bp_statuses_from_cache(config, [row[0] for row in rows]) == dict(rows)

@@ -936,13 +936,13 @@ class TestFetchStatuses:
         from ddbj_search_converter.status_cache.db import (
             finalize_status_cache_db,
             init_status_cache_db,
-            insert_bp_statuses,
+            insert_statuses,
         )
 
         config = Config(result_dir=tmp_path)
         with run_logger(config=config):
             init_status_cache_db(config)
-            insert_bp_statuses(config, [("PRJDB1", "suppressed"), ("PRJDB2", "withdrawn")])
+            insert_statuses(config, "bp_status", [("PRJDB1", "suppressed"), ("PRJDB2", "withdrawn")])
             finalize_status_cache_db(config)
 
             docs = {

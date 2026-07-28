@@ -1,349 +1,262 @@
-"""Tests for ddbj_search_converter.date_cache.build module."""
+"""date_cache.build のテスト。
 
-from __future__ import annotations
+この build が過去に本番を止めてきた失敗は「PostgreSQL から読みながら DuckDB へ
+書き、接続を掴んだまま切られる」という構造に由来する。したがって最重要の不変
+条件は「DuckDB への投入が始まる時点で PostgreSQL からの取得が終わっていること」
+で、それを実際の DuckDB に対して確認する。
+"""
 
-from datetime import datetime, timezone
+import datetime
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
-from unittest.mock import MagicMock, Mock
 
+import duckdb
 import pytest
 from pytest_mock import MockerFixture
 
-from ddbj_search_converter.config import Config
+from ddbj_search_converter.config import DEFAULT_MARGIN_DAYS, Config
 from ddbj_search_converter.date_cache.build import (
-    BP_POSTGRES_DB_NAME,
     BP_QUERY,
-    BS_POSTGRES_DB_NAME,
     BS_QUERY,
-    CURSOR_ITERSIZE,
-    _fetch_all_bp_dates,
-    _fetch_all_bs_dates,
+    DATE_SOURCES,
+    DateSource,
     build_date_cache,
+    build_query,
+    window_start,
+)
+from ddbj_search_converter.date_cache.db import (
+    DateRow,
+    date_cache_ready,
+    fetch_bp_dates_from_cache,
+    read_cache_meta,
 )
 
-
-def _make_named_cursor_mock(rows: list[tuple[Any, ...]]) -> MagicMock:
-    """名前付き cursor を模した MagicMock を返す。
-
-    `with conn.cursor(name=...) as cur:` パターンを成立させる必要がある。
-    """
-    cur = MagicMock()
-    cur.__enter__.return_value = cur
-    cur.__exit__.return_value = None
-    cur.__iter__.return_value = iter(rows)
-    return cur
+TODAY = datetime.date(2026, 2, 20)
 
 
-def _make_connection_mock(cur: MagicMock) -> MagicMock:
-    conn = MagicMock()
-    conn.cursor.return_value = cur
-    return conn
+def rows_for(table: str) -> list[DateRow]:
+    prefix = "PRJDB" if table == "bp_date" else "SAMD"
+    return [(f"{prefix}1", None, "2026-02-10T00:00:00Z", None)]
 
 
-class TestFetchAllBpDates:
-    """_fetch_all_bp_dates の接続パラメータ・cursor 設定・format_date 適用。"""
+def patch_fetch(mocker: MockerFixture, captured: dict[str, str | None] | None = None) -> None:
+    """PostgreSQL アクセスだけを差し替える。DuckDB 側は本物を使う。"""
 
-    def test_connects_with_bioproject_dbname_and_parsed_url(self, mocker: MockerFixture) -> None:
-        """parse_postgres_url の結果と dbname=bioproject で connect される。"""
-        cur = _make_named_cursor_mock([])
-        conn = _make_connection_mock(cur)
-        mock_connect = mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
+    def fake_fetch(postgres_url: str, source: DateSource, since: str | None) -> Iterator[DateRow]:
+        if captured is not None:
+            captured[source.table] = since
+        yield from rows_for(source.table)
 
-        list(_fetch_all_bp_dates("postgresql://alice:secret@db.example:6543"))
+    mocker.patch("ddbj_search_converter.date_cache.build._fetch_dates", side_effect=fake_fetch)
 
-        kwargs = mock_connect.call_args.kwargs
-        assert kwargs["host"] == "db.example"
-        assert kwargs["port"] == 6543
-        assert kwargs["user"] == "alice"
-        assert kwargs["password"] == "secret"
-        assert kwargs["dbname"] == BP_POSTGRES_DB_NAME == "bioproject"
 
-    def test_uses_named_cursor_with_itersize(self, mocker: MockerFixture) -> None:
-        """server-side cursor (named) を CURSOR_ITERSIZE で構成する。"""
-        cur = _make_named_cursor_mock([])
-        conn = _make_connection_mock(cur)
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
+class TestBuildQuery:
+    def test_without_since_returns_base_query_unchanged(self) -> None:
+        assert build_query(BP_QUERY, None) == BP_QUERY
 
-        list(_fetch_all_bp_dates("postgresql://u:p@h:5432"))
+    @pytest.mark.parametrize("base", [BP_QUERY, BS_QUERY], ids=["bp", "bs"])
+    def test_with_since_adds_modified_date_lower_bound(self, base: str) -> None:
+        query = build_query(base, "2026-01-01")
+        assert "p.modified_date >= %s" in query
+        assert query.startswith(base)
 
-        # cursor 名は固定 (server-side cursor 化のため必須)
-        conn.cursor.assert_called_once_with(name="bp_date_cursor")
-        # itersize が CURSOR_ITERSIZE で設定される
-        assert cur.itersize == CURSOR_ITERSIZE
-        # SQL は BP_QUERY が実行される
-        cur.execute.assert_called_once_with(BP_QUERY)
+    @pytest.mark.parametrize("base", [BP_QUERY, BS_QUERY], ids=["bp", "bs"])
+    def test_with_since_has_exactly_one_placeholder(self, base: str) -> None:
+        assert build_query(base, "2026-01-01").count("%s") == 1
 
-    def test_passes_keepalive_options_to_connect(self, mocker: MockerFixture) -> None:
-        """psycopg2.connect に keepalives 群が固定値で渡される (idle 切断対策)。"""
-        cur = _make_named_cursor_mock([])
-        conn = _make_connection_mock(cur)
-        mock_connect = mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
 
-        list(_fetch_all_bp_dates("postgresql://u:p@h:5432"))
-
-        kwargs = mock_connect.call_args.kwargs
-        assert kwargs["keepalives"] == 1
-        assert kwargs["keepalives_idle"] == 60
-        assert kwargs["keepalives_interval"] == 10
-        assert kwargs["keepalives_count"] == 5
-
-    def test_itersize_set_before_execute(self, mocker: MockerFixture) -> None:
-        """itersize は execute の前に設定される (named cursor 仕様: fetch 開始後の変更は無効)。
-
-        execute の side_effect で「呼ばれた瞬間の itersize」をキャプチャする。
+class TestQueryShape:
+    def test_bs_query_joins_on_smp_id(self) -> None:
+        """accession と sample 行は smp_id で 1:1。submission_id で畳み込むと、
+        1 submission 内の 1 行の日付が全 accession に配られてしまう。
         """
-        cur = _make_named_cursor_mock([])
-        conn = _make_connection_mock(cur)
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
+        assert "s.smp_id = p.smp_id" in BS_QUERY
+        assert "DISTINCT ON" not in BS_QUERY
 
-        captured_itersize: list[int] = []
+    def test_bp_query_joins_on_submission_id(self) -> None:
+        # BP は mass.project 側が submission_id で一意なので畳み込みが起きない。
+        assert "s.submission_id = p.submission_id" in BP_QUERY
 
-        def capture(_query: str) -> None:
-            captured_itersize.append(cur.itersize)
-
-        cur.execute.side_effect = capture
-
-        list(_fetch_all_bp_dates("postgresql://u:p@h:5432"))
-
-        assert captured_itersize == [CURSOR_ITERSIZE]
-
-    def test_format_date_applied_to_yielded_rows(self, mocker: MockerFixture) -> None:
-        """yield 値の 2-4 番目は format_date 経由 (datetime → ISO Z 文字列、None は None)。"""
-        rows: list[tuple[Any, ...]] = [
-            (
-                "PRJDB1",
-                datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-                datetime(2026, 1, 2, 12, 30, 45, tzinfo=timezone.utc),
-                None,
-            ),
-            ("PRJDB2", None, None, None),
-        ]
-        cur = _make_named_cursor_mock(rows)
-        conn = _make_connection_mock(cur)
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
-
-        result = list(_fetch_all_bp_dates("postgresql://u:p@h:5432"))
-
-        assert result == [
-            ("PRJDB1", "2026-01-01T00:00:00Z", "2026-01-02T12:30:45Z", None),
-            ("PRJDB2", None, None, None),
-        ]
-
-    def test_connection_closed_after_iteration(self, mocker: MockerFixture) -> None:
-        """yield 完了後、conn.close() が finally で呼ばれる。"""
-        cur = _make_named_cursor_mock([("PRJDB1", None, None, None)])
-        conn = _make_connection_mock(cur)
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
-
-        list(_fetch_all_bp_dates("postgresql://u:p@h:5432"))
-
-        conn.close.assert_called_once()
-
-    def test_connection_closed_on_exception(self, mocker: MockerFixture) -> None:
-        """cursor 反復中に例外が出ても conn.close() が呼ばれる (finally)。"""
-        cur = MagicMock()
-        cur.__enter__.return_value = cur
-        cur.__exit__.return_value = None
-
-        def raising_iter() -> Any:
-            raise RuntimeError("network glitch")
-            yield  # pragma: no cover
-
-        cur.__iter__.side_effect = raising_iter
-        conn = _make_connection_mock(cur)
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
-
-        with pytest.raises(RuntimeError):
-            list(_fetch_all_bp_dates("postgresql://u:p@h:5432"))
-
-        conn.close.assert_called_once()
-
-
-class TestFetchAllBsDates:
-    """_fetch_all_bs_dates は BP と同型 (dbname=biosample, named cursor=bs_date_cursor, BS_QUERY)。"""
-
-    def test_connects_with_biosample_dbname(self, mocker: MockerFixture) -> None:
-        cur = _make_named_cursor_mock([])
-        conn = _make_connection_mock(cur)
-        mock_connect = mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
-
-        list(_fetch_all_bs_dates("postgresql://u:p@h:5432"))
-
-        assert mock_connect.call_args.kwargs["dbname"] == BS_POSTGRES_DB_NAME == "biosample"
-
-    def test_uses_bs_named_cursor_with_itersize_and_query(self, mocker: MockerFixture) -> None:
-        cur = _make_named_cursor_mock([])
-        conn = _make_connection_mock(cur)
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build.connect_with_retry",
-            return_value=conn,
-        )
-
-        list(_fetch_all_bs_dates("postgresql://u:p@h:5432"))
-
-        conn.cursor.assert_called_once_with(name="bs_date_cursor")
-        assert cur.itersize == CURSOR_ITERSIZE
-        cur.execute.assert_called_once_with(BS_QUERY)
-
-
-class TestQueryStringsContainExpectedTables:
-    """SQL クエリ文字列が SSOT のテーブル名を参照している。"""
-
-    def test_bp_query_targets_bioproject_tables(self) -> None:
+    def test_queries_target_their_own_tables(self) -> None:
         assert "mass.bioproject_summary" in BP_QUERY
         assert "mass.project" in BP_QUERY
-
-    def test_bs_query_targets_biosample_tables(self) -> None:
         assert "mass.biosample_summary" in BS_QUERY
         assert "mass.sample" in BS_QUERY
+        assert "biosample" not in BP_QUERY
+        assert "bioproject" not in BS_QUERY
 
-    def test_bp_and_bs_queries_are_distinct(self) -> None:
-        """BP_QUERY と BS_QUERY は別 SQL (コピペ間違いで同一になる回帰を検出)。"""
-        assert BP_QUERY != BS_QUERY
-        # BP は biosample_summary を含まず、BS は bioproject_summary を含まない
-        assert "mass.biosample_summary" not in BP_QUERY
-        assert "mass.bioproject_summary" not in BS_QUERY
+    def test_sources_cover_both_tables_with_distinct_databases(self) -> None:
+        assert {source.table for source in DATE_SOURCES} == {"bp_date", "bs_date"}
+        assert len({source.postgres_db_name for source in DATE_SOURCES}) == len(DATE_SOURCES)
+        assert len({source.cursor_name for source in DATE_SOURCES}) == len(DATE_SOURCES)
 
 
-class TestBuildDateCacheOrder:
-    """build_date_cache 全体の呼び出し順序。"""
+class TestWindowStart:
+    def test_subtracts_default_margin(self) -> None:
+        assert window_start("2026-02-20") == "2026-01-21"
 
-    def test_calls_in_expected_order(self, mocker: MockerFixture, tmp_path: Path) -> None:
-        """init → fetch_bp → insert_bp → fetch_bs → insert_bs → finalize の順。"""
-        config = Config(
-            result_dir=tmp_path,
-            xsm_postgres_url="postgresql://u:p@h:5432",
-        )
+    def test_margin_is_the_shared_default(self) -> None:
+        watermark = datetime.date(2026, 2, 20)
+        expected = (watermark - datetime.timedelta(days=DEFAULT_MARGIN_DAYS)).strftime("%Y-%m-%d")
+        assert window_start(watermark.strftime("%Y-%m-%d")) == expected
 
-        mocker.patch("ddbj_search_converter.date_cache.build.log_info")
-        mock_init = mocker.patch("ddbj_search_converter.date_cache.build.init_date_cache_db")
-        mock_fetch_bp = mocker.patch(
-            "ddbj_search_converter.date_cache.build._fetch_all_bp_dates",
-            return_value=iter([("PRJDB1", None, None, None)]),
-        )
-        mock_insert_bp = mocker.patch(
-            "ddbj_search_converter.date_cache.build.insert_bp_dates",
-            return_value=1,
-        )
-        mock_fetch_bs = mocker.patch(
-            "ddbj_search_converter.date_cache.build._fetch_all_bs_dates",
-            return_value=iter([("SAMD1", None, None, None)]),
-        )
-        mock_insert_bs = mocker.patch(
-            "ddbj_search_converter.date_cache.build.insert_bs_dates",
-            return_value=1,
-        )
-        mock_finalize = mocker.patch("ddbj_search_converter.date_cache.build.finalize_date_cache_db")
+    def test_crosses_month_and_year_boundaries(self) -> None:
+        assert window_start("2026-01-05") == "2025-12-06"
 
-        # parent mock を attach して呼び出し順を観察する
-        parent = Mock()
-        parent.attach_mock(mock_init, "init")
-        parent.attach_mock(mock_fetch_bp, "fetch_bp")
-        parent.attach_mock(mock_insert_bp, "insert_bp")
-        parent.attach_mock(mock_fetch_bs, "fetch_bs")
-        parent.attach_mock(mock_insert_bs, "insert_bs")
-        parent.attach_mock(mock_finalize, "finalize")
 
-        build_date_cache(config)
+class TestConnectionIsClosedBeforeLoad:
+    def test_no_rows_are_in_duckdb_while_postgres_is_still_being_read(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
+        """取得の generator が閉じる時点で、DuckDB にはまだ 1 行も入っていない。
 
-        names = [call[0] for call in parent.mock_calls]
-        assert names == ["init", "fetch_bp", "insert_bp", "fetch_bs", "insert_bs", "finalize"]
+        generator の finally は PostgreSQL 接続を閉じる位置そのもの。ここで一時 DB
+        を writer として開けて、かつ空であることは「取得を終えてから投入を始める」
+        構造になっている証拠になる。取得と投入が再び 1 つのループに融合したら、
+        writer が競合するか行が見えるかのどちらかでここが落ちる。
+        """
+        config = Config(result_dir=tmp_path)
+        tmp_db_path = tmp_path / "bp_bs_date.tmp.duckdb"
+        observed: dict[str, int] = {}
 
-    def test_passes_xsm_postgres_url_to_fetchers(self, mocker: MockerFixture, tmp_path: Path) -> None:
-        """fetch_bp / fetch_bs に config.xsm_postgres_url が渡される。"""
-        config = Config(
-            result_dir=tmp_path,
-            xsm_postgres_url="postgresql://u:p@h:5432",
-        )
+        def fake_fetch(postgres_url: str, source: DateSource, since: str | None) -> Iterator[DateRow]:
+            try:
+                yield from rows_for(source.table)
+            finally:
+                with duckdb.connect(str(tmp_db_path)) as conn:
+                    observed[source.table] = conn.execute(f"SELECT count(*) FROM {source.table}").fetchone()[0]
 
-        mocker.patch("ddbj_search_converter.date_cache.build.log_info")
-        mocker.patch("ddbj_search_converter.date_cache.build.init_date_cache_db")
-        mocker.patch("ddbj_search_converter.date_cache.build.finalize_date_cache_db")
-        mocker.patch("ddbj_search_converter.date_cache.build.insert_bp_dates", return_value=0)
-        mocker.patch("ddbj_search_converter.date_cache.build.insert_bs_dates", return_value=0)
-        mock_fetch_bp = mocker.patch(
-            "ddbj_search_converter.date_cache.build._fetch_all_bp_dates",
-            return_value=iter([]),
-        )
-        mock_fetch_bs = mocker.patch(
-            "ddbj_search_converter.date_cache.build._fetch_all_bs_dates",
-            return_value=iter([]),
-        )
+        mocker.patch("ddbj_search_converter.date_cache.build._fetch_dates", side_effect=fake_fetch)
 
-        build_date_cache(config)
+        build_date_cache(config, full=True, today=TODAY)
 
-        mock_fetch_bp.assert_called_once_with("postgresql://u:p@h:5432")
-        mock_fetch_bs.assert_called_once_with("postgresql://u:p@h:5432")
+        assert observed == {"bp_date": 0, "bs_date": 0}
+        # 投入自体はその後きちんと行われている
+        assert fetch_bp_dates_from_cache(config, ["PRJDB1"]) == {"PRJDB1": (None, "2026-02-10T00:00:00Z", None)}
 
-    def test_insert_receives_streaming_iterator(self, mocker: MockerFixture, tmp_path: Path) -> None:
-        """fetch の結果が generator のまま insert に渡され、消費して中身が一致する。
 
-        list() で全件メモリロードしないことを担保するため、insert_bp_dates の
-        第二引数は ``Iterator`` (list ではない) として渡る設計。"""
-        config = Config(
-            result_dir=tmp_path,
-            xsm_postgres_url="postgresql://u:p@h:5432",
-        )
+class TestFullBuild:
+    def test_full_build_records_full_built_at_and_watermark(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        config = Config(result_dir=tmp_path)
+        patch_fetch(mocker)
 
-        mocker.patch("ddbj_search_converter.date_cache.build.log_info")
-        mocker.patch("ddbj_search_converter.date_cache.build.init_date_cache_db")
-        mocker.patch("ddbj_search_converter.date_cache.build.finalize_date_cache_db")
+        build_date_cache(config, full=True, today=TODAY)
 
-        bp_rows = [
-            ("PRJDB1", "2026-01-01T00:00:00Z", None, None),
-            ("PRJDB2", None, None, None),
-        ]
-        bs_rows = [("SAMD1", None, None, None)]
+        meta = read_cache_meta(config)
+        assert meta is not None
+        for table in ("bp_date", "bs_date"):
+            assert meta[table].full_built_at == "2026-02-20"
+            assert meta[table].watermark == "2026-02-20"
+        assert date_cache_ready(config) is True
+
+    def test_full_build_fetches_without_since(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        config = Config(result_dir=tmp_path)
+        captured: dict[str, str | None] = {}
+        patch_fetch(mocker, captured)
+
+        build_date_cache(config, full=True, today=TODAY)
+
+        assert captured == {"bp_date": None, "bs_date": None}
+
+    def test_missing_cache_falls_back_to_full_build(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        config = Config(result_dir=tmp_path)
+        captured: dict[str, str | None] = {}
+        patch_fetch(mocker, captured)
+
+        build_date_cache(config, full=False, today=TODAY)
+
+        assert captured == {"bp_date": None, "bs_date": None}
+        assert date_cache_ready(config) is True
+
+    @pytest.mark.parametrize(
+        "corruption",
+        [
+            "UPDATE cache_meta SET schema_version = schema_version - 1",
+            "UPDATE cache_meta SET full_built_at = NULL",
+            "DELETE FROM cache_meta",
+            "DROP TABLE cache_meta",
+        ],
+        ids=["older-schema", "never-full-built", "no-rows", "no-table"],
+    )
+    def test_unusable_cache_falls_back_to_full_build(
+        self, corruption: str, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
+        """窓ビルドの土台にできない DB を、黙って差分更新の基準に使わない。"""
+        config = Config(result_dir=tmp_path)
+        patch_fetch(mocker)
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 1))
+        with duckdb.connect(str(tmp_path / "bp_bs_date.duckdb")) as conn:
+            conn.execute(corruption)
+
+        captured: dict[str, str | None] = {}
+        patch_fetch(mocker, captured)
+        build_date_cache(config, full=False, today=TODAY)
+
+        assert captured == {"bp_date": None, "bs_date": None}
+
+
+class TestWindowBuild:
+    def test_window_build_uses_watermark_minus_margin(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        config = Config(result_dir=tmp_path)
+        patch_fetch(mocker)
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
+
+        captured: dict[str, str | None] = {}
+        patch_fetch(mocker, captured)
+        build_date_cache(config, full=False, today=datetime.date(2026, 2, 25))
+
+        assert captured == {"bp_date": "2026-01-21", "bs_date": "2026-01-21"}
+
+    def test_window_build_advances_watermark_but_not_full_built_at(
+        self, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
+        config = Config(result_dir=tmp_path)
+        patch_fetch(mocker)
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
+        build_date_cache(config, full=False, today=datetime.date(2026, 2, 25))
+
+        meta = read_cache_meta(config)
+        assert meta is not None
+        assert meta["bp_date"].watermark == "2026-02-25"
+        assert meta["bp_date"].full_built_at == "2026-02-20"
+
+    def test_missed_days_widen_the_window(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        """日次が止まっていた間は watermark が進まないので、窓がその分広がる。"""
+        config = Config(result_dir=tmp_path)
+        patch_fetch(mocker)
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 1))
+
+        captured: dict[str, str | None] = {}
+        patch_fetch(mocker, captured)
+        build_date_cache(config, full=False, today=datetime.date(2026, 3, 15))
+
+        # 直近 30 日ではなく、最後に取り込んだ 2026-02-01 から 30 日戻る
+        assert captured["bp_date"] == "2026-01-02"
+
+    def test_window_build_keeps_untouched_rows(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        config = Config(result_dir=tmp_path)
         mocker.patch(
-            "ddbj_search_converter.date_cache.build._fetch_all_bp_dates",
-            return_value=iter(bp_rows),
+            "ddbj_search_converter.date_cache.build._fetch_dates",
+            side_effect=lambda url, source, since: iter(
+                [("PRJDB_OLD", None, "2020-01-01T00:00:00Z", None)] if source.table == "bp_date" else []
+            ),
         )
-        mocker.patch(
-            "ddbj_search_converter.date_cache.build._fetch_all_bs_dates",
-            return_value=iter(bs_rows),
-        )
-        mock_insert_bp = mocker.patch(
-            "ddbj_search_converter.date_cache.build.insert_bp_dates",
-            return_value=len(bp_rows),
-        )
-        mock_insert_bs = mocker.patch(
-            "ddbj_search_converter.date_cache.build.insert_bs_dates",
-            return_value=len(bs_rows),
-        )
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
 
-        build_date_cache(config)
+        patch_fetch(mocker)
+        build_date_cache(config, full=False, today=datetime.date(2026, 2, 25))
 
-        bp_call = mock_insert_bp.call_args
-        assert bp_call.args[0] is config
-        # list で固定化されていない (generator/iter のまま渡る) ことを担保
-        assert not isinstance(bp_call.args[1], list)
-        assert list(bp_call.args[1]) == bp_rows
-        bs_call = mock_insert_bs.call_args
-        assert bs_call.args[0] is config
-        assert not isinstance(bs_call.args[1], list)
-        assert list(bs_call.args[1]) == bs_rows
+        dates = fetch_bp_dates_from_cache(config, ["PRJDB_OLD", "PRJDB1"])
+        assert dates["PRJDB_OLD"] == (None, "2020-01-01T00:00:00Z", None)
+        assert dates["PRJDB1"] == (None, "2026-02-10T00:00:00Z", None)
+
+    def test_explicit_full_ignores_existing_watermark(self, tmp_path: Path, mocker: MockerFixture) -> None:
+        config = Config(result_dir=tmp_path)
+        patch_fetch(mocker)
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
+
+        captured: dict[str, str | None] = {}
+        patch_fetch(mocker, captured)
+        build_date_cache(config, full=True, today=datetime.date(2026, 2, 25))
+
+        assert captured == {"bp_date": None, "bs_date": None}

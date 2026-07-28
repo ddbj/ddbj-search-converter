@@ -78,7 +78,7 @@ TRAD / XSM の接続性 + SQL の現スキーマ整合を staging で確認。
 |---|---|
 | IT-PG-01 | XSM PostgreSQL の `bioproject` / `biosample` dbname それぞれで `SELECT 1` が通る |
 | IT-PG-02 | TRAD PostgreSQL の `(dbname, port)` 全 3 件 (`g/e/w-actual`) で `SELECT 1` が通る |
-| IT-PG-03 | `bp_date.py` / `bs_date.py` の SQL が現スキーマで `EXPLAIN` 通る (実行は不要) |
+| IT-PG-03 | date cache が発行する全件 / 窓の SQL が現スキーマで `EXPLAIN` 通る (実行は不要) |
 
 ## 件数 drift / 構造的不変条件 (`IT-INVARIANT-*`)
 

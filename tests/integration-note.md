@@ -46,7 +46,7 @@ ES / PostgreSQL のデータは converter の更新で件数が変わる。固�
 
 bulk insert を伴うテストは staging データだと時間がかかる。ローカル compose では `tests/fixtures/` の小規模 fixture だけ使う設計。test code 内で `bulk_insert_jsonl(target_index=...)` の引数を ありえない日付 suffix にしておけば staging 実走時もデータを壊さない。
 
-unit 側で大量データの挙動を見たい場合は、対象モジュールの定数 (`date_cache.db.CHUNK_SIZE`、`sra_accessions_tab.QUERY_BATCH_SIZE`、`es.settings.BULK_INSERT_SETTINGS["batch_size"]` 等) を `monkeypatch.setattr` で小さい値に置き換える。
+unit 側で大量データの挙動を見たい場合は、対象モジュールの定数 (`sra_accessions_tab.QUERY_BATCH_SIZE`、`es.settings.BULK_INSERT_SETTINGS["batch_size"]` 等) を `monkeypatch.setattr` で小さい値に置き換える。
 
 ## CI 戦略
 

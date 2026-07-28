@@ -510,10 +510,13 @@ def _fetch_statuses(config: Config, docs: dict[str, BioSample]) -> None:
 
 def _fetch_dates_ddbj(config: Config, docs: dict[str, BioSample]) -> None:
     """DDBJ BioSample の日付を DuckDB キャッシュから取得して設定する。"""
-    from ddbj_search_converter.date_cache.db import date_cache_exists, fetch_bs_dates_from_cache
+    from ddbj_search_converter.date_cache.db import date_cache_ready, fetch_bs_dates_from_cache
 
-    if not date_cache_exists(config):
-        raise RuntimeError("date cache not found. Run build_bp_bs_date_cache first.")
+    if not date_cache_ready(config):
+        raise RuntimeError(
+            "date cache is not usable (missing, or built by an older schema version). "
+            "Run build_bp_bs_date_cache first."
+        )
 
     date_map = fetch_bs_dates_from_cache(config, docs.keys())
     for acc, (dc, dm, dp) in date_map.items():
@@ -690,12 +693,15 @@ def generate_bs_jsonl(
             )
             # DDBJ: DuckDB キャッシュから対象 accession を取得
             from ddbj_search_converter.date_cache.db import (
-                date_cache_exists,
+                date_cache_ready,
                 fetch_bs_accessions_modified_since_from_cache,
             )
 
-            if not date_cache_exists(config):
-                raise RuntimeError("date cache not found. Run build_bp_bs_date_cache first.")
+            if not date_cache_ready(config):
+                raise RuntimeError(
+                    "date cache is not usable (missing, or built by an older schema version). "
+                    "Run build_bp_bs_date_cache first."
+                )
             ddbj_target_accessions = fetch_bs_accessions_modified_since_from_cache(config, since)
             log_info(f"ddbj target accessions: {len(ddbj_target_accessions)}")
         else:
