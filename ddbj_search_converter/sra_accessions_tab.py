@@ -499,6 +499,16 @@ def iter_all_submissions(
         yield row[0]
 
 
+# SPEC: docs/cli-pipeline.md §SRA の差分判定
+# tar 同期 (``sra/dra_tar.py``) と JSONL 生成でこの条件を共有する。条件がずれると、tar に
+# XML が入っていない submission を JSONL 生成が対象にして空振りする。``$1`` (cutoff) を
+# 2 箇所から参照するので bind するパラメータは 1 つ。
+UPDATED_SUBMISSION_WHERE = """
+        Submission IS NOT NULL
+        AND (Updated >= $1 OR (Published >= $1 AND Published <= now()))
+"""
+
+
 def iter_updated_submissions(
     config: Config,
     source: SourceKind,
@@ -506,16 +516,17 @@ def iter_updated_submissions(
     margin_days: int = DEFAULT_MARGIN_DAYS,
 ) -> Iterator[str]:
     """
-    since 以降に更新された submission を取得する。
+    since 以降に更新または公開された submission を取得する。
 
-    Updated カラムで since - margin_days 以降に更新されたエントリを持つ
-    submission を取得する。
+    ``since - margin_days`` を cutoff として、``Updated`` が cutoff 以降の行か、
+    ``Published`` が cutoff 以降かつ現在時刻以前の行を持つ submission を返す。
+    Type は問わない (配下の run / experiment だけが更新されることがあるため)。
 
     Args:
         config: Config オブジェクト
         source: "dra" or "sra"
         since: ISO8601 形式の日時文字列
-        margin_days: マージン日数 (デフォルト 7)
+        margin_days: マージン日数 (既定は ``DEFAULT_MARGIN_DAYS``)
 
     Returns:
         submission accession のイテレータ
@@ -531,18 +542,17 @@ def iter_updated_submissions(
 
     with duckdb.connect(db_path, read_only=True) as conn:
         rows = conn.execute(
-            """
+            f"""
             SELECT DISTINCT Submission
             FROM accessions
-            WHERE Updated >= ?
+            WHERE {UPDATED_SUBMISSION_WHERE}
             ORDER BY Submission
             """,
             [margin_date],
         ).fetchall()
 
     for row in rows:
-        if row[0] is not None:
-            yield row[0]
+        yield row[0]
 
 
 def lookup_submissions_for_accessions(

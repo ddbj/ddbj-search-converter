@@ -71,13 +71,15 @@ production の日次運用は Rundeck (`scripts/rundeck-job.yaml`) で `run_pipe
 
 例: `last_run = 2026-01-30`、`margin_days = 30` だと `2025-12-31` 以降を処理。
 
+時間窓は「データが変わったときに更新日時も動く」ことを前提にする。この前提が成り立たない入力があり、そこでは窓を広げても取りこぼしは解消しない (下記「SRA の差分判定」)。
+
 ### データタイプ別の差分判定基準
 
 | データタイプ | 差分判定方法 |
 |-------------|-------------|
 | BioProject / BioSample (DDBJ) | [Date Cache DB](data-architecture.md) の `date_modified` を範囲検索し、処理対象の accession 集合を得る |
 | BioProject / BioSample (NCBI) | XML から取り出した更新日を worker 内で `since` と比較する |
-| SRA | Accessions.tab の `Updated` カラム |
+| SRA / DRA | Accessions.tab の `Updated` と `Published` (下記「SRA の差分判定」) |
 | JGA | 常に全件処理 (`null` 固定) |
 | GEA | 常に全件処理 (IDF 全走査、`last_run.json` に含めない) |
 | MetaboBank | 常に全件処理 (IDF 全走査、`last_run.json` に含めない) |
@@ -86,9 +88,39 @@ JGA / GEA / MetaboBank は更新時刻フィールドがないため差分判定
 
 DDBJ 分の差分判定は Date Cache DB に依存する。したがって Date Cache DB の `date_modified` が実際の更新日とずれていると、そのエントリーは差分更新から漏れて ES に反映されない。`build_bp_bs_date_cache` が `generate_bp_jsonl` / `generate_bs_jsonl` より前に完了している必要があり、Date Cache DB がない状態で JSONL 生成を実行するとエラーで停止する。
 
+### SRA の差分判定
+
+`sync_dra_tar` (DRA XML を tar に取り込む) と `generate_sra_jsonl` (JSONL を作る) は、Accessions.tab の行から対象 submission を同じ条件で選ぶ。tar に XML が無い submission は JSONL を作れないので、両者の条件がずれると tar 側の取りこぼしがそのまま ES の欠落になる。
+
+対象は次を満たす行の `Submission` 列 (重複排除):
+
+```plain
+Updated >= cutoff OR (Published >= cutoff AND Published <= 実行時刻)
+```
+
+3 つの制約があり、いずれも入力データの性質から来る。外すと取りこぼす。
+
+- **`Type='SUBMISSION'` の行だけを見ない**: submission 配下の run / experiment だけが更新され、SUBMISSION 行の日付が動かないケースがある
+- **`Updated` だけを見ない**: DRA_Accessions.tab の `Updated` はメタデータの更新日時で、公開解除では動かない。公開遅延 (embargo) 明けのデータは `Published` だけが動くため、`Updated` だけでは窓をどれだけ広げても対象にならない
+- **`Published` の未来日付を除外する**: NCBI SRA_Accessions.tab の `Published` には公開予定日が入る。除外しないと差分対象がおよそ倍に膨らむ
+
+DRA_Accessions.tab は公開分のみのリストなので、embargo 中の submission はそもそも載らず、公開日に初めて現れる。新規に現れた submission は `Published` が実行時刻以前かつ窓の内側に必ず入るため、この条件で捕捉できる。
+
 ### Date Cache DB の更新範囲
 
 Date Cache DB 自身も差分で構築されるが、その範囲は `last_run.json` ではなく DB 内の `cache_meta.watermark` で管理する。両者は意味が違う (前者は「JSONL をどこまで出力したか」、後者は「cache がどこまで取り込み済みか」) ので別々に持つ。watermark を DB 本体と同じファイルに置くことで、両者が食い違った状態になり得ないようにしている。詳細は [data-architecture.md](data-architecture.md) を参照。
+
+## メンテナンス: DRA tar の取りこぼし回収
+
+`sync_dra_tar --repair` で、DRA_Accessions.tab にあって `DRA_Metadata.tar` に無い submission の XML を追記する。日次パイプラインには含めない。
+
+差分同期は Accessions.tab の日付列に依存するので、日付が動かないまま状態が変わった submission を取りこぼすことがある。tar は追記でしか育たないため、取りこぼしは以後の同期でも回収されず累積する。集合差分で埋めるのがこのコマンドの役割。
+
+- `dra_last_updated.txt` は進めない。通常の差分同期の起点を動かすと、修復ついでに未処理の期間を飛ばしてしまう
+- DRA ファイルインデックスは作り直さない。tar とは独立に全 submission を走査しているので、tar に入っていない submission の情報も既に持っている
+- `--force-rebuild` とは排他。作り直しは全 submission の XML を lustre から再収集するので桁違いに重い
+
+tar を直しただけでは ES に反映されない。続けて `regenerate_jsonl --type sra` (下記) で JSONL を作って投入する。
 
 ## Hotfix: regenerate_jsonl
 

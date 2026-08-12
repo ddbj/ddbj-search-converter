@@ -235,6 +235,10 @@ SRA/DRA の Accessions.tab を DuckDB にロードしたもの。
 | `{const_dir}/sra/sra_accessions.duckdb` | NCBI SRA |
 | `{const_dir}/sra/dra_accessions.duckdb` | DRA |
 
+2 つの tab は列の並びも収録範囲も違う (列名は共通なので、ロードは列名指定で行う)。DRA_Accessions.tab は公開済みの accession だけを載せる (`Status` は `public` / `suppressed` / `withdrawn` の 3 値、`Visibility` は全行 `public`)。SRA_Accessions.tab は未公開分も含み、DDBJ origin の accession は DDBJ 側で公開済みでも `unpublished` のまま残ることがある。**自極 SRA の status を SRA_Accessions.tab から取ってはいけない**のはこのためで、JSONL 生成の DRA バッチは `dra_accessions.duckdb` だけを引く。
+
+日付列の意味も揃っていない。DRA_Accessions.tab の `Updated` はメタデータの更新日時で公開解除では動かず、SRA_Accessions.tab の `Published` には公開予定日 (未来日付) が入る。差分更新がこれをどう扱うかは [cli-pipeline.md](cli-pipeline.md) を参照。
+
 ### Metadata tar
 
 SRA/DRA の Metadata XML をまとめた tar ファイル。`generate_sra_jsonl` で使用。

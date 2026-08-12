@@ -1459,8 +1459,8 @@ class TestIterUpdatedSubmissions:
         result = list(iter_updated_submissions(config, "sra", "2026-01-01T00:00:00Z", margin_days=0))
         assert result == []
 
-    def test_null_updated_excluded(self, tmp_path: Path) -> None:
-        """NULL Updated は除外される (WHERE Updated >= ? に NULL はマッチしない)。"""
+    def test_null_updated_and_null_published_excluded(self, tmp_path: Path) -> None:
+        """Updated / Published がどちらも NULL なら除外される (NULL は比較にマッチしない)。"""
         config = _make_config_with_db(
             tmp_path,
             "sra",
@@ -1541,6 +1541,159 @@ class TestIterUpdatedSubmissions:
         # margin_days=10 → cutoff=2026-01-10
         result = list(iter_updated_submissions(config, "sra", "2026-01-20T15:30:00Z", margin_days=10))
         assert "SRA000001" in result
+
+    def test_recently_published_included_when_updated_is_old(self, tmp_path: Path) -> None:
+        """Updated が cutoff より古くても、Published が cutoff 以降なら対象になる。
+
+        公開遅延 (embargo) 明けのデータは Published だけが動き Updated は登録当時のまま
+        なので、Updated だけを見ると永久に差分対象にならない。
+        """
+        config = _make_config_with_db(
+            tmp_path,
+            "dra",
+            [
+                (
+                    "DRA000001",
+                    "DRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "public",
+                    "public",
+                    "2022-06-17 00:00:00",  # Updated: 4 年前
+                    "2026-01-20 00:00:00",  # Published: cutoff 以降
+                    None,
+                ),
+            ],
+        )
+        result = list(iter_updated_submissions(config, "dra", "2026-01-25T00:00:00Z", margin_days=30))
+        assert result == ["DRA000001"]
+
+    def test_published_boundary_included(self, tmp_path: Path) -> None:
+        """Published が cutoff ちょうどの行も対象になる。"""
+        config = _make_config_with_db(
+            tmp_path,
+            "dra",
+            [
+                (
+                    "DRA000001",
+                    "DRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "public",
+                    "public",
+                    "2000-01-01 00:00:00",
+                    "2026-01-10 00:00:00",  # cutoff = 2026-01-20 - 10d
+                    None,
+                ),
+            ],
+        )
+        result = list(iter_updated_submissions(config, "dra", "2026-01-20T00:00:00Z", margin_days=10))
+        assert result == ["DRA000001"]
+
+    def test_future_published_excluded(self, tmp_path: Path) -> None:
+        """Published が未来日付の行は対象にならない。
+
+        NCBI SRA_Accessions.tab は Published に公開予定日を入れるため、除外しないと
+        未公開の submission が毎回差分対象に居座る。
+        """
+        config = _make_config_with_db(
+            tmp_path,
+            "sra",
+            [
+                (
+                    "SRA000001",
+                    "SRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "unpublished",
+                    "public",
+                    "2000-01-01 00:00:00",
+                    "2999-12-31 00:00:00",  # 公開予定日
+                    None,
+                ),
+            ],
+        )
+        result = list(iter_updated_submissions(config, "sra", "2026-01-20T00:00:00Z", margin_days=30))
+        assert result == []
+
+    def test_child_row_update_includes_submission(self, tmp_path: Path) -> None:
+        """SUBMISSION 行が動かなくても、配下 entry が更新されていれば対象になる。"""
+        config = _make_config_with_db(
+            tmp_path,
+            "dra",
+            [
+                (
+                    "DRA000001",
+                    "DRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "public",
+                    "public",
+                    "2019-05-23 00:00:00",  # SUBMISSION 行は 7 年前のまま
+                    "2021-05-17 00:00:00",
+                    None,
+                ),
+                (
+                    "DRR000001",
+                    "DRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "RUN",
+                    "public",
+                    "public",
+                    "2026-01-20 00:00:00",  # RUN だけ更新された
+                    "2021-05-17 00:00:00",
+                    None,
+                ),
+            ],
+        )
+        result = list(iter_updated_submissions(config, "dra", "2026-01-25T00:00:00Z", margin_days=30))
+        assert result == ["DRA000001"]
+
+    def test_old_updated_and_old_published_excluded(self, tmp_path: Path) -> None:
+        """Updated / Published がどちらも cutoff より前なら対象にならない。"""
+        config = _make_config_with_db(
+            tmp_path,
+            "dra",
+            [
+                (
+                    "DRA000001",
+                    "DRA000001",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "SUBMISSION",
+                    "public",
+                    "public",
+                    "2020-01-01 00:00:00",
+                    "2020-06-01 00:00:00",
+                    None,
+                ),
+            ],
+        )
+        result = list(iter_updated_submissions(config, "dra", "2026-01-25T00:00:00Z", margin_days=30))
+        assert result == []
 
 
 class TestLookupSubmissionsForAccessions:
