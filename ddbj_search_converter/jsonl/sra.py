@@ -59,6 +59,7 @@ from ddbj_search_converter.sra_accessions_tab import (
     get_accession_info_bulk,
     iter_all_submissions,
     iter_updated_submissions,
+    normalize_status,
 )
 from ddbj_search_converter.xml_utils import parse_xml
 
@@ -139,34 +140,6 @@ def _get_text(d: Any, key: str) -> str | None:
     if d is None or not isinstance(d, dict):
         return None
     return _coerce_text(d.get(key))
-
-
-def _normalize_status(status: str | None) -> Status:
-    """
-    status を INSDC 標準に正規化する。
-
-    入力値 -> 出力値:
-    - live -> public (ENA/NCBI 互換)
-    - unpublished -> private
-    - suppressed -> suppressed
-    - withdrawn -> withdrawn
-    - public -> public (DRA 互換)
-    - replaced -> suppressed (データは統合先に存在)
-    - killed -> withdrawn (恒久的削除)
-    - NULL/その他 -> public (デフォルト)
-    """
-    if status is None:
-        return "public"
-    status_lower = status.lower()
-    if status_lower in ("live", "public"):
-        return "public"
-    if status_lower == "unpublished":
-        return "private"
-    if status_lower in ("suppressed", "replaced"):
-        return "suppressed"
-    if status_lower in ("withdrawn", "killed"):
-        return "withdrawn"
-    return "public"
 
 
 def _normalize_accessibility(accessibility: str | None) -> Accessibility:
@@ -767,7 +740,7 @@ def process_submission_xml(
             if not is_ddbj_origin and is_ddbj_sra_accession(acc):
                 continue
             info = accession_info.get(acc, ("public", "public", None, None, None, ""))
-            status = _normalize_status(info[0])
+            status = normalize_status(info[0])
             accessibility = _normalize_accessibility(info[1])
 
             date_created = info[2]  # Accessions.tab の Received

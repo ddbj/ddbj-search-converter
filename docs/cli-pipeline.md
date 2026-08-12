@@ -106,6 +106,22 @@ Updated >= cutoff OR (Published >= cutoff AND Published <= 実行時刻)
 
 DRA_Accessions.tab は公開分のみのリストなので、embargo 中の submission はそもそも載らず、公開日に初めて現れる。新規に現れた submission は `Published` が実行時刻以前かつ窓の内側に必ず入るため、この条件で捕捉できる。
 
+### status の同期
+
+差分判定はどれも「データが変わると日付が動く」ことに乗っているが、**status の変更では日付が動かない**。Accessions.tab の `Updated` / `Published` も PostgreSQL の `modified_date` も同じで、公開中止 (`public` -> `suppressed`) をしても値は変わらない。したがって status だけが変わったエントリーは JSONL 生成の対象にならず、ES には古い status が残る。
+
+これを放置すると、非公開にしたエントリーが検索結果に出続ける。api は `suppressed` を「自由文検索からは除外するが accession 指定なら 200 で返す」扱いにしているため (ddbj-search-api の `docs/api-spec.md` § データ可視性)、ES の `status` がそのまま可視性の判断材料になる。
+
+`es_sync_status` が、status の SSOT ([Status Cache DB](data-architecture.md) / DRA Accessions.tab) と ES の `status` フィールドを突き合わせ、ずれている doc だけを部分更新する。ES 投入の後に走らせる。
+
+- **対象は DDBJ 由来のみ** (`bioproject` / `biosample` / DRA の SRA 6 type)。NCBI 側は Accessions.tab の `Updated` が status 変更でも動くので通常の差分更新で反映される。加えて non-live な accession が 1,700 万件あり、突合コストが釣り合わない
+- 突合するのは「SSOT が non-public のもの」と「ES が non-public のもの」の和集合。前者だけだと `suppressed` から `public` に戻ったケースを取りこぼす
+- 付与する値は JSONL 生成と同じ経路で決める。BP/BS は Status Cache の値をそのまま、SRA は `_normalize_status` を通した値
+- **SSOT に無い accession は触らない**。ES から消すか `private` にするかは可視性の設計判断であって、status のずれを直す話とは別
+- **ES に doc が無い accession は skip する**。doc を作るには XML が要る。suppressed になると入力 XML から消えるエントリーがあり、それらは同期では復元できない (非対応)
+
+Blue-Green では alias の張り替え前に `--target-suffix` で日付付きの物理 index を直す。差分だけ見たいときは `--dry-run`。
+
 ### Date Cache DB の更新範囲
 
 Date Cache DB 自身も差分で構築されるが、その範囲は `last_run.json` ではなく DB 内の `cache_meta.watermark` で管理する。両者は意味が違う (前者は「JSONL をどこまで出力したか」、後者は「cache がどこまで取り込み済みか」) ので別々に持つ。watermark を DB 本体と同じファイルに置くことで、両者が食い違った状態になり得ないようにしている。詳細は [data-architecture.md](data-architecture.md) を参照。
@@ -117,7 +133,7 @@ Date Cache DB 自身も差分で構築されるが、その範囲は `last_run.j
 差分同期は Accessions.tab の日付列に依存するので、日付が動かないまま状態が変わった submission を取りこぼすことがある。tar は追記でしか育たないため、取りこぼしは以後の同期でも回収されず累積する。集合差分で埋めるのがこのコマンドの役割。
 
 - `dra_last_updated.txt` は進めない。通常の差分同期の起点を動かすと、修復ついでに未処理の期間を飛ばしてしまう
-- DRA ファイルインデックスは作り直さない。tar とは独立に全 submission を走査しているので、tar に入っていない submission の情報も既に持っている
+- DRA ファイルインデックスは作り直さない。日次の `sync_dra_tar` が tar とは独立に全 submission を走査しているので、tar に無い submission の情報も通常は既に持っている。**日次実行が長く止まっていた環境では先に通常の `sync_dra_tar` を通す**。インデックスが古いままだと、回収した submission の distribution から FASTQ / SRA のダウンロードリンクが欠ける
 - `--force-rebuild` とは排他。作り直しは全 submission の XML を lustre から再収集するので桁違いに重い
 
 tar を直しただけでは ES に反映されない。続けて `regenerate_jsonl --type sra` (下記) で JSONL を作って投入する。

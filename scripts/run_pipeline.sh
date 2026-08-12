@@ -50,9 +50,11 @@ STEP_NAMES=(
     "es_create"
     "es_bulk"
     "es_delete_blacklist"
+    "es_sync_status"
     "es_create_bg"
     "es_bulk_bg"
     "es_blacklist_bg"
+    "es_sync_status_bg"
     "es_swap"
     "es_cleanup_old"
 )
@@ -86,9 +88,11 @@ declare -A STEP_DESC=(
     ["es_create"]="Create Elasticsearch indexes"
     ["es_bulk"]="Bulk insert to Elasticsearch"
     ["es_delete_blacklist"]="Delete blacklisted documents from Elasticsearch"
+    ["es_sync_status"]="Sync the status field with the SSOT"
     ["es_create_bg"]="Create dated Elasticsearch indexes (Blue-Green)"
     ["es_bulk_bg"]="Bulk insert to dated indexes (Blue-Green)"
     ["es_blacklist_bg"]="Delete blacklisted docs from dated indexes (Blue-Green)"
+    ["es_sync_status_bg"]="Sync the status field with the SSOT (Blue-Green)"
     ["es_swap"]="Atomically swap aliases to new indexes (Blue-Green)"
     ["es_cleanup_old"]="Delete old dated indexes (Blue-Green)"
 )
@@ -117,9 +121,11 @@ declare -A STEP_PHASE=(
     ["es_create"]="PHASE 3: Elasticsearch"
     ["es_bulk"]="PHASE 3: Elasticsearch"
     ["es_delete_blacklist"]="PHASE 3: Elasticsearch"
+    ["es_sync_status"]="PHASE 3: Elasticsearch"
     ["es_create_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
     ["es_bulk_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
     ["es_blacklist_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
+    ["es_sync_status_bg"]="PHASE 3: Elasticsearch (Blue-Green)"
     ["es_swap"]="PHASE 3: Elasticsearch (Blue-Green)"
     ["es_cleanup_old"]="PHASE 3: Elasticsearch (Blue-Green)"
 )
@@ -720,6 +726,14 @@ phase3_legacy() {
         log_info "Step 3-3: Deleting blacklisted documents..."
         run_cmd "es_delete_blacklist --force"
     fi
+
+    # Step: es_sync_status
+    if should_skip_step "es_sync_status"; then
+        log_info "[SKIP] es_sync_status (--from-step)"
+    else
+        log_info "Step 3-4: Syncing status with the SSOT..."
+        run_cmd "es_sync_status --index all"
+    fi
 }
 
 phase3_blue_green() {
@@ -767,6 +781,14 @@ phase3_blue_green() {
     else
         log_info "Step 3-2: Deleting blacklisted docs from dated indexes..."
         run_cmd "es_delete_blacklist --target-suffix ${DATE_STR} --force"
+    fi
+
+    # Step: es_sync_status_bg (alias swap の前に物理 index を直す)
+    if should_skip_step "es_sync_status_bg"; then
+        log_info "[SKIP] es_sync_status_bg (--from-step)"
+    else
+        log_info "Step 3-2b: Syncing status with the SSOT (dated indexes)..."
+        run_cmd "es_sync_status --index all --target-suffix ${DATE_STR}"
     fi
 
     # Step: es_swap

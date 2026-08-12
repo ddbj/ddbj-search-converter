@@ -16,7 +16,6 @@ from ddbj_search_converter.jsonl.sra import (
     _find_sample_attr,
     _get_text,
     _normalize_accessibility,
-    _normalize_status,
     _parse_analysis_type,
     _parse_library,
     _parse_organizations_from_entry_attrs,
@@ -35,6 +34,7 @@ from ddbj_search_converter.jsonl.sra import (
 from ddbj_search_converter.logging.logger import _ctx, run_logger
 from ddbj_search_converter.schema import SRA, Organization, Xref
 from ddbj_search_converter.sra.tar_reader import SraXmlType
+from ddbj_search_converter.sra_accessions_tab import normalize_status
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def clean_ctx() -> Generator[None, None, None]:
 
 
 class TestNormalizeStatus:
-    """Tests for _normalize_status function."""
+    """Tests for normalize_status function."""
 
     @pytest.mark.parametrize(
         ("input_val", "expected"),
@@ -65,7 +65,7 @@ class TestNormalizeStatus:
         ],
     )
     def test_normalize_status(self, input_val: str | None, expected: str) -> None:
-        result = _normalize_status(input_val)
+        result = normalize_status(input_val)
         assert result == expected
 
 
@@ -167,9 +167,9 @@ class TestEdgeCases:
 
     def test_status_case_insensitive(self) -> None:
         """大文字小文字を問わない。"""
-        assert _normalize_status("LIVE") == "public"
-        assert _normalize_status("Suppressed") == "suppressed"
-        assert _normalize_status("WITHDRAWN") == "withdrawn"
+        assert normalize_status("LIVE") == "public"
+        assert normalize_status("Suppressed") == "suppressed"
+        assert normalize_status("WITHDRAWN") == "withdrawn"
 
     def test_accessibility_underscore_handling(self) -> None:
         """アンダースコアがハイフンに変換される。"""
@@ -1378,7 +1378,7 @@ class TestParseMalformedSraXml:
 
     def test_normalize_status_unknown_falls_back_to_public(self) -> None:
         # 想定外 status 文字列 → public (default)
-        assert _normalize_status("nonsensestatus") == "public"
+        assert normalize_status("nonsensestatus") == "public"
 
     def test_normalize_accessibility_unknown_falls_back_to_public_access(self) -> None:
         assert _normalize_accessibility("weirdvalue") == "public-access"

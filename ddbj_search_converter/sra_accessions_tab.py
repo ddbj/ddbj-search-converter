@@ -38,6 +38,7 @@ from ddbj_search_converter.config import (
     get_config,
 )
 from ddbj_search_converter.logging.logger import log_info, run_logger
+from ddbj_search_converter.schema import Status
 
 TABLE_NAME = "accessions"
 QUERY_BATCH_SIZE = 10000
@@ -400,10 +401,38 @@ STATUS_PRIORITY: dict[str, int] = {
 _DEFAULT_STATUS_STRENGTH = STATUS_PRIORITY["public"]
 
 
-def _status_strength(status: str | None) -> int:
+def status_strength(status: str | None) -> int:
     if status is None:
         return _DEFAULT_STATUS_STRENGTH
     return STATUS_PRIORITY.get(status, _DEFAULT_STATUS_STRENGTH)
+
+
+def normalize_status(status: str | None) -> Status:
+    """
+    Accessions.tab の status を INSDC 標準に正規化する。
+
+    入力値 -> 出力値:
+    - live -> public (ENA/NCBI 互換)
+    - unpublished -> private
+    - suppressed -> suppressed
+    - withdrawn -> withdrawn
+    - public -> public (DRA 互換)
+    - replaced -> suppressed (データは統合先に存在)
+    - killed -> withdrawn (恒久的削除)
+    - NULL/その他 -> public (デフォルト)
+    """
+    if status is None:
+        return "public"
+    status_lower = status.lower()
+    if status_lower in ("live", "public"):
+        return "public"
+    if status_lower == "unpublished":
+        return "private"
+    if status_lower in ("suppressed", "replaced"):
+        return "suppressed"
+    if status_lower in ("withdrawn", "killed"):
+        return "withdrawn"
+    return "public"
 
 
 def get_accession_info_bulk(
@@ -463,7 +492,7 @@ def get_accession_info_bulk(
                     type_ or "",
                 )
                 existing = result.get(acc)
-                if existing is None or _status_strength(new_info[0]) < _status_strength(existing[0]):
+                if existing is None or status_strength(new_info[0]) < status_strength(existing[0]):
                     result[acc] = new_info
 
     return result

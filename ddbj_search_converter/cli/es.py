@@ -37,6 +37,7 @@ from ddbj_search_converter.es.monitoring import (
     get_index_stats,
     get_node_stats,
 )
+from ddbj_search_converter.es.status_sync import sync_status
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 
@@ -711,4 +712,69 @@ def main_migrate_to_blue_green() -> None:
             log_info("migration completed successfully")
         except Exception as e:
             log_error("migration failed", error=e)
+            sys.exit(1)
+
+
+# === Status Sync ===
+
+
+def parse_sync_status_args(args: list[str]) -> tuple[Config, str, str | None, bool]:
+    parser = argparse.ArgumentParser(
+        description="Sync the ES status field with the SSOT (status cache / DRA Accessions.tab)."
+    )
+    parser.add_argument(
+        "--index",
+        default="all",
+        help="Index name or group to sync (bioproject, biosample, sra, all, or specific like sra-run)",
+    )
+    parser.add_argument(
+        "--target-suffix",
+        help="Date suffix of the physical indexes to update (Blue-Green, e.g. 20260525)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report the differences without updating",
+    )
+
+    parsed = parser.parse_args(args)
+    config = get_config()
+
+    return config, parsed.index, parsed.target_suffix, parsed.dry_run
+
+
+def main_sync_status() -> None:
+    config, index, target_suffix, dry_run = parse_sync_status_args(sys.argv[1:])
+
+    with run_logger(config=config):
+        log_debug("config loaded", config=config.model_dump())
+        log_info("syncing status with ssot", index=index, target_suffix=target_suffix, dry_run=dry_run)
+
+        try:
+            results = sync_status(config, index, target_suffix, dry_run)
+        except (ValueError, FileNotFoundError) as e:
+            log_error("status sync failed", error=e)
+            sys.exit(1)
+
+        total_updated = sum(r.updated for r in results)
+        total_missing = sum(r.missing for r in results)
+        total_errors = sum(r.error_count for r in results)
+
+        for result in results:
+            log_info(
+                f"index={result.index}",
+                checked=result.checked,
+                updated=result.updated,
+                missing=result.missing,
+                errors=result.error_count,
+            )
+
+        log_info(
+            "status sync summary",
+            updated=total_updated,
+            missing=total_missing,
+            errors=total_errors,
+        )
+
+        if total_errors > 0:
             sys.exit(1)

@@ -407,7 +407,7 @@ CREATE TABLE bs_status (accession TEXT NOT NULL, status TEXT NOT NULL);
 
 Date Cache と違い、こちらは毎回全件で作り直す。入力の Livelist が日付付きの全件スナップショットで、status 自体に更新日時を持たないため、取得範囲を絞る手がかりがない。
 
-JSONL 生成時に `status` (`public` / `private` / `suppressed` / `withdrawn` の 4 値) を付与するために使用。
+JSONL 生成時に `status` (`public` / `private` / `suppressed` / `withdrawn` の 4 値) を付与するために使用。status は XML と独立に変化するため、JSONL 生成だけでは ES に届かない (差分判定は日付列に乗っており、status 変更では日付が動かない)。この隙間は `es_sync_status` が埋める ([cli-pipeline.md](cli-pipeline.md) § status の同期)。
 キャッシュに accession が存在しない場合は、XML から取得した値 (デフォルト "public") をそのまま使用する。BP/BS の Livelist 由来は実態として 3 値 (`public` / `suppressed` / `withdrawn`) のみ。SRA は `unpublished -> private` 等の正規化 (`ddbj_search_converter/jsonl/sra.py::_normalize_status`) で 4 値が出る。JGA / GEA / MetaboBank は `public` 固定 (`accessibility` で controlled-access / public-access を区別)。
 
 #### SRA Accessions: 同 accession の status 重複時の優先順位
