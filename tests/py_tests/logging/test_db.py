@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import time
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -716,11 +717,11 @@ class TestWriteLockContention:
     def test_non_lock_io_error_is_not_retried(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """容量不足や破損は待っても直らないので、即座に送出して再試行しない。"""
         connect = mocker.patch.object(
-            db_module.duckdb,
+            duckdb,
             "connect",
             side_effect=duckdb.IOException("IO Error: Cannot open file: No space left on device"),
         )
-        sleep = mocker.patch.object(db_module.time, "sleep")
+        sleep = mocker.patch.object(time, "sleep")
 
         with pytest.raises(duckdb.IOException):
             db_module._connect_for_write(tmp_path / LOG_DB_FILE_NAME)
@@ -731,11 +732,11 @@ class TestWriteLockContention:
     def test_gives_up_after_the_retry_budget(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """ロックが解放されないまま予算を使い切ったら、握り潰さず送出する。"""
         connect = mocker.patch.object(
-            db_module.duckdb,
+            duckdb,
             "connect",
             side_effect=duckdb.IOException("IO Error: Could not set lock on file: Conflicting lock is held"),
         )
-        sleep = mocker.patch.object(db_module.time, "sleep")
+        sleep = mocker.patch.object(time, "sleep")
 
         with pytest.raises(duckdb.IOException):
             db_module._connect_for_write(tmp_path / LOG_DB_FILE_NAME)
@@ -746,11 +747,11 @@ class TestWriteLockContention:
     def test_backoff_grows_but_stays_capped(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """待ち時間は指数的に伸び、上限で頭打ちになる (無限に伸びない)。"""
         mocker.patch.object(
-            db_module.duckdb,
+            duckdb,
             "connect",
             side_effect=duckdb.IOException("IO Error: Could not set lock on file: Conflicting lock is held"),
         )
-        sleep = mocker.patch.object(db_module.time, "sleep")
+        sleep = mocker.patch.object(time, "sleep")
 
         with pytest.raises(duckdb.IOException):
             db_module._connect_for_write(tmp_path / LOG_DB_FILE_NAME)

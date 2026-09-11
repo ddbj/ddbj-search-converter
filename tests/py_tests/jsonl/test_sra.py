@@ -870,7 +870,7 @@ class TestGetText:
 
     def test_non_dict_input_returns_none(self) -> None:
         assert _get_text(None, "k") is None
-        assert _get_text("not a dict", "k") is None  # type: ignore[arg-type]
+        assert _get_text("not a dict", "k") is None
 
 
 class TestParseLibrary:
@@ -905,17 +905,17 @@ class TestParseLibrary:
 
     def test_library_layout_multi_fallbacks_to_none(self) -> None:
         """複数キー (PAIRED + SINGLE 同居) は None fallback (single value 前提維持)。"""
-        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"PAIRED": {}, "SINGLE": {}}}}}
+        exp: dict[str, Any] = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"PAIRED": {}, "SINGLE": {}}}}}
         assert _parse_library(exp)["libraryLayout"] is None
 
     def test_library_layout_unknown_single_key_passes_through(self) -> None:
         """未知の LIBRARY_LAYOUT 親キーもそのまま str で透過する (単一キー条件は維持)。"""
-        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"MIXED": {}}}}}
+        exp: dict[str, Any] = {"DESIGN": {"LIBRARY_DESCRIPTOR": {"LIBRARY_LAYOUT": {"MIXED": {}}}}}
         assert _parse_library(exp)["libraryLayout"] == "MIXED"
 
     def test_platform_multi_fallbacks_to_none(self) -> None:
         """複数 platform キーは None fallback (single value 前提維持)。"""
-        exp = {"PLATFORM": {"ILLUMINA": {}, "OXFORD_NANOPORE": {}}}
+        exp: dict[str, Any] = {"PLATFORM": {"ILLUMINA": {}, "OXFORD_NANOPORE": {}}}
         assert _parse_library(exp)["platform"] is None
 
     def test_platform_unknown_single_key_passes_through(self) -> None:
@@ -996,17 +996,17 @@ class TestParseAnalysisType:
         ["DE_NOVO_ASSEMBLY", "REFERENCE_ALIGNMENT", "ABUNDANCE_MEASUREMENT", "SEQUENCE_ANNOTATION"],
     )
     def test_all_4_values(self, value: str) -> None:
-        analysis = {"ANALYSIS_TYPE": {value: {}}}
+        analysis: dict[str, Any] = {"ANALYSIS_TYPE": {value: {}}}
         assert _parse_analysis_type(analysis) == value
 
     def test_unknown_single_key_passes_through(self) -> None:
         """未知の ANALYSIS_TYPE 親キーもそのまま str で透過する (INSDC 側の値追加に追従)。"""
-        analysis = {"ANALYSIS_TYPE": {"UNKNOWN_TYPE": {}}}
+        analysis: dict[str, Any] = {"ANALYSIS_TYPE": {"UNKNOWN_TYPE": {}}}
         assert _parse_analysis_type(analysis) == "UNKNOWN_TYPE"
 
     def test_multiple_keys_fall_back_to_none(self) -> None:
         """複数キーは single value 前提を維持して None fallback。"""
-        analysis = {"ANALYSIS_TYPE": {"DE_NOVO_ASSEMBLY": {}, "REFERENCE_ALIGNMENT": {}}}
+        analysis: dict[str, Any] = {"ANALYSIS_TYPE": {"DE_NOVO_ASSEMBLY": {}, "REFERENCE_ALIGNMENT": {}}}
         assert _parse_analysis_type(analysis) is None
 
     def test_no_analysis_type_key(self) -> None:
@@ -1246,7 +1246,7 @@ class TestParseLibraryDescriptorFields:
         assert result["libraryConstructionProtocol"] == "Standard Solexa protocol"
 
     def test_missing_returns_none(self) -> None:
-        exp = {"DESIGN": {"LIBRARY_DESCRIPTOR": {}}}
+        exp: dict[str, Any] = {"DESIGN": {"LIBRARY_DESCRIPTOR": {}}}
         result = _parse_library(exp)
         assert result["libraryName"] is None
         assert result["libraryConstructionProtocol"] is None

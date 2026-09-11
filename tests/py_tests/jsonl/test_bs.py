@@ -515,7 +515,7 @@ def _make_bs_instance(identifier: str) -> BioSample:
         properties={},
         distribution=[],
         isPartOf="biosample",
-        type="biosample",
+        type_="biosample",
         name=None,
         url="https://example.com",
         organism=None,
@@ -701,7 +701,7 @@ class TestFindAttr:
 
     def test_attributes_not_dict_returns_none(self) -> None:
         sample = _make_sample()
-        sample["Attributes"] = "malformed"  # type: ignore[assignment]
+        sample["Attributes"] = "malformed"
         assert _find_attr(sample, {"host"}) is None
 
 

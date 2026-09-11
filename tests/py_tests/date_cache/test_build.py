@@ -124,7 +124,9 @@ class TestConnectionIsClosedBeforeLoad:
                 yield from rows_for(source.table)
             finally:
                 with duckdb.connect(str(tmp_db_path)) as conn:
-                    observed[source.table] = conn.execute(f"SELECT count(*) FROM {source.table}").fetchone()[0]
+                    row = conn.execute(f"SELECT count(*) FROM {source.table}").fetchone()
+                assert row is not None
+                observed[source.table] = row[0]
 
         mocker.patch("ddbj_search_converter.date_cache.build._fetch_dates", side_effect=fake_fetch)
 
@@ -207,9 +209,7 @@ class TestWindowBuild:
 
         assert captured == {"bp_date": "2026-01-21", "bs_date": "2026-01-21"}
 
-    def test_window_build_advances_watermark_but_not_full_built_at(
-        self, tmp_path: Path, mocker: MockerFixture
-    ) -> None:
+    def test_window_build_advances_watermark_but_not_full_built_at(self, tmp_path: Path, mocker: MockerFixture) -> None:
         config = Config(result_dir=tmp_path)
         patch_fetch(mocker)
         build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))

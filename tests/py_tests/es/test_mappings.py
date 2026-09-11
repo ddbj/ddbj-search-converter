@@ -13,7 +13,7 @@ from ddbj_search_converter.es.mappings import (
 )
 from ddbj_search_converter.es.mappings.common import get_common_mapping
 from ddbj_search_converter.es.mappings.jga import JGA_INDEXES
-from ddbj_search_converter.es.mappings.sra import SRA_INDEXES
+from ddbj_search_converter.es.mappings.sra import SRA_INDEXES, SraIndexType
 
 
 def _assert_text_keyword(props: dict[str, Any], field_name: str, ignore_above: int = 256) -> None:
@@ -433,7 +433,8 @@ class TestSraMapping:
     def test_non_experiment_types_have_no_library_fields(self) -> None:
         """experiment 以外では library* / platform / instrumentModel / libraryName /
         libraryConstructionProtocol 不在。"""
-        for sra_type in ["sra-submission", "sra-study", "sra-run", "sra-sample", "sra-analysis"]:
+        sra_types: list[SraIndexType] = ["sra-submission", "sra-study", "sra-run", "sra-sample", "sra-analysis"]
+        for sra_type in sra_types:
             props = get_sra_mapping(sra_type)["mappings"]["properties"]
             for field in [
                 "libraryStrategy",
@@ -448,7 +449,8 @@ class TestSraMapping:
                 assert field not in props, f"{field} should not be in {sra_type}"
 
     def test_non_analysis_types_have_no_analysis_type(self) -> None:
-        for sra_type in ["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample"]:
+        sra_types: list[SraIndexType] = ["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-sample"]
+        for sra_type in sra_types:
             props = get_sra_mapping(sra_type)["mappings"]["properties"]
             assert "analysisType" not in props
 
@@ -468,7 +470,8 @@ class TestSraMapping:
 
     def test_non_sample_types_have_no_sample_fields(self) -> None:
         """sra-sample 以外では collectionDate / geoLocName / derivedFrom 不在。"""
-        for sra_type in ["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-analysis"]:
+        sra_types: list[SraIndexType] = ["sra-submission", "sra-study", "sra-experiment", "sra-run", "sra-analysis"]
+        for sra_type in sra_types:
             props = get_sra_mapping(sra_type)["mappings"]["properties"]
             for field in ("collectionDate", "geoLocName", "derivedFrom"):
                 assert field not in props, f"{field} should not be in {sra_type}"
@@ -747,37 +750,39 @@ class TestBulkInsertSettings:
 class TestPublicationDbTypeKeyword:
     """``publication.dbType`` は全 index で ``keyword`` 型で統一されている。"""
 
-    def _publication_props(self, mapping: dict[str, object]) -> dict[str, object]:
-        outer = mapping["mappings"]["properties"]  # type: ignore[index]
-        return outer["publication"]["properties"]  # type: ignore[index]
+    def _publication_props(self, mapping: dict[str, Any]) -> dict[str, Any]:
+        outer: dict[str, Any] = mapping["mappings"]["properties"]
+        props: dict[str, Any] = outer["publication"]["properties"]
+
+        return props
 
     def test_jga_publication_dbtype(self) -> None:
         from ddbj_search_converter.es.mappings.jga import get_jga_mapping
 
         props = self._publication_props(get_jga_mapping("jga-study"))
-        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+        assert props["dbType"]["type"] == "keyword"
 
     def test_gea_publication_dbtype(self) -> None:
         from ddbj_search_converter.es.mappings.gea import get_gea_mapping
 
         props = self._publication_props(get_gea_mapping())
-        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+        assert props["dbType"]["type"] == "keyword"
 
     def test_metabobank_publication_dbtype(self) -> None:
         from ddbj_search_converter.es.mappings.metabobank import get_metabobank_mapping
 
         props = self._publication_props(get_metabobank_mapping())
-        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+        assert props["dbType"]["type"] == "keyword"
 
     def test_bioproject_publication_dbtype(self) -> None:
         from ddbj_search_converter.es.mappings.bioproject import get_bioproject_mapping
 
         props = self._publication_props(get_bioproject_mapping())
-        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+        assert props["dbType"]["type"] == "keyword"
 
     def test_sra_publication_dbtype(self) -> None:
         from ddbj_search_converter.es.mappings.sra import get_sra_mapping
 
         # SRA は entity 別 mapping を持つので submission 代表で。
         props = self._publication_props(get_sra_mapping("sra-submission"))
-        assert props["dbType"]["type"] == "keyword"  # type: ignore[index]
+        assert props["dbType"]["type"] == "keyword"

@@ -65,15 +65,11 @@ def read_cache_meta(config: Config) -> dict[str, CacheMeta] | None:
         return None
 
     with duckdb.connect(str(db_path), read_only=True) as conn:
-        exists = conn.execute(
-            "SELECT count(*) FROM duckdb_tables() WHERE table_name = 'cache_meta'"
-        ).fetchone()
+        exists = conn.execute("SELECT count(*) FROM duckdb_tables() WHERE table_name = 'cache_meta'").fetchone()
         if exists is None or exists[0] == 0:
             return None
 
-        rows = conn.execute(
-            "SELECT table_name, schema_version, full_built_at, watermark FROM cache_meta"
-        ).fetchall()
+        rows = conn.execute("SELECT table_name, schema_version, full_built_at, watermark FROM cache_meta").fetchall()
 
     return {
         row[0]: CacheMeta(table_name=row[0], schema_version=row[1], full_built_at=row[2], watermark=row[3])
@@ -175,9 +171,7 @@ def set_cache_meta(
     ``full_built_at`` に None を渡すと既存の値を保持する (窓ビルド)。
     """
     with duckdb.connect(str(_tmp_db_path(config))) as conn:
-        row = conn.execute(
-            "SELECT full_built_at FROM cache_meta WHERE table_name = ?", (table,)
-        ).fetchone()
+        row = conn.execute("SELECT full_built_at FROM cache_meta WHERE table_name = ?", (table,)).fetchone()
         if row is None:
             conn.execute(
                 "INSERT INTO cache_meta VALUES (?, ?, ?, ?)",

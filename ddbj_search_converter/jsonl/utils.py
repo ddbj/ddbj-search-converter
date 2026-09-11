@@ -67,7 +67,11 @@ URL_TEMPLATE: dict[XrefType, str] = {
     "jga-policy": f"{SEARCH_BASE_URL}/search/entry/jga-policy/{{id}}",
     "gea": f"{SEARCH_BASE_URL}/search/entry/gea/{{id}}",
     "geo": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
-    "insdc": "https://getentry.ddbj.nig.ac.jp/getentry?database=ddbj&accession_number={id}",
+    # insdc は TRAD 由来の生 accession。getentry のパス形式なら bulk 系 (WGS / TSA /
+    # TLS / TPA-*) も引けるが、query 形式 (?database=ddbj&accession_number=) は引けない。
+    # 対象は塩基配列のみなので /na/ 固定でよい。insdc-master は数字を全 0 に正規化した
+    # ID で getentry では引けないため NCBI nuccore に向ける。
+    "insdc": "https://getentry.ddbj.nig.ac.jp/getentry/na/{id}",
     "insdc-assembly": "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
     "insdc-master": "https://www.ncbi.nlm.nih.gov/nuccore/{id}",
     "metabobank": f"{SEARCH_BASE_URL}/search/entry/metabobank/{{id}}",

@@ -490,7 +490,7 @@ class TestExtractStatusFromInfo:
         assert _extract_status_from_info({"index": "raw error string"}) is None
 
     def test_exception_at_top_level(self) -> None:
-        assert _extract_status_from_info(RuntimeError("boom")) is None  # type: ignore[arg-type]
+        assert _extract_status_from_info(RuntimeError("boom")) is None
 
     def test_empty_dict(self) -> None:
         assert _extract_status_from_info({}) is None

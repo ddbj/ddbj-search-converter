@@ -7,6 +7,7 @@
 
 import string
 from datetime import datetime
+from re import Pattern
 
 from hypothesis import strategies as st
 
@@ -163,6 +164,37 @@ def st_taxonomy_id() -> st.SearchStrategy[str]:
     return st_pubmed_id()
 
 
+def st_insdc_id() -> st.SearchStrategy[str]:
+    """INSDC 塩基配列 accession。
+
+    ``insdc`` は ``ID_PATTERN_MAP`` に pattern を持たず (``to_xref`` の
+    ``type_hint`` 経由専用で validation もされない) ため、TRAD 由来の実データで
+    観測される 4 形式を生成する。
+
+    - 1 文字 prefix + 5 桁 (``U01317``)
+    - 2 文字 prefix + 6 桁 (``AP042376``)
+    - 4 文字 prefix + 2 桁 version + 6 桁 contig (``ICXY01000001``)
+    - 6 文字 prefix + 2 桁 version + 7 桁 contig (``BAAHWZ010000001``)
+
+    後半 2 形式が bulk 系 (WGS / TSA / TLS および TPA 版) の contig accession。
+    contig 番号には master 相当の全 0 (``BAAC01000000``) も含める。
+    """
+
+    def _letters(size: int) -> st.SearchStrategy[str]:
+        return st.text(alphabet=string.ascii_uppercase, min_size=size, max_size=size)
+
+    def _digits(size: int) -> st.SearchStrategy[str]:
+        return st.integers(min_value=0, max_value=10**size - 1).map(lambda n: f"{n:0{size}d}")
+
+    version = st.integers(min_value=1, max_value=99).map(lambda n: f"{n:02d}")
+    return st.one_of(
+        st.tuples(_letters(1), _digits(5)).map("".join),
+        st.tuples(_letters(2), _digits(6)).map("".join),
+        st.tuples(_letters(4), version, _digits(6)).map("".join),
+        st.tuples(_letters(6), version, _digits(7)).map("".join),
+    )
+
+
 def st_insdc_assembly_id() -> st.SearchStrategy[str]:
     """``^GCA_[0-9]{9}(\\.[0-9]+)?\\Z``"""
     digits = st.integers(min_value=0, max_value=999_999_999).map(lambda n: f"{n:09d}")
@@ -202,11 +234,11 @@ def st_insdc_master_id() -> st.SearchStrategy[str]:
 # === negative strategies ===
 
 
-def _all_id_patterns() -> dict[AccessionType, "object"]:
+def _all_id_patterns() -> dict[AccessionType, Pattern[str]]:
     # Imported lazily to avoid circular import at module load.
     from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
 
-    return ID_PATTERN_MAP  # type: ignore[return-value]
+    return ID_PATTERN_MAP
 
 
 def st_invalid_accession_text(acc_type: AccessionType) -> st.SearchStrategy[str]:
@@ -225,7 +257,7 @@ def st_invalid_accession_text(acc_type: AccessionType) -> st.SearchStrategy[str]
         min_size=0,
         max_size=20,
     )
-    return base.filter(lambda s: not pattern.match(s))  # type: ignore[union-attr]
+    return base.filter(lambda s: not pattern.match(s))
 
 
 # === SRA accession type strategy ===

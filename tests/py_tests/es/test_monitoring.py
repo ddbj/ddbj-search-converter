@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -29,7 +30,7 @@ from ddbj_search_converter.es.monitoring import (
 
 
 @pytest.fixture
-def patched_get_es():  # type: ignore[no-untyped-def]
+def patched_get_es() -> Iterator[MagicMock]:
     mock_es = MagicMock()
     with patch("ddbj_search_converter.es.monitoring.get_es_client", return_value=mock_es):
         yield mock_es

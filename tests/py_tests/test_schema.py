@@ -1,11 +1,13 @@
 """Tests for ddbj_search_converter.schema module."""
 
 import json
+from collections.abc import Callable
+from typing import Any
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from ddbj_search_converter.schema import (
     GEA,
@@ -148,7 +150,7 @@ class TestBioProject:
             properties={},
             distribution=[],
             isPartOf="bioproject",
-            type="bioproject",
+            type_="bioproject",
             objectType="UmbrellaBioProject",
             name=None,
             url="https://example.com",
@@ -203,7 +205,7 @@ class TestJGA:
                 )
             ],
             isPartOf="jga",
-            type="jga-study",
+            type_="jga-study",
             name="Test Study",
             url="https://ddbj.nig.ac.jp/search/entry/jga-study/JGAS000001",
             organism=Organism(identifier="9606", name="Homo sapiens"),
@@ -237,7 +239,7 @@ class TestJGA:
             properties={},
             distribution=[],
             isPartOf="jga",
-            type="jga-study",
+            type_="jga-study",
             name=None,
             url="https://example.com",
             organism=None,
@@ -270,7 +272,7 @@ class TestJGA:
             properties={},
             distribution=[],
             isPartOf="jga",
-            type="jga-study",
+            type_="jga-study",
             name=None,
             url="https://example.com",
             organism=None,
@@ -297,7 +299,7 @@ class TestJGA:
         assert jga.vendor == ["Illumina"]
 
 
-def _make_minimal_gea_kwargs() -> dict:
+def _make_minimal_gea_kwargs() -> dict[str, Any]:
     return {
         "identifier": "E-GEAD-1005",
         "properties": {},
@@ -386,7 +388,7 @@ class TestGEA:
         assert '"isPartOf":"gea"' in json_str
 
 
-def _make_minimal_metabobank_kwargs() -> dict:
+def _make_minimal_metabobank_kwargs() -> dict[str, Any]:
     return {
         "identifier": "MTBKS102",
         "properties": {},
@@ -636,7 +638,7 @@ class TestBioSamplePackage:
         assert pkg.displayName == "Generic.1.0"
 
 
-def _make_minimal_bs_kwargs() -> dict:
+def _make_minimal_bs_kwargs() -> dict[str, Any]:
     return {
         "identifier": "SAMD00000001",
         "properties": {},
@@ -698,7 +700,7 @@ class TestBioSample:
         assert not hasattr(bs, "attributes")
 
 
-def _make_minimal_sra_kwargs() -> dict:
+def _make_minimal_sra_kwargs() -> dict[str, Any]:
     return {
         "identifier": "DRX000001",
         "properties": {},
@@ -863,7 +865,7 @@ class TestSra:
 # ここでは「JSONL 出力時に空でも key が消えない」「kwarg 省略で ValidationError」を担保する。
 
 
-def _make_minimal_bp_kwargs() -> dict:
+def _make_minimal_bp_kwargs() -> dict[str, Any]:
     return {
         "identifier": "PRJDB500",
         "properties": {},
@@ -887,7 +889,7 @@ def _make_minimal_bp_kwargs() -> dict:
     }
 
 
-def _make_minimal_jga_kwargs() -> dict:
+def _make_minimal_jga_kwargs() -> dict[str, Any]:
     return {
         "identifier": "JGAS000001",
         "properties": {},
@@ -909,7 +911,7 @@ def _make_minimal_jga_kwargs() -> dict:
     }
 
 
-_REQUIRED_LIST_FIELDS: dict[type, list[str]] = {
+_REQUIRED_LIST_FIELDS: dict[type[BaseModel], list[str]] = {
     BioProject: [
         "distribution",
         "projectType",
@@ -976,7 +978,7 @@ _REQUIRED_LIST_FIELDS: dict[type, list[str]] = {
 }
 
 
-_MAKE_KWARGS = {
+_MAKE_KWARGS: dict[type[BaseModel], Callable[[], dict[str, Any]]] = {
     BioProject: _make_minimal_bp_kwargs,
     BioSample: _make_minimal_bs_kwargs,
     SRA: _make_minimal_sra_kwargs,
@@ -995,7 +997,7 @@ class TestRequiredListFieldsKeyContract:
     """
 
     @pytest.mark.parametrize("model_cls", list(_REQUIRED_LIST_FIELDS.keys()))
-    def test_empty_list_keys_persist_in_json(self, model_cls: type) -> None:
+    def test_empty_list_keys_persist_in_json(self, model_cls: type[BaseModel]) -> None:
         instance = model_cls(**_MAKE_KWARGS[model_cls]())
         dumped = json.loads(instance.model_dump_json(by_alias=True))
         for field in _REQUIRED_LIST_FIELDS[model_cls]:
@@ -1014,7 +1016,7 @@ class TestRequiredListFieldsValidation:
         ("model_cls", "field"),
         [(cls, field) for cls, fields in _REQUIRED_LIST_FIELDS.items() for field in fields],
     )
-    def test_missing_required_raises(self, model_cls: type, field: str) -> None:
+    def test_missing_required_raises(self, model_cls: type[BaseModel], field: str) -> None:
         kwargs = _MAKE_KWARGS[model_cls]()
         del kwargs[field]
         with pytest.raises(ValidationError):
@@ -1025,7 +1027,7 @@ class TestRequiredListFieldsValidation:
 # schema.py 側で `field: T | None = None` (optional) として全 AccessionType で
 # 統一する SSOT 契約。default が外れると jsonl 構築側で `name=None` 等を
 # kwarg 明示し続けるアンチパターンに戻ってしまう。
-_OPTIONAL_SCALAR_FIELDS: dict[type, list[str]] = {
+_OPTIONAL_SCALAR_FIELDS: dict[type[BaseModel], list[str]] = {
     BioProject: [
         "name",
         "organism",
@@ -1095,7 +1097,7 @@ class TestOptionalScalarFieldsContract:
         ("model_cls", "field"),
         [(cls, field) for cls, fields in _OPTIONAL_SCALAR_FIELDS.items() for field in fields],
     )
-    def test_missing_optional_does_not_raise(self, model_cls: type, field: str) -> None:
+    def test_missing_optional_does_not_raise(self, model_cls: type[BaseModel], field: str) -> None:
         kwargs = _MAKE_KWARGS[model_cls]()
         kwargs.pop(field, None)
         instance = model_cls(**kwargs)
@@ -1112,7 +1114,7 @@ class TestOptionalScalarFieldsKeyContract:
     """
 
     @pytest.mark.parametrize("model_cls", list(_OPTIONAL_SCALAR_FIELDS.keys()))
-    def test_null_scalar_keys_persist_in_json(self, model_cls: type) -> None:
+    def test_null_scalar_keys_persist_in_json(self, model_cls: type[BaseModel]) -> None:
         instance = model_cls(**_MAKE_KWARGS[model_cls]())
         dumped = json.loads(instance.model_dump_json(by_alias=True))
         for field in _OPTIONAL_SCALAR_FIELDS[model_cls]:
@@ -1163,7 +1165,7 @@ class TestBioProjectArrayFieldKeyPersistencePBT:
             assert field in dumped, f"BioProject.{field} key が JSON 出力から消えた"
 
 
-SCHEMA_CLASSES: list[type] = [
+SCHEMA_CLASSES: list[type[BaseModel]] = [
     BioProject,
     BioSample,
     SRA,
@@ -1191,7 +1193,7 @@ class TestSchemaDescriptions:
     """
 
     @pytest.mark.parametrize("model_cls", SCHEMA_CLASSES)
-    def test_class_docstring_present(self, model_cls: type) -> None:
+    def test_class_docstring_present(self, model_cls: type[BaseModel]) -> None:
         """各 BaseModel クラスに非空 docstring が存在する。"""
         doc = (model_cls.__doc__ or "").strip()
         assert doc, f"{model_cls.__name__} class docstring が空"
@@ -1200,14 +1202,14 @@ class TestSchemaDescriptions:
         ("model_cls", "field_name"),
         [(cls, fname) for cls in SCHEMA_CLASSES for fname in cls.model_fields],
     )
-    def test_field_description_present(self, model_cls: type, field_name: str) -> None:
+    def test_field_description_present(self, model_cls: type[BaseModel], field_name: str) -> None:
         """各 field に非空 description が存在する。"""
         info = model_cls.model_fields[field_name]
         desc = (info.description or "").strip()
         assert desc, f"{model_cls.__name__}.{field_name} の description が空"
 
     @pytest.mark.parametrize("model_cls", SCHEMA_CLASSES)
-    def test_json_schema_field_descriptions_propagate(self, model_cls: type) -> None:
+    def test_json_schema_field_descriptions_propagate(self, model_cls: type[BaseModel]) -> None:
         """`model_json_schema()` 出力の各 field property に description が伝播する。
 
         Annotated alias 化した Literal (Status / Accessibility / XrefType 等) の
@@ -1229,7 +1231,7 @@ class TestSchemaDescriptions:
         "model_cls",
         [BioProject, BioSample, SRA, JGA, GEA, MetaboBank],
     )
-    def test_properties_field_additional_properties_true(self, model_cls: type) -> None:
+    def test_properties_field_additional_properties_true(self, model_cls: type[BaseModel]) -> None:
         """6 エンティティの `properties` field は openapi 上 `additionalProperties: true` を持つ。
 
         `properties: Any` を opaque blob のままにせず、未指定 key を許容する nested
@@ -1250,31 +1252,36 @@ class TestAliasPopulateByName:
     attribute 名 (`type_=` / `id_=`) も通る必要がある。両者の dump が完全に同一であること
     を assert することで「alias は出力 schema を制御するだけで、内部の値は変わらない」という
     契約を縛る。
+
+    attribute 名側の呼び出しには ``type: ignore[call-arg]`` が付く。mypy は
+    ``Field(alias=...)`` を直接代入した field について alias 名だけを ``__init__`` の
+    引数として認識し、attribute 名を未知の引数と報告する (実行時は
+    ``populate_by_name=True`` により両方通る)。
     """
 
     def test_distribution_two_ways(self) -> None:
         a = Distribution(type="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")
-        b = Distribution(type_="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")
+        b = Distribution(type_="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")  # type: ignore[call-arg]
         assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
 
     def test_publication_two_ways(self) -> None:
         a = Publication(id="123", dbType="pubmed")
-        b = Publication(id_="123", dbType="pubmed")
+        b = Publication(id_="123", dbType="pubmed")  # type: ignore[call-arg]
         assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
 
     def test_grant_two_ways(self) -> None:
         a = Grant(id="g1", agency=[])
-        b = Grant(id_="g1", agency=[])
+        b = Grant(id_="g1", agency=[])  # type: ignore[call-arg]
         assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
 
     def test_xref_two_ways(self) -> None:
         a = Xref(identifier="PRJDB1", type="bioproject", url="https://e/x")
-        b = Xref(identifier="PRJDB1", type_="bioproject", url="https://e/x")
+        b = Xref(identifier="PRJDB1", type_="bioproject", url="https://e/x")  # type: ignore[call-arg]
         assert a.model_dump_json(by_alias=True) == b.model_dump_json(by_alias=True)
 
     def test_alias_key_present_attribute_key_absent(self) -> None:
         """`by_alias=True` の dump では alias 名のみが key として出ること。"""
-        d = Distribution(type_="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")
+        d = Distribution(type_="DataDownload", encodingFormat="JSON", contentUrl="https://e/x.json")  # type: ignore[call-arg]
         dumped = d.model_dump(by_alias=True)
         assert "type" in dumped
         assert "type_" not in dumped

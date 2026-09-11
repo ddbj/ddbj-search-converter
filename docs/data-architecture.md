@@ -131,7 +131,7 @@ INSDC 配列 accession と BioProject/BioSample のマッピングを保持す�
 | 1006 | killed | 除外 | 削除 |
 | 1007 | unregistered | 除外 | 登録解除 |
 
-採用する 2 値の基準は「`https://getentry.ddbj.nig.ac.jp/getentry?database=ddbj&accession_number={id}` を踏んで GenBank レコードが返るか」。`public` は当該レコードがそのまま返り、`secondary` は上位 accession (primary) のレコードに合流して返る。他 5 値は同 URL が `No results.` を返すため dbXrefs に出す意味がない。
+採用する 2 値の基準は「`https://getentry.ddbj.nig.ac.jp/getentry/na/{id}` を踏んで GenBank レコードが返るか」。`public` は当該レコードがそのまま返り、`secondary` は上位 accession (primary) のレコードに合流して返る。他 5 値は同 URL が `No results.` を返すため dbXrefs に出す意味がない。
 
 `manager.hold_date` を判定材料に使わない理由は、TRAD 側の運用で hold_date を過ぎても `manager.status` が `1001 → 1002` に自動更新されないことがあるため (release 処理の遅延・取下げ・差替待ちなど)。`hold_date` 単独では `private` accession の混入を防げないので、converter は「現在の `manager.status` を信用」する。
 
@@ -466,6 +466,12 @@ DBLink では以下の 21 種類の accession タイプを管理する。
 | `pubmed` | 12345678 |
 | `geo` | GSE12345 |
 | `taxonomy` | 9606 |
+
+`insdc` と `insdc-master` は同じ INSDC 配列を指すが、accession の形式が違うのでリンク先も異なる。
+
+- `insdc` は TRAD PostgreSQL 由来の生 accession。getentry のパス形式 (`/getentry/na/{id}`) を使う。query 形式 (`?database=ddbj&accession_number={id}`) は bulk 系 (WGS / TSA / TLS および TPA 版) を引けず `No results.` を返すため採れない
+- `insdc` の対象は塩基配列のみ (TRAD の接続先 `g-actual` / `e-actual` / `w-actual` はいずれも塩基配列登録)。アミノ酸配列は含まれないので getentry のパスは `na` 固定でよい
+- `insdc-master` は [`dblink/assembly_and_master.py`](../ddbj_search_converter/dblink/assembly_and_master.py) の `normalize_master_id` が数字を全 0 に置換した正規化 ID (例: `BABH00000000`)。この形式は getentry では引けないため NCBI nuccore に向ける
 
 ## Publication フィールド
 

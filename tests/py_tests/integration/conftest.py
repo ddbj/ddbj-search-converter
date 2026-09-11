@@ -204,7 +204,8 @@ def integration_log_db_path() -> Path:
                 "(no physical lifecycle column); run a pipeline so insert_log_records "
                 "applies init_log_db's migration"
             )
-        populated = conn.execute("SELECT COUNT(*) FROM log_records WHERE lifecycle IS NOT NULL").fetchone()[0]
+        row = conn.execute("SELECT COUNT(*) FROM log_records WHERE lifecycle IS NOT NULL").fetchone()
+        populated = 0 if row is None else row[0]
     if populated == 0:
         pytest.skip(
             f"log.duckdb at {path} has no rows with non-NULL lifecycle; "

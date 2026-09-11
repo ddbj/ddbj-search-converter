@@ -27,6 +27,7 @@ from py_tests.strategies import (
     st_biosample_id,
     st_gea_id,
     st_geo_id,
+    st_insdc_id,
     st_jga_study,
     st_metabobank_id,
     st_pubmed_id,
@@ -180,6 +181,49 @@ class TestRealAccessionPBT:
         assert xref.type_ == "taxonomy"
 
 
+class TestInsdcXrefUrl:
+    """``insdc`` / ``insdc-master`` の getentry URL 形式を pin する。
+
+    getentry の query 形式 (``?database=ddbj&accession_number=``) は bulk 系
+    (WGS / TSA / TLS および TPA 版) の accession を引けず ``No results.`` を返す。
+    insdc xref の大半は bulk 系の contig なので、query 形式に戻すと dbXrefs の
+    リンクが大量に切れる。``insdc-master`` 側は数字を全 0 に正規化した ID で
+    getentry に対応レコードが無いため NCBI nuccore に向ける。
+    """
+
+    GETENTRY_NA_BASE = "https://getentry.ddbj.nig.ac.jp/getentry/na/"
+
+    def test_insdc_url_template_contains_no_query_string(self) -> None:
+        """insdc は query 形式を使わない (bulk 系が引けなくなる)。"""
+        assert "?" not in URL_TEMPLATE["insdc"]
+
+    @pytest.mark.parametrize(
+        "acc",
+        [
+            "ICXY01000001",  # TSA contig (4 文字 prefix)
+            "BAAHWZ010000001",  # WGS contig (6 文字 prefix)
+            "BAAC01000000",  # WGS master (version 付きの生 accession)
+            "AP042376",  # complete genome
+            "U01317",  # 通常の塩基配列
+        ],
+    )
+    def test_insdc_accession_yields_getentry_na_path(self, acc: str) -> None:
+        xref = to_xref(acc, type_hint="insdc")
+        assert xref.url == f"{self.GETENTRY_NA_BASE}{acc}"
+
+    def test_insdc_master_accession_yields_ncbi_nuccore(self) -> None:
+        """正規化済み master は getentry で引けないので NCBI に向ける。"""
+        xref = to_xref("BABH00000000", type_hint="insdc-master")
+        assert xref.url == "https://www.ncbi.nlm.nih.gov/nuccore/BABH00000000"
+
+    @given(acc=st_insdc_id())
+    def test_insdc_url_is_base_path_plus_accession(self, acc: str) -> None:
+        """URL は base path + accession のみで、余分な path 要素や query が付かない。"""
+        url = to_xref(acc, type_hint="insdc").url
+        assert url == f"{self.GETENTRY_NA_BASE}{acc}"
+        assert "//" not in url.removeprefix("https://")
+
+
 class TestEdgeCases:
     """Edge case tests."""
 
@@ -199,12 +243,12 @@ class TestEnsureAttributeList:
     """Tests for ensure_attribute_list function."""
 
     def test_single_dict_wrapped_in_list(self) -> None:
-        props = {"Attributes": {"Attribute": {"attribute_name": "geo", "content": "Japan"}}}
+        props: dict[str, Any] = {"Attributes": {"Attribute": {"attribute_name": "geo", "content": "Japan"}}}
         ensure_attribute_list(props, [["Attributes", "Attribute"]])
         assert props == {"Attributes": {"Attribute": [{"attribute_name": "geo", "content": "Japan"}]}}
 
     def test_already_list_unchanged(self) -> None:
-        props = {"Attributes": {"Attribute": [{"attribute_name": "a"}, {"attribute_name": "b"}]}}
+        props: dict[str, Any] = {"Attributes": {"Attribute": [{"attribute_name": "a"}, {"attribute_name": "b"}]}}
         ensure_attribute_list(props, [["Attributes", "Attribute"]])
         assert props == {"Attributes": {"Attribute": [{"attribute_name": "a"}, {"attribute_name": "b"}]}}
 
@@ -214,7 +258,7 @@ class TestEnsureAttributeList:
         assert props == {"Attributes": {"Attribute": None}}
 
     def test_missing_intermediate_key_no_op(self) -> None:
-        props = {"Other": {"key": "val"}}
+        props: dict[str, Any] = {"Other": {"key": "val"}}
         ensure_attribute_list(props, [["Attributes", "Attribute"]])
         assert props == {"Other": {"key": "val"}}
 
@@ -224,13 +268,13 @@ class TestEnsureAttributeList:
         assert props == {"Attributes": {}}
 
     def test_empty_attribute_paths_no_op(self) -> None:
-        props = {"Attributes": {"Attribute": {"k": "v"}}}
+        props: dict[str, Any] = {"Attributes": {"Attribute": {"k": "v"}}}
         ensure_attribute_list(props, [])
         assert props == {"Attributes": {"Attribute": {"k": "v"}}}
 
     def test_empty_path_in_paths_list_is_skipped(self) -> None:
         """attribute_paths に空 path が混ざっていても skip され、他の path は正常処理。"""
-        props = {"Attributes": {"Attribute": {"k": "v"}}}
+        props: dict[str, Any] = {"Attributes": {"Attribute": {"k": "v"}}}
         ensure_attribute_list(props, [[], ["Attributes", "Attribute"]])
         assert props == {"Attributes": {"Attribute": [{"k": "v"}]}}
 
@@ -241,7 +285,7 @@ class TestEnsureAttributeList:
 
     def test_intermediate_list_recurses(self) -> None:
         """途中経路に list がある場合、全要素に対して再帰処理する。"""
-        props = {
+        props: dict[str, Any] = {
             "STUDY_SET": {
                 "STUDY": [
                     {"STUDY_ATTRIBUTES": {"STUDY_ATTRIBUTE": {"TAG": "a"}}},
@@ -255,7 +299,7 @@ class TestEnsureAttributeList:
         assert props["STUDY_SET"]["STUDY"][1]["STUDY_ATTRIBUTES"]["STUDY_ATTRIBUTE"] == [{"TAG": "b"}, {"TAG": "c"}]
 
     def test_multiple_paths(self) -> None:
-        props = {
+        props: dict[str, Any] = {
             "Attributes": {"Attribute": {"a": 1}},
             "Foo": {"FooAttribute": {"b": 2}},
         }
@@ -282,7 +326,7 @@ class TestEnsureAttributeList:
 
     def test_mutates_in_place(self) -> None:
         """入力 dict は破壊的に変更される。"""
-        props = {"Attributes": {"Attribute": {"k": "v"}}}
+        props: dict[str, Any] = {"Attributes": {"Attribute": {"k": "v"}}}
         original_id = id(props)
         ensure_attribute_list(props, [["Attributes", "Attribute"]])
         assert id(props) == original_id
@@ -290,7 +334,7 @@ class TestEnsureAttributeList:
 
     def test_other_fields_preserved(self) -> None:
         """指定パス以外のフィールドは値・構造ともに不変。"""
-        props = {
+        props: dict[str, Any] = {
             "Attributes": {"Attribute": {"a": 1}},
             "Description": {"Title": "preserved"},
             "Ids": {"Id": "preserved"},
@@ -301,7 +345,7 @@ class TestEnsureAttributeList:
 
     def test_biosample_realistic(self) -> None:
         """BioSample 風の構造で動作確認。"""
-        props = {
+        props: dict[str, Any] = {
             "Ids": {"Id": [{"content": "SAMD1", "db": "BioSample"}]},
             "Attributes": {"Attribute": {"attribute_name": "host", "content": "Homo sapiens"}},
             "Description": {"Title": "Sample title"},

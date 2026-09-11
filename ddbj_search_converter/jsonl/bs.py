@@ -514,8 +514,7 @@ def _fetch_dates_ddbj(config: Config, docs: dict[str, BioSample]) -> None:
 
     if not date_cache_ready(config):
         raise RuntimeError(
-            "date cache is not usable (missing, or built by an older schema version). "
-            "Run build_bp_bs_date_cache first."
+            "date cache is not usable (missing, or built by an older schema version). Run build_bp_bs_date_cache first."
         )
 
     date_map = fetch_bs_dates_from_cache(config, docs.keys())

@@ -188,7 +188,7 @@ class TestExtractDescription:
 
     def test_jga_dac_returns_none(self) -> None:
         """jga-dac は description 相当フィールドが無いため None。"""
-        entry = {"CONTACTS": {}}
+        entry: dict[str, Any] = {"CONTACTS": {}}
         assert extract_description(entry, "jga-dac") is None
 
     def test_no_description(self) -> None:

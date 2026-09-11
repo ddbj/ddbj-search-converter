@@ -83,9 +83,7 @@ def load_tsv_into_table(
     conflict_clause = ""
     if conflict_key is not None:
         _validate_identifier(conflict_key)
-        assignments = ", ".join(
-            f"{column} = excluded.{column}" for column in columns if column != conflict_key
-        )
+        assignments = ", ".join(f"{column} = excluded.{column}" for column in columns if column != conflict_key)
         conflict_clause = f"ON CONFLICT ({conflict_key}) DO UPDATE SET {assignments}"
 
     # auto_detect=false で dialect の推定を止める。columns を渡している以上

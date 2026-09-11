@@ -17,6 +17,7 @@ from ddbj_search_converter.es.status_sync import (
     sync_index_status,
     sync_status,
 )
+from elasticsearch import helpers
 
 
 def _make_config(tmp_path: Path) -> Config:
@@ -179,7 +180,7 @@ def _patch_es(
         captured.append(materialized)
         return len(materialized), []
 
-    mocker.patch.object(status_sync.helpers, "bulk", side_effect=fake_bulk)
+    mocker.patch.object(helpers, "bulk", side_effect=fake_bulk)
 
     return client, captured
 
@@ -259,11 +260,13 @@ class TestSyncIndexStatus:
         mocker.patch.object(status_sync, "get_es_client", return_value=client)
         mocker.patch.object(status_sync, "fetch_es_non_public", return_value={})
         captured: list[list[dict[str, Any]]] = []
-        mocker.patch.object(
-            status_sync.helpers,
-            "bulk",
-            side_effect=lambda _c, actions, **_k: (len(captured.append(list(actions)) or captured[-1]), []),
-        )
+
+        def fake_bulk(_client: Any, actions: Any, **_kwargs: Any) -> tuple[int, list[Any]]:
+            materialized = list(actions)
+            captured.append(materialized)
+            return len(materialized), []
+
+        mocker.patch.object(helpers, "bulk", side_effect=fake_bulk)
 
         result = sync_index_status(config, "bioproject")
 

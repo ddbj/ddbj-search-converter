@@ -768,7 +768,7 @@ def _make_bp_instance(identifier: str) -> BioProject:
         properties={},
         distribution=[],
         isPartOf="bioproject",
-        type="bioproject",
+        type_="bioproject",
         objectType="BioProject",
         name=None,
         url="https://example.com",
