@@ -1,6 +1,7 @@
 """BioProject JSONL 生成モジュール。"""
 
 import argparse
+import os
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -33,6 +34,7 @@ from ddbj_search_converter.jsonl.utils import (
 )
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.parallel import exit_with_parent
 from ddbj_search_converter.schema import (
     Accessibility,
     BioProject,
@@ -897,7 +899,11 @@ def generate_bp_jsonl(
         log_info(f"skipped {skipped_existing} existing files (resume mode)")
 
     total_count = 0
-    with ProcessPoolExecutor(max_workers=parallel_num) as executor:
+    with ProcessPoolExecutor(
+        max_workers=parallel_num,
+        initializer=exit_with_parent,
+        initargs=(os.getpid(),),
+    ) as executor:
         futures = {
             executor.submit(
                 _process_xml_file_worker,

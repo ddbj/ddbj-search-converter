@@ -40,6 +40,13 @@ JSONL 生成は `--parallel-num` で **各コマンド内部の worker 数** を
 
 `scripts/run_pipeline.sh --parallel N` は内部で **bp/bs/sra の各 jsonl コマンドにのみ** `--parallel-num N` として伝播する (jga/gea/metabobank には引数を渡さない、jsonl コマンド自体は順次実行)。デフォルトは 16 で、production の Rundeck job (`scripts/rundeck-job.yaml`) もこの値で運用している。
 
+`generate_sra_jsonl` は親プロセスが tar から XML を読み、batch 単位で worker に渡す。親は tar 全体の index ([data-architecture.md § Metadata tar](data-architecture.md#metadata-tar)) をメモリに持つので、メモリ使用量について次の制約を守る。
+
+- **worker は index を構築する前に起動する**。fork した worker は親のメモリを copy-on-write で共有するが、CPython は参照カウントと GC の書き込みで共有ページを worker ごとの複製に変えてしまう。index の構築後に fork すると、index のサイズ × worker 数に近いメモリを消費する
+- 親が保持する XML は、処理中の batch (worker 数ぶん) と先読みの 2 batch まで。tar の読み出しは worker の処理より十分速いので、先読みを深くしても速くならずメモリだけが増える
+
+worker プロセスを使うコマンド (DBLink 構築・JSONL 生成とも) は、親プロセスが終了したら worker も終了するようにしている。親だけが OOM などで強制終了されたときに、worker がメモリを保持したまま残らないようにするため。worker プロセスを使う処理を足すときは `ddbj_search_converter/parallel.py` の initializer を必ず渡す。
+
 `generate_bp_jsonl` / `generate_bs_jsonl` には `--resume` フラグがあり、出力先に同名 JSONL が既に存在するファイル (XML 単位) はスキップする。`run_pipeline.sh` は bp/bs にこのフラグを常に渡し、途中で失敗したときに再実行で続きから処理できるようにしている。`generate_sra_jsonl` / `generate_jga_jsonl` には `--resume` がなく、`generate_sra_jsonl` の途中再開は `--from-step jsonl_sra` 等で粗く戻すことになる。
 
 ### 主要なフラグ

@@ -7,12 +7,17 @@ DRA (DDBJ) と NCBI SRA の XML を tar ファイルから読み込み、
     Producer-Worker パターンを採用。tar reader はシングルスレッドで動作し、
     batch 分の XML を読み込んだら ProcessPoolExecutor の worker に submit する。
     各 worker は独立して DB クエリ、XML パース、dbXrefs 取得、JSONL 出力を行う。
+
+    親は tar 全体の index をメモリに持つ。worker がこれを fork で継承すると、
+    参照カウントと GC の書き込みで copy-on-write の共有が外れ、index のサイズ x
+    worker 数に近いメモリを消費する。そのため worker は index の構築前に起動する。
 """
 
 from __future__ import annotations
 
 import argparse
 import gc
+import os
 import sys
 from collections.abc import Callable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
@@ -42,6 +47,7 @@ from ddbj_search_converter.jsonl.utils import (
 )
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.parallel import exit_with_parent
 from ddbj_search_converter.schema import (
     SRA,
     Accessibility,
@@ -65,6 +71,8 @@ from ddbj_search_converter.xml_utils import parse_xml
 
 DEFAULT_BATCH_SIZE = 5000
 DEFAULT_PARALLEL_NUM = 8
+# tar の読み出しは worker の処理より十分速いので、先読みを深くしても速くならずメモリだけが増える
+READ_AHEAD_BATCHES = 2
 
 # XML types
 XML_TYPES: list[SraXmlType] = ["submission", "study", "experiment", "run", "sample", "analysis"]
@@ -935,6 +943,16 @@ def _process_batch_worker(
 # === Main processing ===
 
 
+def _noop() -> None:
+    return None
+
+
+def _start_all_workers(executor: ProcessPoolExecutor, parallel_num: int) -> None:
+    """worker プロセスを全て起動し終えるまで待つ。"""
+    for future in [executor.submit(_noop) for _ in range(parallel_num)]:
+        future.result()
+
+
 def process_source(
     config: Config,
     source: SourceKind,
@@ -987,39 +1005,44 @@ def process_source(
         log_info(f"no submissions to process for {source}")
         return dict.fromkeys(XML_TYPES, 0)
 
-    # tar を開く
-    tar_reader = TarXMLReader(tar_path)
-
-    # submission を tar の offset 順にソート（シーケンシャル読み込み最適化）
-    log_info("sorting submissions by tar offset...")
-    offsets = tar_reader.get_submission_offsets(submissions)
-    sorted_submissions = sorted(submissions, key=lambda s: offsets.get(s, float("inf")))
-
-    batch_size = DEFAULT_BATCH_SIZE
-    total_batches = (len(sorted_submissions) - 1) // batch_size + 1
-    log_info(f"batch_size={batch_size}, total_batches={total_batches}, parallel_num={parallel_num}")
-
-    # バッチイテレータ
-    def batch_iter() -> Iterator[tuple[int, list[str]]]:
-        for i in range(0, len(sorted_submissions), batch_size):
-            batch_num = i // batch_size + 1
-            batch_subs = sorted_submissions[i : i + batch_size]
-            yield batch_num, batch_subs
-
-    batches = batch_iter()
-    buffer: list[tuple[int, list[str], dict[str, dict[SraXmlType, bytes | None]]]] = []
-    batches_exhausted = False
-
     # 合計カウント
     total_counts: dict[str, int] = dict.fromkeys(XML_TYPES, 0)
     completed_batches = 0
 
-    with ProcessPoolExecutor(max_workers=parallel_num) as executor:
+    with ProcessPoolExecutor(
+        max_workers=parallel_num,
+        initializer=exit_with_parent,
+        initargs=(os.getpid(),),
+    ) as executor:
+        # tar index を worker に継承させないため、index の構築より先に worker を起動する
+        _start_all_workers(executor, parallel_num)
+
+        tar_reader = TarXMLReader(tar_path)
+
+        # submission を tar の offset 順にソート（シーケンシャル読み込み最適化）
+        log_info("sorting submissions by tar offset...")
+        offsets = tar_reader.get_submission_offsets(submissions)
+        sorted_submissions = sorted(submissions, key=lambda s: offsets.get(s, float("inf")))
+
+        batch_size = DEFAULT_BATCH_SIZE
+        total_batches = (len(sorted_submissions) - 1) // batch_size + 1
+        log_info(f"batch_size={batch_size}, total_batches={total_batches}, parallel_num={parallel_num}")
+
+        # バッチイテレータ
+        def batch_iter() -> Iterator[tuple[int, list[str]]]:
+            for i in range(0, len(sorted_submissions), batch_size):
+                batch_num = i // batch_size + 1
+                batch_subs = sorted_submissions[i : i + batch_size]
+                yield batch_num, batch_subs
+
+        batches = batch_iter()
+        buffer: list[tuple[int, list[str], dict[str, dict[SraXmlType, bytes | None]]]] = []
+        batches_exhausted = False
         pending: set[Future[dict[str, int]]] = set()
 
         while True:
-            # バッファが空いていれば先読み（tar reader は止まらない）
-            while not batches_exhausted and len(buffer) < parallel_num + 1:
+            # バッファが空いていれば先読み
+            while not batches_exhausted and len(buffer) < READ_AHEAD_BATCHES:
                 try:
                     batch_num, batch_subs = next(batches)
                     xml_data = _read_batch_xml(tar_reader, batch_subs)
@@ -1047,11 +1070,15 @@ def process_source(
                 )
                 pending.add(future)
                 log_info(f"submitted batch {batch_num}/{total_batches}")
-                del xml_data  # pickle 化後に参照を解放
+                del xml_data
 
             # 終了条件
-            if not pending:
+            if not pending and batches_exhausted and not buffer:
                 break
+
+            # submit 直後は buffer が空いているので、待つ前に先読みを補充する
+            if not batches_exhausted and len(buffer) < READ_AHEAD_BATCHES:
+                continue
 
             # 1つ完了するまで待機
             done, pending = wait(pending, return_when=FIRST_COMPLETED)
@@ -1069,8 +1096,8 @@ def process_source(
             if completed_batches % 10 == 0:
                 gc.collect()
 
-    # tar reader を閉じる
-    tar_reader.close()
+        # tar reader を閉じる
+        tar_reader.close()
 
     # 結果をログ出力
     for xml_type in XML_TYPES:

@@ -248,7 +248,16 @@ SSD 上の `{result_dir}/sra_tar/` に配置してランダムアクセスを高
 |---------|------|
 | `{result_dir}/sra_tar/NCBI_SRA_Metadata.tar` | NCBI SRA (sync_ncbi_tar で作成) |
 | `{result_dir}/sra_tar/DRA_Metadata.tar` | DRA (sync_dra_tar で作成) |
-| `{result_dir}/sra_tar/*.tar.index.pkl` | tar インデックスキャッシュ (並列読み込み高速化) |
+| `{result_dir}/sra_tar/ncbi_base_full.txt` | NCBI tar の土台にした Full tar.gz の日付 |
+| `{result_dir}/sra_tar/ncbi_last_merged.txt` | NCBI tar に取り込み済みの最終日付 (Full または daily) |
+
+どちらの tar も追記で育つ。同名メンバーが複数あるときは末尾側が有効で、読み出し側 (`TarXMLReader`) は tar 全体のヘッダを走査して「名前 -> 最後の出現位置」の index をメモリ上に作る。したがって走査時間と index のメモリは、有効な XML の数ではなく、上書きされた古いメンバーを含む総メンバー数に比例する。
+
+NCBI tar は月次の Full tar.gz を土台に、日次の daily tar.gz を追記して作る。daily には更新された submission の XML 一式が入っており、追記だけを続けると tar は有効な XML の量と無関係に伸び続ける。そのため `sync_ncbi_tar` は、土台にした Full より新しい Full が手に入った時点で tar を作り直し、その Full の日付の翌日以降の daily を追記し直す。これで tar は「Full 1 本 + 約 1 か月分の daily」で頭打ちになる。
+
+- **新しい Full の有無は `ncbi_base_full.txt` と比べて判定する**。`ncbi_last_merged.txt` と比べてはいけない。Full は日付から数日遅れて公開され、その頃には daily の取り込みで `ncbi_last_merged.txt` が Full の日付を追い越しているため、作り直しが一度も起きなくなる
+- `ncbi_base_full.txt` が無い tar は土台が分からないので、入手できる最新の Full から作り直す
+- 作り直しは一時ファイルに展開してから置き換える。展開に失敗しても既存の tar はそのまま残る
 
 NCBI SRA Metadata には DDBJ origin の SRA accession (DRA / DRR / DRX / DRZ / DRS / DRP) も含まれている。これらは DRA バッチ (`source="dra"`) 側が DDBJ 公開ストレージへの XML / FASTQ / SRA distribution link を含む完全な doc を生成するため、NCBI バッチ (`source="sra"`) の JSONL では除外する (`ddbj_search_converter/jsonl/sra.py::process_submission_xml` で skip)。両バッチが同じ identifier を JSONL に出すと `es_bulk_insert` が `_id` で上書きするため (順序により後勝ち)、NCBI 版の不完全 doc が ES に残る原因になる。
 

@@ -136,6 +136,7 @@ SRA_TAR_DIR_NAME = "sra_tar"
 NCBI_SRA_TAR_FILE_NAME = "NCBI_SRA_Metadata.tar"
 DRA_TAR_FILE_NAME = "DRA_Metadata.tar"
 NCBI_LAST_MERGED_FILE_NAME = "ncbi_last_merged.txt"
+NCBI_BASE_FULL_FILE_NAME = "ncbi_base_full.txt"
 DRA_LAST_UPDATED_FILE_NAME = "dra_last_updated.txt"
 
 

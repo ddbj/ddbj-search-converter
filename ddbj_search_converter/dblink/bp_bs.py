@@ -41,6 +41,7 @@ dump_dblink_files CLI コマンドで出力する。
 9. 全ての関連を DuckDB にロード
 """
 
+import os
 import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from concurrent.futures import Future, ProcessPoolExecutor, as_completed
@@ -60,6 +61,7 @@ from ddbj_search_converter.dblink.utils import convert_id_if_needed, filter_by_b
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.parallel import exit_with_parent
 from ddbj_search_converter.sra_accessions_tab import iter_bp_bs_relations
 from ddbj_search_converter.xml_utils import get_tmp_xml_dir
 
@@ -203,7 +205,11 @@ def process_xml_files_parallel(
 
     log_info(f"processing {len(xml_files)} XML files with {parallel_num} workers")
 
-    with ProcessPoolExecutor(max_workers=parallel_num) as executor:
+    with ProcessPoolExecutor(
+        max_workers=parallel_num,
+        initializer=exit_with_parent,
+        initargs=(os.getpid(),),
+    ) as executor:
         futures: dict[Future[XmlProcessResult], Path] = {
             executor.submit(worker_func, xml_path): xml_path for xml_path in xml_files
         }

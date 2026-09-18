@@ -35,6 +35,7 @@ from ddbj_search_converter.config import (
     UMBRELLA_DB_FILE_NAME,
     Config,
 )
+from ddbj_search_converter.duckdb_bulk import load_tsv_into_table, write_rows_to_tsv
 from ddbj_search_converter.logging.logger import log_info
 
 AccessionType = Literal[
@@ -442,11 +443,19 @@ def save_umbrella_relations(config: Config, relations: IdPairs) -> None:
 
     log_info(f"saving {len(rows)} umbrella relations")
 
-    with duckdb.connect(str(db_path)) as conn:
-        conn.executemany(
-            "INSERT INTO umbrella_relation (parent_accession, child_accession) VALUES (?, ?)",
-            rows,
-        )
+    tsv_path = db_path.with_name(f"{db_path.name}.relations.tsv")
+    try:
+        written = write_rows_to_tsv(tsv_path, rows)
+        with duckdb.connect(str(db_path)) as conn:
+            load_tsv_into_table(
+                conn,
+                "umbrella_relation",
+                ("parent_accession", "child_accession"),
+                tsv_path,
+                written,
+            )
+    finally:
+        tsv_path.unlink(missing_ok=True)
 
 
 def get_umbrella_parent_child_maps(

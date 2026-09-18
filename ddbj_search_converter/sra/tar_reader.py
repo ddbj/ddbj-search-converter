@@ -9,7 +9,7 @@ This supports append-based daily updates where newer entries are appended.
 import tarfile
 import types
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 from ddbj_search_converter.config import DRA_TAR_FILE_NAME, NCBI_SRA_TAR_FILE_NAME, Config
 from ddbj_search_converter.logging.logger import log_info
@@ -23,16 +23,10 @@ SRA_XML_TYPES: list[SraXmlType] = ["submission", "study", "experiment", "run", "
 class TarXMLReader:
     """Read XML files from a tar archive using an in-memory index."""
 
-    def __init__(self, tar_path: Path, index_data: dict[str, dict[str, Any]] | None = None):
-        """
-        Args:
-            tar_path: tar ファイルのパス
-            index_data: 事前にロードしたインデックスデータ（キャッシュから）
-        """
+    def __init__(self, tar_path: Path):
         self.tar_path = tar_path
         self._tar: tarfile.TarFile | None = None
         self._members: dict[str, tarfile.TarInfo] | None = None
-        self._index_data = index_data
 
     def _ensure_open(self) -> None:
         if self._tar is None:
@@ -44,21 +38,6 @@ class TarXMLReader:
         if self._members is not None:
             return
 
-        # キャッシュデータがあればそれを使用
-        if self._index_data is not None:
-            log_info("using cached tar index")
-            self._members = {}
-            for name, data in self._index_data.items():
-                info = tarfile.TarInfo()
-                info.name = data["name"]
-                info.offset = data["offset"]
-                info.offset_data = data["offset_data"]
-                info.size = data["size"]
-                self._members[name] = info
-            log_info(f"tar index restored from cache: {len(self._members)} entries")
-            return
-
-        # キャッシュがなければ tar をスキャン
         self._ensure_open()
         assert self._tar is not None
 
@@ -69,12 +48,6 @@ class TarXMLReader:
             self._members[member.name] = member
 
         log_info(f"tar index built: {len(self._members)} entries")
-
-    def get_index_for_cache(self) -> dict[str, tarfile.TarInfo]:
-        """キャッシュ保存用のインデックスを取得する。"""
-        self._build_index()
-        assert self._members is not None
-        return self._members
 
     def get_submission_offsets(self, submissions: list[str]) -> dict[str, int]:
         """指定された submission の最小 offset を取得する。

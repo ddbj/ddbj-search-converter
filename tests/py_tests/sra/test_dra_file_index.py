@@ -1,14 +1,18 @@
 """Tests for ddbj_search_converter.sra.dra_file_index module."""
 
 import tempfile
+import time
 from pathlib import Path
 
 import duckdb
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.sra import dra_file_index
 from ddbj_search_converter.sra.dra_file_index import (
+    build_dra_file_index,
     dra_file_index_exists,
     get_dra_file_index_db_path,
     query_analysis_dirs_bulk,
@@ -358,3 +362,126 @@ class TestDraFileIndexPBT:
             result = query_sra_files_bulk(config, runs)
 
             assert result == set(runs)
+
+
+def _read_index(config: Config) -> tuple[set[tuple[str, str]], set[tuple[str, str]], set[str]]:
+    with duckdb.connect(str(get_dra_file_index_db_path(config)), read_only=True) as conn:
+        fastq = set(conn.execute("SELECT submission, experiment FROM dra_fastq_dir").fetchall())
+        analysis = set(conn.execute("SELECT submission, analysis FROM dra_fastq_analysis_dir").fetchall())
+        sra = {row[0] for row in conn.execute("SELECT run FROM dra_sra_file").fetchall()}
+    return fastq, analysis, sra
+
+
+@pytest.mark.usefixtures("with_logger_isolated")
+class TestBuildDraFileIndex:
+    """FS を走査して index を作る。差し替えるのは対象 submission の取得 (DB) と走査の起点だけ。"""
+
+    def _env(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, submissions: list[str]) -> tuple[Config, Path]:
+        base = tmp_path / "dra"
+        base.mkdir()
+        config = Config(result_dir=tmp_path / "result", const_dir=tmp_path / "const")
+        monkeypatch.setattr(dra_file_index, "DRA_BASE_PATH", base)
+        monkeypatch.setattr(dra_file_index, "iter_all_dra_submissions", lambda _config: iter(submissions))
+        return config, base
+
+    def test_only_drx_and_drz_directories_are_indexed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        config, base = self._env(tmp_path, monkeypatch, ["DRA000001", "DRA000002", "DRA999999"])
+        sub1 = base / "fastq" / "DRA000" / "DRA000001"
+        (sub1 / "DRX000001").mkdir(parents=True)
+        (sub1 / "DRX000002").mkdir()
+        (sub1 / "DRZ000001").mkdir()
+        (sub1 / "DRA000001.submission.xml").write_text("<x/>")
+        (sub1 / "DRX000009").write_text("a regular file named like an experiment")
+        (sub1 / "OTHER").mkdir()
+        target = tmp_path / "elsewhere"
+        target.mkdir()
+        (sub1 / "DRX000003").symlink_to(target, target_is_directory=True)
+        (sub1 / "DRX000004").symlink_to(tmp_path / "does-not-exist")
+        sub2 = base / "fastq" / "DRA000" / "DRA000002"
+        (sub2 / "DRZ000002").mkdir(parents=True)
+        # DRA999999 は Accessions にはあるが FS にディレクトリが無い
+        sra_dir = base / "sra" / "ByExp" / "sra" / "DRX" / "DRX000" / "DRX000001" / "DRR000001"
+        sra_dir.mkdir(parents=True)
+        (sra_dir / "DRR000001.sra").write_bytes(b"")
+        (sra_dir / "DRR000001.txt").write_bytes(b"")
+
+        build_dra_file_index(config)
+
+        fastq, analysis, sra = _read_index(config)
+        assert fastq == {("DRA000001", "DRX000001"), ("DRA000001", "DRX000002"), ("DRA000001", "DRX000003")}
+        assert analysis == {("DRA000001", "DRZ000001"), ("DRA000002", "DRZ000002")}
+        assert sra == {"DRR000001"}
+
+    def test_sra_files_are_found_at_every_depth_without_following_symlinked_dirs(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        config, base = self._env(tmp_path, monkeypatch, [])
+        drx = base / "sra" / "ByExp" / "sra" / "DRX"
+        (drx / "DRX000" / "DRX000001" / "DRR000001").mkdir(parents=True)
+        (drx / "DRX000" / "DRX000001" / "DRR000001" / "DRR000001.sra").write_bytes(b"")
+        (drx / "DRX000" / "DRX000001" / "DRR000002").mkdir()
+        (drx / "DRX000" / "DRX000001" / "DRR000002" / "DRR000002.sra").write_bytes(b"")
+        (drx / "DRX935" / "DRX935001" / "DRR999999").mkdir(parents=True)
+        (drx / "DRX935" / "DRX935001" / "DRR999999" / "DRR999999.sra").write_bytes(b"")
+        (drx / "DRX935" / "DRX935001" / "DRR999999" / "DRR999999.sra.md5").write_bytes(b"")
+        (drx / "TOP.sra").write_bytes(b"")
+        outside = tmp_path / "outside"
+        (outside / "DRR777777").mkdir(parents=True)
+        (outside / "DRR777777" / "DRR777777.sra").write_bytes(b"")
+        (drx / "DRX000" / "linked").symlink_to(outside, target_is_directory=True)
+
+        build_dra_file_index(config)
+
+        _, _, sra = _read_index(config)
+        assert sra == {"DRR000001", "DRR000002", "DRR999999", "TOP"}
+
+    def test_no_submissions_and_no_sra_tree_yields_empty_tables(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        config, _ = self._env(tmp_path, monkeypatch, [])
+
+        build_dra_file_index(config)
+
+        assert _read_index(config) == (set(), set(), set())
+
+    def test_rebuild_replaces_previous_index_and_leaves_no_temp_files(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        config, base = self._env(tmp_path, monkeypatch, ["DRA000001"])
+        sub1 = base / "fastq" / "DRA000" / "DRA000001"
+        (sub1 / "DRX000001").mkdir(parents=True)
+        build_dra_file_index(config)
+        (sub1 / "DRX000001").rmdir()
+        (sub1 / "DRX000002").mkdir()
+
+        build_dra_file_index(config)
+
+        fastq, _, _ = _read_index(config)
+        assert fastq == {("DRA000001", "DRX000002")}
+        assert [p.name for p in get_dra_file_index_db_path(config).parent.iterdir()] == ["dra_file_index.duckdb"]
+
+    def test_queries_see_what_the_scan_found(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        config, base = self._env(tmp_path, monkeypatch, ["DRA000001"])
+        (base / "fastq" / "DRA000" / "DRA000001" / "DRX000001").mkdir(parents=True)
+
+        build_dra_file_index(config)
+
+        assert query_fastq_dirs_bulk(config, ["DRA000001", "DRA000002"]) == {"DRA000001": {"DRX000001"}}
+
+    def test_insert_is_not_row_by_row(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """実データは約 100 万行ある。行単位の INSERT だと 1 行あたり数百マイクロ秒かかり、時間単位になる。"""
+        submissions = [f"DRA{i:06d}" for i in range(2000)]
+        config, _ = self._env(tmp_path, monkeypatch, submissions)
+        monkeypatch.setattr(
+            dra_file_index,
+            "_scan_submission_dir",
+            lambda sub: (sub, [f"DRX{sub[3:]}{n:02d}" for n in range(50)], []),
+        )
+
+        started = time.monotonic()
+        build_dra_file_index(config)
+        elapsed = time.monotonic() - started
+
+        fastq, _, _ = _read_index(config)
+        assert len(fastq) == 100_000
+        assert elapsed < 10

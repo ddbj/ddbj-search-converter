@@ -1,6 +1,7 @@
 """Tests for ddbj_search_converter.dblink.db module."""
 
 import tempfile
+import time
 from pathlib import Path
 
 import duckdb
@@ -536,3 +537,59 @@ class TestUmbrellaDb:
 
         _, child_map = get_umbrella_parent_child_maps(test_config, ["PRJDB999"])
         assert child_map["PRJDB999"] == ["PRJDB100"]
+
+    def test_save_is_not_row_by_row(self, test_config: Config) -> None:
+        """実データは十数万行ある。行単位の INSERT だと 1 行あたり数百マイクロ秒かかり分単位になる。"""
+        relations = {
+            (f"PRJNA{parent}", f"PRJNA{parent * 1000 + child}") for parent in range(1, 1001) for child in range(100)
+        }
+        with run_logger(config=test_config):
+            init_umbrella_db(test_config)
+            started = time.monotonic()
+            save_umbrella_relations(test_config, relations)
+            elapsed = time.monotonic() - started
+            finalize_umbrella_db(test_config)
+
+        _, child_map = get_umbrella_parent_child_maps(test_config, ["PRJNA1", "PRJNA1000"])
+        assert len(child_map["PRJNA1"]) == 100
+        assert len(child_map["PRJNA1000"]) == 100
+        assert elapsed < 10
+
+    def test_save_leaves_no_temp_file(self, test_config: Config) -> None:
+        with run_logger(config=test_config):
+            init_umbrella_db(test_config)
+            save_umbrella_relations(test_config, {("PRJDB999", "PRJDB100")})
+            leftovers = sorted(p.name for p in test_config.const_dir.joinpath("dblink").iterdir())
+
+        assert leftovers == ["umbrella.tmp.duckdb"]
+
+    def test_empty_relations_are_a_no_op(self, test_config: Config) -> None:
+        with run_logger(config=test_config):
+            init_umbrella_db(test_config)
+            save_umbrella_relations(test_config, set())
+            finalize_umbrella_db(test_config)
+
+        parent_map, child_map = get_umbrella_parent_child_maps(test_config, ["PRJDB100"])
+        assert parent_map == {}
+        assert child_map == {}
+
+    @given(
+        relations=st.sets(
+            st.tuples(
+                st.text(alphabet=st.characters(codec="utf-8", exclude_characters="\x00"), min_size=1, max_size=12),
+                st.text(alphabet=st.characters(codec="utf-8", exclude_characters="\x00"), min_size=1, max_size=12),
+            ),
+            max_size=20,
+        )
+    )
+    def test_saved_relations_round_trip_exactly(self, relations: set[tuple[str, str]]) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            config = Config(result_dir=Path(tmp), const_dir=Path(tmp) / "const")
+            with run_logger(config=config):
+                init_umbrella_db(config)
+                save_umbrella_relations(config, relations)
+                finalize_umbrella_db(config)
+            with duckdb.connect(str(Path(tmp) / "const" / "dblink" / "umbrella.duckdb"), read_only=True) as conn:
+                stored = set(conn.execute("SELECT parent_accession, child_accession FROM umbrella_relation").fetchall())
+
+        assert stored == relations
