@@ -10,7 +10,7 @@ deploy の基本コマンドは [README.md](../README.md)、Blue-Green Alias Swa
 
 ## production の自動運用 (Rundeck)
 
-production は `scripts/rundeck-job.yaml` を Rundeck に登録して日次差分更新を流している。job の中身は (1) `app` コンテナの再生成 (JGA mount のリフレッシュ用)、(2) `run_pipeline.sh --parallel 16` 実行、(3) `cleanup_old_results --keep 3` の 3 ステップ。Rundeck UI で実行履歴・失敗通知を確認する想定で、cron に直接登録はしていない。staging は手動実行のみ。
+production は `scripts/rundeck-job.yaml` を Rundeck に登録して日次差分更新を流している。job の中身は (1) `app` コンテナの再生成 (JGA mount のリフレッシュ用)、(2) `run_pipeline.sh --parallel 16` 実行、(3) `cleanup_old_results --keep 3 --include-spill` の 3 ステップ。cleanup は pipeline の完了後に走るので、spill ディレクトリも同時に消してよい。Rundeck UI で実行履歴・失敗通知を確認する想定で、cron に直接登録はしていない。staging は手動実行のみ。
 
 ## 4 リポジトリ構成と deploy 単位
 
@@ -28,7 +28,9 @@ bind mount (`.:/app:rw`) は Python ソース変更を即時反映するが、ve
 
 ## named volume の rename
 
-`compose.yml` の named volume 名を変えたあとに、ホスト上の既存 volume データを保持したい場合は `podman volume rename` を使う (podman 5.x+)。
+`compose.yml` の named volume 名を変えたあとに、ホスト上の既存 volume データを保持したい場合は、`down` で writer を止めてから旧 volume のデータを新しい名前の volume に移す。
+
+podman 5.x 以降なら `podman volume rename` で付け替える。
 
 ```bash
 podman-compose down                                              # writers を止める
@@ -37,7 +39,19 @@ podman volume rename ddbj-search-converter_es-backup es-backup-staging
 podman-compose up -d                                             # 新しい名前で同じ実体を mount
 ```
 
-rename を挟まずに新 compose で `up -d` すると、新名で空の volume が作られて旧データから切り離される。気付かずに pipeline を回すと ES を再構築する羽目になるので、`down → rename → up -d` の順序を必ず守る。
+podman 4.x には `volume rename` が無い (`unrecognized command` になる)。新しい名前の volume を作り、旧 volume の `_data` 配下の entry を全部 mv する。同じ filesystem 内の mv なのでデータ量によらずすぐ終わる。一部の entry だけを mv すると ES が起動時に不整合を起こすので、`_data` 直下を丸ごと移す。
+
+```bash
+podman-compose down
+podman volume create es-data-staging
+src=$(podman volume inspect ddbj-search-converter_es-data --format '{{.Mountpoint}}')
+dst=$(podman volume inspect es-data-staging --format '{{.Mountpoint}}')
+find "$src" -mindepth 1 -maxdepth 1 -exec mv -t "$dst" {} +
+# es-backup も同様
+podman-compose up -d
+```
+
+どちらの方法でも、付け替えを挟まずに新 compose で `up -d` すると、新名で空の volume が作られて旧データから切り離される。気付かずに pipeline を回すと ES を再構築する羽目になるので、`down → 付け替え → up -d` の順序を必ず守る。
 
 ## `DDBJ_SEARCH_ENV` 切替時に旧コンテナが残る
 

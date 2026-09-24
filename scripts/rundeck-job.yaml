@@ -57,7 +57,7 @@
         PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter
         cd $PROJECT_DIR
 
-        podman-compose -f compose.yml exec -T app cleanup_old_results --keep 3
+        podman-compose -f compose.yml exec -T app cleanup_old_results --keep 3 --include-spill
     keepgoing: false
     strategy: node-first
   uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890

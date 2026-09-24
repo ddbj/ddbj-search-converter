@@ -135,7 +135,7 @@ INSDC 配列 accession と BioProject/BioSample のマッピングを保持す�
 
 `manager.hold_date` を判定材料に使わない理由は、TRAD 側の運用で hold_date を過ぎても `manager.status` が `1001 → 1002` に自動更新されないことがあるため (release 処理の遅延・取下げ・差替待ちなど)。`hold_date` 単独では `private` accession の混入を防げないので、converter は「現在の `manager.status` を信用」する。
 
-converter は `manager` を本クエリに JOIN せず、別クエリ (`SELECT ac_id FROM manager WHERE status NOT IN (1002, 1005)`) で「採用外 `ac_id` の集合 (manager blacklist)」を先に取得し、本クエリ (`accession ⋈ link_pr_ac ⋈ project`) の cursor stream 結果を Python 側で post-filter する。同一 PostgreSQL connection 内で readonly transaction を張った状態で 2 cursor を順次使う (server-side cursor は transaction 内でだけ生きるので、blacklist fetch 後に `commit()` を呼ばない)。`accession × manager` を JOIN して SQL 一発で済ませる構成は `link_pr_ac` を起点とした Memoize lookup chain (1 ac_id ごとに `manager` と `accession` を index lookup) に planner が倒れ、TRAD a012 host の同時負荷下では実行時間が前回比 10〜20 倍に劣化したため SQL レベルでは避ける。
+converter は `manager` を本クエリに JOIN せず、別クエリ (`SELECT ac_id FROM manager WHERE status NOT IN (1002, 1005)`) で「採用外 `ac_id` の集合 (manager blacklist)」を先に取得し、本クエリ (`accession ⋈ link_pr_ac ⋈ project`) の cursor stream 結果を Python 側で post-filter する。同一 PostgreSQL connection 内で readonly transaction を張った状態で 2 cursor を順次使う (server-side cursor は transaction 内でだけ生きるので、blacklist fetch 後に `commit()` を呼ばない)。`accession × manager` を JOIN して SQL 一発で済ませる構成は `link_pr_ac` を起点とした Memoize lookup chain (1 ac_id ごとに `manager` と `accession` を index lookup) に planner が倒れ、TRAD host の同時負荷下では実行時間が前回比 10〜20 倍に劣化したため SQL レベルでは避ける。
 
 manager blacklist の規模感 (staging 実測):
 
