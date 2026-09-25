@@ -96,6 +96,8 @@ DDBJ Search Converter のデータフローと構造。
 | GEA | `/usr/local/resources/gea/experiment/E-GEAD-{N000}/E-GEAD-{NNNN}/E-GEAD-{NNNN}.{idf,sdrf}.txt` |
 | MetaboBank | `/usr/local/shared_data/metabobank/study/MTBKS{N}/MTBKS{N}.{idf,sdrf}.txt` |
 
+上の表のパスはコンテナ内のパスで、ホスト側のどこを bind するかは `.env` (`env.{staging,production}`) の `*_PATH` で決まる。DRA の公開ツリー (`DRA_PATH`) は、`fastq/` に加えて `.sra` ファイルのある `sra/` まで見えるホストパスでなければならない。`sra/` は DRA の他の部分とは別のファイルシステムで、ホストによっては同じ DRA ツリーに見える別のパスの下には mount されていない。`sra/` が空だと `.sra` ファイルが 0 件として扱われ、DRA の run から SRA ファイルのダウンロードリンクが黙って消えるので、`check_external_resources` は `fastq/` と `sra/ByExp/sra/DRX/` が空でないことも確認する。
+
 ### TRAD ORGANISM_LIST
 
 | リソース | パス |

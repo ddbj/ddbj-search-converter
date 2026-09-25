@@ -225,8 +225,12 @@ extract_xml_entries_gz "$BS_SRC/ddbj_biosample_set.xml.gz" "$BS_DST/ddbj_biosamp
 echo ""
 echo "--- SRA/DRA/ERA ---"
 
-SRA_XML_SRC="/usr/local/resources/dra/fastq"
+# DRA の公開ツリー。sra/ (.sra ファイル) まで見えるパスを使う
+DRA_PUBLIC_SRC="/lustre9/open/database/ddbj-dbt/dra-public/dra"
+SRA_XML_SRC="$DRA_PUBLIC_SRC/fastq"
 SRA_XML_DST="$FIXTURES_DIR/usr/local/resources/dra/fastq"
+SRA_FILE_SRC="$DRA_PUBLIC_SRC/sra/ByExp/sra/DRX"
+SRA_FILE_DST="$FIXTURES_DIR/usr/local/resources/dra/sra/ByExp/sra/DRX"
 
 SRA_ACC_BASE="/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions"
 DRA_ACC_BASE="/lustre9/open/database/ddbj-dbt/dra-private/tracesys/batch/logs/livelist/ReleaseData/public"
@@ -271,6 +275,22 @@ for sub in "${ALL_SUBMISSIONS[@]}"; do
         echo "  $sub_prefix/$sub: OK ($xml_count files)"
     fi
 done
+
+# .sra ファイル: converter はファイル名 (run) しか見ないので、同じパスに空ファイルを置く
+echo ".sra ファイルの配置を再現中..."
+for sub in "${DRA_SUBS[@]}"; do
+    exp_xml="$SRA_XML_SRC/${sub:0:6}/$sub/$sub.experiment.xml"
+    [ -f "$exp_xml" ] || continue
+    for exp in $(grep -o 'accession="DRX[0-9]*"' "$exp_xml" | cut -d'"' -f2 | sort -u); do
+        for sra in "$SRA_FILE_SRC/${exp:0:6}/$exp"/*/*.sra; do
+            [ -f "$sra" ] || continue
+            rel="${sra#"$SRA_FILE_SRC"/}"
+            mkdir -p "$(dirname "$SRA_FILE_DST/$rel")"
+            : > "$SRA_FILE_DST/$rel"
+        done
+    done
+done
+echo "  .sra: $(find "$SRA_FILE_DST" -name '*.sra' 2>/dev/null | wc -l) files"
 
 # Accessions.tab fixture 構築
 echo "Accessions.tab fixture を構築中..."
