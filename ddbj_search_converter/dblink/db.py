@@ -13,8 +13,8 @@ DBLink は各種 accession 間の関連を無向グラフとして管理する�
       として保存されるため、``WHERE accession_type=? AND accession=?`` の単一
       lookup で両端点の隣接を取得でき、DuckDB の zone map が両方向で効く。
 
-``finalize_dblink_db`` で ``raw_edges`` は DROP され、最終 DB には ``dbxref``
-のみ残る。
+``finalize_dblink_db`` で ``raw_edges`` は DROP され、最終 DB には ``dbxref`` と、
+行数の多い accession の件数を持つ ``dbxref_heavy`` が残る。
 
 ファイルパス:
     - 一時 DB: {const_dir}/dblink/dblink.tmp.duckdb
@@ -98,7 +98,7 @@ def init_dblink_db(config: Config) -> None:
     if db_path.exists():
         db_path.unlink()
 
-    with duckdb.connect(str(db_path)) as conn:
+    with _connect_tmp_db(config) as conn:
         conn.execute("""
             CREATE TABLE raw_edges (
                 src_type TEXT,
@@ -110,24 +110,31 @@ def init_dblink_db(config: Config) -> None:
 
 
 def finalize_dblink_db(config: Config) -> None:
-    """``raw_edges`` から ``dbxref`` を構築し、index を張り、tmp → final に replace。
+    """``raw_edges`` から ``dbxref`` と ``dbxref_heavy`` を構築し、tmp → final に replace。
 
-    各段階 (build_dbxref_table / create_dbxref_indexes / atomic replace) で
-    失敗した場合は ``RuntimeError`` でラップし、段階ラベル + 関連 path を
-    メッセージに含める (元 traceback は ``__cause__`` 経由で保持)。replace は
-    atomic だが、その前段の build / create_indexes で失敗すると tmp DB が残る
-    ため、メッセージから debug の起点が辿れる。"""
+    途中で落ちてもそのまま再実行すれば続きから完了する: ``dbxref`` の構築と
+    ``raw_edges`` の DROP は 1 transaction なので、tmp DB は「``raw_edges`` だけ」か
+    「``dbxref`` だけ」のどちらかの状態にしかならず、後者なら構築を飛ばす。tmp DB が
+    無く final DB があれば replace まで済んでいるので何もしない。
+
+    各段階で失敗した場合は ``RuntimeError`` でラップし、段階ラベル + 関連 path を
+    メッセージに含める (元 traceback は ``__cause__`` 経由で保持)。"""
+    tmp_path = _tmp_db_path(config)
+    final_path = _final_db_path(config)
+    if not tmp_path.exists():
+        if final_path.exists():
+            log_info(f"{tmp_path} is absent and {final_path} exists: already finalized, skipping")
+            return
+        raise RuntimeError(f"finalize_dblink_db: neither {tmp_path} nor {final_path} exists")
+
     try:
         build_dbxref_table(config)
     except Exception as e:
         raise RuntimeError("finalize_dblink_db: failed at build_dbxref_table") from e
     try:
-        create_dbxref_indexes(config)
+        build_dbxref_heavy_table(config)
     except Exception as e:
-        raise RuntimeError("finalize_dblink_db: failed at create_dbxref_indexes") from e
-
-    tmp_path = _tmp_db_path(config)
-    final_path = _final_db_path(config)
+        raise RuntimeError("finalize_dblink_db: failed at build_dbxref_heavy_table") from e
 
     try:
         tmp_path.replace(final_path)
@@ -167,8 +174,7 @@ def load_edges_from_tsv(config: Config, tsv_path: Path) -> None:
 
     ``read_csv`` の第一引数は DuckDB の prepared parameter (``?``) で bind して
     渡す。文字列直埋めの SQL injection 経路を構造的に封じる。"""
-    db_path = _tmp_db_path(config)
-    with duckdb.connect(str(db_path)) as conn:
+    with _connect_tmp_db(config) as conn:
         conn.execute(
             """
             INSERT INTO raw_edges
@@ -209,45 +215,105 @@ def load_to_db(
     load_edges_from_tsv(config, tsv_path)
 
 
+DBXREF_HEAVY_THRESHOLD = 10_000
+"""``dbxref_heavy`` に載せる accession の行数の下限 (これを超えるもの)。
+
+これ以下の accession は、読み出し側が全行を読んで sort しても安い。"""
+
+
+def _table_exists(conn: duckdb.DuckDBPyConnection, name: str) -> bool:
+    row = conn.execute(
+        "SELECT count(*) FROM duckdb_tables() WHERE table_name = ?",
+        (name,),
+    ).fetchone()
+    return row is not None and row[0] > 0
+
+
 def build_dbxref_table(config: Config) -> None:
     """``raw_edges`` を両方向に mirror して半辺化 ``dbxref`` を構築する。
 
     canonical 形 (A -> B, A <= B) の edge を 2 つの半辺 (A -> B と B -> A) に
-    展開し、DISTINCT + ORDER BY で sort 済みの最終テーブルを作る。完了後、
-    ``raw_edges`` は DROP する。
-
-    共有計算機で他プロセスのメモリを巻き込まないよう ``memory_limit`` を明示し、
-    超過分の disk spill 先を ``result_dir`` 配下 (容量に余裕のある data volume)
-    に向ける。
+    展開し、DISTINCT + ORDER BY で sort 済みの最終テーブルを作る。構築と
+    ``raw_edges`` の DROP は 1 transaction で行うので、途中で落ちても tmp DB は
+    構築前の状態に戻る。``raw_edges`` が無く ``dbxref`` があれば構築済みとして
+    何もしない。
     """
-    db_path = _tmp_db_path(config)
+    with _connect_tmp_db(config) as conn:
+        if not _table_exists(conn, "raw_edges"):
+            if _table_exists(conn, "dbxref"):
+                log_info("raw_edges is absent and dbxref exists: dbxref is already built, skipping")
+                return
+            raise RuntimeError("neither raw_edges nor dbxref exists in the tmp dblink DB")
+
+        conn.execute("BEGIN TRANSACTION")
+        try:
+            conn.execute("DROP TABLE IF EXISTS dbxref")
+            conn.execute("""
+                CREATE TABLE dbxref AS
+                SELECT DISTINCT
+                    accession_type, accession, linked_type, linked_accession
+                FROM (
+                    SELECT
+                        src_type AS accession_type,
+                        src_accession AS accession,
+                        dst_type AS linked_type,
+                        dst_accession AS linked_accession
+                    FROM raw_edges
+                    UNION ALL
+                    SELECT
+                        dst_type AS accession_type,
+                        dst_accession AS accession,
+                        src_type AS linked_type,
+                        src_accession AS linked_accession
+                    FROM raw_edges
+                )
+                ORDER BY accession_type, accession, linked_type, linked_accession
+            """)
+            conn.execute("DROP TABLE raw_edges")
+            conn.execute("COMMIT")
+        except BaseException:
+            conn.execute("ROLLBACK")
+            raise
+
+
+def build_dbxref_heavy_table(config: Config) -> None:
+    """``dbxref`` から、行数が :data:`DBXREF_HEAVY_THRESHOLD` を超える accession の
+    ``(accession_type, accession, linked_type, n)`` を ``dbxref_heavy`` に作る。
+
+    読み出し側 (ddbj-search-api) は、ここに載っている accession だけ linked_type
+    ごとに ``LIMIT`` で先頭 N 件を取り、件数もこの表から返す。
+    """
+    with _connect_tmp_db(config) as conn:
+        conn.execute(f"""
+            CREATE OR REPLACE TABLE dbxref_heavy AS
+            WITH heavy AS (
+                SELECT accession_type, accession
+                FROM dbxref
+                GROUP BY accession_type, accession
+                HAVING count(*) > {DBXREF_HEAVY_THRESHOLD}
+            )
+            SELECT d.accession_type, d.accession, d.linked_type, count(*) AS n
+            FROM dbxref d
+            SEMI JOIN heavy USING (accession_type, accession)
+            GROUP BY d.accession_type, d.accession, d.linked_type
+            ORDER BY d.accession_type, d.accession, d.linked_type
+        """)
+
+
+def _connect_tmp_db(config: Config) -> duckdb.DuckDBPyConnection:
+    """tmp DBLink DB を開き、:func:`_apply_duckdb_limits` を適用した接続を返す。
+
+    tmp DB を開く経路はすべてここを通す。limits を適用しない接続では spill が DB
+    ファイルと同じ const_dir に書かれ、memory の上限も container 基準になる。"""
     spill_dir = config.result_dir.joinpath("dblink", "duckdb_tmp", TODAY_STR)
     spill_dir.mkdir(parents=True, exist_ok=True)
-
-    with duckdb.connect(str(db_path)) as conn:
+    conn = duckdb.connect(str(_tmp_db_path(config)))
+    try:
         _apply_duckdb_limits(conn, spill_dir)
-        conn.execute("""
-            CREATE TABLE dbxref AS
-            SELECT DISTINCT
-                accession_type, accession, linked_type, linked_accession
-            FROM (
-                SELECT
-                    src_type AS accession_type,
-                    src_accession AS accession,
-                    dst_type AS linked_type,
-                    dst_accession AS linked_accession
-                FROM raw_edges
-                UNION ALL
-                SELECT
-                    dst_type AS accession_type,
-                    dst_accession AS accession,
-                    src_type AS linked_type,
-                    src_accession AS linked_accession
-                FROM raw_edges
-            )
-            ORDER BY accession_type, accession, linked_type, linked_accession
-        """)
-        conn.execute("DROP TABLE raw_edges")
+    except BaseException:
+        conn.close()
+        raise
+    return conn
 
 
 def _apply_duckdb_limits(conn: duckdb.DuckDBPyConnection, spill_dir: Path) -> None:
@@ -261,23 +327,6 @@ def _apply_duckdb_limits(conn: duckdb.DuckDBPyConnection, spill_dir: Path) -> No
     conn.execute("SET memory_limit='128GB'")
     escaped_spill_dir = str(spill_dir).replace("'", "''")
     conn.execute(f"SET temp_directory='{escaped_spill_dir}'")
-
-
-def create_dbxref_indexes(config: Config) -> None:
-    """``dbxref`` に accession 前方検索の index を張る。
-
-    半辺化により ``(accession_type, accession)`` prefix で両端点が covering
-    されるため、逆方向 index は不要。
-    """
-    db_path = _tmp_db_path(config)
-    spill_dir = config.result_dir.joinpath("dblink", "duckdb_tmp", TODAY_STR)
-    spill_dir.mkdir(parents=True, exist_ok=True)
-    with duckdb.connect(str(db_path)) as conn:
-        _apply_duckdb_limits(conn, spill_dir)
-        conn.execute("""
-            CREATE INDEX idx_dbxref_accession
-            ON dbxref (accession_type, accession)
-        """)
 
 
 # === Read operations ===
@@ -407,27 +456,37 @@ def init_umbrella_db(config: Config) -> None:
 
 
 def finalize_umbrella_db(config: Config) -> None:
-    """Umbrella DB を重複排除・インデックス作成して tmp → final に移動する。"""
+    """Umbrella DB を重複排除・インデックス作成して tmp → final に移動する。
+
+    重複排除・DROP・rename・index 作成は 1 transaction で行うので、途中で落ちても
+    tmp DB は元の状態に戻り、そのまま再実行できる。tmp DB が無ければ何もしない
+    (replace 済み、または umbrella 関連が 1 件も無かった)。"""
     tmp_path = _umbrella_tmp_db_path(config)
     if not tmp_path.exists():
         return
 
     with duckdb.connect(str(tmp_path)) as conn:
-        conn.execute("""
-            CREATE TABLE umbrella_relation_dedup AS
-            SELECT DISTINCT parent_accession, child_accession
-            FROM umbrella_relation
-        """)
-        conn.execute("DROP TABLE umbrella_relation")
-        conn.execute("ALTER TABLE umbrella_relation_dedup RENAME TO umbrella_relation")
-        conn.execute("""
-            CREATE INDEX idx_umbrella_parent
-            ON umbrella_relation (parent_accession)
-        """)
-        conn.execute("""
-            CREATE INDEX idx_umbrella_child
-            ON umbrella_relation (child_accession)
-        """)
+        conn.execute("BEGIN TRANSACTION")
+        try:
+            conn.execute("""
+                CREATE TABLE umbrella_relation_dedup AS
+                SELECT DISTINCT parent_accession, child_accession
+                FROM umbrella_relation
+            """)
+            conn.execute("DROP TABLE umbrella_relation")
+            conn.execute("ALTER TABLE umbrella_relation_dedup RENAME TO umbrella_relation")
+            conn.execute("""
+                CREATE INDEX idx_umbrella_parent
+                ON umbrella_relation (parent_accession)
+            """)
+            conn.execute("""
+                CREATE INDEX idx_umbrella_child
+                ON umbrella_relation (child_accession)
+            """)
+            conn.execute("COMMIT")
+        except BaseException:
+            conn.execute("ROLLBACK")
+            raise
 
     final_path = _umbrella_final_db_path(config)
     tmp_path.replace(final_path)

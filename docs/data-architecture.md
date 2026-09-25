@@ -277,14 +277,26 @@ CREATE TABLE dbxref (
     linked_accession TEXT
 );
 -- 物理 sort: ORDER BY accession_type, accession, linked_type, linked_accession
--- index: idx_dbxref_accession (accession_type, accession)
+
+CREATE TABLE dbxref_heavy (
+    accession_type TEXT,     -- 行数が 10,000 を超える accession だけを載せる
+    accession TEXT,
+    linked_type TEXT,
+    n BIGINT                 -- (accession, linked_type) ごとの行数
+);
 ```
 
-**半辺化スキーマ (half-edge)**。無向 edge `{A, B}` は `dbxref` に 2 行として保存される (`A→B` と `B→A`)。これにより `WHERE accession_type=? AND accession=?` の単一 WHERE だけで両 endpoint の隣接を取得でき、DuckDB の zone map が常に効く (point lookup でも SEQ_SCAN にならない)。UNION ALL による逆方向検索が不要になる。
+**半辺化スキーマ (half-edge)**。無向 edge `{A, B}` は `dbxref` に 2 行として保存される (`A→B` と `B→A`)。これにより `WHERE accession_type=? AND accession=?` の単一 WHERE だけで両 endpoint の隣接を取得でき、どちらの方向から引いても zone map で該当の row group だけを読む。UNION ALL による逆方向検索が不要になる。
 
 ストレージは canonical 形の約 2 倍になるが、`normalize_edge` によって TSV 段階では `(A, B)` 1 行で済む (A ≤ B 正規化)。DB 構築時に `build_dbxref_table` が `UNION ALL` で両方向を mirror する。
 
-`dbxref` は `finalize_dblink_db` 後は追記されない read-only テーブル。行の一意性は `build_dbxref_table` の `SELECT DISTINCT` が build 時点で保証し、テストは `COUNT(*) == COUNT(DISTINCT ...)` で直接検証する。DuckDB の ART index (spill しない完全 in-memory 構造) で 4 列 UNIQUE を張ると数億行 × 4 列で peak memory が数十 GB 級に膨らむため、冗長な uniqueness 用 index は張らず 2 列 `idx_dbxref_accession` のみを保持する。
+`dbxref` は `finalize_dblink_db` 後は追記されない read-only テーブル。行の一意性は `build_dbxref_table` の `SELECT DISTINCT` が build 時点で保証し、テストは `COUNT(*) == COUNT(DISTINCT ...)` で直接検証する。
+
+index は張らない。物理 sort 済みなので、`accession_type` / `accession` の絞り込みは row group の min/max (zone map) だけで該当範囲に届き、DuckDB の planner も index があっても使わずに SEQ_SCAN + filter を選ぶ。一方で ART index は spill しない in-memory 構造で、数十億行に張ると `finalize_dblink_db` のメモリの大半を占める。
+
+物理 sort は読み出し側との契約でもある。1 つの accession の行は `(linked_type, linked_accession)` 順に連続しているので、ddbj-search-api は全件を sort せずに格納順のまま返し、linked_type ごとの先頭 N 件も `LIMIT` で読み出しを打ち切って取る。
+
+`dbxref_heavy` は、行数が多い accession (数千万行に達するものがある) を読み出し側が事前に知るための表。ddbj-search-api は、ここに載っている accession だけ linked_type ごとに `LIMIT` で先頭 N 件を取り、件数もこの表の `n` を使う。それ以外の accession は行数が少ないので全行を読んでも安い。閾値の 10,000 は、その「全行を読んで sort しても安い」上限として置いている。
 
 #### 中間 table: `raw_edges`
 
@@ -304,12 +316,13 @@ CREATE TABLE raw_edges (
 
 `finalize_dblink_db` は以下を順に実行する:
 
-1. `build_dbxref_table`: `raw_edges` を UNION ALL で両方向に mirror し、`SELECT DISTINCT ... ORDER BY accession_type, accession, linked_type, linked_accession` で `dbxref` を構築
-2. `create_dbxref_indexes`: `idx_dbxref_accession (accession_type, accession)` を作成
-3. `DROP TABLE raw_edges`
-4. tmp DB から final DB へ atomic replace
+1. `build_dbxref_table`: `raw_edges` を UNION ALL で両方向に mirror し、`SELECT DISTINCT ... ORDER BY accession_type, accession, linked_type, linked_accession` で `dbxref` を構築し、`raw_edges` を DROP する。構築と DROP は 1 つの transaction で行う
+2. `build_dbxref_heavy_table`: `dbxref` から `dbxref_heavy` を作る (`CREATE OR REPLACE`)
+3. tmp DB から final DB へ atomic replace
 
-`build_dbxref_table` と `create_dbxref_indexes` はどちらも DuckDB の `SET memory_limit='128GB'` + `SET temp_directory=result_dir/dblink/duckdb_tmp/{TODAY_STR}` を明示する。container 側の cgroup `mem_limit` (`compose.yml` の `DDBJ_SEARCH_APP_MEM_LIMIT`, 本番 256g) との間に buffer を確保し、DuckDB がオーバーシュートした際も container が OOM-kill されるだけで node を巻き添えにしない構成にする。
+途中で落ちても、そのまま再実行すれば続きから完了する。tmp DB に `raw_edges` が無く `dbxref` があれば 1 は済んでいるので飛ばし、tmp DB が無く final DB があれば replace まで済んでいるので何もしない。`finalize_umbrella_db` も重複排除・DROP・rename を 1 つの transaction で行うので、同じく再実行できる。
+
+tmp DB を開く処理 (`init_dblink_db`、各 `create_dblink_*` の投入、上の 1・2) はすべて DuckDB の `SET memory_limit='128GB'` + `SET temp_directory=result_dir/dblink/duckdb_tmp/{TODAY_STR}` を明示する。container 側の cgroup `mem_limit` (`compose.yml` の `DDBJ_SEARCH_APP_MEM_LIMIT`, 本番 256g) との間に buffer を確保し、DuckDB がオーバーシュートした際も container が OOM-kill されるだけで node を巻き添えにしない。temp_directory を明示しないと spill は DB ファイルと同じ const_dir に書かれる。
 
 #### 無向 edge 数の算出 (`show_dblink_counts` が内部で使う集計)
 
@@ -574,6 +587,8 @@ BioProject エントリーは umbrella 階層構造に対応しており、`pare
 BioProject の `relevance` は元 XML が 7 子要素 (Agricultural / Medical / Industrial / Environmental / Evolution / ModelOrganism / Other) で構成され、各タグの `"yes"` / `"no"` 値ではなく **`"yes"` だったタグ名の配列** として格納する。フロント側でファセット値として使いやすくするためのスキーマ整形で、生 XML の構造とは異なる。
 
 BioSample の `derivedFrom` は NCBI の自由文埋め込みと DDBJ のカンマ区切りの両表記から BioSample ID を統一抽出する。一方 `isolate` は `strain` と意味的に区別される個別分離株識別子で、両者を別フィールドとして並べて持つ。詳細は [schema.py](../ddbj_search_converter/schema.py) を参照。
+
+NCBI 由来の `datePublished` は XML の値 (BioProject は `ProjectReleaseDate`、BioSample は `publication_date`) をそのまま使い、補正しない。NCBI 側ですでに live のエントリーでも、embargo 解除予定日として入った未来日付 (例: 2037-06-27) が残っていることがあり、その値が ES に入る。`datePublished` の降順ソートではこれらが先頭に来るが、上流の値を正とする方針で許容している。
 
 抽出に使う regex は [`id_patterns.py`](../ddbj_search_converter/id_patterns.py) で用途別に 2 種類を分けている。`ID_PATTERN_MAP["biosample"]` (`^SAM[NED](\w)?\d+\Z`) は文字列全体の validation 用で NCBI BioSample の拡張 char (`SAMD0...` 等の 1 文字 prefix) を `\w?` で許容する。`BIOSAMPLE_ID_FINDALL_RE` (`SAM[NDE]\d+`) は anchorless で、`derivedFrom` の自由文/カンマ区切りから ID 部分のみを `findall` で抽出する。後者は拡張 char を意図的に含めないことで、NCBI 由来の自由文中に紛れる類似文字列を誤抽出しない設計。
 

@@ -10,7 +10,9 @@
         1 行しか出ない (両方向が等価)。``allow_self_loops=True`` で許容する。
     (2) 任意の ``(a→b)`` 行に対し ``(b→a)`` 行が存在する (self-loop を除く)。
     (3) DISTINCT で重複なし (`SELECT COUNT(*) == COUNT(DISTINCT ...)`)。
-    (4) ``idx_dbxref_accession`` index が登録済み。
+    (4) ``dbxref`` の格納順が ``(accession_type, accession, linked_type,
+        linked_accession)`` の昇順 (読み出し側が格納順に依存する)。
+    (5) ``dbxref_heavy`` が ``dbxref`` から閾値どおりに作られている。
 
 SPEC: docs/data-architecture.md §DBLink DB の半辺化スキーマ。
 """
@@ -22,6 +24,7 @@ from pathlib import Path
 import duckdb
 
 from ddbj_search_converter.config import Config
+from ddbj_search_converter.dblink.db import DBXREF_HEAVY_THRESHOLD
 
 
 def _final_db_path(config: Config) -> Path:
@@ -100,10 +103,27 @@ def assert_dbxref_symmetric(
         non_self = total[0] - self_loops[0]
         assert non_self % 2 == 0, f"半辺化スキーマ違反: 非 self-loop 行数 {non_self} が偶数でない"
 
-        # (5) index が張られているか
-        idx_rows = con.execute("SELECT index_name FROM duckdb_indexes() WHERE table_name = 'dbxref'").fetchall()
-        names = {r[0] for r in idx_rows}
-        assert "idx_dbxref_accession" in names, f"idx_dbxref_accession 不在: {names}"
+        # (5) 格納順が 4 列の昇順
+        stored = con.execute("SELECT accession_type, accession, linked_type, linked_accession FROM dbxref").fetchall()
+        assert stored == sorted(stored), (
+            "dbxref の格納順が (accession_type, accession, linked_type, linked_accession) 順でない"
+        )
+
+        # (6) dbxref_heavy は閾値を超える accession の linked_type 別件数と一致
+        heavy = con.execute("SELECT accession_type, accession, linked_type, n FROM dbxref_heavy").fetchall()
+        expected = con.execute(
+            f"""
+            SELECT accession_type, accession, linked_type, count(*)
+            FROM dbxref
+            WHERE (accession_type, accession) IN (
+                SELECT (accession_type, accession) FROM dbxref
+                GROUP BY accession_type, accession
+                HAVING count(*) > {DBXREF_HEAVY_THRESHOLD}
+            )
+            GROUP BY ALL
+            """
+        ).fetchall()
+        assert sorted(heavy) == sorted(expected), "dbxref_heavy が dbxref と一致しない"
     finally:
         con.close()
 
