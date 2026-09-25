@@ -53,3 +53,24 @@ def is_ddbj_sra_accession(accession: str) -> bool:
     skip するときに使う。
     """
     return accession.startswith(_DDBJ_SRA_PREFIXES)
+
+
+_ZERO_PADDABLE_ACCESSION_RE = re.compile(r"^([A-Za-z]+)(\d+)$")
+
+
+def is_zero_padding_variant(sid: str, accession: str) -> bool:
+    """`sid` が `accession` の「同じ英字 prefix・数値部はゼロ埋め桁数の違いを無視して一致」かを判定する。
+
+    例: ``is_zero_padding_variant("JGAS00000000001", "JGAS000001")`` は True
+    (どちらも prefix ``JGAS``・数値 ``1``)。prefix なし / 数値部なし / prefix 違い /
+    数値違い / 空文字 はすべて False を返す。
+
+    JGA の SECONDARY_ID には accession のゼロ埋め桁数だけが異なる同一エントリの別表記
+    (例: ``JGAS000001`` に対する ``JGAS00000000001``) が入る。sameAs には残すが、
+    alias ドキュメントを作ると同一エントリーが一覧で重複するので、その判定に使う。
+    """
+    m_sid = _ZERO_PADDABLE_ACCESSION_RE.match(sid)
+    m_acc = _ZERO_PADDABLE_ACCESSION_RE.match(accession)
+    if m_sid is None or m_acc is None:
+        return False
+    return m_sid.group(1) == m_acc.group(1) and int(m_sid.group(2)) == int(m_acc.group(2))

@@ -1,7 +1,7 @@
 """Tests for ddbj_search_converter.id_patterns module."""
 
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from ddbj_search_converter.dblink.db import AccessionType
@@ -10,6 +10,7 @@ from ddbj_search_converter.id_patterns import (
     ID_PATTERN_MAP,
     is_ddbj_sra_accession,
     is_valid_accession,
+    is_zero_padding_variant,
 )
 
 from .strategies import (
@@ -549,3 +550,69 @@ class TestBiosampleIdFindallRe:
     def test_does_not_match_invalid_prefix_letter(self) -> None:
         """SAM[NDE] 以外の 4 文字目 (例: SAMA, SAMZ) は抽出しない。"""
         assert BIOSAMPLE_ID_FINDALL_RE.findall("SAMA00000001 SAMZ00000002") == []
+
+
+class TestIsZeroPaddingVariant:
+    """Tests for is_zero_padding_variant function."""
+
+    def test_zero_padding_variant_true(self) -> None:
+        assert is_zero_padding_variant("JGAS00000000001", "JGAS000001") is True
+
+    def test_exact_match_true(self) -> None:
+        assert is_zero_padding_variant("JGAS000001", "JGAS000001") is True
+
+    def test_zero_values_true(self) -> None:
+        assert is_zero_padding_variant("JGAS0", "JGAS0000") is True
+
+    def test_different_number_false(self) -> None:
+        assert is_zero_padding_variant("JGAS000556", "JGAS000561") is False
+
+    def test_different_prefix_false(self) -> None:
+        assert is_zero_padding_variant("AGDD000001", "JGAS000001") is False
+
+    def test_underscore_prefix_false(self) -> None:
+        assert is_zero_padding_variant("AGDD_000001", "JGAS000001") is False
+
+    def test_empty_accession_false(self) -> None:
+        assert is_zero_padding_variant("JGAS000001", "") is False
+
+    def test_empty_sid_false(self) -> None:
+        assert is_zero_padding_variant("", "JGAS000001") is False
+
+    def test_no_prefix_false(self) -> None:
+        assert is_zero_padding_variant("12345", "JGAS000001") is False
+
+    def test_no_numeric_part_false(self) -> None:
+        assert is_zero_padding_variant("JGASABC", "JGAS000001") is False
+
+    @given(
+        prefix=st.sampled_from(["JGAS", "JGAD", "JGAC", "JGAP"]),
+        n=st.integers(min_value=0, max_value=10**12),
+        extra_a=st.integers(min_value=0, max_value=8),
+        extra_b=st.integers(min_value=0, max_value=8),
+    )
+    def test_same_number_any_zero_padding_is_variant(self, prefix: str, n: int, extra_a: int, extra_b: int) -> None:
+        """同 prefix・同数値ならゼロ埋め桁数がどれだけ違っても常に variant。"""
+        digits = str(n)
+        a = f"{prefix}{'0' * extra_a}{digits}"
+        b = f"{prefix}{'0' * extra_b}{digits}"
+        assert is_zero_padding_variant(a, b) is True
+
+    @given(
+        prefix=st.sampled_from(["JGAS", "JGAD", "JGAC"]),
+        m=st.integers(min_value=0, max_value=10**9),
+        n=st.integers(min_value=0, max_value=10**9),
+    )
+    def test_different_number_never_variant(self, prefix: str, m: int, n: int) -> None:
+        """同 prefix でも数値が違えば variant ではない。"""
+        assume(m != n)
+        assert is_zero_padding_variant(f"{prefix}{m}", f"{prefix}{n}") is False
+
+    @given(
+        p1=st.sampled_from(["JGAS", "JGAD"]),
+        p2=st.sampled_from(["JGAC", "JGAP"]),
+        n=st.integers(min_value=0, max_value=10**9),
+    )
+    def test_different_prefix_never_variant(self, p1: str, p2: str, n: int) -> None:
+        """prefix が違えば数値が同じでも variant ではない。"""
+        assert is_zero_padding_variant(f"{p1}{n}", f"{p2}{n}") is False

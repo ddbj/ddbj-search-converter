@@ -215,6 +215,24 @@ class TestGenerateBulkActions:
 
         assert len(actions) == 1
 
+    def test_same_as_zero_padding_variant_gets_no_alias(self, tmp_path: Path) -> None:
+        """A zero-padded spelling of the primary stays in sameAs but must not list the entry twice."""
+        jsonl_file = tmp_path / "test.jsonl"
+        doc = {
+            "identifier": "JGAS000038",
+            "type": "jga-study",
+            "sameAs": [
+                {"identifier": "JGAS00000000038", "type": "jga-study", "url": "..."},
+                {"identifier": "JGAS000556", "type": "jga-study", "url": "..."},
+            ],
+        }
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
+
+        assert [a["_id"] for a in actions] == ["JGAS000038", "JGAS000556"]
+        assert [x["identifier"] for x in actions[0]["_source"]["sameAs"]] == ["JGAS00000000038", "JGAS000556"]
+
     def test_same_as_multiple(self, tmp_path: Path) -> None:
         """Multiple sameAs entries yield multiple alias documents."""
         jsonl_file = tmp_path / "test.jsonl"

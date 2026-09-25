@@ -16,6 +16,7 @@ from ddbj_search_converter.es._error_utils import sanitize_value as _sanitize_va
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, refresh_index, set_refresh_interval
 from ddbj_search_converter.es.index import IndexName
 from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
+from ddbj_search_converter.id_patterns import is_zero_padding_variant
 from ddbj_search_converter.logging.logger import log_warn
 from elasticsearch import helpers
 
@@ -97,6 +98,9 @@ def generate_bulk_actions(
     For documents with ``sameAs`` entries whose type matches the target index
     and whose identifier prefix matches the primary identifier, additional
     alias documents are yielded so that Secondary IDs are also retrievable.
+    Secondary IDs that only differ from the primary in zero padding
+    (``JGAS00000000001`` for ``JGAS000001``) get no alias document: it would
+    list the same entry twice, and the API resolves them through ``sameAs``.
 
     Args:
         jsonl_file: Path to the JSONL file
@@ -133,6 +137,7 @@ def generate_bulk_actions(
                     and same_as_id != identifier
                     and same_as.get("type") == type_match_name
                     and _extract_prefix(same_as_id) == primary_prefix
+                    and not is_zero_padding_variant(same_as_id, identifier)
                 ):
                     yield {
                         "_op_type": "index",
