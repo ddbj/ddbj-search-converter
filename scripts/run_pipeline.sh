@@ -735,8 +735,14 @@ phase3_blue_green() {
         log_info "[SKIP] es_cleanup_old (--from-step)"
     else
         if [[ -n "${OLD_SUFFIX:-}" ]]; then
-            log_info "Step 3-4: Deleting old indexes (*-${OLD_SUFFIX})..."
-            run_cmd "es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force"
+            # es_swap_aliases prints one old suffix per line: indexes swapped
+            # group by group earlier can each carry a different date.
+            local old_suffix
+            while read -r old_suffix; do
+                [[ -n "${old_suffix}" ]] || continue
+                log_info "Step 3-4: Deleting old indexes (*-${old_suffix})..."
+                run_cmd "es_delete_old_indexes --date-suffix ${old_suffix} --force"
+            done <<< "${OLD_SUFFIX}"
         else
             log_info "Step 3-4: No old indexes to clean up"
         fi

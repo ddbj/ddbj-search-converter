@@ -129,12 +129,14 @@ es_bulk_insert --index bioproject --target-index bioproject-20260413 --dir ${bp_
 # 3. 新インデックスから blacklist を削除
 es_delete_blacklist --target-suffix 20260413 --force
 
-# 4. alias を atomic に切り替え (ダウンタイム 0、旧サフィックスが stdout)
-OLD_SUFFIX=$(es_swap_aliases --date-suffix 20260413 --force)
+# 4. alias を atomic に切り替え (ダウンタイム 0、旧サフィックスが 1 行に 1 つ stdout に出る)
+OLD_SUFFIXES=$(es_swap_aliases --date-suffix 20260413 --force)
 
 # 5. 旧インデックスを削除 (ディスク解放)
-es_delete_old_indexes --date-suffix ${OLD_SUFFIX} --force
+for s in ${OLD_SUFFIXES}; do es_delete_old_indexes --date-suffix "$s" --force; done
 ```
+
+旧サフィックスは 1 つとは限らない。group 単位の Blue-Green (次節) で一部の group だけを入れ替えた後は、group ごとに旧 index の日付が異なる。
 
 `scripts/run_pipeline.sh --full --blue-green` で一括実行できる。
 
@@ -153,8 +155,8 @@ for t in submission study experiment run sample analysis; do
 done
 
 es_delete_blacklist --index sra --target-suffix 20260507 --force
-OLD_SUFFIX=$(es_swap_aliases --index sra --date-suffix 20260507 --force)
-es_delete_old_indexes --index sra --date-suffix ${OLD_SUFFIX} --force
+OLD_SUFFIXES=$(es_swap_aliases --index sra --date-suffix 20260507 --force)
+for s in ${OLD_SUFFIXES}; do es_delete_old_indexes --index sra --date-suffix "$s" --force; done
 ```
 
 部分 swap の間は `entries` group alias が SRA-new + 他 5 group の old を指す状態になるが、解決数は 14 (= ALL_INDEXES) に保たれるため検索断は発生しない。
