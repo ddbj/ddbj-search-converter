@@ -58,6 +58,14 @@
         cd $PROJECT_DIR
 
         podman-compose -f compose.yml exec -T app cleanup_old_results --keep 3 --include-spill
+    - autoSecureInput: 'false'
+      description: Record completion for mitsume dead-man's switch
+      passSecureInput: 'false'
+      script: |-
+        PROJECT_DIR=/data1/ddbj-search/ddbj-search-converter
+        cd $PROJECT_DIR
+
+        scripts/mitsume/mitsume.sh ping ddbj-search-daily
     keepgoing: false
     strategy: node-first
   uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890

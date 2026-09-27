@@ -10,7 +10,35 @@ deploy の基本コマンドは [README.md](../README.md)、Blue-Green Alias Swa
 
 ## production の自動運用 (Rundeck)
 
-production は `scripts/rundeck-job.yaml` を Rundeck に登録して日次差分更新を流している。job の中身は (1) `app` コンテナの再生成 (JGA mount のリフレッシュ用)、(2) `run_pipeline.sh --parallel 16` 実行、(3) `cleanup_old_results --keep 3 --include-spill` の 3 ステップ。cleanup は pipeline の完了後に走るので、spill ディレクトリも同時に消してよい。Rundeck UI で実行履歴・失敗通知を確認する想定で、cron に直接登録はしていない。staging は手動実行のみ。
+production は `scripts/rundeck-job.yaml` を Rundeck に登録して日次差分更新を流している。job の中身は (1) `app` コンテナの再生成 (JGA mount のリフレッシュ用)、(2) `run_pipeline.sh --parallel 16` 実行、(3) `cleanup_old_results --keep 3 --include-spill`、(4) `mitsume ping` で完了を記録 (後述の監視用) の 4 ステップ。cleanup は pipeline の完了後に走るので、spill ディレクトリも同時に消してよい。Rundeck UI で実行履歴・失敗通知を確認する想定で、cron に直接登録はしていない。staging は手動実行のみ。
+
+## production の監視 (mitsume)
+
+production は [mitsume](https://github.com/suecharo/mitsume) で監視し、異常を Slack に通知する。何を監視するかは `scripts/mitsume/mitsume.json` に書いてあるものがすべて。
+
+- 公開 URL と、ホスト上の nginx の公開ポート (localhost) の両方に HTTP で問い合わせる。外からだけ失敗していれば gateway より外側、両方失敗していれば nginx より内側の問題と切り分けられる。api は `/service-info` の `elasticsearch` が `ok` かまで見るので、ES に届いているかもここで分かる
+- 日次 pipeline の走り忘れと失敗は dead-man's switch で検知する。Rundeck job の最後のステップが `mitsume ping` を送り、30 時間 ping が無ければ通知する。pipeline やその前のステップが失敗すると最後のステップまで進まない (`keepgoing: false`) ので、失敗もここで検知できる
+- ホスト自体の停止は対象外
+
+評価は、運用ユーザーの crontab から毎時 `scripts/mitsume/mitsume.sh check` を呼んで行う。`mitsume.sh` は webhook の env file を読み込み、設定と heartbeat file の path を mitsume に渡す。
+
+初回のセットアップ:
+
+```bash
+# binary
+curl -fL https://github.com/suecharo/mitsume/releases/download/v1.1.0/mitsume_1.1.0_linux_amd64.tar.gz | tar -xz -C /tmp mitsume
+install -D -m 0755 /tmp/mitsume ~/.local/bin/mitsume
+# Slack Incoming Webhook (repo には置かない)
+install -d -m 0700 ~/.config/mitsume ~/.local/state/mitsume
+echo 'MITSUME_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...' > ~/.config/mitsume/webhook.env
+chmod 600 ~/.config/mitsume/webhook.env
+# 試運転 (Slack には送らず、通知の中身を stderr に出す)
+/data1/ddbj-search/ddbj-search-converter/scripts/mitsume/mitsume.sh check --dry-run
+# 一度も ping が無いと dead-man's switch が毎時失敗するので、cron 登録前に 1 回記録する
+/data1/ddbj-search/ddbj-search-converter/scripts/mitsume/mitsume.sh ping ddbj-search-daily
+# crontab
+0 * * * * /data1/ddbj-search/ddbj-search-converter/scripts/mitsume/mitsume.sh check >> $HOME/.local/state/mitsume/check.log 2>&1
+```
 
 ## 4 リポジトリ構成と deploy 単位
 

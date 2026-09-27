@@ -1,0 +1,48 @@
+{
+  "notify": {
+    "webhook_url_env": "MITSUME_SLACK_WEBHOOK_URL"
+  },
+  "defaults": {
+    "interval": "1h",
+    "timeout": "10s"
+  },
+  "checks": [
+    {
+      "type": "http",
+      "name": "front-external",
+      "url": "https://ddbj.nig.ac.jp/search",
+      "expect": { "status": 200 }
+    },
+    {
+      "type": "http",
+      "name": "api-external",
+      "url": "https://ddbj.nig.ac.jp/search/api/service-info",
+      "expect": {
+        "status": 200,
+        "body_jsonpath": [{ "path": "$.elasticsearch", "equals": "ok" }],
+        "latency_under": "5s"
+      }
+    },
+    {
+      "type": "http",
+      "name": "front-local",
+      "url": "http://localhost:18080/search",
+      "expect": { "status": 200 }
+    },
+    {
+      "type": "http",
+      "name": "api-local",
+      "url": "http://localhost:18080/search/api/service-info",
+      "expect": {
+        "status": 200,
+        "body_jsonpath": [{ "path": "$.elasticsearch", "equals": "ok" }],
+        "latency_under": "5s"
+      }
+    },
+    {
+      "type": "deadman",
+      "job": "ddbj-search-daily",
+      "expect": { "within": "30h" }
+    }
+  ]
+}
