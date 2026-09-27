@@ -300,6 +300,30 @@ class TestBuildDbxrefTable:
             ("sra-run", "DRR999", "biosample", "SAMD1"),
         ]
 
+    def test_storage_order_spans_prefix_sharing_types(self, test_config: Config) -> None:
+        """type 名が前方一致する type (insdc / insdc-assembly / insdc-master)、dst にしか出ない type、
+        self-loop が混ざっても、格納順は 4 カラム全体の辞書順になる。"""
+        raw = [
+            ("insdc", "I1", "insdc-master", "M1"),
+            ("insdc-assembly", "A1", "insdc-master", "M1"),
+            ("bioproject", "P1", "sra-run", "R1"),
+            ("sra-experiment", "X1", "sra-run", "R1"),
+            ("bioproject", "P1", "bioproject", "P1"),
+            ("bioproject", "P1", "insdc", "I1"),
+        ]
+        init_dblink_db(test_config)
+        db_path = test_config.const_dir / "dblink" / "dblink.tmp.duckdb"
+        with duckdb.connect(str(db_path)) as conn:
+            conn.executemany("INSERT INTO raw_edges VALUES (?, ?, ?, ?)", raw)
+        build_dbxref_table(test_config)
+
+        with duckdb.connect(str(db_path)) as conn:
+            rows = conn.execute(
+                "SELECT accession_type, accession, linked_type, linked_accession FROM dbxref"
+            ).fetchall()
+        expected = {r for a_t, a, b_t, b in raw for r in ((a_t, a, b_t, b), (b_t, b, a_t, a))}
+        assert rows == sorted(expected)
+
     @given(
         rows=st.lists(
             st.tuples(

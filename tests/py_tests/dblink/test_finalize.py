@@ -67,14 +67,20 @@ def _expected_heavy(rows: list[Row], threshold: int) -> list[tuple[str, str, str
 
 
 class _FailingConn:
-    """``execute`` に渡された SQL が *trigger* を含んだら例外を投げる接続の代理。"""
+    """``execute`` に渡された SQL が *trigger* を含んだら例外を投げる接続の代理。
 
-    def __init__(self, conn: duckdb.DuckDBPyConnection, trigger: str) -> None:
+    *skip* 回目までの該当 SQL はそのまま実行し、その次で例外を投げる。"""
+
+    def __init__(self, conn: duckdb.DuckDBPyConnection, trigger: str, skip: int = 0) -> None:
         self._conn = conn
         self._trigger = trigger
+        self._skip = skip
 
     def execute(self, sql: str, *args: Any) -> Any:
         if self._trigger in sql:
+            if self._skip > 0:
+                self._skip -= 1
+                return self._conn.execute(sql, *args)
             msg = f"injected failure at: {self._trigger}"
             raise RuntimeError(msg)
         return self._conn.execute(sql, *args)
@@ -89,9 +95,9 @@ class _FailingConn:
         return getattr(self._conn, name)
 
 
-def _fail_tmp_conn_at(monkeypatch: pytest.MonkeyPatch, trigger: str) -> None:
+def _fail_tmp_conn_at(monkeypatch: pytest.MonkeyPatch, trigger: str, skip: int = 0) -> None:
     original: Callable[[Config], duckdb.DuckDBPyConnection] = dblink_db._connect_tmp_db
-    monkeypatch.setattr(dblink_db, "_connect_tmp_db", lambda config: _FailingConn(original(config), trigger))
+    monkeypatch.setattr(dblink_db, "_connect_tmp_db", lambda config: _FailingConn(original(config), trigger, skip))
 
 
 SAMPLE_ROWS: list[Row] = [
@@ -191,6 +197,25 @@ class TestFinalizeDblinkDbIsResumable:
 
         assert _tables(_tmp_db(test_config)) == {"raw_edges"}
         assert not _final_db(test_config).exists()
+
+    def test_failure_after_some_types_are_inserted_rolls_back_to_raw_edges(
+        self, test_config: Config, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """accession_type ごとの INSERT の途中で落ちても、INSERT 済みの type を含めて構築前に戻る。"""
+        init_dblink_db(test_config)
+        _insert_raw_edges(test_config, SAMPLE_ROWS)
+        with monkeypatch.context() as m:
+            _fail_tmp_conn_at(m, "INSERT INTO dbxref", skip=1)
+            with pytest.raises(RuntimeError, match="build_dbxref_table"):
+                finalize_dblink_db(test_config)
+
+        assert _tables(_tmp_db(test_config)) == {"raw_edges"}
+        assert _read(_tmp_db(test_config), "SELECT count(*) FROM raw_edges") == [(len(SAMPLE_ROWS),)]
+        assert not _final_db(test_config).exists()
+
+        finalize_dblink_db(test_config)
+
+        assert _read(_final_db(test_config), "SELECT count(*) FROM dbxref") == [(len(SAMPLE_ROWS) * 2,)]
 
     def test_rerun_after_build_failure_completes(self, test_config: Config, monkeypatch: pytest.MonkeyPatch) -> None:
         init_dblink_db(test_config)

@@ -318,7 +318,7 @@ CREATE TABLE raw_edges (
 
 `finalize_dblink_db` は以下を順に実行する:
 
-1. `build_dbxref_table`: `raw_edges` を UNION ALL で両方向に mirror し、`SELECT DISTINCT ... ORDER BY accession_type, accession, linked_type, linked_accession` で `dbxref` を構築し、`raw_edges` を DROP する。構築と DROP は 1 つの transaction で行う
+1. `build_dbxref_table`: `raw_edges` に出てくる accession_type を昇順に 1 つずつ処理する。その type を片側に持つ edge を UNION ALL で両方向に mirror し、`SELECT DISTINCT ... ORDER BY accession_type, accession, linked_type, linked_accession` した結果を `dbxref` に INSERT する。accession_type は sort キーの先頭なので、昇順に INSERT すれば全体を一度に sort したのと同じ格納順になる。一度に sort する行数が最大の type の分に収まるので、メモリの peak が下がる。全 type の INSERT と `raw_edges` の DROP は 1 つの transaction で行う
 2. `build_dbxref_heavy_table`: `dbxref` から `dbxref_heavy` を作る (`CREATE OR REPLACE`)
 3. tmp DB から final DB へ atomic replace
 

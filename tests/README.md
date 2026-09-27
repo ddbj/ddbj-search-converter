@@ -59,7 +59,7 @@ docker compose exec -T \
 
 外部境界 (実 ES、実 PostgreSQL、HTTP fetch) のレスポンスを mock し、内部実装は実物を通す。
 
-DuckDB のクエリ自体は mock しない。`finalize_dblink_db` の挙動 (UNION ALL で半辺化、DISTINCT、ORDER BY、index 構築) は DuckDB の振る舞いが SSOT なので、`tmp_path` に DB ファイルを作って実 SQL で検証する。
+DuckDB のクエリ自体は mock しない。`finalize_dblink_db` の挙動 (UNION ALL で半辺化、DISTINCT、ORDER BY) は DuckDB の振る舞いが SSOT なので、`tmp_path` に DB ファイルを作って実 SQL で検証する。
 
 CLI レベルのテストは subprocess で entrypoint を起動するのではなく、各 `main()` 関数を直接呼び出して内部状態を assert する。
 

@@ -233,10 +233,12 @@ def build_dbxref_table(config: Config) -> None:
     """``raw_edges`` を両方向に mirror して半辺化 ``dbxref`` を構築する。
 
     canonical 形 (A -> B, A <= B) の edge を 2 つの半辺 (A -> B と B -> A) に
-    展開し、DISTINCT + ORDER BY で sort 済みの最終テーブルを作る。構築と
-    ``raw_edges`` の DROP は 1 transaction で行うので、途中で落ちても tmp DB は
-    構築前の状態に戻る。``raw_edges`` が無く ``dbxref`` があれば構築済みとして
-    何もしない。
+    展開し、DISTINCT + ORDER BY で sort 済みの最終テーブルを作る。一度に sort
+    する行数を減らしてメモリの peak を抑えるため、accession_type を昇順に 1 つ
+    ずつ処理して INSERT する。accession_type は sort キーの先頭なので、連結した
+    結果は全体を一度に sort したものと同じ格納順になる。構築と ``raw_edges`` の
+    DROP は 1 transaction で行うので、途中で落ちても tmp DB は構築前の状態に
+    戻る。``raw_edges`` が無く ``dbxref`` があれば構築済みとして何もしない。
     """
     with _connect_tmp_db(config) as conn:
         if not _table_exists(conn, "raw_edges"):
@@ -249,26 +251,51 @@ def build_dbxref_table(config: Config) -> None:
         try:
             conn.execute("DROP TABLE IF EXISTS dbxref")
             conn.execute("""
-                CREATE TABLE dbxref AS
-                SELECT DISTINCT
-                    accession_type, accession, linked_type, linked_accession
-                FROM (
-                    SELECT
-                        src_type AS accession_type,
-                        src_accession AS accession,
-                        dst_type AS linked_type,
-                        dst_accession AS linked_accession
-                    FROM raw_edges
-                    UNION ALL
-                    SELECT
-                        dst_type AS accession_type,
-                        dst_accession AS accession,
-                        src_type AS linked_type,
-                        src_accession AS linked_accession
-                    FROM raw_edges
+                CREATE TABLE dbxref (
+                    accession_type TEXT,
+                    accession TEXT,
+                    linked_type TEXT,
+                    linked_accession TEXT
                 )
-                ORDER BY accession_type, accession, linked_type, linked_accession
             """)
+            accession_types = [
+                row[0]
+                for row in conn.execute("""
+                    SELECT t FROM (
+                        SELECT src_type AS t FROM raw_edges
+                        UNION
+                        SELECT dst_type AS t FROM raw_edges
+                    )
+                    ORDER BY t
+                """).fetchall()
+            ]
+            for accession_type in accession_types:
+                conn.execute(
+                    """
+                    INSERT INTO dbxref
+                    SELECT DISTINCT
+                        accession_type, accession, linked_type, linked_accession
+                    FROM (
+                        SELECT
+                            src_type AS accession_type,
+                            src_accession AS accession,
+                            dst_type AS linked_type,
+                            dst_accession AS linked_accession
+                        FROM raw_edges
+                        WHERE src_type = ?
+                        UNION ALL
+                        SELECT
+                            dst_type AS accession_type,
+                            dst_accession AS accession,
+                            src_type AS linked_type,
+                            src_accession AS linked_accession
+                        FROM raw_edges
+                        WHERE dst_type = ?
+                    )
+                    ORDER BY accession_type, accession, linked_type, linked_accession
+                    """,
+                    (accession_type, accession_type),
+                )
             conn.execute("DROP TABLE raw_edges")
             conn.execute("COMMIT")
         except BaseException:
