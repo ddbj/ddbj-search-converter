@@ -122,11 +122,22 @@ class TestExitWithParent:
 
 class TestEveryProcessPoolUsesExitWithParent:
     def test_no_process_pool_is_created_without_the_initializer(self) -> None:
+        """initializer は exit_with_parent そのものか、それを呼ぶ package 内の関数でなければならない。"""
         package_dir = Path(ddbj_search_converter.__file__).parent
+        trees = {path: ast.parse(path.read_text(), filename=str(path)) for path in sorted(package_dir.rglob("*.py"))}
+        allowed_initializers = {"exit_with_parent"} | {
+            func.name
+            for tree in trees.values()
+            for func in ast.walk(tree)
+            if isinstance(func, ast.FunctionDef)
+            and any(
+                isinstance(call, ast.Call) and getattr(call.func, "id", None) == "exit_with_parent"
+                for call in ast.walk(func)
+            )
+        }
         offenders: list[str] = []
         pools_found = 0
-        for path in sorted(package_dir.rglob("*.py")):
-            tree = ast.parse(path.read_text(), filename=str(path))
+        for path, tree in trees.items():
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call):
                     continue
@@ -135,7 +146,7 @@ class TestEveryProcessPoolUsesExitWithParent:
                     continue
                 pools_found += 1
                 initializer = next((kw.value for kw in node.keywords if kw.arg == "initializer"), None)
-                if getattr(initializer, "id", None) != "exit_with_parent":
+                if getattr(initializer, "id", None) not in allowed_initializers:
                     offenders.append(f"{path.relative_to(package_dir)}:{node.lineno}")
 
         assert pools_found >= 5

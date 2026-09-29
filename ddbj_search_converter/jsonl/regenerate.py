@@ -97,6 +97,16 @@ def validate_accessions(data_type: str, accessions: set[str]) -> set[str]:
     return valid
 
 
+# === BioProject / BioSample ===
+
+
+def _xml_files_ddbj_first(tmp_xml_dir: Path) -> list[tuple[Path, bool]]:
+    """分割 XML を DDBJ、NCBI の順に並べ、DDBJ の XML かどうかと組にして返す。"""
+    ddbj_files = [(path, True) for path in sorted(tmp_xml_dir.glob("ddbj_*.xml"))]
+    ncbi_files = [(path, False) for path in sorted(tmp_xml_dir.glob("ncbi_*.xml"))]
+    return ddbj_files + ncbi_files
+
+
 # === BioProject ===
 
 
@@ -113,15 +123,14 @@ def regenerate_bp_jsonl(
 
     bp_blacklist, _ = load_blacklist(config)
 
-    # DDBJ XML + NCBI XML の全ファイルを処理
-    xml_files = sorted(list(tmp_xml_dir.glob("ddbj_*.xml")) + list(tmp_xml_dir.glob("ncbi_*.xml")))
+    xml_files = _xml_files_ddbj_first(tmp_xml_dir)
     log_info(f"found {len(xml_files)} xml files in {tmp_xml_dir}")
 
-    docs: dict[str, Any] = {}
-    found_accessions: set[str] = set()
+    # 同じ accession が NCBI の XML にもあるときは、先に読んだ DDBJ の XML の doc を残す
+    ddbj_docs: dict[str, Any] = {}
+    ncbi_docs: dict[str, Any] = {}
 
-    for xml_path in xml_files:
-        is_ddbj = xml_path.name.startswith("ddbj_")
+    for xml_path, is_ddbj in xml_files:
         for xml_element in iterate_xml_element(xml_path, "Package"):
             try:
                 metadata = parse_xml(xml_element)
@@ -129,16 +138,18 @@ def regenerate_bp_jsonl(
 
                 if bp_instance.identifier not in target_accessions:
                     continue
+                if not is_ddbj and bp_instance.identifier in ddbj_docs:
+                    continue
                 if bp_instance.identifier in bp_blacklist:
                     log_warn(f"accession {bp_instance.identifier} is in blacklist, skipping")
                     continue
 
-                docs[bp_instance.identifier] = bp_instance
-                found_accessions.add(bp_instance.identifier)
+                (ddbj_docs if is_ddbj else ncbi_docs)[bp_instance.identifier] = bp_instance
             except Exception as e:
                 log_warn(f"failed to parse xml element: {e}", file=str(xml_path))
 
-    not_found = target_accessions - found_accessions
+    docs: dict[str, Any] = {**ddbj_docs, **ncbi_docs}
+    not_found = target_accessions - docs.keys()
     if not_found:
         log_warn(f"{len(not_found)} accession(s) not found in xml files: {sorted(not_found)}")
 
@@ -158,16 +169,14 @@ def regenerate_bp_jsonl(
 
     enrich_umbrella_relations(config, docs)
 
-    # 日付取得: DDBJ と NCBI の docs を分けて処理
-    ddbj_docs = {acc: doc for acc, doc in docs.items() if acc.startswith("PRJD")}
-    ncbi_docs = {acc: doc for acc, doc in docs.items() if not acc.startswith("PRJD")}
-
+    # 日付の取得元は、accession の prefix ではなく doc をどちらの XML から作ったかで決める
     if ddbj_docs:
         bp_fetch_dates_ddbj(config, ddbj_docs)
     if ncbi_docs:
         # NCBI の日付は XML から取得するため、全 NCBI XML を再走査
-        for xml_path in sorted(tmp_xml_dir.glob("ncbi_*.xml")):
-            bp_fetch_dates_ncbi(xml_path, ncbi_docs)
+        for xml_path, is_ddbj in xml_files:
+            if not is_ddbj:
+                bp_fetch_dates_ncbi(xml_path, ncbi_docs)
 
     # ステータスをキャッシュから取得して上書き
     from ddbj_search_converter.jsonl.bp import _fetch_statuses as bp_fetch_statuses
@@ -195,14 +204,14 @@ def regenerate_bs_jsonl(
 
     _, bs_blacklist = load_blacklist(config)
 
-    xml_files = sorted(list(tmp_xml_dir.glob("ddbj_*.xml")) + list(tmp_xml_dir.glob("ncbi_*.xml")))
+    xml_files = _xml_files_ddbj_first(tmp_xml_dir)
     log_info(f"found {len(xml_files)} xml files in {tmp_xml_dir}")
 
-    docs: dict[str, Any] = {}
-    found_accessions: set[str] = set()
+    # 同じ accession が NCBI の XML にもあるときは、先に読んだ DDBJ の XML の doc を残す
+    ddbj_docs: dict[str, Any] = {}
+    ncbi_docs: dict[str, Any] = {}
 
-    for xml_path in xml_files:
-        is_ddbj = xml_path.name.startswith("ddbj_")
+    for xml_path, is_ddbj in xml_files:
         for xml_element in iterate_xml_element(xml_path, "BioSample"):
             try:
                 metadata = parse_xml(xml_element)
@@ -210,16 +219,18 @@ def regenerate_bs_jsonl(
 
                 if bs_instance.identifier not in target_accessions:
                     continue
+                if not is_ddbj and bs_instance.identifier in ddbj_docs:
+                    continue
                 if bs_instance.identifier in bs_blacklist:
                     log_warn(f"accession {bs_instance.identifier} is in blacklist, skipping")
                     continue
 
-                docs[bs_instance.identifier] = bs_instance
-                found_accessions.add(bs_instance.identifier)
+                (ddbj_docs if is_ddbj else ncbi_docs)[bs_instance.identifier] = bs_instance
             except Exception as e:
                 log_warn(f"failed to parse xml element: {e}", file=str(xml_path))
 
-    not_found = target_accessions - found_accessions
+    docs: dict[str, Any] = {**ddbj_docs, **ncbi_docs}
+    not_found = target_accessions - docs.keys()
     if not_found:
         log_warn(f"{len(not_found)} accession(s) not found in xml files: {sorted(not_found)}")
 
@@ -234,16 +245,13 @@ def regenerate_bs_jsonl(
             if accession in docs:
                 docs[accession].dbXrefs = xrefs
 
-    # 日付取得
-    ddbj_docs = {acc: doc for acc, doc in docs.items() if acc.startswith("SAMD")}
-    ncbi_docs = {acc: doc for acc, doc in docs.items() if not acc.startswith("SAMD")}
-
+    # 日付の取得元は、accession の prefix ではなく doc をどちらの XML から作ったかで決める
     if ddbj_docs:
         bs_fetch_dates_ddbj(config, ddbj_docs)
     if ncbi_docs:
-        for xml_path in sorted(tmp_xml_dir.glob("ncbi_*.xml")):
-            is_ddbj = False
-            bs_fetch_dates_ncbi(xml_path, ncbi_docs, is_ddbj)
+        for xml_path, is_ddbj in xml_files:
+            if not is_ddbj:
+                bs_fetch_dates_ncbi(xml_path, ncbi_docs, is_ddbj)
 
     # ステータスをキャッシュから取得して上書き
     from ddbj_search_converter.jsonl.bs import _fetch_statuses as bs_fetch_statuses
