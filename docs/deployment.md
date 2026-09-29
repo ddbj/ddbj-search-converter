@@ -26,7 +26,7 @@ production は [mitsume](https://github.com/suecharo/mitsume) で監視し、異
 
 ```bash
 # binary
-curl -fL https://github.com/suecharo/mitsume/releases/download/v1.1.0/mitsume_1.1.0_linux_amd64.tar.gz | tar -xz -C /tmp mitsume
+curl -fL https://github.com/suecharo/mitsume/releases/download/v1.2.0/mitsume_1.2.0_linux_amd64.tar.gz | tar -xz -C /tmp mitsume
 install -D -m 0755 /tmp/mitsume ~/.local/bin/mitsume
 # Slack Incoming Webhook (repo には置かない)
 install -d -m 0700 ~/.config/mitsume ~/.local/state/mitsume
