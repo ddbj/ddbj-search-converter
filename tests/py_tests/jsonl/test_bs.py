@@ -7,14 +7,13 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config, write_last_run
 from ddbj_search_converter.jsonl.bs import (
     _find_attr,
     _process_xml_file_worker,
-    collect_ddbj_accessions,
     generate_bs_jsonl,
     normalize_properties,
     parse_accessibility,
@@ -38,7 +37,7 @@ from ddbj_search_converter.jsonl.bs import (
 )
 from ddbj_search_converter.logging.logger import run_logger
 from ddbj_search_converter.schema import BioSample, BioSamplePackage, Organization, Xref
-from py_tests.strategies import st_biosample_id
+from py_tests.strategies import st_biosample_id_with_samd
 
 from ._bp_bs_xml import bs_xml, build_date_cache, ddbj_bs_sample, ncbi_bs_sample, read_jsonl, read_jsonl_dir
 
@@ -1061,91 +1060,30 @@ class TestParseMalformedInput:
         assert bs.host is None
 
 
-class TestCollectDdbjAccessions:
-    """DDBJ の XML から、NCBI の XML 側で出力しない accession を集める。"""
+class TestProcessXmlFileWorkerDdbjIssuedAccessions:
+    """SAMD は DDBJ の XML からだけ作り、NCBI の XML からは出力しない。"""
 
-    def test_collect_ddbj_accessions_multiple_samples_returns_biosample_ids(self, tmp_path: Path) -> None:
-        xml_path = tmp_path / "ddbj_1.xml"
-        xml_path.write_text(bs_xml([ddbj_bs_sample("SAMD00000001"), ddbj_bs_sample("SAMD00000002")]))
-
-        assert collect_ddbj_accessions(xml_path) == {"SAMD00000001", "SAMD00000002"}
-
-    def test_collect_ddbj_accessions_accessions_outside_biosample_id_not_collected(self, tmp_path: Path) -> None:
-        xml_path = tmp_path / "ddbj_1.xml"
+    def test_process_xml_file_worker_ncbi_samd_not_written(self, test_config: Config) -> None:
+        xml_path = test_config.result_dir / "ncbi_1.xml"
         xml_path.write_text(
             bs_xml(
                 [
-                    ddbj_bs_sample(
-                        "SAMD00000001",
-                        title="Resequencing of SAMD00000999",
-                        attributes=[("derived_from", "SAMD00000888, SAMN00000777")],
-                        other_ids=[("Sample name", "SAMD00000666")],
-                    )
+                    ncbi_bs_sample("SAMD00000001"),
+                    ncbi_bs_sample("SAMD00000999"),
+                    ncbi_bs_sample("SAMN00000002"),
+                    ncbi_bs_sample("SAME00000003"),
                 ]
             )
         )
-
-        assert collect_ddbj_accessions(xml_path) == {"SAMD00000001"}
-
-    def test_collect_ddbj_accessions_sample_without_biosample_id_skipped(self, tmp_path: Path) -> None:
-        broken = (
-            '<BioSample access="public">\n'
-            "  <Ids>\n"
-            '    <Id namespace="Sample name">SAMD00000003</Id>\n'
-            "  </Ids>\n"
-            "</BioSample>\n"
-        )
-        xml_path = tmp_path / "ddbj_1.xml"
-        xml_path.write_text(bs_xml([broken, ddbj_bs_sample("SAMD00000002")]))
-
-        assert collect_ddbj_accessions(xml_path) == {"SAMD00000002"}
-
-    def test_collect_ddbj_accessions_no_samples_returns_empty(self, tmp_path: Path) -> None:
-        xml_path = tmp_path / "ddbj_1.xml"
-        xml_path.write_text(bs_xml([]))
-
-        assert collect_ddbj_accessions(xml_path) == set()
-
-    @given(
-        sample_ids=st.lists(st_biosample_id(), unique=True, max_size=5),
-        mentioned_ids=st.lists(st_biosample_id(), min_size=1, max_size=5),
-    )
-    def test_collect_ddbj_accessions_any_mentions_returns_only_biosample_ids(
-        self, sample_ids: list[str], mentioned_ids: list[str]
-    ) -> None:
-        samples = [
-            ddbj_bs_sample(
-                accession,
-                title=" ".join(mentioned_ids),
-                attributes=[("derived_from", ", ".join(mentioned_ids))],
-                other_ids=[("Sample name", mentioned_ids[0])],
-            )
-            for accession in sample_ids
-        ]
-        with tempfile.TemporaryDirectory() as td:
-            xml_path = Path(td) / "ddbj_1.xml"
-            xml_path.write_text(bs_xml(samples))
-
-            assert collect_ddbj_accessions(xml_path) == set(sample_ids)
-
-
-class TestProcessXmlFileWorkerDdbjAccessions:
-    """NCBI の XML にある DDBJ のエントリーは、DDBJ の XML 側だけから出力する。"""
-
-    def test_process_xml_file_worker_ncbi_entry_in_ddbj_accessions_not_written(self, test_config: Config) -> None:
-        xml_path = test_config.result_dir / "ncbi_1.xml"
-        xml_path.write_text(bs_xml([ncbi_bs_sample("SAMD00000001"), ncbi_bs_sample("SAMN00000002")]))
         output_path = test_config.result_dir / "ncbi_1.jsonl"
 
         with run_logger(config=test_config):
-            count = _process_xml_file_worker(
-                test_config, xml_path, output_path, False, set(), ddbj_accessions=frozenset({"SAMD00000001"})
-            )
+            count = _process_xml_file_worker(test_config, xml_path, output_path, False, set())
 
-        assert count == 1
-        assert [doc["identifier"] for doc in read_jsonl(output_path)] == ["SAMN00000002"]
+        assert count == 2
+        assert [doc["identifier"] for doc in read_jsonl(output_path)] == ["SAMN00000002", "SAME00000003"]
 
-    def test_process_xml_file_worker_ddbj_entry_in_ddbj_accessions_written(self, test_config: Config) -> None:
+    def test_process_xml_file_worker_ddbj_samd_written_with_cached_dates(self, test_config: Config) -> None:
         xml_path = test_config.result_dir / "ddbj_1.xml"
         xml_path.write_text(bs_xml([ddbj_bs_sample("SAMD00000001")]))
         output_path = test_config.result_dir / "ddbj_1.jsonl"
@@ -1154,43 +1092,53 @@ class TestProcessXmlFileWorkerDdbjAccessions:
             build_date_cache(
                 test_config, bs_rows=[("SAMD00000001", "2014-04-07T00:00:00Z", "2022-04-05T08:24:38Z", None)]
             )
-            _process_xml_file_worker(
-                test_config, xml_path, output_path, True, set(), ddbj_accessions=frozenset({"SAMD00000001"})
-            )
+            _process_xml_file_worker(test_config, xml_path, output_path, True, set())
 
         docs = read_jsonl(output_path)
         assert [doc["identifier"] for doc in docs] == ["SAMD00000001"]
         assert docs[0]["dateModified"] == "2022-04-05T08:24:38Z"
 
+    @settings(max_examples=30)
+    @given(accessions=st.lists(st_biosample_id_with_samd(), unique=True, min_size=1, max_size=8))
+    def test_process_xml_file_worker_any_ncbi_accessions_writes_all_but_samd(self, accessions: list[str]) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            config = Config(result_dir=Path(td), const_dir=Path(td) / "const")
+            xml_path = Path(td) / "ncbi_1.xml"
+            xml_path.write_text(bs_xml([ncbi_bs_sample(accession) for accession in accessions]))
+            output_path = Path(td) / "ncbi_1.jsonl"
+
+            with run_logger(config=config):
+                _process_xml_file_worker(config, xml_path, output_path, False, set())
+
+            written = [doc["identifier"] for doc in read_jsonl(output_path)]
+
+        assert written == [accession for accession in accessions if not accession.startswith("SAMD")]
+
 
 class TestGenerateBsJsonlDdbjAndNcbiXml:
-    """同じ accession が DDBJ と NCBI の両方の XML にあるとき、JSONL には DDBJ 版だけが出る。"""
+    """SAMD は DDBJ の XML からだけ出力され、NCBI の XML の SAMD は DDBJ の XML の有無に関係なく出ない。"""
 
     DATE_ROWS = [
         ("SAMD00000001", "2014-04-07T00:00:00Z", "2022-04-05T08:24:38Z", "2014-04-07T00:00:00Z"),
         ("SAMD00000002", "2026-09-20T00:00:00Z", "2026-09-27T00:00:00Z", "2026-09-27T00:00:00Z"),
     ]
 
-    def _write_xml(self, tmp_xml_dir: Path, *, ncbi_samd1_last_update: str | None = None) -> None:
+    def _write_xml(self, tmp_xml_dir: Path) -> None:
         tmp_xml_dir.mkdir(parents=True)
         (tmp_xml_dir / "ddbj_1.xml").write_text(
-            bs_xml(
-                [
-                    ddbj_bs_sample("SAMD00000001", title="from ddbj", attributes=[("derived_from", "SAMN00000003")]),
-                    ddbj_bs_sample("SAMD00000002"),
-                ]
-            )
+            bs_xml([ddbj_bs_sample("SAMD00000001", title="from ddbj"), ddbj_bs_sample("SAMD00000002")])
         )
         (tmp_xml_dir / "ncbi_1.xml").write_text(
             bs_xml(
                 [
-                    ncbi_bs_sample("SAMD00000001", title="from ncbi", last_update=ncbi_samd1_last_update),
+                    ncbi_bs_sample("SAMD00000001", title="from ncbi", last_update="2026-09-28T00:00:00.000"),
+                    ncbi_bs_sample("SAMD00000999", last_update="2026-09-28T00:00:00.000"),
                     ncbi_bs_sample("SAMN00000003", last_update="2026-09-28T00:00:00.000"),
                 ]
             )
         )
 
-    def test_generate_bs_jsonl_full_mode_shared_accession_written_once_from_ddbj(self, test_config: Config) -> None:
+    def test_generate_bs_jsonl_full_mode_samd_written_only_from_ddbj(self, test_config: Config) -> None:
         tmp_xml_dir = test_config.result_dir / "tmp_xml"
         output_dir = test_config.result_dir / "jsonl"
         self._write_xml(tmp_xml_dir)
@@ -1207,12 +1155,10 @@ class TestGenerateBsJsonlDdbjAndNcbiXml:
         assert samd1["title"] == "from ddbj"
         assert samd1["dateModified"] == "2022-04-05T08:24:38Z"
 
-    def test_generate_bs_jsonl_incremental_ddbj_entry_outside_window_ncbi_copy_not_written(
-        self, test_config: Config
-    ) -> None:
+    def test_generate_bs_jsonl_incremental_ncbi_samd_in_window_not_written(self, test_config: Config) -> None:
         tmp_xml_dir = test_config.result_dir / "tmp_xml"
         output_dir = test_config.result_dir / "jsonl"
-        self._write_xml(tmp_xml_dir, ncbi_samd1_last_update="2026-09-28T00:00:00.000")
+        self._write_xml(tmp_xml_dir)
         output_dir.mkdir()
         write_last_run(test_config, "biosample", "2026-09-28T00:00:00Z")
 
@@ -1222,18 +1168,4 @@ class TestGenerateBsJsonlDdbjAndNcbiXml:
 
         jsonl = read_jsonl_dir(output_dir)
         assert [doc["identifier"] for doc in jsonl["ddbj_1.jsonl"]] == ["SAMD00000002"]
-        assert [doc["identifier"] for doc in jsonl["ncbi_1.jsonl"]] == ["SAMN00000003"]
-
-    def test_generate_bs_jsonl_resume_with_existing_ddbj_jsonl_ncbi_copy_not_written(self, test_config: Config) -> None:
-        tmp_xml_dir = test_config.result_dir / "tmp_xml"
-        output_dir = test_config.result_dir / "jsonl"
-        self._write_xml(tmp_xml_dir)
-        output_dir.mkdir()
-        (output_dir / "ddbj_1.jsonl").write_text("")
-
-        with run_logger(config=test_config):
-            build_date_cache(test_config, bs_rows=self.DATE_ROWS)
-            generate_bs_jsonl(test_config, tmp_xml_dir, output_dir, parallel_num=2, full=True, resume=True)
-
-        jsonl = read_jsonl_dir(output_dir)
         assert [doc["identifier"] for doc in jsonl["ncbi_1.jsonl"]] == ["SAMN00000003"]

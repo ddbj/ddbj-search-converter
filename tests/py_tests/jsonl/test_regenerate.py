@@ -218,7 +218,7 @@ class TestValidateAccessionsPBT:
 
 
 class TestRegenerateBpJsonlDdbjAndNcbiXml:
-    """regenerate_bp_jsonl も、両方の XML にある accession は DDBJ の XML から作る。"""
+    """regenerate_bp_jsonl も、PRJDB は DDBJ の XML からだけ作り、PRJDA は NCBI の XML から作る。"""
 
     def _write_xml(self, tmp_xml_dir: Path) -> None:
         tmp_xml_dir.mkdir(parents=True)
@@ -227,12 +227,13 @@ class TestRegenerateBpJsonlDdbjAndNcbiXml:
             bp_xml(
                 [
                     ncbi_bp_package("PRJDB1", archive="DDBJ", title="from ncbi", submitted="2021-08-26"),
+                    ncbi_bp_package("PRJDB10245", archive="DDBJ"),
                     ncbi_bp_package("PRJDA36485", archive="DDBJ", submitted="2009-03-26"),
                 ]
             )
         )
 
-    def test_regenerate_bp_jsonl_accession_in_both_xml_uses_ddbj_doc_and_cached_dates(self, tmp_path: Path) -> None:
+    def test_regenerate_bp_jsonl_prjdb_in_both_xml_uses_ddbj_doc_and_cached_dates(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path / "const")
         tmp_xml_dir = tmp_path / "tmp_xml"
         self._write_xml(tmp_xml_dir)
@@ -246,7 +247,18 @@ class TestRegenerateBpJsonlDdbjAndNcbiXml:
         assert docs[0]["title"] == "from ddbj"
         assert docs[0]["dateModified"] == "2021-09-07T13:13:17Z"
 
-    def test_regenerate_bp_jsonl_prjd_only_in_ncbi_xml_uses_xml_dates(self, tmp_path: Path) -> None:
+    def test_regenerate_bp_jsonl_prjdb_only_in_ncbi_xml_not_written(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path, const_dir=tmp_path / "const")
+        tmp_xml_dir = tmp_path / "tmp_xml"
+        self._write_xml(tmp_xml_dir)
+
+        with run_logger(config=config):
+            build_date_cache(config)
+            regenerate_bp_jsonl(config, tmp_xml_dir, tmp_path, {"PRJDB10245"})
+
+        assert not (tmp_path / "bioproject.jsonl").exists()
+
+    def test_regenerate_bp_jsonl_prjda_in_ncbi_xml_uses_xml_dates(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path / "const")
         tmp_xml_dir = tmp_path / "tmp_xml"
         self._write_xml(tmp_xml_dir)
@@ -261,7 +273,7 @@ class TestRegenerateBpJsonlDdbjAndNcbiXml:
 
 
 class TestRegenerateBsJsonlDdbjAndNcbiXml:
-    """regenerate_bs_jsonl も、両方の XML にある accession は DDBJ の XML から作る。"""
+    """regenerate_bs_jsonl も、SAMD は DDBJ の XML からだけ作る。"""
 
     def _write_xml(self, tmp_xml_dir: Path) -> None:
         tmp_xml_dir.mkdir(parents=True)
@@ -270,12 +282,13 @@ class TestRegenerateBsJsonlDdbjAndNcbiXml:
             bs_xml(
                 [
                     ncbi_bs_sample("SAMD00000001", title="from ncbi"),
-                    ncbi_bs_sample("SAMD00000009", submission_date="2013-01-01T00:00:00.000"),
+                    ncbi_bs_sample("SAMD00000999"),
+                    ncbi_bs_sample("SAMN00000009", submission_date="2013-01-01T00:00:00.000"),
                 ]
             )
         )
 
-    def test_regenerate_bs_jsonl_accession_in_both_xml_uses_ddbj_doc_and_cached_dates(self, tmp_path: Path) -> None:
+    def test_regenerate_bs_jsonl_samd_in_both_xml_uses_ddbj_doc_and_cached_dates(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path / "const")
         tmp_xml_dir = tmp_path / "tmp_xml"
         self._write_xml(tmp_xml_dir)
@@ -289,15 +302,26 @@ class TestRegenerateBsJsonlDdbjAndNcbiXml:
         assert docs[0]["title"] == "from ddbj"
         assert docs[0]["dateModified"] == "2022-04-05T08:24:38Z"
 
-    def test_regenerate_bs_jsonl_samd_only_in_ncbi_xml_uses_xml_dates(self, tmp_path: Path) -> None:
+    def test_regenerate_bs_jsonl_samd_only_in_ncbi_xml_not_written(self, tmp_path: Path) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path / "const")
         tmp_xml_dir = tmp_path / "tmp_xml"
         self._write_xml(tmp_xml_dir)
 
         with run_logger(config=config):
             build_date_cache(config)
-            regenerate_bs_jsonl(config, tmp_xml_dir, tmp_path, {"SAMD00000009"})
+            regenerate_bs_jsonl(config, tmp_xml_dir, tmp_path, {"SAMD00000999"})
+
+        assert not (tmp_path / "biosample.jsonl").exists()
+
+    def test_regenerate_bs_jsonl_samn_in_ncbi_xml_uses_xml_dates(self, tmp_path: Path) -> None:
+        config = Config(result_dir=tmp_path, const_dir=tmp_path / "const")
+        tmp_xml_dir = tmp_path / "tmp_xml"
+        self._write_xml(tmp_xml_dir)
+
+        with run_logger(config=config):
+            build_date_cache(config)
+            regenerate_bs_jsonl(config, tmp_xml_dir, tmp_path, {"SAMN00000009"})
 
         docs = read_jsonl(tmp_path / "biosample.jsonl")
-        assert [doc["identifier"] for doc in docs] == ["SAMD00000009"]
+        assert [doc["identifier"] for doc in docs] == ["SAMN00000009"]
         assert docs[0]["dateCreated"] == "2013-01-01T00:00:00.000"

@@ -6,13 +6,12 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from ddbj_search_converter.config import Config, write_last_run
 from ddbj_search_converter.jsonl.bp import (
     _process_xml_file_worker,
-    collect_ddbj_accessions,
     generate_bp_jsonl,
     normalize_properties,
     parse_accessibility,
@@ -33,7 +32,7 @@ from ddbj_search_converter.jsonl.bp import (
 )
 from ddbj_search_converter.logging.logger import run_logger
 from ddbj_search_converter.schema import BioProject
-from py_tests.strategies import st_bioproject_id
+from py_tests.strategies import st_bioproject_id_with_prjdb
 
 from ._bp_bs_xml import bp_xml, build_date_cache, ddbj_bp_package, ncbi_bp_package, read_jsonl, read_jsonl_dir
 
@@ -1195,139 +1194,83 @@ class TestParseRelevance:
         assert parse_relevance(project) == []
 
 
-class TestCollectDdbjAccessions:
-    """DDBJ の XML から、NCBI の XML 側で出力しない accession を集める。"""
+class TestProcessXmlFileWorkerDdbjIssuedAccessions:
+    """PRJDB は DDBJ の XML からだけ作り、NCBI の XML からは出力しない。PRJDA は NCBI から出す。"""
 
-    def test_collect_ddbj_accessions_multiple_packages_returns_archive_ids(self, tmp_path: Path) -> None:
-        xml_path = tmp_path / "ddbj_1.xml"
-        xml_path.write_text(bp_xml([ddbj_bp_package("PRJDB1"), ddbj_bp_package("PRJDB2")]))
-
-        assert collect_ddbj_accessions(xml_path) == {"PRJDB1", "PRJDB2"}
-
-    def test_collect_ddbj_accessions_accessions_in_description_and_links_not_collected(self, tmp_path: Path) -> None:
-        xml_path = tmp_path / "ddbj_1.xml"
+    def test_process_xml_file_worker_ncbi_prjdb_not_written(self, test_config: Config) -> None:
+        # PRJDB10245 は DDBJ の XML に無いエントリー (DDBJ で suppressed) を想定
+        xml_path = test_config.result_dir / "ncbi_1.xml"
         xml_path.write_text(
             bp_xml(
                 [
-                    ddbj_bp_package(
-                        "PRJDB1",
-                        title="Reanalysis of PRJDB999",
-                        description="Data from PRJNA888 and PRJDB777.",
-                        linked_accession="PRJDB666",
-                    )
+                    ncbi_bp_package("PRJDB1", archive="DDBJ"),
+                    ncbi_bp_package("PRJDB10245", archive="DDBJ"),
+                    ncbi_bp_package("PRJNA2"),
                 ]
             )
         )
-
-        assert collect_ddbj_accessions(xml_path) == {"PRJDB1"}
-
-    def test_collect_ddbj_accessions_package_without_project_id_skipped(self, tmp_path: Path) -> None:
-        broken = (
-            "<Package>\n"
-            "  <Project>\n"
-            "    <Project>\n"
-            "      <ProjectDescr><Title>PRJDB3</Title></ProjectDescr>\n"
-            "    </Project>\n"
-            "  </Project>\n"
-            "</Package>\n"
-        )
-        xml_path = tmp_path / "ddbj_1.xml"
-        xml_path.write_text(bp_xml([broken, ddbj_bp_package("PRJDB2")]))
-
-        assert collect_ddbj_accessions(xml_path) == {"PRJDB2"}
-
-    def test_collect_ddbj_accessions_no_packages_returns_empty(self, tmp_path: Path) -> None:
-        xml_path = tmp_path / "ddbj_1.xml"
-        xml_path.write_text(bp_xml([]))
-
-        assert collect_ddbj_accessions(xml_path) == set()
-
-    @given(
-        archive_ids=st.lists(st_bioproject_id(), unique=True, max_size=5),
-        mentioned_ids=st.lists(st_bioproject_id(), min_size=1, max_size=5),
-    )
-    def test_collect_ddbj_accessions_any_mentions_returns_only_archive_ids(
-        self, archive_ids: list[str], mentioned_ids: list[str]
-    ) -> None:
-        packages = [
-            ddbj_bp_package(
-                accession,
-                title=" ".join(mentioned_ids),
-                description=", ".join(mentioned_ids),
-                linked_accession=mentioned_ids[0],
-            )
-            for accession in archive_ids
-        ]
-        with tempfile.TemporaryDirectory() as td:
-            xml_path = Path(td) / "ddbj_1.xml"
-            xml_path.write_text(bp_xml(packages))
-
-            assert collect_ddbj_accessions(xml_path) == set(archive_ids)
-
-
-class TestProcessXmlFileWorkerDdbjAccessions:
-    """NCBI の XML にある DDBJ のエントリーは、DDBJ の XML 側だけから出力する。"""
-
-    def test_process_xml_file_worker_ncbi_entry_in_ddbj_accessions_not_written(self, test_config: Config) -> None:
-        xml_path = test_config.result_dir / "ncbi_1.xml"
-        xml_path.write_text(bp_xml([ncbi_bp_package("PRJDB1", archive="DDBJ"), ncbi_bp_package("PRJNA2")]))
         output_path = test_config.result_dir / "ncbi_1.jsonl"
 
         with run_logger(config=test_config):
-            count = _process_xml_file_worker(
-                test_config, xml_path, output_path, False, set(), ddbj_accessions=frozenset({"PRJDB1"})
-            )
+            count = _process_xml_file_worker(test_config, xml_path, output_path, False, set())
 
         assert count == 1
         assert [doc["identifier"] for doc in read_jsonl(output_path)] == ["PRJNA2"]
 
-    def test_process_xml_file_worker_prjd_only_in_ncbi_xml_written_with_xml_dates(self, test_config: Config) -> None:
+    def test_process_xml_file_worker_ncbi_prjda_written_with_xml_dates(self, test_config: Config) -> None:
         xml_path = test_config.result_dir / "ncbi_1.xml"
         xml_path.write_text(bp_xml([ncbi_bp_package("PRJDA36485", archive="DDBJ", submitted="2009-03-26")]))
         output_path = test_config.result_dir / "ncbi_1.jsonl"
 
         with run_logger(config=test_config):
-            _process_xml_file_worker(
-                test_config, xml_path, output_path, False, set(), ddbj_accessions=frozenset({"PRJDB1"})
-            )
+            _process_xml_file_worker(test_config, xml_path, output_path, False, set())
 
         docs = read_jsonl(output_path)
         assert [doc["identifier"] for doc in docs] == ["PRJDA36485"]
         assert docs[0]["dateCreated"] == "2009-03-26"
 
-    def test_process_xml_file_worker_ddbj_entry_in_ddbj_accessions_written(self, test_config: Config) -> None:
+    def test_process_xml_file_worker_ddbj_prjdb_written_with_cached_dates(self, test_config: Config) -> None:
         xml_path = test_config.result_dir / "ddbj_1.xml"
         xml_path.write_text(bp_xml([ddbj_bp_package("PRJDB1")]))
         output_path = test_config.result_dir / "ddbj_1.jsonl"
 
         with run_logger(config=test_config):
             build_date_cache(test_config, bp_rows=[("PRJDB1", "2021-08-26T02:58:28Z", "2021-09-07T13:13:17Z", None)])
-            _process_xml_file_worker(
-                test_config, xml_path, output_path, True, set(), ddbj_accessions=frozenset({"PRJDB1"})
-            )
+            _process_xml_file_worker(test_config, xml_path, output_path, True, set())
 
         docs = read_jsonl(output_path)
         assert [doc["identifier"] for doc in docs] == ["PRJDB1"]
         assert docs[0]["dateModified"] == "2021-09-07T13:13:17Z"
 
+    @settings(max_examples=30)
+    @given(accessions=st.lists(st_bioproject_id_with_prjdb(), unique=True, min_size=1, max_size=8))
+    def test_process_xml_file_worker_any_ncbi_accessions_writes_all_but_prjdb(self, accessions: list[str]) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            config = Config(result_dir=Path(td), const_dir=Path(td) / "const")
+            xml_path = Path(td) / "ncbi_1.xml"
+            xml_path.write_text(bp_xml([ncbi_bp_package(accession) for accession in accessions]))
+            output_path = Path(td) / "ncbi_1.jsonl"
+
+            with run_logger(config=config):
+                _process_xml_file_worker(config, xml_path, output_path, False, set())
+
+            written = [doc["identifier"] for doc in read_jsonl(output_path)]
+
+        assert written == [accession for accession in accessions if not accession.startswith("PRJDB")]
+
 
 class TestGenerateBpJsonlDdbjAndNcbiXml:
-    """同じ accession が DDBJ と NCBI の両方の XML にあるとき、JSONL には DDBJ 版だけが出る。"""
+    """PRJDB は DDBJ の XML からだけ出力され、NCBI の XML の PRJDB は DDBJ の XML の有無に関係なく出ない。"""
 
     DATE_ROWS = [
         ("PRJDB1", "2021-08-26T02:58:28Z", "2021-09-07T13:13:17Z", "2021-09-07T13:13:17Z"),
         ("PRJDB2", "2026-09-20T00:00:00Z", "2026-09-27T00:00:00Z", "2026-09-27T00:00:00Z"),
     ]
 
-    def _write_xml(self, tmp_xml_dir: Path, *, ncbi_prjdb1_last_update: str | None = None) -> None:
+    def _write_xml(self, tmp_xml_dir: Path) -> None:
         tmp_xml_dir.mkdir(parents=True)
         (tmp_xml_dir / "ddbj_1.xml").write_text(
-            bp_xml(
-                [
-                    ddbj_bp_package("PRJDB1", title="from ddbj", description="See also PRJNA3."),
-                    ddbj_bp_package("PRJDB2"),
-                ]
-            )
+            bp_xml([ddbj_bp_package("PRJDB1", title="from ddbj"), ddbj_bp_package("PRJDB2")])
         )
         (tmp_xml_dir / "ncbi_1.xml").write_text(
             bp_xml(
@@ -1337,16 +1280,17 @@ class TestGenerateBpJsonlDdbjAndNcbiXml:
                         archive="DDBJ",
                         title="from ncbi",
                         submitted="2021-08-26",
-                        last_update=ncbi_prjdb1_last_update,
+                        last_update="2026-09-28",
                         release_date="2021-09-07T22:13:17Z",
                     ),
+                    ncbi_bp_package("PRJDB10245", archive="DDBJ", last_update="2026-09-28"),
                     ncbi_bp_package("PRJDA36485", archive="DDBJ", submitted="2009-03-26"),
                     ncbi_bp_package("PRJNA3", submitted="2026-09-01", last_update="2026-09-28"),
                 ]
             )
         )
 
-    def test_generate_bp_jsonl_full_mode_shared_accession_written_once_from_ddbj(self, test_config: Config) -> None:
+    def test_generate_bp_jsonl_full_mode_prjdb_written_only_from_ddbj(self, test_config: Config) -> None:
         tmp_xml_dir = test_config.result_dir / "tmp_xml"
         output_dir = test_config.result_dir / "jsonl"
         self._write_xml(tmp_xml_dir)
@@ -1363,12 +1307,10 @@ class TestGenerateBpJsonlDdbjAndNcbiXml:
         assert prjdb1["title"] == "from ddbj"
         assert prjdb1["dateModified"] == "2021-09-07T13:13:17Z"
 
-    def test_generate_bp_jsonl_incremental_ddbj_entry_outside_window_ncbi_copy_not_written(
-        self, test_config: Config
-    ) -> None:
+    def test_generate_bp_jsonl_incremental_ncbi_prjdb_in_window_not_written(self, test_config: Config) -> None:
         tmp_xml_dir = test_config.result_dir / "tmp_xml"
         output_dir = test_config.result_dir / "jsonl"
-        self._write_xml(tmp_xml_dir, ncbi_prjdb1_last_update="2026-09-28")
+        self._write_xml(tmp_xml_dir)
         output_dir.mkdir()
         write_last_run(test_config, "bioproject", "2026-09-28T00:00:00Z")
 
@@ -1379,17 +1321,3 @@ class TestGenerateBpJsonlDdbjAndNcbiXml:
         jsonl = read_jsonl_dir(output_dir)
         assert [doc["identifier"] for doc in jsonl["ddbj_1.jsonl"]] == ["PRJDB2"]
         assert [doc["identifier"] for doc in jsonl["ncbi_1.jsonl"]] == ["PRJNA3"]
-
-    def test_generate_bp_jsonl_resume_with_existing_ddbj_jsonl_ncbi_copy_not_written(self, test_config: Config) -> None:
-        tmp_xml_dir = test_config.result_dir / "tmp_xml"
-        output_dir = test_config.result_dir / "jsonl"
-        self._write_xml(tmp_xml_dir)
-        output_dir.mkdir()
-        (output_dir / "ddbj_1.jsonl").write_text("")
-
-        with run_logger(config=test_config):
-            build_date_cache(test_config, bp_rows=self.DATE_ROWS)
-            generate_bp_jsonl(test_config, tmp_xml_dir, output_dir, parallel_num=2, full=True, resume=True)
-
-        jsonl = read_jsonl_dir(output_dir)
-        assert [doc["identifier"] for doc in jsonl["ncbi_1.jsonl"]] == ["PRJDA36485", "PRJNA3"]

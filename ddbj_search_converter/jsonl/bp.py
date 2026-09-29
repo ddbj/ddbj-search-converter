@@ -26,17 +26,15 @@ from ddbj_search_converter.jsonl.utils import (
     build_doi_url,
     build_pubmed_url,
     build_search_entry_self_url,
-    collect_accessions_in_parallel,
     deduplicate_organizations,
     get_dbxref_map,
-    get_worker_ddbj_accessions,
-    init_jsonl_worker,
     is_valid_external_url,
     normalize_publication_dbtype,
     write_jsonl,
 )
 from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
+from ddbj_search_converter.parallel import exit_with_parent
 from ddbj_search_converter.schema import (
     Accessibility,
     BioProject,
@@ -55,6 +53,10 @@ from ddbj_search_converter.xml_utils import iterate_xml_element, parse_xml
 
 DEFAULT_BATCH_SIZE = 2000
 DEFAULT_PARALLEL_NUM = 64
+
+# DDBJ が発行する BioProject accession の prefix。NCBI の XML にも入っているが、DDBJ の XML
+# からだけ doc を作る。PRJDA は NCBI が発行・管理しているので、NCBI のエントリーとして扱う。
+DDBJ_ISSUED_PREFIX = "PRJDB"
 
 # Literal safeguard: 想定外値は None fallback として扱う
 # OrganizationType / OrganizationRole は Annotated[Literal[...], Field(...)] のため、
@@ -655,23 +657,6 @@ def xml_entry_to_bp_instance(entry: dict[str, Any], is_ddbj: bool) -> BioProject
     )
 
 
-def collect_ddbj_accessions(xml_path: Path) -> set[str]:
-    """DDBJ の分割 XML から、JSONL に出力できるエントリーの accession を集める。
-
-    JSONL 生成と同じ変換を通すので、description などの本文に書かれた accession は拾わず、
-    変換に失敗するエントリーも含めない。
-    """
-    accessions: set[str] = set()
-    for xml_element in iterate_xml_element(xml_path, "Package"):
-        try:
-            metadata = parse_xml(xml_element)
-            accessions.add(xml_entry_to_bp_instance(metadata["Package"], is_ddbj=True).identifier)
-        except Exception:
-            # 変換の失敗は、同じファイルを処理する DDBJ 側の JSONL 生成が log に残す
-            continue
-    return accessions
-
-
 # === Processing ===
 
 
@@ -732,7 +717,6 @@ def _process_xml_file_worker(
     target_accessions: set[str] | None = None,
     since: str | None = None,
     include_dbxrefs: bool = False,
-    ddbj_accessions: frozenset[str] = frozenset(),
 ) -> int:
     """
     XML ファイルを処理して JSONL を出力するワーカー関数。
@@ -746,14 +730,13 @@ def _process_xml_file_worker(
         target_accessions: 処理対象の accession の集合 (DDBJ 差分更新用)。None の場合は全件処理。
         since: 差分更新の基準日時 (NCBI 用)。None の場合は全件処理。
         include_dbxrefs: True の場合は dbXrefs を含める
-        ddbj_accessions: DDBJ の XML にある accession の集合。NCBI の XML ではこれらを出力しない。
     """
     log_info(f"processing {xml_path.name} -> {output_path.name}")
 
     docs: dict[str, BioProject] = {}
     skipped_count = 0
     filtered_count = 0
-    ddbj_duplicate_count = 0
+    ddbj_issued_count = 0
 
     for xml_element in iterate_xml_element(xml_path, "Package"):
         try:
@@ -765,9 +748,8 @@ def _process_xml_file_worker(
                 skipped_count += 1
                 continue
 
-            # DDBJ の XML にもあるエントリーは、DDBJ の XML から作った doc を正とする
-            if not is_ddbj and bp_instance.identifier in ddbj_accessions:
-                ddbj_duplicate_count += 1
+            if not is_ddbj and bp_instance.identifier.startswith(DDBJ_ISSUED_PREFIX):
+                ddbj_issued_count += 1
                 continue
 
             # DDBJ 差分更新: target_accessions に含まれないものはスキップ
@@ -783,8 +765,8 @@ def _process_xml_file_worker(
         log_info(f"skipped {skipped_count} blacklisted entries")
     if filtered_count > 0:
         log_info(f"filtered {filtered_count} entries (not in target_accessions)")
-    if ddbj_duplicate_count > 0:
-        log_info(f"skipped {ddbj_duplicate_count} entries that are also in ddbj xml")
+    if ddbj_issued_count > 0:
+        log_info(f"skipped {ddbj_issued_count} ddbj-issued entries in ncbi xml")
 
     # dbXrefs を一括取得
     if include_dbxrefs:
@@ -825,30 +807,6 @@ def _process_xml_file_worker(
     return len(docs)
 
 
-def _process_xml_file_in_pool(
-    config: Config,
-    xml_path: Path,
-    output_path: Path,
-    is_ddbj: bool,
-    bp_blacklist: set[str],
-    target_accessions: set[str] | None,
-    since: str | None,
-    include_dbxrefs: bool,
-) -> int:
-    """init_jsonl_worker で初期化した worker から _process_xml_file_worker を呼ぶ。"""
-    return _process_xml_file_worker(
-        config,
-        xml_path,
-        output_path,
-        is_ddbj,
-        bp_blacklist,
-        target_accessions,
-        since,
-        include_dbxrefs,
-        ddbj_accessions=get_worker_ddbj_accessions(),
-    )
-
-
 def process_xml_file(
     config: Config,
     xml_path: Path,
@@ -858,21 +816,12 @@ def process_xml_file(
     target_accessions: set[str] | None = None,
     since: str | None = None,
     include_dbxrefs: bool = False,
-    ddbj_accessions: frozenset[str] = frozenset(),
 ) -> int:
     """単一の XML ファイルを処理して JSONL を出力する。"""
     if bp_blacklist is None:
         bp_blacklist, _ = load_blacklist(config)
     return _process_xml_file_worker(
-        config,
-        xml_path,
-        output_path,
-        is_ddbj,
-        bp_blacklist,
-        target_accessions,
-        since,
-        include_dbxrefs,
-        ddbj_accessions=ddbj_accessions,
+        config, xml_path, output_path, is_ddbj, bp_blacklist, target_accessions, since, include_dbxrefs
     )
 
 
@@ -960,20 +909,15 @@ def generate_bp_jsonl(
     if skipped_existing > 0:
         log_info(f"skipped {skipped_existing} existing files (resume mode)")
 
-    # NCBI の XML から DDBJ のエントリーを出力しないよう、DDBJ の XML にある accession を先に集める。
-    # 差分更新や --resume で今回は処理しない DDBJ の XML も含めて、全ファイルから集める。
-    ddbj_accessions = collect_accessions_in_parallel(collect_ddbj_accessions, ddbj_xml_files, parallel_num)
-    log_info(f"found {len(ddbj_accessions)} accessions in ddbj xml files")
-
     total_count = 0
     with ProcessPoolExecutor(
         max_workers=parallel_num,
-        initializer=init_jsonl_worker,
-        initargs=(os.getpid(), ddbj_accessions),
+        initializer=exit_with_parent,
+        initargs=(os.getpid(),),
     ) as executor:
         futures = {
             executor.submit(
-                _process_xml_file_in_pool,
+                _process_xml_file_worker,
                 config,
                 xml_path,
                 output_path,

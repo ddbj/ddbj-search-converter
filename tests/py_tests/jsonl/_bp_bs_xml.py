@@ -22,22 +22,7 @@ from ddbj_search_converter.date_cache.db import (
 )
 
 
-def ddbj_bp_package(
-    accession: str,
-    *,
-    title: str = "title",
-    description: str = "description",
-    linked_accession: str | None = None,
-) -> str:
-    links = ""
-    if linked_accession is not None:
-        links = (
-            "    <ProjectLinks>\n"
-            "      <Link>\n"
-            f'        <ProjectIDRef archive="DDBJ" accession={quoteattr(linked_accession)}/>\n'
-            "      </Link>\n"
-            "    </ProjectLinks>\n"
-        )
+def ddbj_bp_package(accession: str, *, title: str = "title") -> str:
     return (
         "<Package>\n"
         "  <Project>\n"
@@ -47,10 +32,8 @@ def ddbj_bp_package(
         "      </ProjectID>\n"
         "      <ProjectDescr>\n"
         f"        <Title>{escape(title)}</Title>\n"
-        f"        <Description>{escape(description)}</Description>\n"
         "      </ProjectDescr>\n"
         "    </Project>\n"
-        f"{links}"
         "  </Project>\n"
         "</Package>\n"
     )
@@ -95,29 +78,15 @@ def bp_xml(packages: Iterable[str]) -> str:
     return '<?xml version="1.0" encoding="UTF-8"?>\n<PackageSet>\n' + "".join(packages) + "</PackageSet>\n"
 
 
-def ddbj_bs_sample(
-    accession: str,
-    *,
-    title: str = "title",
-    attributes: Iterable[tuple[str, str]] = (),
-    other_ids: Iterable[tuple[str, str]] = (),
-) -> str:
-    ids = "".join(f"    <Id namespace={quoteattr(ns)}>{escape(value)}</Id>\n" for ns, value in other_ids)
-    attrs = "".join(
-        f"    <Attribute attribute_name={quoteattr(name)}>{escape(value)}</Attribute>\n" for name, value in attributes
-    )
+def ddbj_bs_sample(accession: str, *, title: str = "title") -> str:
     return (
         '<BioSample last_update="2020-01-01T00:00:00.000+09:00" access="public">\n'
         "  <Ids>\n"
         f'    <Id namespace="BioSample" is_primary="1">{escape(accession)}</Id>\n'
-        f"{ids}"
         "  </Ids>\n"
         "  <Description>\n"
         f"    <Title>{escape(title)}</Title>\n"
         "  </Description>\n"
-        "  <Attributes>\n"
-        f"{attrs}"
-        "  </Attributes>\n"
         "</BioSample>\n"
     )
 

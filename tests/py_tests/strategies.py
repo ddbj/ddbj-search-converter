@@ -68,6 +68,21 @@ def st_biosample_id() -> st.SearchStrategy[str]:
     return st.tuples(prefix, word_char, digits).map(lambda t: t[0] + t[1] + t[2])
 
 
+def st_bioproject_id_with_prjdb() -> st.SearchStrategy[str]:
+    """``st_bioproject_id`` に、DDBJ が発行する ``PRJDB\\d+`` を同じ割合で混ぜる。
+
+    ``st_bioproject_id`` だけでは ``PRJDB`` が 1/78 の確率でしか出ない。
+    """
+    prjdb = st.integers(min_value=1, max_value=999999).map(lambda n: f"PRJDB{n}")
+    return st.one_of(st_bioproject_id(), prjdb)
+
+
+def st_biosample_id_with_samd() -> st.SearchStrategy[str]:
+    """``st_biosample_id`` に、DDBJ が発行する ``SAMD\\d{8}`` を同じ割合で混ぜる。"""
+    samd = st.integers(min_value=1, max_value=99999999).map(lambda n: f"SAMD{n:08d}")
+    return st.one_of(st_biosample_id(), samd)
+
+
 def _st_sra_with_letter(third: str) -> st.SearchStrategy[str]:
     """``^[SDE]R{third}\\d+\\Z`` 形式の SRA accession を生成する。
 

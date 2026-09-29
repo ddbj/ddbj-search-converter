@@ -1,16 +1,12 @@
 """JSONL 生成用の共通ユーティリティ関数。"""
 
-import os
 import re
-from collections.abc import Callable
-from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Literal, TypeGuard
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import AccessionType, get_linked_entities_bulk
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
-from ddbj_search_converter.parallel import exit_with_parent
 from ddbj_search_converter.schema import Organization, PublicationDbType, Xref, XrefType
 
 SearchEntryExt = Literal["json", "jsonld", "xml"]
@@ -294,45 +290,3 @@ def deduplicate_organizations(organizations: list[Organization]) -> list[Organiz
         seen.add(key)
         result.append(org)
     return result
-
-
-class _JsonlWorkerState:
-    """BioProject / BioSample の JSONL 生成 worker プロセスごとの状態。"""
-
-    ddbj_accessions: frozenset[str] = frozenset()
-
-
-def init_jsonl_worker(parent_pid: int, ddbj_accessions: frozenset[str]) -> None:
-    """BioProject / BioSample の JSONL 生成で使う ProcessPoolExecutor の initializer。
-
-    DDBJ の XML にある accession の一覧は BioSample では数十万件を超える。submit の引数に
-    するとタスクごとに pickle されるので、worker ごとに 1 回だけここで受け取る。
-    """
-    exit_with_parent(parent_pid)
-    _JsonlWorkerState.ddbj_accessions = ddbj_accessions
-
-
-def get_worker_ddbj_accessions() -> frozenset[str]:
-    """init_jsonl_worker が受け取った accession の一覧を返す。"""
-    return _JsonlWorkerState.ddbj_accessions
-
-
-def collect_accessions_in_parallel(
-    collect: Callable[[Path], set[str]],
-    xml_files: list[Path],
-    parallel_num: int,
-) -> frozenset[str]:
-    """XML ファイルごとに collect を並列に実行し、結果の和集合を返す。"""
-    if not xml_files:
-        return frozenset()
-
-    accessions: set[str] = set()
-    with ProcessPoolExecutor(
-        max_workers=parallel_num,
-        initializer=exit_with_parent,
-        initargs=(os.getpid(),),
-    ) as executor:
-        for file_accessions in executor.map(collect, xml_files):
-            accessions.update(file_accessions)
-
-    return frozenset(accessions)

@@ -397,7 +397,7 @@ CREATE TABLE cache_meta (
 
 日付は UTC ISO8601 (`Z` 終端) の TEXT で保持する。この書式は辞書順が時刻順と一致するので、範囲検索を文字列比較のまま行える。
 
-中身は DDBJ の accession (`PRJD*` / `SAMD*`) だけで、日付をこの DB から取るのも DDBJ の XML から作るエントリーだけである。NCBI の XML から作るエントリーは、accession が `PRJD*` / `SAMD*` でも日付を XML から取る (NCBI の XML にしかない `PRJD*` があるため。[§BioProject / BioSample](#bioproject--biosample))。
+中身は DDBJ が発行した accession (`PRJDB*` / `SAMD*`) だけで、日付をこの DB から取るのは DDBJ の XML から作るエントリーである。NCBI の XML から作るエントリーは、`PRJDA*` も含めて日付を XML から取る ([§BioProject / BioSample](#bioproject--biosample))。
 
 用途は 2 つある。JSONL 生成時に `dateCreated` / `dateModified` / `datePublished` を付与すること、そして差分更新で処理対象の accession を決めることである。後者があるため、**この DB の `date_modified` が実際の更新日とずれると、そのエントリーは差分更新から取りこぼされる**。BioSample 側は accession と `mass.sample` の行が 1:1 で対応するので、両者を `smp_id` で結合して accession ごとの日付を取る。
 
@@ -584,9 +584,9 @@ ES mapping (`ddbj_search_converter/es/mappings/`) は scalar に `null_value` �
 
 XML ファイル単位で分割されたファイルが出力される。
 
-NCBI の XML には、DDBJ で登録されたエントリーも入っている。同じ accession が DDBJ の XML にもあるときは、DDBJ の XML から作った doc だけを出力し、NCBI の XML 側では出力しない。両方を出すと `es_bulk_insert` が `_id` で上書きし、ファイル名順で後に投入される `ncbi_*.jsonl` の doc が ES に残る。NCBI の XML にある DDBJ のエントリーは、日付・organism・accessibility の持ち方が DDBJ の XML と違う。例えば PRJDB12200 は NCBI の XML では `Submission` に `submitted` しかなく、NCBI 版の doc では `dateModified` が null になる。
+NCBI の XML には、DDBJ が発行した accession (BioProject の `PRJDB*`、BioSample の `SAMD*`) のエントリーも入っている。これらは DDBJ の XML から作った doc だけを出力し、NCBI の XML からは出力しない。両方を出すと `es_bulk_insert` が `_id` で上書きし、ファイル名順で後に投入される `ncbi_*.jsonl` の doc が ES に残る。NCBI の XML にある DDBJ のエントリーは、日付・organism・accessibility の持ち方が DDBJ の XML と違う。例えば PRJDB12200 は NCBI の XML では `Submission` に `submitted` しかなく、NCBI 版の doc では `dateModified` が null になる。
 
-DDBJ の XML にあるかどうかは、accession の prefix ではなく、DDBJ の XML に実際にあるかで判定する。NCBI の XML にしかない `PRJD*` (NCBI が作った古い RefSeq のプロジェクトなど) もあり、prefix で落とすとそれらが ES から消える。判定に使う accession の一覧は、JSONL 生成と同じ変換 (`xml_entry_to_bp_instance` / `xml_entry_to_bs_instance`) で DDBJ の XML から作る。description などの本文に書かれた accession を拾わないためと、DDBJ 側で変換に失敗したエントリーは NCBI 版を残すためである。差分更新で DDBJ 側が出力しないエントリーも、NCBI 側では出力しない (ES には前回までの DDBJ 版が残っている)。`regenerate_jsonl` も同じ規則で doc を選び、日付の取得元も、doc をどちらの XML から作ったかで決める。
+DDBJ の XML に無い `PRJDB*` / `SAMD*` も、NCBI の XML からは出力しない。DDBJ の XML は suppressed のエントリーを含まないが、NCBI の XML には DDBJ で suppressed にしたエントリーが残っていることがある。これを NCBI の XML から出すと、DDBJ が公開を止めたエントリーが NCBI のデータのまま ES に入る。一方 `PRJDA*` は、NCBI Genome Project の時代に DDBJ から代理登録されたプロジェクトで、NCBI が発行・管理しており DDBJ の XML には無い。これらは NCBI のエントリーとして NCBI の XML から出力する。`regenerate_jsonl` も同じ規則で doc を作り、日付の取得元は、doc をどちらの XML から作ったかで決める。
 
 BioProject エントリーは umbrella 階層構造に対応しており、`parentBioProjects` / `childBioProjects` フィールドで直接の親子関係（推移的閉包ではない）を保持する。これらのフィールドの値は Umbrella DB から取得される。Xref の type は `"bioproject"` で統一し、フィールド名自体が方向を示す。umbrella 関連は `dbXrefs` には含めない。
 

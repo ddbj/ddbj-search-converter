@@ -22,9 +22,11 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_blacklist, load_jga_blacklist, load_sra_blacklist
 from ddbj_search_converter.id_patterns import ID_PATTERN_MAP
+from ddbj_search_converter.jsonl.bp import DDBJ_ISSUED_PREFIX as BP_DDBJ_ISSUED_PREFIX
 from ddbj_search_converter.jsonl.bp import _fetch_dates_ddbj as bp_fetch_dates_ddbj
 from ddbj_search_converter.jsonl.bp import _fetch_dates_ncbi as bp_fetch_dates_ncbi
 from ddbj_search_converter.jsonl.bp import xml_entry_to_bp_instance
+from ddbj_search_converter.jsonl.bs import DDBJ_ISSUED_PREFIX as BS_DDBJ_ISSUED_PREFIX
 from ddbj_search_converter.jsonl.bs import _fetch_dates_ddbj as bs_fetch_dates_ddbj
 from ddbj_search_converter.jsonl.bs import _fetch_dates_ncbi as bs_fetch_dates_ncbi
 from ddbj_search_converter.jsonl.bs import xml_entry_to_bs_instance
@@ -100,8 +102,8 @@ def validate_accessions(data_type: str, accessions: set[str]) -> set[str]:
 # === BioProject / BioSample ===
 
 
-def _xml_files_ddbj_first(tmp_xml_dir: Path) -> list[tuple[Path, bool]]:
-    """分割 XML を DDBJ、NCBI の順に並べ、DDBJ の XML かどうかと組にして返す。"""
+def _xml_files_with_source(tmp_xml_dir: Path) -> list[tuple[Path, bool]]:
+    """分割 XML を、DDBJ の XML かどうかと組にして返す。"""
     ddbj_files = [(path, True) for path in sorted(tmp_xml_dir.glob("ddbj_*.xml"))]
     ncbi_files = [(path, False) for path in sorted(tmp_xml_dir.glob("ncbi_*.xml"))]
     return ddbj_files + ncbi_files
@@ -123,10 +125,10 @@ def regenerate_bp_jsonl(
 
     bp_blacklist, _ = load_blacklist(config)
 
-    xml_files = _xml_files_ddbj_first(tmp_xml_dir)
+    xml_files = _xml_files_with_source(tmp_xml_dir)
     log_info(f"found {len(xml_files)} xml files in {tmp_xml_dir}")
 
-    # 同じ accession が NCBI の XML にもあるときは、先に読んだ DDBJ の XML の doc を残す
+    # DDBJ が発行した accession は、NCBI の XML にあっても DDBJ の XML からだけ作る
     ddbj_docs: dict[str, Any] = {}
     ncbi_docs: dict[str, Any] = {}
 
@@ -138,7 +140,7 @@ def regenerate_bp_jsonl(
 
                 if bp_instance.identifier not in target_accessions:
                     continue
-                if not is_ddbj and bp_instance.identifier in ddbj_docs:
+                if not is_ddbj and bp_instance.identifier.startswith(BP_DDBJ_ISSUED_PREFIX):
                     continue
                 if bp_instance.identifier in bp_blacklist:
                     log_warn(f"accession {bp_instance.identifier} is in blacklist, skipping")
@@ -204,10 +206,10 @@ def regenerate_bs_jsonl(
 
     _, bs_blacklist = load_blacklist(config)
 
-    xml_files = _xml_files_ddbj_first(tmp_xml_dir)
+    xml_files = _xml_files_with_source(tmp_xml_dir)
     log_info(f"found {len(xml_files)} xml files in {tmp_xml_dir}")
 
-    # 同じ accession が NCBI の XML にもあるときは、先に読んだ DDBJ の XML の doc を残す
+    # DDBJ が発行した accession は、NCBI の XML にあっても DDBJ の XML からだけ作る
     ddbj_docs: dict[str, Any] = {}
     ncbi_docs: dict[str, Any] = {}
 
@@ -219,7 +221,7 @@ def regenerate_bs_jsonl(
 
                 if bs_instance.identifier not in target_accessions:
                     continue
-                if not is_ddbj and bs_instance.identifier in ddbj_docs:
+                if not is_ddbj and bs_instance.identifier.startswith(BS_DDBJ_ISSUED_PREFIX):
                     continue
                 if bs_instance.identifier in bs_blacklist:
                     log_warn(f"accession {bs_instance.identifier} is in blacklist, skipping")

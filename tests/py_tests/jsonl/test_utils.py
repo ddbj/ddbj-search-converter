@@ -1,9 +1,6 @@
 """Tests for ddbj_search_converter.jsonl.utils module."""
 
 import copy
-import os
-from concurrent.futures import ProcessPoolExecutor
-from pathlib import Path
 from typing import Any
 
 import duckdb
@@ -13,17 +10,13 @@ from hypothesis import strategies as st
 
 from ddbj_search_converter.config import SEARCH_BASE_URL, Config
 from ddbj_search_converter.dblink.db import finalize_dblink_db, init_dblink_db
-from ddbj_search_converter.jsonl.bp import collect_ddbj_accessions
 from ddbj_search_converter.jsonl.utils import (
     URL_TEMPLATE,
     build_doi_url,
     build_pubmed_url,
-    collect_accessions_in_parallel,
     deduplicate_organizations,
     ensure_attribute_list,
     get_dbxref_map,
-    get_worker_ddbj_accessions,
-    init_jsonl_worker,
     is_valid_external_url,
     normalize_publication_dbtype,
     to_xref,
@@ -40,8 +33,6 @@ from py_tests.strategies import (
     st_pubmed_id,
     st_sra_run,
 )
-
-from ._bp_bs_xml import bp_xml, ddbj_bp_package
 
 
 class TestToXref:
@@ -670,35 +661,3 @@ class TestNormalizePublicationDbtype:
     def test_numeric_dbtype_returns_none(self) -> None:
         """数字 DbType は map にないので None を返す (BP 側の fallback で別途 pubmed に倒す)。"""
         assert normalize_publication_dbtype("42") is None
-
-
-class TestCollectAccessionsInParallel:
-    def test_collect_accessions_in_parallel_multiple_files_returns_union(self, tmp_path: Path) -> None:
-        paths = []
-        for i, accessions in enumerate([["PRJDB1", "PRJDB2"], ["PRJDB2", "PRJDB3"], []]):
-            path = tmp_path / f"ddbj_{i}.xml"
-            path.write_text(bp_xml([ddbj_bp_package(accession) for accession in accessions]))
-            paths.append(path)
-
-        result = collect_accessions_in_parallel(collect_ddbj_accessions, paths, parallel_num=2)
-
-        assert result == frozenset({"PRJDB1", "PRJDB2", "PRJDB3"})
-
-    def test_collect_accessions_in_parallel_no_files_returns_empty(self) -> None:
-        assert collect_accessions_in_parallel(collect_ddbj_accessions, [], parallel_num=2) == frozenset()
-
-
-class TestInitJsonlWorker:
-    def test_init_jsonl_worker_accessions_visible_in_every_worker(self) -> None:
-        accessions = frozenset({"PRJDB1", "SAMD00000001"})
-
-        with ProcessPoolExecutor(
-            max_workers=2, initializer=init_jsonl_worker, initargs=(os.getpid(), accessions)
-        ) as executor:
-            results = [executor.submit(get_worker_ddbj_accessions) for _ in range(4)]
-
-            assert [future.result() for future in results] == [accessions] * 4
-
-    def test_get_worker_ddbj_accessions_without_initializer_returns_empty(self) -> None:
-        with ProcessPoolExecutor(max_workers=1) as executor:
-            assert executor.submit(get_worker_ddbj_accessions).result() == frozenset()
