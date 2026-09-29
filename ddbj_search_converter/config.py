@@ -147,6 +147,7 @@ class Config(BaseModel):
     xsm_postgres_url: str = ""
     trad_postgres_url: str = ""
     es_url: str = "http://ddbj-search-elasticsearch:9200"
+    humandbs_url: str = "https://humandbs.dbcls.jp"
 
 
 default_config = Config()
@@ -160,6 +161,7 @@ def get_config() -> Config:
         xsm_postgres_url=os.environ.get(f"{ENV_PREFIX}_XSM_POSTGRES_URL", default_config.xsm_postgres_url),
         trad_postgres_url=os.environ.get(f"{ENV_PREFIX}_TRAD_POSTGRES_URL", default_config.trad_postgres_url),
         es_url=os.environ.get(f"{ENV_PREFIX}_ES_URL", default_config.es_url),
+        humandbs_url=os.environ.get(f"{ENV_PREFIX}_HUMANDBS_URL", default_config.humandbs_url),
     )
 
 

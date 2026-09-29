@@ -19,7 +19,10 @@ from ddbj_search_converter.config import (
     BP_LIVELIST_BASE_PATH,
     BS_LIVELIST_BASE_PATH,
     SRA_ACCESSIONS_BASE_PATH,
+    get_config,
 )
+from ddbj_search_converter.dblink.db import AccessionType
+from ddbj_search_converter.dblink.jga import fetch_humandbs_pairs
 
 
 def test_ncbi_assembly_summary_is_reachable() -> None:
@@ -63,3 +66,11 @@ def test_bs_livelist_directory_is_readable() -> None:
 def test_sra_accessions_directory_is_readable() -> None:
     """IT-RESOURCE-03: DRA / SRA Accessions tab の base path が読めて非空。"""
     _assert_directory_has_at_least_one_file(SRA_ACCESSIONS_BASE_PATH, "SRA Accessions")
+
+
+@pytest.mark.parametrize("src_type", ["jga-study", "jga-dataset"])
+def test_humandbs_dblink_listing_returns_pairs(src_type: AccessionType) -> None:
+    """IT-RESOURCE-04: humandbs の /api/dblink/{jga-study,jga-dataset} が NDJSON で 1 件以上返る。"""
+    pairs = fetch_humandbs_pairs(get_config().humandbs_url, src_type)
+
+    assert pairs, f"humandbs returned no {src_type} -> humandbs"

@@ -2,8 +2,10 @@
 JGA (Japanese Genotype-phenotype Archive) の XML/CSV/TSV から関連を抽出し、DBLink DB に挿入する。
 
 入力:
-- {const_dir}/dblink/jga_study_hum_id.tsv  -> jga-study - humandbs
-- {const_dir}/dblink/jga_dataset_hum_id.tsv -> jga-dataset - humandbs
+- {humandbs_url}/api/dblink/jga-study   -> jga-study - humandbs
+- {humandbs_url}/api/dblink/jga-dataset -> jga-dataset - humandbs
+    - 取得した対応を {const_dir}/dblink/jga_{study,dataset}_hum_id.tsv に保存してから読む
+    - 取得に失敗したら前回保存したファイルを読む
 - JGA_BASE_PATH/jga-study.xml
     - PUBLICATIONS/PUBLICATION: id 属性 -> pubmed
 - JGA_BASE_PATH/*-relation.csv
@@ -22,10 +24,13 @@ JGA (Japanese Genotype-phenotype Archive) の XML/CSV/TSV から関連を抽出�
 """
 
 import csv
+import json
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+import httpx
 from lxml import etree
 
 from ddbj_search_converter.config import (
@@ -45,7 +50,7 @@ from ddbj_search_converter.config import (
 from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import filter_sra_pairs_by_blacklist, load_jga_blacklist
 from ddbj_search_converter.id_patterns import is_valid_accession
-from ddbj_search_converter.logging.logger import log_debug, log_info, run_logger
+from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
 
 # === CSV relation operations ===
@@ -210,6 +215,138 @@ def load_jga_study_xml() -> list[dict[str, Any]]:
     return studies
 
 
+HUMANDBS_FETCH_MAX_ATTEMPTS = 3
+HUMANDBS_FETCH_RETRY_WAIT_SECONDS = 10
+HUMANDBS_FETCH_TIMEOUT_SECONDS = 60.0
+
+
+class HumandbsResponseError(Exception):
+    """humandbs の応答が DBLinks の NDJSON として読めない。"""
+
+
+def _is_valid_humandbs_pair(src_acc: str, humandbs: str, src_type: AccessionType, **log_kwargs: Any) -> bool:
+    """両側の accession が形式に合うか。合わなければ log_debug を出す。"""
+    if not is_valid_accession(src_acc, src_type):
+        log_debug(
+            f"skipping invalid {src_type}: {src_acc}",
+            accession=src_acc,
+            debug_category=DebugCategory.INVALID_ACCESSION_ID,
+            source="jga-humandbs",
+            **log_kwargs,
+        )
+        return False
+    if not is_valid_accession(humandbs, "humandbs"):
+        log_debug(
+            f"skipping invalid humandbs: {humandbs}",
+            accession=humandbs,
+            debug_category=DebugCategory.INVALID_ACCESSION_ID,
+            source="jga-humandbs",
+            **log_kwargs,
+        )
+        return False
+    return True
+
+
+def humandbs_dblink_url(base_url: str, src_type: AccessionType) -> str:
+    return f"{base_url.rstrip('/')}/api/dblink/{src_type}"
+
+
+def _get_humandbs_dblink(url: str) -> str:
+    """接続エラー・timeout・5xx は retry する。それ以外の 2xx でない応答はすぐに raise する。"""
+    for attempt in range(1, HUMANDBS_FETCH_MAX_ATTEMPTS + 1):
+        try:
+            with httpx.Client(follow_redirects=True, timeout=HUMANDBS_FETCH_TIMEOUT_SECONDS) as client:
+                response = client.get(url)
+                response.raise_for_status()
+                return response.text
+        except httpx.HTTPError as e:
+            retryable = isinstance(e, httpx.TransportError) or (
+                isinstance(e, httpx.HTTPStatusError) and e.response.is_server_error
+            )
+            if not retryable or attempt == HUMANDBS_FETCH_MAX_ATTEMPTS:
+                raise
+            wait = HUMANDBS_FETCH_RETRY_WAIT_SECONDS * attempt
+            log_warn(
+                f"humandbs request failed ({e}), retrying in {wait}s (attempt {attempt}/{HUMANDBS_FETCH_MAX_ATTEMPTS})",
+                url=url,
+            )
+            time.sleep(wait)
+    raise AssertionError("unreachable")
+
+
+def parse_humandbs_dblink_ndjson(text: str, src_type: AccessionType, url: str) -> IdPairs:
+    """/api/dblink/{src_type} の NDJSON から (JGA accession, humandbs) を取り出す。
+
+    1 行は ``{"identifier": ..., "dbXrefs": [{"identifier": ..., "type": ...}]}``。
+    humandbs 以外の dbXrefs は無視し、形式に合わない accession はスキップする。
+
+    Raises:
+        HumandbsResponseError: JSON として読めない行、または必要なキーが無い行がある場合。
+    """
+    pairs: IdPairs = set()
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+            src_acc = entry["identifier"]
+            xrefs = [(xref["type"], xref["identifier"]) for xref in entry["dbXrefs"]]
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            raise HumandbsResponseError(f"unexpected line from {url}: {line[:200]}") from e
+        if not isinstance(src_acc, str) or not all(
+            isinstance(xref_type, str) and isinstance(xref_id, str) for xref_type, xref_id in xrefs
+        ):
+            raise HumandbsResponseError(f"non-string identifier from {url}: {line[:200]}")
+        for xref_type, humandbs in xrefs:
+            if xref_type != "humandbs":
+                continue
+            if _is_valid_humandbs_pair(src_acc, humandbs, src_type, url=url):
+                pairs.add((src_acc, humandbs))
+
+    return pairs
+
+
+def fetch_humandbs_pairs(base_url: str, src_type: AccessionType) -> IdPairs:
+    """humandbs の /api/dblink/{src_type} から JGA accession -> humandbs 関連を取得する。
+
+    Raises:
+        httpx.HTTPError: retry しても接続できない、または 2xx 以外の応答の場合。
+        HumandbsResponseError: 応答が DBLinks の NDJSON として読めない場合。
+    """
+    url = humandbs_dblink_url(base_url, src_type)
+    return parse_humandbs_dblink_ndjson(_get_humandbs_dblink(url), src_type, url)
+
+
+def _write_humandbs_file(path: Path, pairs: IdPairs) -> None:
+    """同じディレクトリの一時ファイルに書いてから置き換え、途中で止まっても前のファイルを残す。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f"{path.name}.tmp")
+    with tmp_path.open("w", encoding="utf-8") as f:
+        for src_acc, humandbs in sorted(pairs):
+            f.write(f"{src_acc}\t{humandbs}\n")
+    tmp_path.replace(path)
+
+
+def update_jga_humandbs_file(config: Config, rel_path: str, src_type: AccessionType) -> None:
+    """humandbs から JGA accession -> humandbs 関連を取得し、{const_dir}/{rel_path} に保存する。
+
+    取得に失敗したとき、または有効な関連が 0 件のときは warn を出し、ファイルを変更しない。
+    """
+    path = config.const_dir.joinpath(rel_path)
+    url = humandbs_dblink_url(config.humandbs_url, src_type)
+    try:
+        pairs = fetch_humandbs_pairs(config.humandbs_url, src_type)
+    except (httpx.HTTPError, HumandbsResponseError) as e:
+        log_warn(f"failed to fetch {src_type} -> humandbs, using saved file: {e}", url=url, file=str(path))
+        return
+    if not pairs:
+        log_warn(f"humandbs returned no {src_type} -> humandbs, using saved file", url=url, file=str(path))
+        return
+
+    _write_humandbs_file(path, pairs)
+    log_info(f"saved {len(pairs)} {src_type} -> humandbs from humandbs", url=url, file=str(path))
+
+
 def _load_jga_humandbs_file(
     config: Config,
     rel_path: str,
@@ -244,25 +381,8 @@ def _load_jga_humandbs_file(
                 )
                 continue
             src_acc, humandbs = parts[0], parts[1]
-            if not is_valid_accession(src_acc, src_type):
-                log_debug(
-                    f"skipping invalid {src_type}: {src_acc}",
-                    accession=src_acc,
-                    file=str(path),
-                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                    source="jga-humandbs",
-                )
-                continue
-            if not is_valid_accession(humandbs, "humandbs"):
-                log_debug(
-                    f"skipping invalid humandbs: {humandbs}",
-                    accession=humandbs,
-                    file=str(path),
-                    debug_category=DebugCategory.INVALID_ACCESSION_ID,
-                    source="jga-humandbs",
-                )
-                continue
-            pairs.add((src_acc, humandbs))
+            if _is_valid_humandbs_pair(src_acc, humandbs, src_type, file=str(path)):
+                pairs.add((src_acc, humandbs))
 
     log_info(
         f"loaded {len(pairs)} {src_type} -> humandbs from humandbs file",
@@ -336,7 +456,9 @@ def main() -> None:
         # Blacklist を読み込む
         jga_blacklist = load_jga_blacklist(config)
 
-        # Load humandbs from TSV
+        # Fetch humandbs from API, then load the saved TSV
+        update_jga_humandbs_file(config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
+        update_jga_humandbs_file(config, JGA_DATASET_HUM_ID_REL_PATH, "jga-dataset")
         study_to_humandbs = _load_jga_humandbs_file(config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
         dataset_to_humandbs = _load_jga_humandbs_file(config, JGA_DATASET_HUM_ID_REL_PATH, "jga-dataset")
 

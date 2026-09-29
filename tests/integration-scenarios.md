@@ -111,6 +111,7 @@ NCBI FTP / Livelist など外部 I/O の存在確認。staging のホストか�
 | IT-RESOURCE-01 | NCBI FTP の `assembly_summary_genbank.txt` が DL 可能 |
 | IT-RESOURCE-02 | BP / BS livelist が staging から read 可能 |
 | IT-RESOURCE-03 | DRA Accessions tab が staging から read 可能 |
+| IT-RESOURCE-04 | humandbs の `/api/dblink/jga-study` と `/api/dblink/jga-dataset` が NDJSON で 1 件以上返る |
 
 ## ログ round-trip (`IT-LOG-*`)
 

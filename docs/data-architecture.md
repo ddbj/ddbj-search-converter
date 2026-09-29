@@ -10,6 +10,7 @@ DDBJ Search Converter のデータフローと構造。
 |   BioProject XML, BioSample XML, SRA/DRA Accessions.tab, SRA/DRA XML,       |
 |   JGA XML/CSV, GEA IDF/SDRF, MetaboBank IDF/SDRF,                           |
 |   NCBI Assembly summary, TRAD ORGANISM_LIST, TRAD PostgreSQL (g/e/w-actual) |
+|   humandbs API                                                              |
 +-----------------------------------------------------------------------------+
                                       |
                                       v
@@ -32,7 +33,7 @@ DDBJ Search Converter のデータフローと構造。
 |   create_dblink_assembly_and_master_relations -- fetch assembly_summary    |
 |   create_dblink_gea_relations        -- parse IDF/SDRF                      |
 |   create_dblink_metabobank_relations -- parse IDF/SDRF, preserved.tsv       |
-|   create_dblink_jga_relations        -- parse XML/CSV, humandbs TSV         |
+|   create_dblink_jga_relations        -- parse XML/CSV, fetch humandbs API   |
 |   create_dblink_sra_internal_relations -- SRA internal + BP/BS <-> SRA      |
 |   create_dblink_insdc_relations     -- preserved.tsv, TRAD PostgreSQL       |
 |   finalize_dblink_db -----> {const}/dblink/dblink.duckdb, umbrella.duckdb   |
@@ -161,6 +162,17 @@ DB ごとに独立した connection / blacklist を持つので同時保持は�
 
 URL に scheme を書き忘れたり、`mysql://` のように他 DB の scheme を書くと early fail する設計。これは converter 起動時に「黙って localhost に fallback して接続不能を後段で出す」挙動を避けるため。
 
+### humandbs API
+
+JGA Study / JGA Dataset と humandbs の研究 ID の対応は、humandbs の `/api/dblink/jga-study` と `/api/dblink/jga-dataset` から取得する。応答は 1 行が 1 accession の NDJSON で、形は DBLinks と同じ (`identifier` と `dbXrefs[].type` / `dbXrefs[].identifier`)。接続先は `DDBJ_SEARCH_CONVERTER_HUMANDBS_URL` で指定する (デフォルト `https://humandbs.dbcls.jp`)。
+
+`create_dblink_jga_relations` は取得した対応を `{const_dir}/dblink/jga_study_hum_id.tsv` と `{const_dir}/dblink/jga_dataset_hum_id.tsv` (ヘッダなしの 2 列 TSV) に保存してから、そのファイルを読む。
+
+- 取得に失敗したとき (接続エラー・timeout・5xx を retry しても失敗、2xx 以外の応答、NDJSON として読めない、有効な対応が 0 件) は warn を出し、前回保存したファイルを使う。humandbs が止まっていても他の DB の日次更新を止めず、JGA から humandbs へのリンクも消さないため
+- 0 件を失敗として扱うのは、humandbs 側の不具合で空の応答が返ったときに、すべてのリンクを消さないため
+- 保存したファイルも無いときは step を失敗させる
+- 保存は同じディレクトリの一時ファイルに書いてから置き換えるので、途中で止まっても前回のファイルは壊れない
+
 ## const ディレクトリ
 
 `{const_dir}` 以下に配置するファイル。
@@ -191,8 +203,6 @@ DBLink 構築時に追加する手動管理の関連。
 | `dblink/bp_bs_preserved.tsv` | BioProject - BioSample |
 | `dblink/insdc_bp_preserved.tsv` | INSDC - BioProject |
 | `dblink/insdc_bs_preserved.tsv` | INSDC - BioSample |
-| `dblink/jga_study_hum_id.tsv` | JGA Study - humandbs |
-| `dblink/jga_dataset_hum_id.tsv` | JGA Dataset - humandbs |
 | `metabobank/mtb_id_bioproject_preserve.tsv` | MetaboBank - BioProject |
 | `metabobank/mtb_id_biosample_preserve.tsv` | MetaboBank - BioSample |
 
