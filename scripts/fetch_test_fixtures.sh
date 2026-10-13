@@ -52,6 +52,26 @@ fetch_text_file() {
     fi
 }
 
+# URL から NDJSON を取得し、先頭 N 行だけ残す
+# Usage: fetch_url_lines <url> <dst> <lines> <label>
+fetch_url_lines() {
+    local url="$1"
+    local dst="$2"
+    local lines="$3"
+    local label="$4"
+
+    mkdir -p "$(dirname "$dst")"
+    local tmp
+    tmp="$(mktemp)"
+    if curl -sSf --max-time 60 "$url" -o "$tmp"; then
+        head -n "$lines" "$tmp" > "$dst"
+        echo "  $label: OK ($lines rows)"
+    else
+        echo "  $label: スキップ (取得失敗: $url)"
+    fi
+    rm -f "$tmp"
+}
+
 # XML を N entries 抽出 (非圧縮)
 # Usage: extract_xml_entries <src> <dst> <start_tag> <end_tag> <wrapper_start> <wrapper_end> <count> <label>
 extract_xml_entries() {
@@ -170,6 +190,8 @@ mkdir -p "$FIXTURES_DIR/usr/local/resources/gea/experiment"
 #   - dblink/bp_bs_preserved.tsv (BP_BS_PRESERVED_REL_PATH)
 #   - metabobank/mtb_id_bioproject_preserve.tsv (MTB_BP_PRESERVED_REL_PATH)
 #   - metabobank/mtb_id_biosample_preserve.tsv (MTB_BS_PRESERVED_REL_PATH)
+# humandbs API から取得して保存するファイル (jsonl/jga.py 参照):
+#   - jga/{index_name}.date.ndjson (JGA_DATE_REL_PATHS)
 echo ""
 echo "--- const ディレクトリ ---"
 CONST_SRC="/home/w3ddbjld/const"
@@ -185,6 +207,12 @@ echo "preserved ファイルを取得中..."
 fetch_text_file "$CONST_SRC/dblink/bp_bs_preserved.tsv" "$CONST_DST/dblink/bp_bs_preserved.tsv" 11 "dblink/bp_bs_preserved.tsv"
 fetch_text_file "$CONST_SRC/metabobank/mtb_id_bioproject_preserve.tsv" "$CONST_DST/metabobank/mtb_id_bioproject_preserve.tsv" 11 "metabobank/mtb_id_bioproject_preserve.tsv"
 fetch_text_file "$CONST_SRC/metabobank/mtb_id_biosample_preserve.tsv" "$CONST_DST/metabobank/mtb_id_biosample_preserve.tsv" 11 "metabobank/mtb_id_biosample_preserve.tsv"
+
+echo "JGA の日付を humandbs から取得中..."
+HUMANDBS_URL="${DDBJ_SEARCH_CONVERTER_HUMANDBS_URL:-https://humandbs.dbcls.jp}"
+for index_name in jga-study jga-dataset jga-dac jga-policy; do
+    fetch_url_lines "$HUMANDBS_URL/api/jga-date/$index_name" "$CONST_DST/jga/$index_name.date.ndjson" 10 "jga/$index_name.date.ndjson"
+done
 
 # === BioProject ===
 echo ""
@@ -312,12 +340,9 @@ if [ -f "$DRA_ACC_FULL" ]; then
 fi
 
 # === JGA ===
-# 新実装で使用するファイル (config.py, dblink/jga.py 参照):
-#   - jga-study.xml (JGA_STUDY_XML)
-#   - *-relation.csv (JGA_*_CSV)
-# 旧実装で使用するファイル (jga/jga_generate_jsonl.py 参照):
+# 使用するファイル (config.py, dblink/jga.py, jsonl/jga.py 参照):
 #   - jga-study.xml, jga-dataset.xml, jga-dac.xml, jga-policy.xml
-#   - study.date.csv, dataset.date.csv, dac.date.csv, policy.date.csv
+#   - *-relation.csv (JGA_*_CSV)
 echo ""
 echo "--- JGA ---"
 JGA_SRC="/usr/local/shared_data/jga/metadata-history/metadata"
@@ -338,13 +363,6 @@ extract_xml_entries "$JGA_SRC/jga-dac.xml" "$JGA_DST/jga-dac.xml" \
 extract_xml_entries "$JGA_SRC/jga-policy.xml" "$JGA_DST/jga-policy.xml" \
     "<POLICY " "</POLICY>" '<?xml version="1.0" encoding="UTF-8"?>\n<POLICY_SET>' '</POLICY_SET>' \
     10 "jga-policy.xml"
-
-# Date CSV (ヘッダ + 10 行)
-echo "JGA Date CSV を取得中..."
-fetch_text_file "$JGA_SRC/study.date.csv" "$JGA_DST/study.date.csv" 11 "study.date.csv"
-fetch_text_file "$JGA_SRC/dataset.date.csv" "$JGA_DST/dataset.date.csv" 11 "dataset.date.csv"
-fetch_text_file "$JGA_SRC/dac.date.csv" "$JGA_DST/dac.date.csv" 11 "dac.date.csv"
-fetch_text_file "$JGA_SRC/policy.date.csv" "$JGA_DST/policy.date.csv" 11 "policy.date.csv"
 
 # Relation CSV (ヘッダ + 10 行)
 echo "JGA Relation CSV を取得中..."

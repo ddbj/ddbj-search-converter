@@ -37,6 +37,7 @@ from ddbj_search_converter.jsonl.jga import (
     jga_entry_to_jga_instance,
     load_date_map,
     load_jga_xml,
+    update_jga_date_file,
 )
 from ddbj_search_converter.jsonl.sra import XML_TYPES, process_submission_xml
 from ddbj_search_converter.jsonl.utils import get_dbxref_map, write_jsonl
@@ -530,15 +531,16 @@ def regenerate_jga_jsonl(
                     jga_instances[accession].dbXrefs = xrefs
 
         # 日付
+        update_jga_date_file(config, index_name)
         try:
-            date_map = load_date_map(jga_base_path, index_name)
+            date_map = load_date_map(config, index_name)
             for accession, (date_created, date_published, date_modified) in date_map.items():
                 if accession in jga_instances:
                     jga_instances[accession].dateCreated = date_created
                     jga_instances[accession].datePublished = date_published
                     jga_instances[accession].dateModified = date_modified
         except FileNotFoundError as e:
-            log_warn(f"date csv not found: {e}")
+            log_warn(f"jga date file not found: {e}")
 
         output_path = output_dir / f"{index_name}.jsonl"
         write_jsonl(output_path, list(jga_instances.values()))

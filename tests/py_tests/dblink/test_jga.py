@@ -1,8 +1,7 @@
 """Tests for ddbj_search_converter.dblink.jga module."""
 
 import json
-import time
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -17,8 +16,6 @@ from ddbj_search_converter.config import (
     Config,
 )
 from ddbj_search_converter.dblink.jga import (
-    HUMANDBS_FETCH_MAX_ATTEMPTS,
-    HumandbsResponseError,
     _load_jga_humandbs_file,
     extract_pubmed_ids,
     fetch_humandbs_pairs,
@@ -28,7 +25,9 @@ from ddbj_search_converter.dblink.jga import (
     reverse_relation,
     update_jga_humandbs_file,
 )
+from ddbj_search_converter.humandbs import HUMANDBS_FETCH_MAX_ATTEMPTS, HumandbsResponseError
 from ddbj_search_converter.logging.logger import _ctx, init_logger
+from tests.py_tests.humandbs_stub import HumandbsStub, ok_ndjson
 from tests.py_tests.strategies import st_humandbs_id, st_jga_dataset, st_jga_study
 
 
@@ -312,45 +311,6 @@ def _read_log_records() -> list[dict[str, Any]]:
     return [json.loads(line) for line in ctx.log_file.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-class _HumandbsStub:
-    """humandbs の HTTP 応答を差し替える (外部 HTTP 境界)。"""
-
-    def __init__(self) -> None:
-        self.handler: Callable[[httpx.Request], httpx.Response] = lambda _: httpx.Response(404)
-        self.requests: list[str] = []
-        self.sleeps: list[float] = []
-
-    def handle(self, request: httpx.Request) -> httpx.Response:
-        self.requests.append(str(request.url))
-        return self.handler(request)
-
-    def serve(self, *responses: httpx.Response | Exception) -> None:
-        """呼ばれた順に responses を返す。最後の 1 つはそれ以降も返し続ける。"""
-        queue = list(responses)
-
-        def handler(request: httpx.Request) -> httpx.Response:
-            item = queue.pop(0) if len(queue) > 1 else queue[0]
-            if isinstance(item, Exception):
-                raise item
-            return item
-
-        self.handler = handler
-
-
-@pytest.fixture
-def humandbs(monkeypatch: pytest.MonkeyPatch) -> _HumandbsStub:
-    stub = _HumandbsStub()
-    real_client = httpx.Client
-    transport = httpx.MockTransport(stub.handle)
-    monkeypatch.setattr(httpx, "Client", lambda **kwargs: real_client(transport=transport, **kwargs))
-    monkeypatch.setattr(time, "sleep", stub.sleeps.append)
-    return stub
-
-
-def _ok(text: str) -> httpx.Response:
-    return httpx.Response(200, text=text, headers={"Content-Type": "application/x-ndjson"})
-
-
 @pytest.mark.usefixtures("_setup_logger")
 class TestParseHumandbsDblinkNdjson:
     """Tests for parse_humandbs_dblink_ndjson function."""
@@ -466,8 +426,8 @@ class TestFetchHumandbsPairs:
     """Tests for fetch_humandbs_pairs function."""
 
     @pytest.mark.parametrize("base_url", [HUMANDBS_URL, f"{HUMANDBS_URL}/"])
-    def test_requests_dblink_listing_of_src_type(self, humandbs: _HumandbsStub, base_url: str) -> None:
-        humandbs.serve(_ok(_ndjson({("JGAD000001", "hum0004")}, "jga-dataset")))
+    def test_requests_dblink_listing_of_src_type(self, humandbs: HumandbsStub, base_url: str) -> None:
+        humandbs.serve(ok_ndjson(_ndjson({("JGAD000001", "hum0004")}, "jga-dataset")))
 
         result = fetch_humandbs_pairs(base_url, "jga-dataset")
 
@@ -483,8 +443,8 @@ class TestFetchHumandbsPairs:
             httpx.ReadTimeout("timed out"),
         ],
     )
-    def test_transient_failure_is_retried(self, humandbs: _HumandbsStub, first: httpx.Response | Exception) -> None:
-        humandbs.serve(first, _ok(_ndjson({("JGAS000001", "hum0004")})))
+    def test_transient_failure_is_retried(self, humandbs: HumandbsStub, first: httpx.Response | Exception) -> None:
+        humandbs.serve(first, ok_ndjson(_ndjson({("JGAS000001", "hum0004")})))
 
         result = fetch_humandbs_pairs(HUMANDBS_URL, "jga-study")
 
@@ -492,7 +452,7 @@ class TestFetchHumandbsPairs:
         assert len(humandbs.requests) == 2
         assert len(humandbs.sleeps) == 1
 
-    def test_server_error_on_every_attempt_raises_after_max_attempts(self, humandbs: _HumandbsStub) -> None:
+    def test_server_error_on_every_attempt_raises_after_max_attempts(self, humandbs: HumandbsStub) -> None:
         humandbs.serve(httpx.Response(500))
 
         with pytest.raises(httpx.HTTPStatusError):
@@ -501,7 +461,7 @@ class TestFetchHumandbsPairs:
         assert len(humandbs.requests) == HUMANDBS_FETCH_MAX_ATTEMPTS
         assert len(humandbs.sleeps) == HUMANDBS_FETCH_MAX_ATTEMPTS - 1
 
-    def test_connect_error_on_every_attempt_raises_after_max_attempts(self, humandbs: _HumandbsStub) -> None:
+    def test_connect_error_on_every_attempt_raises_after_max_attempts(self, humandbs: HumandbsStub) -> None:
         humandbs.serve(httpx.ConnectError("refused"))
 
         with pytest.raises(httpx.ConnectError):
@@ -510,7 +470,7 @@ class TestFetchHumandbsPairs:
         assert len(humandbs.requests) == HUMANDBS_FETCH_MAX_ATTEMPTS
 
     @pytest.mark.parametrize("status", [400, 404, 422])
-    def test_client_error_raises_without_retry(self, humandbs: _HumandbsStub, status: int) -> None:
+    def test_client_error_raises_without_retry(self, humandbs: HumandbsStub, status: int) -> None:
         humandbs.serve(httpx.Response(status))
 
         with pytest.raises(httpx.HTTPStatusError):
@@ -519,7 +479,7 @@ class TestFetchHumandbsPairs:
         assert len(humandbs.requests) == 1
         assert humandbs.sleeps == []
 
-    def test_redirect_to_html_page_raises_response_error(self, humandbs: _HumandbsStub) -> None:
+    def test_redirect_to_html_page_raises_response_error(self, humandbs: HumandbsStub) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             if request.url.path == "/api/dblink/jga-study":
                 return httpx.Response(302, headers={"Location": "https://errors.example/404"})
@@ -538,9 +498,9 @@ class TestUpdateJgaHumandbsFile:
     def _saved_path(self, config: Config) -> Path:
         return config.const_dir.joinpath(JGA_STUDY_HUM_ID_REL_PATH)
 
-    def test_fetched_pairs_are_saved_as_sorted_tsv(self, jga_config: Config, humandbs: _HumandbsStub) -> None:
+    def test_fetched_pairs_are_saved_as_sorted_tsv(self, jga_config: Config, humandbs: HumandbsStub) -> None:
         jga_config.humandbs_url = HUMANDBS_URL
-        humandbs.serve(_ok(_ndjson({("JGAS000002", "hum0001"), ("JGAS000001", "hum0004")})))
+        humandbs.serve(ok_ndjson(_ndjson({("JGAS000002", "hum0001"), ("JGAS000001", "hum0004")})))
 
         update_jga_humandbs_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
 
@@ -551,21 +511,21 @@ class TestUpdateJgaHumandbsFile:
         }
 
     def test_fetched_pairs_replace_saved_file_without_leaving_temp_file(
-        self, jga_config: Config, humandbs: _HumandbsStub
+        self, jga_config: Config, humandbs: HumandbsStub
     ) -> None:
         jga_config.humandbs_url = HUMANDBS_URL
         path = self._saved_path(jga_config)
         path.write_text("JGAS000009\thum0009\n", encoding="utf-8")
-        humandbs.serve(_ok(_ndjson({("JGAS000001", "hum0004")})))
+        humandbs.serve(ok_ndjson(_ndjson({("JGAS000001", "hum0004")})))
 
         update_jga_humandbs_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
 
         assert path.read_text(encoding="utf-8") == "JGAS000001\thum0004\n"
         assert sorted(p.name for p in path.parent.iterdir()) == [path.name]
 
-    def test_saved_directory_is_created_when_missing(self, tmp_path: Path, humandbs: _HumandbsStub) -> None:
+    def test_saved_directory_is_created_when_missing(self, tmp_path: Path, humandbs: HumandbsStub) -> None:
         config = Config(result_dir=tmp_path, const_dir=tmp_path.joinpath("empty_const"), humandbs_url=HUMANDBS_URL)
-        humandbs.serve(_ok(_ndjson({("JGAS000001", "hum0004")})))
+        humandbs.serve(ok_ndjson(_ndjson({("JGAS000001", "hum0004")})))
 
         update_jga_humandbs_file(config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
 
@@ -577,16 +537,16 @@ class TestUpdateJgaHumandbsFile:
             httpx.Response(500),
             httpx.Response(404),
             httpx.ConnectError("refused"),
-            _ok(""),
-            _ok("\n\n"),
-            _ok(_dblinks_line("JGAS000001", []) + "\n"),
-            _ok(_dblinks_line("INVALID", [("humandbs", "hum0004")]) + "\n"),
-            _ok("{not json\n"),
+            ok_ndjson(""),
+            ok_ndjson("\n\n"),
+            ok_ndjson(_dblinks_line("JGAS000001", []) + "\n"),
+            ok_ndjson(_dblinks_line("INVALID", [("humandbs", "hum0004")]) + "\n"),
+            ok_ndjson("{not json\n"),
             httpx.Response(200, text="<html></html>", headers={"Content-Type": "text/html"}),
         ],
     )
     def test_failed_or_empty_fetch_keeps_saved_file_and_warns(
-        self, jga_config: Config, humandbs: _HumandbsStub, response: httpx.Response | Exception
+        self, jga_config: Config, humandbs: HumandbsStub, response: httpx.Response | Exception
     ) -> None:
         jga_config.humandbs_url = HUMANDBS_URL
         path = self._saved_path(jga_config)
@@ -601,7 +561,7 @@ class TestUpdateJgaHumandbsFile:
         assert any(r["extra"].get("url") == STUDY_URL and "using saved file" in r["message"] for r in warnings)
 
     def test_failed_fetch_without_saved_file_leaves_no_file_to_load(
-        self, jga_config: Config, humandbs: _HumandbsStub
+        self, jga_config: Config, humandbs: HumandbsStub
     ) -> None:
         jga_config.humandbs_url = HUMANDBS_URL
         humandbs.serve(httpx.Response(503))
@@ -620,13 +580,13 @@ class TestUpdateJgaHumandbsFile:
     def test_loaded_pairs_are_fetched_pairs_or_saved_pairs_when_fetch_is_empty(
         self,
         jga_config: Config,
-        humandbs: _HumandbsStub,
+        humandbs: HumandbsStub,
         saved: set[tuple[str, str]],
         fetched: set[tuple[str, str]],
     ) -> None:
         jga_config.humandbs_url = HUMANDBS_URL
         self._saved_path(jga_config).write_text("".join(f"{a}\t{h}\n" for a, h in saved), encoding="utf-8")
-        humandbs.serve(_ok(_ndjson(fetched)))
+        humandbs.serve(ok_ndjson(_ndjson(fetched)))
 
         update_jga_humandbs_file(jga_config, JGA_STUDY_HUM_ID_REL_PATH, "jga-study")
 

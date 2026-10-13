@@ -1,17 +1,19 @@
 """JGA JSONL 生成モジュール。"""
 
 import argparse
-import csv
+import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import date
 from pathlib import Path
 from typing import Any, Literal
 
+import httpx
+
 from ddbj_search_converter.config import (
-    ISO8601_UTC_FORMAT,
     JGA_BASE_DIR_NAME,
     JGA_BASE_PATH,
+    JGA_DATE_REL_PATHS,
     JSONL_DIR_NAME,
     TODAY_STR,
     Config,
@@ -19,6 +21,8 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.utils import load_jga_blacklist
+from ddbj_search_converter.humandbs import HumandbsResponseError, get_humandbs_text
+from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.jsonl.distribution import make_jga_distribution
 from ddbj_search_converter.jsonl.utils import (
     build_pubmed_url,
@@ -30,7 +34,8 @@ from ddbj_search_converter.jsonl.utils import (
     normalize_publication_dbtype,
     write_jsonl,
 )
-from ddbj_search_converter.logging.logger import log_debug, log_error, log_info, log_warn, run_logger
+from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
+from ddbj_search_converter.logging.schema import DebugCategory
 from ddbj_search_converter.schema import (
     JGA,
     ExternalLink,
@@ -74,69 +79,133 @@ def load_jga_xml(xml_path: Path) -> dict[str, Any]:
     return xml_metadata
 
 
-def format_date(value: str | datetime | None) -> str | None:
-    """datetime を ISO 8601 形式の文字列に変換する。"""
+# === 日付 (humandbs API) ===
+
+DateTriple = tuple[str | None, str | None, str | None]
+DateMap = dict[str, DateTriple]
+
+JGA_DATE_KEYS = ("dateCreated", "datePublished", "dateModified")
+_CALENDAR_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}\Z")
+
+
+def humandbs_jga_date_url(base_url: str, index_name: IndexName) -> str:
+    return f"{base_url.rstrip('/')}/api/jga-date/{index_name}"
+
+
+def _parse_calendar_date(value: Any, origin: str, line: str) -> str | None:
+    """``YYYY-MM-DD`` の文字列はそのまま返し、null は None にする。
+
+    Raises:
+        HumandbsResponseError: 文字列でも null でもない、または暦日として読めない場合。
+    """
     if value is None:
         return None
+    if not isinstance(value, str) or _CALENDAR_DATE.match(value) is None:
+        raise HumandbsResponseError(f"date is not YYYY-MM-DD from {origin}: {line[:200]}")
     try:
-        if isinstance(value, datetime):
-            return value.astimezone(timezone.utc).strftime(ISO8601_UTC_FORMAT)
-        if isinstance(value, str):
-            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-            return dt.astimezone(timezone.utc).strftime(ISO8601_UTC_FORMAT)
-    except Exception:
-        pass
-    return None
+        date.fromisoformat(value)
+    except ValueError as e:
+        raise HumandbsResponseError(f"date is not a calendar date from {origin}: {line[:200]}") from e
+    return value
 
 
-_TZ_FIX = re.compile(r"([+-]\d{2})$")
-_FRAC_FIX = re.compile(r"(\.\d{1,6})([+-])")
+def parse_humandbs_jga_date_ndjson(text: str, index_name: IndexName, origin: str) -> DateMap:
+    """/api/jga-date/{index_name} の NDJSON から accession -> (dateCreated, datePublished, dateModified) を取り出す。
 
+    1 行は ``{"identifier": ..., "type": ..., "dateCreated": ..., "datePublished": ..., "dateModified": ...}``。
+    日付は ``YYYY-MM-DD`` か null。形式に合わない accession の行はスキップする。
+    ``origin`` は応答の URL か保存したファイルのパスで、メッセージに使う。
 
-def _format_date_from_csv(value: str) -> str:
+    Raises:
+        HumandbsResponseError: JSON として読めない行、必要なキーが無い行、``type`` が index_name と違う行、
+            日付が ``YYYY-MM-DD`` でも null でもない行がある場合。
     """
-    CSV に入っている日付を ISO 8601 形式に変換する。
-
-    CSV 形式例: 2014-07-07 14:00:37.208+09
-    """
-    fixed_value = value.strip().replace(" ", "T")
-    if _TZ_FIX.search(fixed_value):
-        fixed_value = _TZ_FIX.sub(r"\1:00", fixed_value)
-    fixed_value = fixed_value.replace("Z", "+00:00")
-    fixed_value = _FRAC_FIX.sub(lambda m: f"{m.group(1).ljust(7, '0')}{m.group(2)}", fixed_value)
-    date = datetime.fromisoformat(fixed_value)
-    result = format_date(date)
-    if result is None:
-        raise ValueError(f"Failed to format date: {value}")
-    return result
-
-
-def load_date_map(jga_base_path: Path, index_name: IndexName) -> dict[str, tuple[str, str, str]]:
-    """
-    CSV から日付情報を読み込む。
-
-    CSV フォーマット: accession, dateCreated, datePublished, dateModified
-    戻り値: {accession: (dateCreated, datePublished, dateModified)}
-    """
-    type_name = index_name.replace("jga-", "")
-    csv_path = jga_base_path.joinpath(f"{type_name}.date.csv")
-    if not csv_path.exists():
-        raise FileNotFoundError(f"CSV file for {index_name} date map does not exist: {csv_path}")
-
-    date_map: dict[str, tuple[str, str, str]] = {}
-    with csv_path.open("r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        next(reader)  # Skip header
-        for row in reader:
-            if len(row) != 4:
-                log_error(f"invalid row in date map csv: {row}")
-                continue
-            accession, date_created, date_published, date_modified = row
-            date_map[accession] = (
-                _format_date_from_csv(date_created),
-                _format_date_from_csv(date_published),
-                _format_date_from_csv(date_modified),
+    date_map: DateMap = {}
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+            accession = entry["identifier"]
+            entry_type = entry["type"]
+            values = [entry[key] for key in JGA_DATE_KEYS]
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            raise HumandbsResponseError(f"unexpected line from {origin}: {line[:200]}") from e
+        if not isinstance(accession, str):
+            raise HumandbsResponseError(f"non-string identifier from {origin}: {line[:200]}")
+        if entry_type != index_name:
+            raise HumandbsResponseError(f"type is not {index_name} from {origin}: {line[:200]}")
+        date_created, date_published, date_modified = (_parse_calendar_date(value, origin, line) for value in values)
+        if not is_valid_accession(accession, INDEX_TO_ACCESSION_TYPE[index_name]):
+            log_debug(
+                f"skipping invalid {index_name}: {accession}",
+                accession=accession,
+                debug_category=DebugCategory.INVALID_ACCESSION_ID,
+                source="jga-humandbs",
+                file=origin,
             )
+            continue
+        date_map[accession] = (date_created, date_published, date_modified)
+
+    return date_map
+
+
+def fetch_jga_date_map(base_url: str, index_name: IndexName) -> DateMap:
+    """humandbs の /api/jga-date/{index_name} から日付を取得する。
+
+    Raises:
+        httpx.HTTPError: retry しても接続できない、または 2xx 以外の応答の場合。
+        HumandbsResponseError: 応答が期待する NDJSON として読めない場合。
+    """
+    url = humandbs_jga_date_url(base_url, index_name)
+    return parse_humandbs_jga_date_ndjson(get_humandbs_text(url), index_name, url)
+
+
+def _jga_date_path(config: Config, index_name: IndexName) -> Path:
+    return config.const_dir.joinpath(JGA_DATE_REL_PATHS[index_name])
+
+
+def _write_jga_date_file(path: Path, text: str) -> None:
+    """同じディレクトリの一時ファイルに書いてから置き換え、途中で止まっても前のファイルを残す。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f"{path.name}.tmp")
+    tmp_path.write_text(text, encoding="utf-8")
+    tmp_path.replace(path)
+
+
+def update_jga_date_file(config: Config, index_name: IndexName) -> None:
+    """humandbs から index_name の日付を取得し、{const_dir}/jga/{index_name}.date.ndjson に応答の本文のまま保存する。
+
+    取得に失敗したとき、または有効な行が 0 件のときは warn を出し、ファイルを変更しない。
+    """
+    path = _jga_date_path(config, index_name)
+    url = humandbs_jga_date_url(config.humandbs_url, index_name)
+    try:
+        text = get_humandbs_text(url)
+        date_map = parse_humandbs_jga_date_ndjson(text, index_name, url)
+    except (httpx.HTTPError, HumandbsResponseError) as e:
+        log_warn(f"failed to fetch {index_name} dates, using saved file: {e}", url=url, file=str(path))
+        return
+    if not date_map:
+        log_warn(f"humandbs returned no {index_name} dates, using saved file", url=url, file=str(path))
+        return
+
+    _write_jga_date_file(path, text)
+    log_info(f"saved {len(date_map)} {index_name} dates from humandbs", url=url, file=str(path))
+
+
+def load_date_map(config: Config, index_name: IndexName) -> DateMap:
+    """保存した humandbs の応答から accession -> (dateCreated, datePublished, dateModified) を読み込む。
+
+    Raises:
+        FileNotFoundError: ファイルが存在しない場合。
+        HumandbsResponseError: ファイルが期待する NDJSON として読めない場合。
+    """
+    path = _jga_date_path(config, index_name)
+    if not path.exists():
+        raise FileNotFoundError(f"jga date file not found: {path}")
+    date_map = parse_humandbs_jga_date_ndjson(path.read_text(encoding="utf-8"), index_name, str(path))
+    log_info(f"loaded {len(date_map)} {index_name} dates from humandbs file", file=str(path))
 
     return date_map
 
@@ -525,7 +594,8 @@ def generate_jga_jsonl(
             jga_instances[accession].dbXrefs = xrefs
 
     # 日付を取得して更新
-    date_map = load_date_map(jga_base_path, index_name)
+    update_jga_date_file(config, index_name)
+    date_map = load_date_map(config, index_name)
     for accession, (date_created, date_published, date_modified) in date_map.items():
         if accession in jga_instances:
             jga_instance = jga_instances[accession]

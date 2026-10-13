@@ -23,6 +23,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.db import AccessionType
 from ddbj_search_converter.dblink.jga import fetch_humandbs_pairs
+from ddbj_search_converter.jsonl.jga import INDEX_NAMES, IndexName, fetch_jga_date_map
 
 
 def test_ncbi_assembly_summary_is_reachable() -> None:
@@ -74,3 +75,11 @@ def test_humandbs_dblink_listing_returns_pairs(src_type: AccessionType) -> None:
     pairs = fetch_humandbs_pairs(get_config().humandbs_url, src_type)
 
     assert pairs, f"humandbs returned no {src_type} -> humandbs"
+
+
+@pytest.mark.parametrize("index_name", INDEX_NAMES)
+def test_humandbs_jga_date_listing_returns_dates(index_name: IndexName) -> None:
+    """IT-RESOURCE-05: humandbs の /api/jga-date/{index_name} が NDJSON で 1 件以上返る。"""
+    date_map = fetch_jga_date_map(get_config().humandbs_url, index_name)
+
+    assert date_map, f"humandbs returned no {index_name} dates"

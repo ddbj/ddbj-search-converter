@@ -80,6 +80,12 @@ INSDC_BP_PRESERVED_REL_PATH = "dblink/insdc_bp_preserved.tsv"
 INSDC_BS_PRESERVED_REL_PATH = "dblink/insdc_bs_preserved.tsv"
 JGA_STUDY_HUM_ID_REL_PATH = "dblink/jga_study_hum_id.tsv"
 JGA_DATASET_HUM_ID_REL_PATH = "dblink/jga_dataset_hum_id.tsv"
+JGA_DATE_REL_PATHS = {
+    "jga-study": "jga/jga-study.date.ndjson",
+    "jga-dataset": "jga/jga-dataset.date.ndjson",
+    "jga-dac": "jga/jga-dac.date.ndjson",
+    "jga-policy": "jga/jga-policy.date.ndjson",
+}
 
 # Accessions base paths
 SRA_ACCESSIONS_BASE_PATH = Path("/lustre9/open/database/ddbj-dbt/dra-private/mirror/SRA_Accessions")

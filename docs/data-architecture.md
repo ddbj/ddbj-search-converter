@@ -52,7 +52,7 @@ DDBJ Search Converter のデータフローと構造。
 |   generate_bp_jsonl          -- tmp_xml + date_cache + blacklist [+ dblink] |
 |   generate_bs_jsonl          -- tmp_xml + date_cache + blacklist [+ dblink] |
 |   generate_sra_jsonl         -- tar + accessions_db + blacklist [+ dblink]  |
-|   generate_jga_jsonl         -- XML/CSV + blacklist [+ dblink]              |
+|   generate_jga_jsonl         -- XML/CSV + humandbs + blacklist [+ dblink]   |
 |   generate_gea_jsonl         -- IDF [+ dblink]                              |
 |   generate_metabobank_jsonl  -- IDF [+ dblink]                              |
 |   ※ dblink (dbXrefs) はデフォルトで含めない。--include-dbxrefs で有効化     |
@@ -87,8 +87,9 @@ DDBJ Search Converter のデータフローと構造。
 | DRA Metadata XML | `/usr/local/resources/dra/fastq/{DRA000}/{DRA000XXX}/{DRA000XXX}.*.xml` |
 | NCBI SRA Metadata | `/lustre9/open/database/ddbj-dbt/dra-private/mirror/Metadata/Metadata/` |
 | JGA XML | `/usr/local/shared_data/jga/metadata-history/metadata/jga-{study,dataset,dac,policy}.xml` |
-| JGA CSV | `/usr/local/shared_data/jga/metadata-history/metadata/*.csv` |
+| JGA CSV | `/usr/local/shared_data/jga/metadata-history/metadata/*-relation.csv` |
 | NCBI Assembly | `https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt` |
+| humandbs API | `{DDBJ_SEARCH_CONVERTER_HUMANDBS_URL}/api/dblink/{type}`、`/api/jga-date/{index_name}` ([humandbs API](#humandbs-api)) |
 
 ### IDF/SDRF
 
@@ -164,13 +165,16 @@ URL に scheme を書き忘れたり、`mysql://` のように他 DB の scheme 
 
 ### humandbs API
 
-JGA Study / JGA Dataset と humandbs の研究 ID の対応は、humandbs の `/api/dblink/jga-study` と `/api/dblink/jga-dataset` から取得する。応答は 1 行が 1 accession の NDJSON で、形は DBLinks と同じ (`identifier` と `dbXrefs[].type` / `dbXrefs[].identifier`)。接続先は `DDBJ_SEARCH_CONVERTER_HUMANDBS_URL` で指定する (デフォルト `https://humandbs.dbcls.jp`)。
+humandbs から次の 2 つを取得する。接続先は `DDBJ_SEARCH_CONVERTER_HUMANDBS_URL` で指定する (デフォルト `https://humandbs.dbcls.jp`)。応答はどちらも 1 行が 1 accession の NDJSON である。
 
-`create_dblink_jga_relations` は取得した対応を `{const_dir}/dblink/jga_study_hum_id.tsv` と `{const_dir}/dblink/jga_dataset_hum_id.tsv` (ヘッダなしの 2 列 TSV) に保存してから、そのファイルを読む。
+- JGA Study / JGA Dataset と humandbs の研究 ID の対応: `/api/dblink/jga-study` と `/api/dblink/jga-dataset`。形は DBLinks と同じ (`identifier` と `dbXrefs[].type` / `dbXrefs[].identifier`)。`create_dblink_jga_relations` が取得し、`{const_dir}/dblink/jga_study_hum_id.tsv` と `{const_dir}/dblink/jga_dataset_hum_id.tsv` (ヘッダなしの 2 列 TSV) に保存する
+- JGA の 4 index の dateCreated / datePublished / dateModified: `/api/jga-date/{index_name}` (`jga-study`、`jga-dataset`、`jga-dac`、`jga-policy`)。1 行は `identifier`・`type`・`dateCreated`・`datePublished`・`dateModified` で、日付は日本時間の暦日 (`YYYY-MM-DD`)。null もあり得る。`generate_jga_jsonl` と `regenerate_jsonl --type jga` が取得し、`{const_dir}/jga/{index_name}.date.ndjson` に応答の本文のまま保存する。ES にも `YYYY-MM-DD` のまま入れる (時刻を補わない)。dateModified が datePublished より前のときは humandbs 側で datePublished に揃えている
 
-- 取得に失敗したとき (接続エラー・timeout・5xx を retry しても失敗、2xx 以外の応答、NDJSON として読めない、有効な対応が 0 件) は warn を出し、前回保存したファイルを使う。humandbs が止まっていても他の DB の日次更新を止めず、JGA から humandbs へのリンクも消さないため
-- 0 件を失敗として扱うのは、humandbs 側の不具合で空の応答が返ったときに、すべてのリンクを消さないため
-- 保存したファイルも無いときは step を失敗させる
+どのコマンドも、取得した応答を保存してから、保存したファイルを読む。
+
+- 取得に失敗したとき (接続エラー・timeout・5xx を retry しても失敗、2xx 以外の応答、NDJSON として読めない、有効な行が 0 件) は warn を出し、前回保存したファイルを使う。humandbs が止まっていても JGA の日次更新を止めず、humandbs へのリンクも日付も消さないため
+- 0 件を失敗として扱うのは、humandbs 側の不具合で空の応答が返ったときに、すべてのリンクや日付を消さないため
+- 保存したファイルも無いときは、`create_dblink_jga_relations` と `generate_jga_jsonl` は step を失敗させる。`regenerate_jsonl` は warn を出し、日付を入れずに出力する
 - 保存は同じディレクトリの一時ファイルに書いてから置き換えるので、途中で止まっても前回のファイルは壊れない
 
 ## const ディレクトリ
@@ -217,6 +221,16 @@ blacklist は「公開すべきでない accession」、preserved は「元デ�
 つまり「preserved の追加」 < 「blacklist の除外」。blacklist は最終的な公開可否を絶対値で表現する設定であり、両者が衝突したときは「公開しない」側を勝たせる安全寄りの仕様。両者を排他的に使いたい (= blacklist にも preserved にも入れない) 運用にしたい場合は、設定ファイル側でレビューする。converter は重複を検出して warn することはしない。
 
 blacklist は JSONL 生成時の除外だけでなく `es_delete_blacklist` でも参照され、過去にインデックスされていたが後から blacklist に追加された ES doc を削除する経路がある。
+
+### humandbs から取得して保存するファイル
+
+`create_dblink_jga_relations` と `generate_jga_jsonl` が humandbs API の応答を保存し、次の取得に失敗したときに読む ([humandbs API](#humandbs-api))。手で編集しない。
+
+| ファイル | 内容 |
+|---------|------|
+| `dblink/jga_study_hum_id.tsv` | JGA Study - humandbs |
+| `dblink/jga_dataset_hum_id.tsv` | JGA Dataset - humandbs |
+| `jga/{index_name}.date.ndjson` | JGA の dateCreated / datePublished / dateModified (`jga-study`、`jga-dataset`、`jga-dac`、`jga-policy` の 4 ファイル) |
 
 ## 中間データベース
 

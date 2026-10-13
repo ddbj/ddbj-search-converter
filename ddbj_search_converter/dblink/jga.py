@@ -25,7 +25,6 @@ JGA (Japanese Genotype-phenotype Archive) の XML/CSV/TSV から関連を抽出�
 
 import csv
 import json
-import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -49,6 +48,7 @@ from ddbj_search_converter.config import (
 )
 from ddbj_search_converter.dblink.db import AccessionType, IdPairs, load_to_db
 from ddbj_search_converter.dblink.utils import filter_sra_pairs_by_blacklist, load_jga_blacklist
+from ddbj_search_converter.humandbs import HumandbsResponseError, get_humandbs_text
 from ddbj_search_converter.id_patterns import is_valid_accession
 from ddbj_search_converter.logging.logger import log_debug, log_info, log_warn, run_logger
 from ddbj_search_converter.logging.schema import DebugCategory
@@ -215,15 +215,6 @@ def load_jga_study_xml() -> list[dict[str, Any]]:
     return studies
 
 
-HUMANDBS_FETCH_MAX_ATTEMPTS = 3
-HUMANDBS_FETCH_RETRY_WAIT_SECONDS = 10
-HUMANDBS_FETCH_TIMEOUT_SECONDS = 60.0
-
-
-class HumandbsResponseError(Exception):
-    """humandbs の応答が DBLinks の NDJSON として読めない。"""
-
-
 def _is_valid_humandbs_pair(src_acc: str, humandbs: str, src_type: AccessionType, **log_kwargs: Any) -> bool:
     """両側の accession が形式に合うか。合わなければ log_debug を出す。"""
     if not is_valid_accession(src_acc, src_type):
@@ -249,29 +240,6 @@ def _is_valid_humandbs_pair(src_acc: str, humandbs: str, src_type: AccessionType
 
 def humandbs_dblink_url(base_url: str, src_type: AccessionType) -> str:
     return f"{base_url.rstrip('/')}/api/dblink/{src_type}"
-
-
-def _get_humandbs_dblink(url: str) -> str:
-    """接続エラー・timeout・5xx は retry する。それ以外の 2xx でない応答はすぐに raise する。"""
-    for attempt in range(1, HUMANDBS_FETCH_MAX_ATTEMPTS + 1):
-        try:
-            with httpx.Client(follow_redirects=True, timeout=HUMANDBS_FETCH_TIMEOUT_SECONDS) as client:
-                response = client.get(url)
-                response.raise_for_status()
-                return response.text
-        except httpx.HTTPError as e:
-            retryable = isinstance(e, httpx.TransportError) or (
-                isinstance(e, httpx.HTTPStatusError) and e.response.is_server_error
-            )
-            if not retryable or attempt == HUMANDBS_FETCH_MAX_ATTEMPTS:
-                raise
-            wait = HUMANDBS_FETCH_RETRY_WAIT_SECONDS * attempt
-            log_warn(
-                f"humandbs request failed ({e}), retrying in {wait}s (attempt {attempt}/{HUMANDBS_FETCH_MAX_ATTEMPTS})",
-                url=url,
-            )
-            time.sleep(wait)
-    raise AssertionError("unreachable")
 
 
 def parse_humandbs_dblink_ndjson(text: str, src_type: AccessionType, url: str) -> IdPairs:
@@ -314,7 +282,7 @@ def fetch_humandbs_pairs(base_url: str, src_type: AccessionType) -> IdPairs:
         HumandbsResponseError: 応答が DBLinks の NDJSON として読めない場合。
     """
     url = humandbs_dblink_url(base_url, src_type)
-    return parse_humandbs_dblink_ndjson(_get_humandbs_dblink(url), src_type, url)
+    return parse_humandbs_dblink_ndjson(get_humandbs_text(url), src_type, url)
 
 
 def _write_humandbs_file(path: Path, pairs: IdPairs) -> None:

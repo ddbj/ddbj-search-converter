@@ -1,13 +1,16 @@
 """Shared fixtures for tests."""
 
+import time
 from collections.abc import Generator
 from pathlib import Path
 
+import httpx
 import pytest
 from hypothesis import settings
 
 from ddbj_search_converter.config import Config
 from ddbj_search_converter.logging.logger import _ctx, run_logger
+from tests.py_tests.humandbs_stub import HumandbsStub
 
 settings.register_profile("default", deadline=None)
 settings.load_profile("default")
@@ -55,3 +58,14 @@ def with_logger_isolated(tmp_path: Path) -> Generator[None, None, None]:
             yield
     finally:
         _ctx.set(None)
+
+
+@pytest.fixture
+def humandbs(monkeypatch: pytest.MonkeyPatch) -> HumandbsStub:
+    """humandbs への HTTP を stub に向け、retry の sleep を記録だけにする。"""
+    stub = HumandbsStub()
+    real_client = httpx.Client
+    transport = httpx.MockTransport(stub.handle)
+    monkeypatch.setattr(httpx, "Client", lambda **kwargs: real_client(transport=transport, **kwargs))
+    monkeypatch.setattr(time, "sleep", stub.sleeps.append)
+    return stub

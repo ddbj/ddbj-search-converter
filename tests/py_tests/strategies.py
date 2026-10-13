@@ -6,7 +6,7 @@
 """
 
 import string
-from datetime import datetime
+from datetime import date, datetime
 from re import Pattern
 
 from hypothesis import strategies as st
@@ -163,6 +163,11 @@ def st_geo_id() -> st.SearchStrategy[str]:
 def st_metabobank_id() -> st.SearchStrategy[str]:
     """``^MTBKS\\d+\\Z``"""
     return st.integers(min_value=1, max_value=9999).map(lambda n: f"MTBKS{n}")
+
+
+def st_calendar_date() -> st.SearchStrategy[str]:
+    """``YYYY-MM-DD`` (humandbs の jga-date が返す日本時間の暦日)。"""
+    return st.dates(min_value=date(1990, 1, 1), max_value=date(2099, 12, 31)).map(date.isoformat)
 
 
 def st_humandbs_id() -> st.SearchStrategy[str]:

@@ -1,101 +1,46 @@
 """Tests for ddbj_search_converter.jsonl.jga module."""
 
-from datetime import datetime, timezone
+import json
+from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
+from ddbj_search_converter.config import JGA_DATE_REL_PATHS, Config
+from ddbj_search_converter.humandbs import HUMANDBS_FETCH_MAX_ATTEMPTS, HumandbsResponseError
 from ddbj_search_converter.jsonl.jga import (
-    _format_date_from_csv,
+    IndexName,
     extract_dataset_type,
     extract_description,
     extract_study_type,
     extract_title,
-    format_date,
+    fetch_jga_date_map,
+    generate_jga_jsonl,
+    humandbs_jga_date_url,
     jga_entry_to_jga_instance,
+    load_date_map,
     parse_external_link,
     parse_grants,
+    parse_humandbs_jga_date_ndjson,
     parse_organization,
     parse_publications,
     parse_same_as,
     parse_vendor,
+    update_jga_date_file,
 )
+from ddbj_search_converter.logging.logger import _ctx, init_logger
 from ddbj_search_converter.schema import (
     ExternalLink,
     Grant,
     Organization,
     Publication,
 )
-
-
-class TestFormatDate:
-    """Tests for format_date function."""
-
-    def test_none_returns_none(self) -> None:
-        assert format_date(None) is None
-
-    def test_aware_datetime(self) -> None:
-        dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-        result = format_date(dt)
-        assert result == "2024-01-01T12:00:00Z"
-
-    def test_iso_string(self) -> None:
-        result = format_date("2024-01-01T12:00:00Z")
-        assert result == "2024-01-01T12:00:00Z"
-
-    def test_iso_string_with_offset(self) -> None:
-        result = format_date("2024-01-01T21:00:00+09:00")
-        assert result == "2024-01-01T12:00:00Z"
-
-    def test_invalid_string_returns_none(self) -> None:
-        assert format_date("not a date") is None
-
-
-class TestFormatDatePBT:
-    """Property-based tests for format_date."""
-
-    @given(st.none())
-    def test_none_always_none(self, value: None) -> None:
-        assert format_date(value) is None
-
-    @given(st.datetimes(timezones=st.just(timezone.utc)))
-    def test_aware_datetime_ends_with_z(self, dt: datetime) -> None:
-        result = format_date(dt)
-        assert result is not None
-        assert result.endswith("Z")
-
-
-class TestFormatDateFromCsv:
-    """Tests for _format_date_from_csv function."""
-
-    def test_standard_csv_format(self) -> None:
-        result = _format_date_from_csv("2014-07-07 14:00:37.208+09")
-        assert result.endswith("Z")
-        # 14:00:37 JST -> 05:00:37 UTC
-        assert result == "2014-07-07T05:00:37Z"
-
-    def test_utc_z_format(self) -> None:
-        result = _format_date_from_csv("2024-01-01T12:00:00Z")
-        assert result == "2024-01-01T12:00:00Z"
-
-    def test_invalid_date_raises(self) -> None:
-        with pytest.raises(Exception):
-            _format_date_from_csv("not-a-date")
-
-
-class TestFormatDateEdgeCases:
-    """Edge case tests for date formatting."""
-
-    def test_naive_datetime(self) -> None:
-        """naive datetime (timezone なし)。"""
-        dt = datetime(2024, 1, 1, 12, 0, 0)
-        result = format_date(dt)
-        # naive datetime に対する挙動をテスト
-        # astimezone はシステムの timezone を仮定する
-        assert result is not None
-        assert result.endswith("Z")
+from tests.py_tests.humandbs_stub import HumandbsStub, ok_ndjson
+from tests.py_tests.strategies import st_calendar_date, st_jga_dataset
 
 
 class TestBug15JgaDacWrapping:
@@ -910,3 +855,456 @@ class TestParseExternalLinkJga:
         }
         links = parse_external_link(entry, "jga-study")
         assert [link.url for link in links] == ["https://example.com"]
+
+
+# === 日付 (humandbs API) ===
+
+HUMANDBS_URL = "https://humandbs.example"
+STUDY_DATE_URL = f"{HUMANDBS_URL}/api/jga-date/jga-study"
+FIXTURE_JGA_PATH = Path(__file__).resolve().parents[2] / "fixtures/usr/local/shared_data/jga/metadata-history/metadata"
+
+DateTriple = tuple[str | None, str | None, str | None]
+
+
+def _date_line(identifier: Any, index_name: Any, created: Any, published: Any, modified: Any) -> str:
+    return json.dumps(
+        {
+            "identifier": identifier,
+            "type": index_name,
+            "dateCreated": created,
+            "datePublished": published,
+            "dateModified": modified,
+        },
+        separators=(",", ":"),
+    )
+
+
+def _date_ndjson(date_map: dict[str, DateTriple], index_name: str = "jga-study") -> str:
+    return "".join(_date_line(acc, index_name, *dates) + "\n" for acc, dates in sorted(date_map.items()))
+
+
+def _warnings() -> list[str]:
+    ctx = _ctx.get()
+    assert ctx is not None
+    if not ctx.log_file.exists():
+        return []
+    records = [json.loads(line) for line in ctx.log_file.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [str(record["message"]) for record in records if record["log_level"] == "WARNING"]
+
+
+def _saved_path(config: Config, index_name: str = "jga-study") -> Path:
+    return config.const_dir.joinpath(JGA_DATE_REL_PATHS[index_name])
+
+
+def _write_saved(config: Config, text: str, index_name: str = "jga-study") -> Path:
+    path = _saved_path(config, index_name)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+@pytest.fixture
+def jga_config(tmp_path: Path) -> Config:
+    return Config(result_dir=tmp_path, const_dir=tmp_path.joinpath("const"), humandbs_url=HUMANDBS_URL)
+
+
+@pytest.fixture
+def _setup_logger(jga_config: Config) -> Iterator[None]:
+    init_logger(run_name="test_jga", config=jga_config)
+    yield
+    _ctx.set(None)
+
+
+class TestHumandbsJgaDateUrl:
+    """Tests for humandbs_jga_date_url function."""
+
+    @pytest.mark.parametrize("base_url", [HUMANDBS_URL, f"{HUMANDBS_URL}/"])
+    def test_trailing_slash_is_not_doubled(self, base_url: str) -> None:
+        assert humandbs_jga_date_url(base_url, "jga-dataset") == f"{HUMANDBS_URL}/api/jga-date/jga-dataset"
+
+
+@pytest.mark.usefixtures("_setup_logger")
+class TestParseHumandbsJgaDateNdjson:
+    """Tests for parse_humandbs_jga_date_ndjson function."""
+
+    def test_lines_are_mapped_to_date_triples(self) -> None:
+        text = (
+            _date_line("JGAS000001", "jga-study", "2014-07-18", "2020-09-28", "2022-12-13")
+            + "\n"
+            + _date_line("JGAS000002", "jga-study", "2014-09-04", "2020-09-28", "2022-11-16")
+            + "\n"
+        )
+
+        result = parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+        assert result == {
+            "JGAS000001": ("2014-07-18", "2020-09-28", "2022-12-13"),
+            "JGAS000002": ("2014-09-04", "2020-09-28", "2022-11-16"),
+        }
+
+    @pytest.mark.parametrize("key_index", [0, 1, 2])
+    def test_null_date_is_none(self, key_index: int) -> None:
+        dates: list[str | None] = ["2014-07-18", "2020-09-28", "2022-12-13"]
+        dates[key_index] = None
+        text = _date_line("JGAS000001", "jga-study", *dates) + "\n"
+
+        result = parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+        assert result == {"JGAS000001": (dates[0], dates[1], dates[2])}
+
+    def test_empty_body_yields_empty_map(self) -> None:
+        assert parse_humandbs_jga_date_ndjson("", "jga-study", STUDY_DATE_URL) == {}
+
+    def test_blank_lines_crlf_and_missing_final_newline_are_accepted(self) -> None:
+        text = (
+            "\n"
+            + _date_line("JGAS000001", "jga-study", "2014-07-18", None, None)
+            + "\r\n  \n"
+            + _date_line("JGAS000002", "jga-study", None, None, "2022-11-16")
+        )
+
+        result = parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+        assert result == {"JGAS000001": ("2014-07-18", None, None), "JGAS000002": (None, None, "2022-11-16")}
+
+    def test_later_line_wins_for_duplicate_accession(self) -> None:
+        text = (
+            _date_line("JGAS000001", "jga-study", "2014-07-18", None, None)
+            + "\n"
+            + _date_line("JGAS000001", "jga-study", "2015-01-01", None, None)
+            + "\n"
+        )
+
+        result = parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+        assert result == {"JGAS000001": ("2015-01-01", None, None)}
+
+    @pytest.mark.parametrize(
+        "identifier",
+        ["JGAD000001", "jgas000001", "JGAS", "hum0001", "", "JGAS000001\n", "JGAS000001 ", "JGAS000001.1"],
+    )
+    def test_invalid_accession_is_skipped(self, identifier: str) -> None:
+        text = (
+            _date_line(identifier, "jga-study", "2014-07-18", "2020-09-28", "2022-12-13")
+            + "\n"
+            + _date_line("JGAS000002", "jga-study", "2014-09-04", "2020-09-28", "2022-11-16")
+            + "\n"
+        )
+
+        result = parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+        assert result == {"JGAS000002": ("2014-09-04", "2020-09-28", "2022-11-16")}
+
+    @pytest.mark.parametrize(
+        ("index_name", "line_type"),
+        [
+            ("jga-study", "jga-dataset"),
+            ("jga-dataset", "jga-study"),
+            ("jga-study", "study"),
+            ("jga-study", "JGA-STUDY"),
+            ("jga-study", None),
+            ("jga-study", 1),
+        ],
+    )
+    def test_type_other_than_index_name_raises(self, index_name: IndexName, line_type: Any) -> None:
+        text = _date_line("JGAS000001", line_type, "2014-07-18", "2020-09-28", "2022-12-13") + "\n"
+
+        with pytest.raises(HumandbsResponseError):
+            parse_humandbs_jga_date_ndjson(text, index_name, STUDY_DATE_URL)
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "2020-09-28T00:00:00Z",
+            "2020-09-28 00:00:00+09",
+            "2020/09/28",
+            "20200928",
+            "2020-9-8",
+            " 2020-09-28",
+            "2020-09-28\n",
+            "",
+            "2020-13-01",
+            "2020-02-30",
+            "0000-01-01",
+            20200928,
+            True,
+            [],
+            {},
+        ],
+    )
+    @pytest.mark.parametrize("key_index", [0, 1, 2])
+    def test_date_not_calendar_date_raises(self, value: Any, key_index: int) -> None:
+        dates: list[Any] = ["2014-07-18", "2020-09-28", "2022-12-13"]
+        dates[key_index] = value
+        text = _date_line("JGAS000001", "jga-study", *dates) + "\n"
+
+        with pytest.raises(HumandbsResponseError):
+            parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "{not json",
+            "<html><body>302 Found</body></html>",
+            "[]",
+            '"JGAS000001"',
+            "1",
+            "null",
+            '{"type": "jga-study", "dateCreated": null, "datePublished": null, "dateModified": null}',
+            '{"identifier": "JGAS000001", "dateCreated": null, "datePublished": null, "dateModified": null}',
+            '{"identifier": "JGAS000001", "type": "jga-study", "datePublished": null, "dateModified": null}',
+            '{"identifier": "JGAS000001", "type": "jga-study", "dateCreated": null, "dateModified": null}',
+            '{"identifier": "JGAS000001", "type": "jga-study", "dateCreated": null, "datePublished": null}',
+            '{"identifier": 1, "type": "jga-study", "dateCreated": null, "datePublished": null, "dateModified": null}',
+            '{"identifier": null, "type": "jga-study", "dateCreated": null, "datePublished": null, '
+            '"dateModified": null}',
+        ],
+    )
+    def test_line_not_in_jga_date_shape_raises(self, line: str) -> None:
+        text = _date_line("JGAS000002", "jga-study", None, None, None) + "\n" + line + "\n"
+
+        with pytest.raises(HumandbsResponseError):
+            parse_humandbs_jga_date_ndjson(text, "jga-study", STUDY_DATE_URL)
+
+    @settings(max_examples=100, deadline=None)
+    @given(
+        date_map=st.dictionaries(
+            st_jga_dataset(),
+            st.tuples(st.none() | st_calendar_date(), st.none() | st_calendar_date(), st.none() | st_calendar_date()),
+            max_size=30,
+        )
+    )
+    def test_ndjson_built_from_map_parses_back_to_same_map(self, date_map: dict[str, DateTriple]) -> None:
+        text = _date_ndjson(date_map, "jga-dataset")
+
+        assert parse_humandbs_jga_date_ndjson(text, "jga-dataset", STUDY_DATE_URL) == date_map
+
+
+@pytest.mark.usefixtures("_setup_logger")
+class TestFetchJgaDateMap:
+    """Tests for fetch_jga_date_map function."""
+
+    @pytest.mark.parametrize("base_url", [HUMANDBS_URL, f"{HUMANDBS_URL}/"])
+    def test_requests_jga_date_listing_of_index(self, humandbs: HumandbsStub, base_url: str) -> None:
+        humandbs.serve(
+            ok_ndjson(_date_line("JGAD000001", "jga-dataset", "2014-07-18", "2020-09-28", "2020-09-28") + "\n")
+        )
+
+        result = fetch_jga_date_map(base_url, "jga-dataset")
+
+        assert result == {"JGAD000001": ("2014-07-18", "2020-09-28", "2020-09-28")}
+        assert humandbs.requests == [f"{HUMANDBS_URL}/api/jga-date/jga-dataset"]
+
+    @pytest.mark.parametrize(
+        "first",
+        [
+            httpx.Response(502),
+            httpx.Response(503),
+            httpx.ConnectError("refused"),
+            httpx.ReadTimeout("timed out"),
+        ],
+    )
+    def test_transient_failure_is_retried(self, humandbs: HumandbsStub, first: httpx.Response | Exception) -> None:
+        humandbs.serve(first, ok_ndjson(_date_line("JGAS000001", "jga-study", "2014-07-18", None, None) + "\n"))
+
+        result = fetch_jga_date_map(HUMANDBS_URL, "jga-study")
+
+        assert result == {"JGAS000001": ("2014-07-18", None, None)}
+        assert len(humandbs.requests) == 2
+        assert len(humandbs.sleeps) == 1
+
+    def test_server_error_on_every_attempt_raises_after_max_attempts(self, humandbs: HumandbsStub) -> None:
+        humandbs.serve(httpx.Response(500))
+
+        with pytest.raises(httpx.HTTPStatusError):
+            fetch_jga_date_map(HUMANDBS_URL, "jga-study")
+
+        assert len(humandbs.requests) == HUMANDBS_FETCH_MAX_ATTEMPTS
+        assert len(humandbs.sleeps) == HUMANDBS_FETCH_MAX_ATTEMPTS - 1
+
+    @pytest.mark.parametrize("status", [400, 404, 422])
+    def test_client_error_raises_without_retry(self, humandbs: HumandbsStub, status: int) -> None:
+        humandbs.serve(httpx.Response(status))
+
+        with pytest.raises(httpx.HTTPStatusError):
+            fetch_jga_date_map(HUMANDBS_URL, "jga-study")
+
+        assert len(humandbs.requests) == 1
+        assert humandbs.sleeps == []
+
+    def test_html_page_raises_response_error(self, humandbs: HumandbsStub) -> None:
+        humandbs.serve(
+            httpx.Response(200, text="<!DOCTYPE html>\n<html></html>\n", headers={"Content-Type": "text/html"})
+        )
+
+        with pytest.raises(HumandbsResponseError):
+            fetch_jga_date_map(HUMANDBS_URL, "jga-study")
+
+
+@pytest.mark.usefixtures("_setup_logger")
+class TestUpdateJgaDateFile:
+    """Tests for update_jga_date_file function."""
+
+    def test_response_body_is_saved_as_is(self, jga_config: Config, humandbs: HumandbsStub) -> None:
+        text = (
+            _date_line("JGAS000002", "jga-study", "2014-09-04", None, None)
+            + "\n"
+            + _date_line("JGAS000001", "jga-study", "2014-07-18", "2020-09-28", "2022-12-13")
+            + "\n"
+        )
+        humandbs.serve(ok_ndjson(text))
+
+        update_jga_date_file(jga_config, "jga-study")
+
+        assert _saved_path(jga_config).read_text(encoding="utf-8") == text
+        assert load_date_map(jga_config, "jga-study") == {
+            "JGAS000001": ("2014-07-18", "2020-09-28", "2022-12-13"),
+            "JGAS000002": ("2014-09-04", None, None),
+        }
+        assert _warnings() == []
+
+    def test_each_index_is_saved_to_its_own_file(self, jga_config: Config, humandbs: HumandbsStub) -> None:
+        humandbs.serve(ok_ndjson(_date_line("JGAP000001", "jga-policy", "2014-07-09", None, None) + "\n"))
+
+        update_jga_date_file(jga_config, "jga-policy")
+
+        assert humandbs.requests == [f"{HUMANDBS_URL}/api/jga-date/jga-policy"]
+        assert _saved_path(jga_config, "jga-policy").name == "jga-policy.date.ndjson"
+        assert load_date_map(jga_config, "jga-policy") == {"JGAP000001": ("2014-07-09", None, None)}
+        assert not _saved_path(jga_config, "jga-study").exists()
+
+    def test_saved_file_is_replaced_without_leaving_temp_file(self, jga_config: Config, humandbs: HumandbsStub) -> None:
+        path = _write_saved(jga_config, _date_line("JGAS000009", "jga-study", None, None, None) + "\n")
+        new_text = _date_line("JGAS000001", "jga-study", "2014-07-18", None, None) + "\n"
+        humandbs.serve(ok_ndjson(new_text))
+
+        update_jga_date_file(jga_config, "jga-study")
+
+        assert path.read_text(encoding="utf-8") == new_text
+        assert sorted(p.name for p in path.parent.iterdir()) == [path.name]
+
+    @pytest.mark.parametrize(
+        "response",
+        [
+            httpx.Response(500),
+            httpx.Response(404),
+            httpx.Response(422),
+            httpx.ConnectError("refused"),
+            ok_ndjson("{not json\n"),
+            ok_ndjson(_date_line("JGAS000001", "jga-dataset", None, None, None) + "\n"),
+            ok_ndjson(_date_line("JGAS000001", "jga-study", "2020/01/01", None, None) + "\n"),
+            ok_ndjson(""),
+            ok_ndjson("\n\n"),
+            ok_ndjson(_date_line("JGAD000001", "jga-study", None, None, None) + "\n"),
+        ],
+    )
+    def test_failed_or_empty_fetch_keeps_saved_file_and_warns(
+        self, jga_config: Config, humandbs: HumandbsStub, response: httpx.Response | Exception
+    ) -> None:
+        saved = _date_line("JGAS000009", "jga-study", "2014-07-18", None, None) + "\n"
+        path = _write_saved(jga_config, saved)
+        humandbs.serve(response)
+
+        update_jga_date_file(jga_config, "jga-study")
+
+        assert path.read_text(encoding="utf-8") == saved
+        assert load_date_map(jga_config, "jga-study") == {"JGAS000009": ("2014-07-18", None, None)}
+        assert any("using saved file" in message for message in _warnings())
+        assert sorted(p.name for p in path.parent.iterdir()) == [path.name]
+
+    def test_failed_fetch_without_saved_file_leaves_nothing(self, jga_config: Config, humandbs: HumandbsStub) -> None:
+        humandbs.serve(httpx.Response(500))
+
+        update_jga_date_file(jga_config, "jga-study")
+
+        assert not _saved_path(jga_config).exists()
+        with pytest.raises(FileNotFoundError):
+            load_date_map(jga_config, "jga-study")
+
+    @settings(max_examples=50, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @given(
+        date_map=st.dictionaries(
+            st_jga_dataset(),
+            st.tuples(st.none() | st_calendar_date(), st.none() | st_calendar_date(), st.none() | st_calendar_date()),
+            min_size=1,
+            max_size=30,
+        )
+    )
+    def test_fetched_map_survives_save_and_load(
+        self, jga_config: Config, humandbs: HumandbsStub, date_map: dict[str, DateTriple]
+    ) -> None:
+        humandbs.serve(ok_ndjson(_date_ndjson(date_map, "jga-dataset")))
+
+        update_jga_date_file(jga_config, "jga-dataset")
+
+        assert load_date_map(jga_config, "jga-dataset") == date_map
+
+
+@pytest.mark.usefixtures("_setup_logger")
+class TestLoadDateMap:
+    """Tests for load_date_map function."""
+
+    def test_raises_when_file_missing(self, jga_config: Config) -> None:
+        with pytest.raises(FileNotFoundError):
+            load_date_map(jga_config, "jga-policy")
+
+    def test_raises_when_saved_file_is_malformed(self, jga_config: Config) -> None:
+        _write_saved(jga_config, "{not json\n", "jga-policy")
+
+        with pytest.raises(HumandbsResponseError):
+            load_date_map(jga_config, "jga-policy")
+
+    def test_raises_when_saved_file_is_for_other_index(self, jga_config: Config) -> None:
+        _write_saved(jga_config, _date_line("JGAS000001", "jga-study", None, None, None) + "\n", "jga-policy")
+
+        with pytest.raises(HumandbsResponseError):
+            load_date_map(jga_config, "jga-policy")
+
+
+@pytest.mark.usefixtures("_setup_logger")
+class TestGenerateJgaJsonlDates:
+    """generate_jga_jsonl が humandbs の日付を JSONL に入れる。"""
+
+    def _docs(self, output_dir: Path, index_name: str) -> dict[str, dict[str, Any]]:
+        lines = output_dir.joinpath(f"{index_name}.jsonl").read_text(encoding="utf-8").splitlines()
+        docs = [json.loads(line) for line in lines if line.strip()]
+        return {doc["identifier"]: doc for doc in docs}
+
+    def test_dates_from_humandbs_are_written_to_jsonl(
+        self, jga_config: Config, humandbs: HumandbsStub, tmp_path: Path
+    ) -> None:
+        humandbs.serve(ok_ndjson(_date_line("JGAS000001", "jga-study", "2014-07-18", "2020-09-28", None) + "\n"))
+        output_dir = tmp_path.joinpath("out")
+        output_dir.mkdir()
+
+        generate_jga_jsonl(jga_config, "jga-study", output_dir, FIXTURE_JGA_PATH, set(), False)
+
+        docs = self._docs(output_dir, "jga-study")
+        assert docs["JGAS000001"]["dateCreated"] == "2014-07-18"
+        assert docs["JGAS000001"]["datePublished"] == "2020-09-28"
+        assert docs["JGAS000001"].get("dateModified") is None
+        assert docs["JGAS000002"].get("dateCreated") is None
+        assert _saved_path(jga_config).exists()
+
+    def test_fetch_failure_without_saved_file_fails(
+        self, jga_config: Config, humandbs: HumandbsStub, tmp_path: Path
+    ) -> None:
+        humandbs.serve(httpx.Response(500))
+        output_dir = tmp_path.joinpath("out")
+        output_dir.mkdir()
+
+        with pytest.raises(FileNotFoundError):
+            generate_jga_jsonl(jga_config, "jga-study", output_dir, FIXTURE_JGA_PATH, set(), False)
+
+        assert not output_dir.joinpath("jga-study.jsonl").exists()
+
+    def test_fetch_failure_uses_saved_file(self, jga_config: Config, humandbs: HumandbsStub, tmp_path: Path) -> None:
+        _write_saved(jga_config, _date_line("JGAS000001", "jga-study", "2014-07-18", None, None) + "\n")
+        humandbs.serve(httpx.Response(503))
+        output_dir = tmp_path.joinpath("out")
+        output_dir.mkdir()
+
+        generate_jga_jsonl(jga_config, "jga-study", output_dir, FIXTURE_JGA_PATH, set(), False)
+
+        assert self._docs(output_dir, "jga-study")["JGAS000001"]["dateCreated"] == "2014-07-18"
+        assert any("using saved file" in message for message in _warnings())
