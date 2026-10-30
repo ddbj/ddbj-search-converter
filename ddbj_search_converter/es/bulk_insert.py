@@ -1,7 +1,6 @@
 """Elasticsearch bulk insert operations."""
 
 import json
-import re
 import time
 from collections.abc import Iterator
 from pathlib import Path
@@ -16,13 +15,11 @@ from ddbj_search_converter.es._error_utils import sanitize_value as _sanitize_va
 from ddbj_search_converter.es.client import check_index_exists, get_es_client, refresh_index, set_refresh_interval
 from ddbj_search_converter.es.index import IndexName
 from ddbj_search_converter.es.settings import BULK_INSERT_SETTINGS
-from ddbj_search_converter.id_patterns import is_zero_padding_variant
 from ddbj_search_converter.logging.logger import log_warn
 from elasticsearch import helpers
 
 __all__ = [
     "BulkInsertResult",
-    "_extract_prefix",
     "_sanitize_error_info",
     "_sanitize_value",
     "bulk_insert_from_dir",
@@ -76,44 +73,24 @@ def _extract_status_from_info(info: object) -> int | None:
     return None
 
 
-def _extract_prefix(identifier: str) -> str:
-    """Extract alphabetic prefix from an identifier.
-
-    >>> _extract_prefix("JGAS000001")
-    'JGAS'
-    >>> _extract_prefix("AGDD_000001")
-    'AGDD'
-    """
-    m = re.match(r"^[A-Za-z]+", identifier)
-    return m.group(0) if m else ""
-
-
 def generate_bulk_actions(
     jsonl_file: Path,
     index: str,
-    logical_index: str | None = None,
 ) -> Iterator[dict[str, Any]]:
     """Generate bulk actions from a JSONL file.
 
-    For documents with ``sameAs`` entries whose type matches the target index
-    and whose identifier prefix matches the primary identifier, additional
-    alias documents are yielded so that Secondary IDs are also retrievable.
-    Secondary IDs that only differ from the primary in zero padding
-    (``JGAS00000000001`` for ``JGAS000001``) get no alias document: it would
-    list the same entry twice, and the API resolves them through ``sameAs``.
+    Each document is indexed once, with its ``identifier`` as ``_id``.
+    Secondary IDs in ``sameAs`` get no document of their own: a second
+    document with the same ``_source`` would list the entry twice, and the
+    API resolves Secondary IDs through ``sameAs``.
 
     Args:
         jsonl_file: Path to the JSONL file
         index: Target index name (physical name used for ``_index``)
-        logical_index: Logical index name for ``sameAs`` type comparison.
-            When writing to a dated physical index (e.g. ``jga-study-20260413``),
-            pass the logical name (e.g. ``jga-study``) here so that the
-            ``sameAs`` type matching still works.  Defaults to *index*.
 
     Yields:
         Bulk action dictionaries
     """
-    type_match_name = logical_index or index
     with jsonl_file.open("r", encoding="utf-8") as f:
         for raw_line in f:
             line = raw_line.strip()
@@ -129,22 +106,6 @@ def generate_bulk_actions(
                 "_id": identifier,
                 "_source": doc,
             }
-            primary_prefix = _extract_prefix(identifier)
-            for same_as in doc.get("sameAs", []):
-                same_as_id = same_as.get("identifier")
-                if (
-                    same_as_id
-                    and same_as_id != identifier
-                    and same_as.get("type") == type_match_name
-                    and _extract_prefix(same_as_id) == primary_prefix
-                    and not is_zero_padding_variant(same_as_id, identifier)
-                ):
-                    yield {
-                        "_op_type": "index",
-                        "_index": index,
-                        "_id": same_as_id,
-                        "_source": doc,
-                    }
 
 
 def bulk_insert_jsonl(
@@ -160,7 +121,7 @@ def bulk_insert_jsonl(
     Args:
         config: Configuration object
         jsonl_files: List of JSONL file paths to insert
-        index: Logical index name (used for ``sameAs`` type matching)
+        index: Logical index name
         batch_size: Number of documents per bulk request
         max_errors: Maximum number of error details to keep
         target_index: Physical index name to write to.  When ``None``,
@@ -203,8 +164,7 @@ def bulk_insert_jsonl(
 
     try:
         for jsonl_file in jsonl_files:
-            logical = index if target_index else None
-            actions = generate_bulk_actions(jsonl_file, write_index, logical_index=logical)
+            actions = generate_bulk_actions(jsonl_file, write_index)
 
             for ok, info in helpers.parallel_bulk(
                 es_client_with_timeout,

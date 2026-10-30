@@ -2,14 +2,16 @@
 
 import contextlib
 import json
+import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from ddbj_search_converter.es.bulk_insert import (
     BulkInsertResult,
-    _extract_prefix,
     _extract_status_from_info,
     _sanitize_error_info,
     bulk_insert_jsonl,
@@ -154,8 +156,25 @@ class TestGenerateBulkActions:
             assert action["_id"] == f"ID{i}"
             assert action["_source"]["index"] == i
 
-    def test_same_as_alias_documents(self, tmp_path: Path) -> None:
-        """sameAs with matching type and prefix yields alias documents."""
+    def test_same_as_secondary_ids_get_no_document(self, tmp_path: Path) -> None:
+        """Only the primary is indexed, whatever kind of Secondary ID sameAs holds."""
+        jsonl_file = tmp_path / "test.jsonl"
+        same_as = [
+            {"identifier": "JGAS000556", "type": "jga-study", "url": "..."},
+            {"identifier": "JGAS00000000561", "type": "jga-study", "url": "..."},
+            {"identifier": "JGAS000561", "type": "jga-study", "url": "..."},
+            {"identifier": "AGDS_000001", "type": "jga-study", "url": "..."},
+        ]
+        doc = {"identifier": "JGAS000561", "type": "jga-study", "sameAs": same_as}
+        jsonl_file.write_text(json.dumps(doc) + "\n")
+
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
+
+        assert [a["_id"] for a in actions] == ["JGAS000561"]
+        assert actions[0]["_source"]["sameAs"] == same_as
+
+    def test_physical_index_name_used_for_index(self, tmp_path: Path) -> None:
+        """A dated physical index name goes to ``_index`` and adds no document."""
         jsonl_file = tmp_path / "test.jsonl"
         doc = {
             "identifier": "JGAS000561",
@@ -164,147 +183,40 @@ class TestGenerateBulkActions:
         }
         jsonl_file.write_text(json.dumps(doc) + "\n")
 
-        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
+        actions = list(generate_bulk_actions(jsonl_file, "jga-study-20260413"))
 
-        assert len(actions) == 2
+        assert len(actions) == 1
+        assert actions[0]["_index"] == "jga-study-20260413"
         assert actions[0]["_id"] == "JGAS000561"
-        assert actions[1]["_id"] == "JGAS000556"
-        assert actions[1]["_source"]["identifier"] == "JGAS000561"
 
-    def test_same_as_different_type_ignored(self, tmp_path: Path) -> None:
-        """sameAs with different type should not yield alias documents."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "PRJDB1234",
-            "type": "bioproject",
-            "sameAs": [{"identifier": "GSE12345", "type": "geo", "url": "..."}],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
+    @settings(max_examples=50)
+    @given(
+        entries=st.lists(
+            st.tuples(
+                st.integers(min_value=0, max_value=10**6),
+                st.lists(st.integers(min_value=0, max_value=10**6), max_size=5),
+            ),
+            max_size=20,
+            unique_by=lambda e: e[0],
+        ),
+    )
+    def test_one_document_per_identifier(self, entries: list[tuple[int, list[int]]]) -> None:
+        """Every action has ``_id == _source.identifier``, so no entry is listed twice."""
+        docs = [
+            {
+                "identifier": f"JGAS{n:06d}",
+                "type": "jga-study",
+                "sameAs": [{"identifier": f"JGAS{m:06d}", "type": "jga-study", "url": "..."} for m in secondaries],
+            }
+            for n, secondaries in entries
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            jsonl_file = Path(td) / "test.jsonl"
+            jsonl_file.write_text("".join(json.dumps(d) + "\n" for d in docs))
+            actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
 
-        actions = list(generate_bulk_actions(jsonl_file, "bioproject"))
-
-        assert len(actions) == 1
-        assert actions[0]["_id"] == "PRJDB1234"
-
-    def test_same_as_different_prefix_ignored(self, tmp_path: Path) -> None:
-        """sameAs with different prefix (e.g. AGDD vs JGAD) should not yield alias."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "JGAD000452",
-            "type": "jga-dataset",
-            "sameAs": [{"identifier": "AGDD_000001", "type": "jga-dataset", "url": "..."}],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
-
-        actions = list(generate_bulk_actions(jsonl_file, "jga-dataset"))
-
-        assert len(actions) == 1
-        assert actions[0]["_id"] == "JGAD000452"
-
-    def test_same_as_skip_self_reference(self, tmp_path: Path) -> None:
-        """sameAs with same identifier as primary should be skipped."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "JGAS000001",
-            "type": "jga-study",
-            "sameAs": [{"identifier": "JGAS000001", "type": "jga-study", "url": "..."}],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
-
-        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
-
-        assert len(actions) == 1
-
-    def test_same_as_zero_padding_variant_gets_no_alias(self, tmp_path: Path) -> None:
-        """A zero-padded spelling of the primary stays in sameAs but must not list the entry twice."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "JGAS000038",
-            "type": "jga-study",
-            "sameAs": [
-                {"identifier": "JGAS00000000038", "type": "jga-study", "url": "..."},
-                {"identifier": "JGAS000556", "type": "jga-study", "url": "..."},
-            ],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
-
-        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
-
-        assert [a["_id"] for a in actions] == ["JGAS000038", "JGAS000556"]
-        assert [x["identifier"] for x in actions[0]["_source"]["sameAs"]] == ["JGAS00000000038", "JGAS000556"]
-
-    def test_same_as_multiple(self, tmp_path: Path) -> None:
-        """Multiple sameAs entries yield multiple alias documents."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "JGAS000001",
-            "type": "jga-study",
-            "sameAs": [
-                {"identifier": "JGAS000998", "type": "jga-study", "url": "..."},
-                {"identifier": "JGAS000999", "type": "jga-study", "url": "..."},
-            ],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
-
-        actions = list(generate_bulk_actions(jsonl_file, "jga-study"))
-
-        assert len(actions) == 3
-        assert actions[0]["_id"] == "JGAS000001"
-        assert actions[1]["_id"] == "JGAS000998"
-        assert actions[2]["_id"] == "JGAS000999"
-        for action in actions:
-            assert action["_source"]["identifier"] == "JGAS000001"
-
-    def test_logical_index_for_blue_green(self, tmp_path: Path) -> None:
-        """With a physical index name, sameAs matching should use logical_index."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "JGAS000561",
-            "type": "jga-study",
-            "sameAs": [{"identifier": "JGAS000556", "type": "jga-study", "url": "..."}],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
-
-        # Without logical_index, physical name won't match sameAs type
-        actions_no_match = list(generate_bulk_actions(jsonl_file, "jga-study-20260413"))
-        assert len(actions_no_match) == 1
-
-        # With logical_index, sameAs type matching works
-        actions_match = list(generate_bulk_actions(jsonl_file, "jga-study-20260413", logical_index="jga-study"))
-        assert len(actions_match) == 2
-        assert actions_match[0]["_index"] == "jga-study-20260413"
-        assert actions_match[1]["_index"] == "jga-study-20260413"
-        assert actions_match[1]["_id"] == "JGAS000556"
-
-    def test_logical_index_none_uses_index(self, tmp_path: Path) -> None:
-        """When logical_index is None, sameAs matching uses index (backward compat)."""
-        jsonl_file = tmp_path / "test.jsonl"
-        doc = {
-            "identifier": "JGAS000561",
-            "type": "jga-study",
-            "sameAs": [{"identifier": "JGAS000556", "type": "jga-study", "url": "..."}],
-        }
-        jsonl_file.write_text(json.dumps(doc) + "\n")
-
-        actions = list(generate_bulk_actions(jsonl_file, "jga-study", logical_index=None))
-        assert len(actions) == 2
-
-
-class TestExtractPrefix:
-    def test_jga_prefix(self) -> None:
-        assert _extract_prefix("JGAS000001") == "JGAS"
-
-    def test_agdd_prefix(self) -> None:
-        assert _extract_prefix("AGDD_000001") == "AGDD"
-
-    def test_prjdb_prefix(self) -> None:
-        assert _extract_prefix("PRJDB1234") == "PRJDB"
-
-    def test_empty_string(self) -> None:
-        assert _extract_prefix("") == ""
-
-    def test_numeric_only(self) -> None:
-        assert _extract_prefix("12345") == ""
+        assert [a["_id"] for a in actions] == [d["identifier"] for d in docs]
+        assert all(a["_id"] == a["_source"]["identifier"] for a in actions)
 
 
 def _make_jsonl_file(tmp_path: Path, docs: list[dict]) -> Path:  # type: ignore[type-arg]

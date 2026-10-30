@@ -24,7 +24,7 @@ mapping JSON syntax / field type / unknown setting エラーを実 ES に PUT �
 | ID | 不変条件 |
 |---|---|
 | IT-MAPPING-01 | 全 14 index で `create_index_with_suffix(config, "all", "99991231")` が ES に accept される + `properties` が retrievable |
-| IT-MAPPING-02-{bp,bs,sra,jga,gea,mtb} | `schema.{Type}` から作った doc が対応する mapping に bulk insert で受け入れられる (`error_count == 0`) |
+| IT-MAPPING-02-{bp,bs,sra,jga,gea,mtb} | `schema.{Type}` から作った doc が対応する mapping に bulk insert で受け入れられ (`error_count == 0`)、物理 index の doc 数が投入した doc 数と一致する。jga の doc は `sameAs` に Secondary ID (別番号とゼロ埋め違いの表記) を持つ |
 
 ## ES alias swap (`IT-SWAP-*`)
 

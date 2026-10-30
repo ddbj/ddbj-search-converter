@@ -35,7 +35,7 @@ ES / PostgreSQL のデータは converter の更新で件数が変わる。固�
 - 対称性: `count(A→B) == count(B→A)` (半辺化スキーマ、`IT-INVARIANT-01`)
 - 整合: `count(entries) == sum(各 logical alias の count)` (`IT-INVARIANT-02`)
 - 最小保証: `count > 0`、`len(items) >= 1`
-- 包含関係: `unique(jsonl_ids) <= count(es)` (sameAs alias / blacklist の調整に注意)
+- 包含関係: `unique(jsonl_ids) <= count(es)` (blacklist の調整に注意)
 
 避けるパターン:
 

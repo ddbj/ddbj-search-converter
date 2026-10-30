@@ -1,13 +1,13 @@
 """Pydantic schema factories for integration tests.
 
 Each ``make_*_doc`` builds a minimum Pydantic instance with all required
-fields populated. ``sameAs`` and ``organism`` are intentionally empty/None
-so the bulk insert produces exactly ``len(docs)`` documents (no alias docs).
+fields populated. ``organism`` is None, and ``sameAs`` is empty unless the
+caller passes Secondary IDs to ``make_jga_doc``.
 """
 
 from ddbj_search_converter.es.mappings.jga import JgaIndexType
 from ddbj_search_converter.es.mappings.sra import SraIndexType
-from ddbj_search_converter.schema import GEA, JGA, SRA, BioProject, BioSample, MetaboBank
+from ddbj_search_converter.schema import GEA, JGA, SRA, BioProject, BioSample, MetaboBank, Xref
 
 
 def make_bp_doc(identifier: str) -> BioProject:
@@ -99,7 +99,7 @@ def make_sra_doc(identifier: str, type_: SraIndexType) -> SRA:
     )
 
 
-def make_jga_doc(identifier: str, type_: JgaIndexType) -> JGA:
+def make_jga_doc(identifier: str, type_: JgaIndexType, same_as: list[Xref] | None = None) -> JGA:
     return JGA(
         identifier=identifier,
         properties={},
@@ -119,7 +119,7 @@ def make_jga_doc(identifier: str, type_: JgaIndexType) -> JGA:
         datasetType=[],
         vendor=[],
         dbXrefs=[],
-        sameAs=[],
+        sameAs=same_as or [],
         status="public",
         accessibility="controlled-access",
         dateCreated=None,

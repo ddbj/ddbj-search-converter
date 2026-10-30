@@ -647,11 +647,9 @@ SRA は entity 別 (submission / sample / experiment) で独自フィールド�
 | `jga-dac.jsonl` | `jga-dac` |
 | `jga-policy.jsonl` | `jga-policy` |
 
-JGA エントリーが `sameAs`（SECONDARY_ID）を持つ場合、ES bulk insert 時に Secondary ID を `_id` とするエイリアスドキュメントを同一インデックスに追加投入する。エイリアスドキュメントの `_source` は Primary ドキュメントと同一（`identifier` は Primary ID のまま）。これにより Secondary ID でも API からエントリーを取得できる。ただしプレフィックス（英字部分）が Primary ID と異なる Secondary ID（例: `AGDD_000001`）は除外する。
+JGA エントリーの SECONDARY_ID は `sameAs` に格納する。実データの SECONDARY_ID には、別の accession 番号（例: `JGAS000561` に対する `JGAS000556`）と、Primary accession と同じプレフィックスでゼロ埋め桁数だけが異なる同一エントリーの別表記（例: `JGAS000001` に対する `JGAS00000000001`）がある。利用者はどちらの表記でも検索するので、どちらも `sameAs` に残す。
 
-実データの SECONDARY_ID には、Primary accession と同じプレフィックスでゼロ埋め桁数だけが異なり数値が同一の表現（例: accession `JGAS000001` に対する `JGAS00000000001`、いずれも数値は 1）が含まれる。これは同一エントリーの別表記で、利用者はこの表記でも検索するので sameAs には残す。ただしエイリアスドキュメントは作らない (`generate_bulk_actions` が除外する)。作ると同一 `_source` が 2 件投入されて一覧・集計で重複するため。この表記での取得は ddbj-search-api の sameAs による解決 (nested query) で行う。数値が異なる Secondary ID は本物の別 accession として、これまでどおりエイリアスドキュメントも作る。
-
-alias ドキュメントを投入する理由は、API 側で Secondary ID を直打ちされても `_id` lookup で取得できるようにするため。本来は ES の nested query (`sameAs.identifier == ?`) でフォールバックできるが、nested query は expensive で、マッピング不在のインデックスへのクエリで 500 が返るリスクもある。alias ドキュメントを Primary と同じインデックスに投入することで、API は受信時に `_source.identifier` をリクエスト ID と照合して Primary ID を検出する形になる。
+ES には 1 エントリーにつき Primary ID を `_id` とするドキュメントを 1 件だけ投入し、Secondary ID を `_id` とするドキュメントは作らない。Secondary ID を `_id` にして同じ `_source` を投入すると、一覧の検索と集計で同じエントリーが 2 件ずつ数えられるため。Secondary ID でのエントリーの取得は、ddbj-search-api が `sameAs` の nested query で Primary ID を解決して行う。
 
 ### GEA
 

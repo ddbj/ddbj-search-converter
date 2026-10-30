@@ -22,6 +22,7 @@ from ddbj_search_converter.es.bulk_insert import bulk_insert_jsonl
 from ddbj_search_converter.es.index import IndexName, create_index_with_suffix, make_physical_index_name
 from ddbj_search_converter.es.mappings.jga import JGA_INDEXES, JgaIndexType
 from ddbj_search_converter.es.mappings.sra import SRA_INDEXES, SraIndexType
+from ddbj_search_converter.schema import Xref
 from elasticsearch import Elasticsearch
 
 from ._factories import (
@@ -34,7 +35,7 @@ from ._factories import (
 )
 
 # DDBJ accession prefixes per logical index. Identifiers built from these
-# match production-style naming so sameAs prefix matching is realistic.
+# match production-style naming.
 _SRA_PREFIX: dict[SraIndexType, str] = {
     "sra-submission": "DRA",
     "sra-study": "DRP",
@@ -84,8 +85,8 @@ def _run_rehearsal(
     # Pydantic model_validator 由来の不変条件
     assert result.success_count + result.not_found_count + result.error_count == result.total_docs
 
-    # post-refresh / count による物理 index 上の実 doc 数検証。docs は sameAs を
-    # 持たない factory が出すため alias doc は増えず、len(docs) と一致するはず。
+    # post-refresh / count による物理 index 上の実 doc 数検証。1 エントリーにつき
+    # 1 doc だけ投入するので、sameAs に Secondary ID があっても len(docs) と一致する。
     es_client.indices.refresh(index=physical)
     actual_count = es_client.count(index=physical).body["count"]
     assert actual_count == len(docs), (
@@ -171,7 +172,17 @@ def test_current_jga_mapping_accepts_pydantic_schema_docs(
 ) -> None:
     """IT-MAPPING-02-jga: schema.JGA ↔ jga-* mapping drift, per logical index."""
     prefix = _JGA_PREFIX[logical_index]
-    docs = [make_jga_doc(f"{prefix}{i:06d}", logical_index) for i in range(1, 6)]
+    docs = [
+        make_jga_doc(
+            f"{prefix}{i:06d}",
+            logical_index,
+            same_as=[
+                Xref(identifier=f"{prefix}{i + 100:06d}", type=logical_index, url="https://example.com/secondary"),
+                Xref(identifier=f"{prefix}{i:011d}", type=logical_index, url="https://example.com/padded"),
+            ],
+        )
+        for i in range(1, 6)
+    ]
     _run_rehearsal(
         config=integration_config,
         suffix=rehearsal_date_suffix,
