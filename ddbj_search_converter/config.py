@@ -186,7 +186,7 @@ def apply_margin(since: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
     入力の tz offset が UTC 以外 (例: ``+09:00``) でも、内部時刻を UTC に変換
     してから整形するため、見かけの ``Z`` と実 tz のずれが発生しない。
     """
-    dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+    dt = datetime.fromisoformat(since)
     margin_dt = (dt - timedelta(days=margin_days)).astimezone(ZoneInfo("UTC"))
     return margin_dt.strftime(ISO8601_UTC_FORMAT)
 

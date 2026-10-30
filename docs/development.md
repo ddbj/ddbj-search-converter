@@ -10,6 +10,8 @@ dev 環境の起動手順は [README.md](../README.md)、テスト方針は [tes
 
 dev の `compose.yml` は `command: sleep infinity` でコンテナを起動する。CLI コマンドは都度 `docker compose exec app <command>` の形で実行する。
 
+uv と test 用の依存 package (`pyproject.toml` の `dev` group の pytest・ruff・mypy など) は、dev と staging が使う dev image にだけ入っている。production が使う runtime image では、これらのコマンドは実行できない ([deployment.md](deployment.md) の「image の build」)。
+
 ## 破壊的変更の影響範囲
 
 api は本リポジトリの Pydantic モデル (`schema.py`) と ES mapping を `git+https://...@main` で直接 import する。スキーマの SSOT は本リポジトリ側にあり、api は受信側として追従する関係。**本リポジトリの破壊的変更は main にマージした時点から api 側に影響する**ので、レビュー時に影響範囲を明示しておくと事故を減らせる。

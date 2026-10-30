@@ -3,7 +3,7 @@ Livelist ファイルから BioProject/BioSample の status 情報を取得し�
 DuckDB キャッシュを構築するモジュール。
 """
 
-import datetime
+import datetime as dt
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal
@@ -29,7 +29,7 @@ def find_latest_livelist_date(
     base_path: Path,
     kind: LivelistKind,
     *,
-    today: datetime.date | None = None,
+    today: dt.date | None = None,
 ) -> str | None:
     """``today`` から 180 日遡り、3 ファイル (public/suppressed/withdrawn) が全て存在する最新日付を返す。
 
@@ -37,7 +37,7 @@ def find_latest_livelist_date(
     """
     base_date = TODAY if today is None else today
     for days in range(180):
-        check_date = base_date - datetime.timedelta(days=days)
+        check_date = base_date - dt.timedelta(days=days)
         date_str = check_date.strftime("%Y%m%d")
 
         all_exist = True

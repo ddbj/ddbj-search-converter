@@ -4,7 +4,7 @@ import logging
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
@@ -81,7 +81,7 @@ def format_date(dt: datetime | None) -> str | None:
     """datetime を ISO 8601 形式の文字列に変換する。"""
     if dt is None:
         return None
-    return dt.astimezone(timezone.utc).strftime(ISO8601_UTC_FORMAT)
+    return dt.astimezone(UTC).strftime(ISO8601_UTC_FORMAT)
 
 
 ALLOWED_POSTGRES_SCHEMES = frozenset({"postgresql", "postgresql+psycopg", "postgres"})

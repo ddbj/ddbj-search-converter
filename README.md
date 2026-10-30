@@ -18,7 +18,8 @@ dev 環境はローカルで `tests/fixtures/` の小規模データを使うの
 ```bash
 cp env.dev .env
 docker network create ddbj-search-network-dev || true
-docker compose up -d --build
+docker compose build --pull
+docker compose up -d
 docker compose exec app bash
 ```
 
@@ -28,8 +29,10 @@ staging / production は podman-compose で動かす。`env.staging` または `
 cp env.staging .env
 cp compose.override.podman.yml compose.override.yml  # podman-compose が自動で読み込む
 podman network create ddbj-search-network-staging || true
-podman-compose up -d --build
+podman-compose up -d --build --pull
 ```
+
+`--pull` は base image の更新 (OS と Python の修正) を取り込むために付ける。
 
 詳細・落とし穴と production の Rundeck job (`scripts/rundeck-job.yaml` で日次運用) は [docs/deployment.md](docs/deployment.md)。
 

@@ -5,7 +5,7 @@ DB 構築パイプライン、relation イテレータ、JSONL クエリ関数�
 
 import re
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import duckdb
@@ -263,9 +263,9 @@ class TestLoadTsvToTmpDb:
         with duckdb.connect(db_path) as conn:
             row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
-        assert row[0] == datetime(2023, 6, 1, 21, 15, 36, tzinfo=timezone.utc)  # type: ignore[index]
-        assert row[1] == datetime(2023, 7, 1, 0, 0, 0, tzinfo=timezone.utc)  # type: ignore[index]
-        assert row[2] == datetime(2023, 5, 1, 12, 30, 45, tzinfo=timezone.utc)  # type: ignore[index]
+        assert row[0] == datetime(2023, 6, 1, 21, 15, 36, tzinfo=UTC)  # type: ignore[index]
+        assert row[1] == datetime(2023, 7, 1, 0, 0, 0, tzinfo=UTC)  # type: ignore[index]
+        assert row[2] == datetime(2023, 5, 1, 12, 30, 45, tzinfo=UTC)  # type: ignore[index]
 
     def test_dra_date_format(self, tmp_path: Path) -> None:
         """DRA 日付 `2015-01-28T13:36:34+09:00` が TIMESTAMPTZ で UTC に変換される。"""
@@ -290,9 +290,9 @@ class TestLoadTsvToTmpDb:
             row = conn.execute("SELECT Updated, Published, Received FROM accessions").fetchone()
 
         # JST (+09:00) → UTC に変換される
-        assert row[0] == datetime(2015, 1, 28, 4, 36, 34, tzinfo=timezone.utc)  # type: ignore[index]
-        assert row[1] == datetime(2015, 1, 31, 15, 0, 0, tzinfo=timezone.utc)  # type: ignore[index]
-        assert row[2] == datetime(2015, 1, 1, 0, 0, 0, tzinfo=timezone.utc)  # type: ignore[index]
+        assert row[0] == datetime(2015, 1, 28, 4, 36, 34, tzinfo=UTC)  # type: ignore[index]
+        assert row[1] == datetime(2015, 1, 31, 15, 0, 0, tzinfo=UTC)  # type: ignore[index]
+        assert row[2] == datetime(2015, 1, 1, 0, 0, 0, tzinfo=UTC)  # type: ignore[index]
 
     def test_null_date_preserved(self, tmp_path: Path) -> None:
         """NULL 日付 (`-`) は NULL のまま保持される。"""

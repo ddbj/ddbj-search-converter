@@ -1,6 +1,6 @@
 """postgres/utils.py のテスト。"""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import psycopg2
@@ -23,12 +23,12 @@ class TestFormatDate:
         assert format_date(None) is None
 
     def test_utc_datetime(self) -> None:
-        dt = datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+        dt = datetime(2024, 1, 15, 10, 30, 0, tzinfo=UTC)
         result = format_date(dt)
         assert result == "2024-01-15T10:30:00Z"
 
     def test_datetime_with_microseconds(self) -> None:
-        dt = datetime(2024, 6, 20, 12, 0, 0, 123456, tzinfo=timezone.utc)
+        dt = datetime(2024, 6, 20, 12, 0, 0, 123456, tzinfo=UTC)
         result = format_date(dt)
         assert result == "2024-06-20T12:00:00Z"
 

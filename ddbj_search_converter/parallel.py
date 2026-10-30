@@ -11,7 +11,9 @@ _PR_SET_PDEATHSIG = 1
 def exit_with_parent(parent_pid: int) -> None:
     """ProcessPoolExecutor の initializer。親プロセスが終了したら worker も終了するようにする。
 
-    ``initargs=(os.getpid(),)`` で親の pid を渡す。親だけが OOM などで SIGKILL されると、
+    ``initargs=(os.getpid(),)`` で親の pid を渡し、``mp_context=multiprocessing.get_context("fork")`` で
+    worker を fork で起動する。forkserver (Linux の既定) や spawn では worker の親が呼び出し元のプロセスにならず、
+    この関数が worker を終了させる。親だけが OOM などで SIGKILL されると、
     worker は次の仕事を待ったままメモリを保持して残る。PR_SET_PDEATHSIG は
     「worker を生成したスレッド」の終了で発火するので、executor への submit は親の main thread から行うこと。
     """

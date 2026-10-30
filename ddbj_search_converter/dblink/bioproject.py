@@ -28,6 +28,7 @@ BioProject XML から各種関連を抽出し、DBLink データベースに挿�
 - umbrella.tmp.duckdb (umbrella_relation テーブル) に umbrella 関連を挿入
 """
 
+import multiprocessing
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -216,6 +217,7 @@ def process_xml_files_parallel(
 
     with ProcessPoolExecutor(
         max_workers=parallel_num,
+        mp_context=multiprocessing.get_context("fork"),
         initializer=exit_with_parent,
         initargs=(os.getpid(),),
     ) as executor:

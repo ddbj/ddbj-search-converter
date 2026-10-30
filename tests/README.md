@@ -14,7 +14,7 @@ ddbj-search-converter のテスト方針と project 固有の注意点。
 docker compose exec app pytest
 ```
 
-`pyproject.toml` の `addopts = ["-n", "auto"]` で並列実行。Coverage は常に計測される。
+`pyproject.toml` の `addopts = ["-n", "auto"]` で並列実行。
 
 ### Integration
 

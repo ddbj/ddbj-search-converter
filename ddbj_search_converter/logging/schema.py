@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
@@ -22,7 +22,7 @@ LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 Lifecycle = Literal["start", "end", "failed"]
 
 
-class DebugCategory(str, Enum):
+class DebugCategory(StrEnum):
     """DEBUG log category for aggregation in log.duckdb."""
 
     # Configuration

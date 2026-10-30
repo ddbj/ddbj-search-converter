@@ -23,7 +23,7 @@ def _is_dead(pid: int) -> bool:
 
 
 _PARENT_SCRIPT = """
-import json, os, sys, time
+import json, multiprocessing, os, sys, time
 from concurrent.futures import ProcessPoolExecutor
 from ddbj_search_converter.parallel import exit_with_parent
 
@@ -34,7 +34,7 @@ def pid_after_delay():
 if __name__ == "__main__":
     use_initializer = sys.argv[1] == "1"
     kwargs = {"initializer": exit_with_parent, "initargs": (os.getpid(),)} if use_initializer else {}
-    with ProcessPoolExecutor(max_workers=2, **kwargs) as executor:
+    with ProcessPoolExecutor(max_workers=2, mp_context=multiprocessing.get_context("fork"), **kwargs) as executor:
         pids = sorted({f.result() for f in [executor.submit(pid_after_delay) for _ in range(2)]})
         for _ in range(2):
             executor.submit(time.sleep, 120)
@@ -120,23 +120,75 @@ class TestExitWithParent:
         assert "alive" in result.stdout
 
 
+def _process_pool_calls() -> list[tuple[str, ast.Call]]:
+    """パッケージ内の ``ProcessPoolExecutor(...)`` の呼び出しを (場所, node) で返す。"""
+    package_dir = Path(ddbj_search_converter.__file__).parent
+    calls: list[tuple[str, ast.Call]] = []
+    for path in sorted(package_dir.rglob("*.py")):
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            name = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
+            if name == "ProcessPoolExecutor":
+                calls.append((f"{path.relative_to(package_dir)}:{node.lineno}", node))
+    return calls
+
+
+def _keyword(node: ast.Call, arg: str) -> ast.expr | None:
+    return next((kw.value for kw in node.keywords if kw.arg == arg), None)
+
+
+def _is_fork_context(value: ast.expr | None) -> bool:
+    """``multiprocessing.get_context("fork")`` なら True。"""
+    if not isinstance(value, ast.Call):
+        return False
+    func = value.func
+    is_get_context = (
+        isinstance(func, ast.Attribute)
+        and func.attr == "get_context"
+        and isinstance(func.value, ast.Name)
+        and func.value.id == "multiprocessing"
+    )
+    return (
+        is_get_context
+        and len(value.args) == 1
+        and isinstance(value.args[0], ast.Constant)
+        and value.args[0].value == "fork"
+    )
+
+
 class TestEveryProcessPoolUsesExitWithParent:
     def test_no_process_pool_is_created_without_the_initializer(self) -> None:
-        package_dir = Path(ddbj_search_converter.__file__).parent
-        offenders: list[str] = []
-        pools_found = 0
-        for path in sorted(package_dir.rglob("*.py")):
-            tree = ast.parse(path.read_text(), filename=str(path))
-            for node in ast.walk(tree):
-                if not isinstance(node, ast.Call):
-                    continue
-                name = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
-                if name != "ProcessPoolExecutor":
-                    continue
-                pools_found += 1
-                initializer = next((kw.value for kw in node.keywords if kw.arg == "initializer"), None)
-                if getattr(initializer, "id", None) != "exit_with_parent":
-                    offenders.append(f"{path.relative_to(package_dir)}:{node.lineno}")
+        calls = _process_pool_calls()
+        offenders = [
+            where for where, node in calls if getattr(_keyword(node, "initializer"), "id", None) != "exit_with_parent"
+        ]
 
-        assert pools_found >= 5
+        assert len(calls) >= 5
         assert offenders == []
+
+    def test_every_process_pool_forks_its_workers(self) -> None:
+        # forkserver や spawn では worker の親が呼び出し元のプロセスにならず、exit_with_parent が worker を終了させる
+        calls = _process_pool_calls()
+        offenders = [where for where, node in calls if not _is_fork_context(_keyword(node, "mp_context"))]
+
+        assert len(calls) >= 5
+        assert offenders == []
+
+
+class TestIsForkContext:
+    def test_accepts_the_fork_context(self) -> None:
+        assert _is_fork_context(ast.parse('multiprocessing.get_context("fork")', mode="eval").body)
+
+    def test_rejects_other_start_methods_and_shapes(self) -> None:
+        for source in [
+            'multiprocessing.get_context("forkserver")',
+            'multiprocessing.get_context("spawn")',
+            "multiprocessing.get_context()",
+            'get_context("fork")',
+            'mp.get_context("fork")',
+            '"fork"',
+        ]:
+            assert not _is_fork_context(ast.parse(source, mode="eval").body), source
+        assert not _is_fork_context(None)

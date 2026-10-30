@@ -48,11 +48,36 @@ DDBJ Search は converter / api / front / nginx の 4 リポジトリに分か�
 - deploy 単位はリポジトリごとに独立しているので、front だけ更新したいときに converter / api を触る必要はない
 - 例外: 本リポジトリの Pydantic モデル / ES mapping を変更する deploy では、api 側も同時に更新する必要がある (api は `git+...@main` で本リポジトリを依存している)
 
-## 依存パッケージ更新時は image を rebuild する
+## image の build
 
-venv は image layer 内 (`/opt/venv/`) に焼き込んでいる。`pyproject.toml` / `uv.lock` を更新したあとは `podman-compose up -d --build` で image を再構築すれば反映される。
+Dockerfile は builder / runtime / dev の 3 つの stage を持つ。compose.yml の `app` は、`.env` の `DDBJ_SEARCH_APP_BUILD_TARGET` で runtime か dev のどちらの image を build するかを選ぶ。
 
-bind mount (`.:/app:rw`) は Python ソース変更を即時反映するが、venv 自体は image の外には出していない。これは過去にホスト UID と named volume の組み合わせで venv が壊れたケースを構造的に避ける狙い (UID mismatch があっても venv が共有領域に出ないため壊れない)。
+- runtime (production): venv には実行に要る依存 package だけを入れる。uv と、test 用の依存 package (`pyproject.toml` の `dev` group) は入れない
+- dev (dev と staging): runtime に uv と test 用の依存 package を足す。staging の `app` コンテナで integration test を実行するので、staging も dev を使う
+
+venv は image の中 (`/opt/venv/`) に作る。venv を named volume に置くと、ホストとコンテナで UID がずれたときに venv が壊れるため。project は editable で venv に入れるので、bind mount (`.:/app:rw`) したソースの変更は `podman-compose restart app` で反映される。
+
+`pyproject.toml` / `uv.lock` / Dockerfile を変えたときと、base image の修正 (OS と Python) を取り込むときは、`--pull` を付けて build し直してからコンテナを作り直す。同名のコンテナが残っていると podman-compose はコンテナを作り直さず、古い image のコンテナを起動するので、`down` してから `up` する。
+
+```bash
+podman-compose build --pull app
+podman-compose down
+podman-compose up -d
+```
+
+## Elasticsearch の version を上げる
+
+ES の image は `compose.yml` で version まで固定している。上げる前に、release notes の breaking changes と upgrade の条件 (どの version から直接上げられるか) を読む。ES は新しい version で一度起動したデータを古い version では開けないので、上げる前に snapshot を取る ([elasticsearch.md](elasticsearch.md) の「スナップショット管理」)。戻すときは、古い version の空の ES にこの snapshot を復元する。
+
+`compose.yml` の tag を変えたあと、ES のコンテナを消してから起動し直す。named volume のデータは残る。ES を止めている間は api の検索が失敗するので、production では日次の Rundeck job と重ならない時間に行う。
+
+```bash
+podman-compose exec app es_snapshot create --repo <repo>
+podman-compose stop elasticsearch
+podman rm ddbj-search-es-${DDBJ_SEARCH_ENV}
+podman-compose up -d elasticsearch
+podman-compose exec app es_health_check
+```
 
 ## named volume の rename
 
@@ -109,7 +134,7 @@ api コンテナは起動中ずっと `dblink.duckdb` を read mode で握って
 cd /data1/ddbj-search/ddbj-search-converter/
 git checkout <previous-commit>
 podman-compose down
-podman-compose up -d --build
+podman-compose up -d --build --pull
 ```
 
 所要時間は build 込みで 5〜10 分。Python ソースだけのロールバックで Dockerfile / `pyproject.toml` / `uv.lock` が変わっていない場合は、`--build` を省略すれば bind mount だけで戻せる (`git checkout <commit> && podman-compose restart app`)。依存パッケージが変わっているときは `--build` 必須。
@@ -131,7 +156,7 @@ podman tag ddbj-search-converter-${DDBJ_SEARCH_ENV}:prev ddbj-search-converter-$
 podman-compose up -d   # --build なし
 ```
 
-ES image (`docker.elastic.co/elasticsearch/elasticsearch:8.17.1`) は registry pull なので tag backup の対象外。converter 本体だけが対象。
+ES の image は registry から pull するので、tag backup の対象外。converter 本体だけが対象。
 
 ### スキーマ変更が絡む場合
 

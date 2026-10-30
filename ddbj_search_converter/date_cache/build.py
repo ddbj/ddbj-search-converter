@@ -11,7 +11,7 @@ PostgreSQL からの取得と DuckDB への投入は中間 TSV を挟んで分�
 PostgreSQL の接続保持時間には影響しない。
 """
 
-import datetime
+import datetime as dt
 from collections.abc import Iterator
 from typing import NamedTuple
 
@@ -84,8 +84,8 @@ def window_start(watermark: str, margin_days: int = DEFAULT_MARGIN_DAYS) -> str:
     窓の境界は日単位で扱う。秒精度で切ると、取得クエリの実行中に更新された行が
     今回の窓にも次回の窓にも入らず取りこぼされるため。
     """
-    watermark_date = datetime.datetime.strptime(watermark, WATERMARK_DATE_FORMAT).date()
-    return (watermark_date - datetime.timedelta(days=margin_days)).strftime(WATERMARK_DATE_FORMAT)
+    watermark_date = dt.datetime.strptime(watermark, WATERMARK_DATE_FORMAT).date()
+    return (watermark_date - dt.timedelta(days=margin_days)).strftime(WATERMARK_DATE_FORMAT)
 
 
 def _fetch_dates(
@@ -125,7 +125,7 @@ def build_date_cache(
     config: Config,
     *,
     full: bool = False,
-    today: datetime.date | None = None,
+    today: dt.date | None = None,
 ) -> None:
     watermark = (today if today is not None else TODAY).strftime(WATERMARK_DATE_FORMAT)
 

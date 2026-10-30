@@ -1,6 +1,7 @@
 """BioProject JSONL 生成モジュール。"""
 
 import argparse
+import multiprocessing
 import os
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -912,6 +913,7 @@ def generate_bp_jsonl(
     total_count = 0
     with ProcessPoolExecutor(
         max_workers=parallel_num,
+        mp_context=multiprocessing.get_context("fork"),
         initializer=exit_with_parent,
         initargs=(os.getpid(),),
     ) as executor:

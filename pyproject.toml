@@ -7,34 +7,23 @@ name = "ddbj-search-converter"
 authors = [{ name = "Bioinformatics and DDBJ Center" }]
 readme = { file = "README.md", content-type = "text/markdown" }
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 dependencies = [
     "duckdb",
+    "elastic-transport>=8,<9",
     "elasticsearch>=8,<9",
     "httpx",
     "lxml",
     "psycopg2-binary",
     "pydantic",
+    "pytz",
 ]
 
 [project.urls]
 Homepage = "https://github.com/ddbj/ddbj-search-converter"
 Documentation = "https://github.com/ddbj/ddbj-search-converter/blob/main/README.md"
 Repository = "https://github.com/ddbj/ddbj-search-converter.git"
-
-[project.optional-dependencies]
-tests = [
-    "hypothesis",
-    "lxml-stubs",
-    "mypy",
-    "pytz",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-    "pytest-xdist",
-    "ruff",
-]
 
 [project.scripts]
 check_external_resources = "ddbj_search_converter.cli.check_external_resources:main"
@@ -79,6 +68,25 @@ show_log = "ddbj_search_converter.cli.debug.show_log:main"
 show_dblink_counts = "ddbj_search_converter.cli.debug.show_dblink_counts:main"
 cleanup_old_results = "ddbj_search_converter.cli.cleanup_old_results:main"
 
+[dependency-groups]
+dev = [
+    "hypothesis",
+    "lxml-stubs",
+    "mypy",
+    "pytest",
+    "pytest-mock",
+    "pytest-xdist",
+    "ruff",
+]
+
+[tool.uv]
+# DuckDB 2.0 writes new database files that DuckDB 1.x cannot open.
+# This constraint applies only to this project's lock, not to projects that depend on it.
+constraint-dependencies = ["duckdb<2"]
+
+[tool.deptry.per_rule_ignores]
+# duckdb imports pytz when it returns TIMESTAMP WITH TIME ZONE values; no module imports it.
+DEP002 = ["pytz"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/py_tests"]
@@ -104,7 +112,7 @@ namespace_packages = true
 explicit_package_bases = true
 follow_imports = "silent"
 strict = true
-python_version = "3.10"
+python_version = "3.11"
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
@@ -127,7 +135,7 @@ warn_unreachable = false
 ignore_missing_imports = true
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 exclude = ["ddbj_search_converter/_version.py"]
 
@@ -136,6 +144,7 @@ select = ["ALL"]
 ignore = [
     "D",       # pydocstyle (docstrings)
     "ANN",     # flake8-annotations (strict は mypy に任せる)
+    "CPY",     # flake8-copyright (ライセンスは LICENSE だけに書く)
     "ERA",     # eradicate (commented-out code)
     "FIX",     # fixme comments
     "TD",      # todo comments
@@ -155,6 +164,7 @@ ignore = [
     "PLR0911", # too many return statements
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
+    "PLR0917", # too many positional arguments
     "PLR0915", # too many statements
     "PLR2004", # magic value comparison
     "C901",    # too complex

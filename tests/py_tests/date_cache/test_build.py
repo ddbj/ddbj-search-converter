@@ -6,7 +6,7 @@
 で、それを実際の DuckDB に対して確認する。
 """
 
-import datetime
+import datetime as dt
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -31,7 +31,7 @@ from ddbj_search_converter.date_cache.db import (
     read_cache_meta,
 )
 
-TODAY = datetime.date(2026, 2, 20)
+TODAY = dt.date(2026, 2, 20)
 
 
 def rows_for(table: str) -> list[DateRow]:
@@ -96,8 +96,8 @@ class TestWindowStart:
         assert window_start("2026-02-20") == "2026-01-21"
 
     def test_margin_is_the_shared_default(self) -> None:
-        watermark = datetime.date(2026, 2, 20)
-        expected = (watermark - datetime.timedelta(days=DEFAULT_MARGIN_DAYS)).strftime("%Y-%m-%d")
+        watermark = dt.date(2026, 2, 20)
+        expected = (watermark - dt.timedelta(days=DEFAULT_MARGIN_DAYS)).strftime("%Y-%m-%d")
         assert window_start(watermark.strftime("%Y-%m-%d")) == expected
 
     def test_crosses_month_and_year_boundaries(self) -> None:
@@ -186,7 +186,7 @@ class TestFullBuild:
         """窓ビルドの土台にできない DB を、黙って差分更新の基準に使わない。"""
         config = Config(result_dir=tmp_path)
         patch_fetch(mocker)
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 1))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 1))
         with duckdb.connect(str(tmp_path / "bp_bs_date.duckdb")) as conn:
             conn.execute(corruption)
 
@@ -201,19 +201,19 @@ class TestWindowBuild:
     def test_window_build_uses_watermark_minus_margin(self, tmp_path: Path, mocker: MockerFixture) -> None:
         config = Config(result_dir=tmp_path)
         patch_fetch(mocker)
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 20))
 
         captured: dict[str, str | None] = {}
         patch_fetch(mocker, captured)
-        build_date_cache(config, full=False, today=datetime.date(2026, 2, 25))
+        build_date_cache(config, full=False, today=dt.date(2026, 2, 25))
 
         assert captured == {"bp_date": "2026-01-21", "bs_date": "2026-01-21"}
 
     def test_window_build_advances_watermark_but_not_full_built_at(self, tmp_path: Path, mocker: MockerFixture) -> None:
         config = Config(result_dir=tmp_path)
         patch_fetch(mocker)
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
-        build_date_cache(config, full=False, today=datetime.date(2026, 2, 25))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 20))
+        build_date_cache(config, full=False, today=dt.date(2026, 2, 25))
 
         meta = read_cache_meta(config)
         assert meta is not None
@@ -224,11 +224,11 @@ class TestWindowBuild:
         """日次が止まっていた間は watermark が進まないので、窓がその分広がる。"""
         config = Config(result_dir=tmp_path)
         patch_fetch(mocker)
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 1))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 1))
 
         captured: dict[str, str | None] = {}
         patch_fetch(mocker, captured)
-        build_date_cache(config, full=False, today=datetime.date(2026, 3, 15))
+        build_date_cache(config, full=False, today=dt.date(2026, 3, 15))
 
         # 直近 30 日ではなく、最後に取り込んだ 2026-02-01 から 30 日戻る
         assert captured["bp_date"] == "2026-01-02"
@@ -241,10 +241,10 @@ class TestWindowBuild:
                 [("PRJDB_OLD", None, "2020-01-01T00:00:00Z", None)] if source.table == "bp_date" else []
             ),
         )
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 20))
 
         patch_fetch(mocker)
-        build_date_cache(config, full=False, today=datetime.date(2026, 2, 25))
+        build_date_cache(config, full=False, today=dt.date(2026, 2, 25))
 
         dates = fetch_bp_dates_from_cache(config, ["PRJDB_OLD", "PRJDB1"])
         assert dates["PRJDB_OLD"] == (None, "2020-01-01T00:00:00Z", None)
@@ -253,10 +253,10 @@ class TestWindowBuild:
     def test_explicit_full_ignores_existing_watermark(self, tmp_path: Path, mocker: MockerFixture) -> None:
         config = Config(result_dir=tmp_path)
         patch_fetch(mocker)
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 20))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 20))
 
         captured: dict[str, str | None] = {}
         patch_fetch(mocker, captured)
-        build_date_cache(config, full=True, today=datetime.date(2026, 2, 25))
+        build_date_cache(config, full=True, today=dt.date(2026, 2, 25))
 
         assert captured == {"bp_date": None, "bs_date": None}

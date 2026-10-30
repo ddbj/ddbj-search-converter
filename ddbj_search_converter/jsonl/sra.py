@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import multiprocessing
 import os
 import sys
 from collections.abc import Callable, Iterator
@@ -1011,6 +1012,7 @@ def process_source(
 
     with ProcessPoolExecutor(
         max_workers=parallel_num,
+        mp_context=multiprocessing.get_context("fork"),
         initializer=exit_with_parent,
         initargs=(os.getpid(),),
     ) as executor:

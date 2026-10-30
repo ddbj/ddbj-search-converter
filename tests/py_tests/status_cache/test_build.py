@@ -1,6 +1,6 @@
 """Tests for ddbj_search_converter.status_cache.build module."""
 
-import datetime
+import datetime as dt
 from pathlib import Path
 
 from ddbj_search_converter.config import Config
@@ -60,7 +60,7 @@ def _create_livelist_files(base_path: Path, kind: str, date_str: str) -> None:
 
 class TestFindLatestLivelistDate:
     def test_find_latest_livelist_date(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", datetime.date(2026, 3, 8))
+        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", dt.date(2026, 3, 8))
 
         _create_livelist_files(tmp_path, "bioproject", "20260308")
 
@@ -68,7 +68,7 @@ class TestFindLatestLivelistDate:
         assert result == "20260308"
 
     def test_find_latest_livelist_date_missing_file(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", datetime.date(2026, 3, 8))
+        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", dt.date(2026, 3, 8))
 
         # Today has only 2 of 3 files (missing withdrawn)
         for status in ("public", "suppressed"):
@@ -82,7 +82,7 @@ class TestFindLatestLivelistDate:
         assert result == "20260307"
 
     def test_find_latest_livelist_date_none(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", datetime.date(2026, 3, 8))
+        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", dt.date(2026, 3, 8))
 
         result = find_latest_livelist_date(tmp_path, "bioproject")
         assert result is None
@@ -90,7 +90,7 @@ class TestFindLatestLivelistDate:
 
 class TestBuildStatusCacheIntegration:
     def test_build_status_cache_integration(self, tmp_path, monkeypatch):
-        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", datetime.date(2026, 3, 8))
+        monkeypatch.setattr("ddbj_search_converter.status_cache.build.TODAY", dt.date(2026, 3, 8))
 
         # Create BP livelist files
         bp_dir = tmp_path.joinpath("bp_livelist")

@@ -1056,8 +1056,10 @@ class TestParseHumandbsJgaDateNdjson:
             '{"identifier": "JGAS000001", "type": "jga-study", "dateCreated": null, "dateModified": null}',
             '{"identifier": "JGAS000001", "type": "jga-study", "dateCreated": null, "datePublished": null}',
             '{"identifier": 1, "type": "jga-study", "dateCreated": null, "datePublished": null, "dateModified": null}',
-            '{"identifier": null, "type": "jga-study", "dateCreated": null, "datePublished": null, '
-            '"dateModified": null}',
+            (
+                '{"identifier": null, "type": "jga-study", "dateCreated": null, "datePublished": null, '
+                '"dateModified": null}'
+            ),
         ],
     )
     def test_line_not_in_jga_date_shape_raises(self, line: str) -> None:

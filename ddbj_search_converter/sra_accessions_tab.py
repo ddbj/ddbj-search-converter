@@ -17,7 +17,7 @@ BioProject/BioSample と SRA Accession 間の関連を高速に取得できる�
 - {const_dir}/sra/dra_accessions.duckdb
 """
 
-import datetime
+import datetime as dt
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Literal
@@ -67,7 +67,7 @@ def find_latest_sra_accessions_tab_file() -> Path | None:
     TODAY から 180 日遡って、最初に見つかったファイルを返す。
     """
     for days in range(180):
-        check_date = TODAY - datetime.timedelta(days=days)
+        check_date = TODAY - dt.timedelta(days=days)
         year = check_date.strftime("%Y")
         month = check_date.strftime("%m")
         yyyymmdd = check_date.strftime("%Y%m%d")
@@ -86,7 +86,7 @@ def find_latest_dra_accessions_tab_file() -> Path | None:
     TODAY から 180 日遡って、最初に見つかったファイルを返す。
     """
     for days in range(180):
-        check_date = TODAY - datetime.timedelta(days=days)
+        check_date = TODAY - dt.timedelta(days=days)
         yyyymmdd = check_date.strftime("%Y%m%d")
 
         path = DRA_ACCESSIONS_BASE_PATH.joinpath(f"{yyyymmdd}.DRA_Accessions.tab")
@@ -565,8 +565,8 @@ def iter_updated_submissions(
     # since から margin_days を引いた日付を計算
     # 形式: "2026-01-19T00:00:00Z" -> "2026-01-16"
     since_date = since.split("T", maxsplit=1)[0]
-    since_dt = datetime.datetime.strptime(since_date, "%Y-%m-%d")
-    margin_dt = since_dt - datetime.timedelta(days=margin_days)
+    since_dt = dt.datetime.strptime(since_date, "%Y-%m-%d")
+    margin_dt = since_dt - dt.timedelta(days=margin_days)
     margin_date = margin_dt.strftime("%Y-%m-%d")
 
     with duckdb.connect(db_path, read_only=True) as conn:

@@ -57,5 +57,3 @@ GitHub Actions で integration を回すなら以下が必要。Future work。
 - ES service container を `services:` で起動
 - TRAD / XSM PostgreSQL の最小スキーマ + minimal データの seed (現状は staging 接続前提)
 - 本番想定 fixture (`tests/fixtures/`) の git LFS 化 / artifact 化
-
-unit の coverage は `pyproject.toml` の addopts で常に計測される。Integration は coverage 計測対象外として扱う (実 ES / 実 PostgreSQL の挙動を見るのが目的のため)。

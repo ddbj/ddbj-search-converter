@@ -41,6 +41,7 @@ dump_dblink_files CLI コマンドで出力する。
 9. 全ての関連を DuckDB にロード
 """
 
+import multiprocessing
 import os
 import xml.etree.ElementTree as ET
 from collections.abc import Callable
@@ -207,6 +208,7 @@ def process_xml_files_parallel(
 
     with ProcessPoolExecutor(
         max_workers=parallel_num,
+        mp_context=multiprocessing.get_context("fork"),
         initializer=exit_with_parent,
         initargs=(os.getpid(),),
     ) as executor:
